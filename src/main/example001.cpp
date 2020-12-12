@@ -8,7 +8,7 @@
 int main(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("settings-example");
+    QCoreApplication::setApplicationName("example001");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");
@@ -22,8 +22,8 @@ int main(int argc, char* argv[])
     QString token    = settings.value("token").toString();
     bool sandboxMode = settings.value("sandboxMode").toBool();
 
-	cout << "Token      : {" << token.toStdString() << "}" << endl;
-	cout << "SandboxMode: {" << sandboxMode << "}" << endl;
+    cout << "Token      : {" << token.toStdString() << "}" << endl;
+    cout << "SandboxMode: {" << sandboxMode << "}" << endl;
    
     return 0;
 }
