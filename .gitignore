@@ -30,6 +30,10 @@
 *.exe
 *.out
 *.app
+
+
+
+# Custom files
 /.tmp
 /out
 /config.properties
