@@ -35,3 +35,6 @@
 /config.properties
 /vcxproj/*.user
 /.vs
+/doc.generated
+/doxygen.log
+/doxygen_undocumented.log
