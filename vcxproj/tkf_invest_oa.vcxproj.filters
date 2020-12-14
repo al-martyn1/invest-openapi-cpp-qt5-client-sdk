@@ -1,190 +1,190 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaBrokerAccountType.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\BrokerAccountType.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaCandle.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\Candle.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaCandleResolution.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\CandleResolution.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaCandles.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\Candles.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaCandlesResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\CandlesResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaCurrencies.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\Currencies.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaCurrency.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\Currency.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaCurrencyPosition.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\CurrencyPosition.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaEmpty.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\Empty.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaError.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\Error.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaError_payload.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\Error_payload.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaHelpers.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\Helpers.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaHttpFileElement.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\HttpFileElement.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaHttpRequest.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\HttpRequest.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaInstrumentType.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\InstrumentType.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaLimitOrderRequest.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\LimitOrderRequest.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaLimitOrderResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\LimitOrderResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketApi.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\MarketApi.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketInstrument.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\MarketInstrument.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketInstrumentList.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\MarketInstrumentList.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketInstrumentListResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\MarketInstrumentListResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketInstrumentResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\MarketInstrumentResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketOrderRequest.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\MarketOrderRequest.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketOrderResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\MarketOrderResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaMoneyAmount.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\MoneyAmount.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOperation.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\Operation.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOperations.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\Operations.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOperationsApi.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\OperationsApi.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOperationsResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\OperationsResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOperationStatus.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\OperationStatus.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOperationTrade.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\OperationTrade.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOperationType.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\OperationType.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOperationTypeWithCommission.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\OperationTypeWithCommission.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOrder.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\Order.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOrderbook.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\Orderbook.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOrderbookResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\OrderbookResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOrderResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\OrderResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOrdersApi.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\OrdersApi.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOrdersResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\OrdersResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOrderStatus.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\OrderStatus.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaOrderType.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\OrderType.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaPlacedLimitOrder.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\PlacedLimitOrder.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaPlacedMarketOrder.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\PlacedMarketOrder.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaPortfolio.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\Portfolio.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaPortfolioApi.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\PortfolioApi.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaPortfolioCurrenciesResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\PortfolioCurrenciesResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaPortfolioPosition.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\PortfolioPosition.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaPortfolioResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\PortfolioResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxAccount.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\SandboxAccount.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxApi.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\SandboxApi.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxCurrency.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\SandboxCurrency.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxRegisterRequest.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\SandboxRegisterRequest.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxRegisterResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\SandboxRegisterResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxSetCurrencyBalanceRequest.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\SandboxSetCurrencyBalanceRequest.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxSetPositionBalanceRequest.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\SandboxSetPositionBalanceRequest.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaSearchMarketInstrument.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\SearchMarketInstrument.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaSearchMarketInstrumentResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\SearchMarketInstrumentResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaTradeStatus.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\TradeStatus.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaUserAccount.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\UserAccount.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaUserAccounts.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\UserAccounts.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaUserAccountsResponse.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\UserAccountsResponse.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invest_openapi_models\client\QTkfInvestOaUserApi.cpp">
+    <ClCompile Include="..\src\invest_openapi_models\client\UserApi.cpp">
       <Filter>invest_openapi</Filter>
     </ClCompile>
   </ItemGroup>
@@ -197,196 +197,196 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaHttpRequest.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\HttpRequest.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketApi.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\MarketApi.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOperationsApi.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\OperationsApi.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOrdersApi.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\OrdersApi.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaPortfolioApi.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\PortfolioApi.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxApi.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\SandboxApi.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaUserApi.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\UserApi.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaCandlesResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\CandlesResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaCurrencies.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Currencies.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaCurrency.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Currency.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaCurrencyPosition.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\CurrencyPosition.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaPortfolioResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\PortfolioResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaBrokerAccountType.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\BrokerAccountType.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaCandle.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Candle.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaCandleResolution.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\CandleResolution.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaCandles.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Candles.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaEmpty.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Empty.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaEnum.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Enum.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaError.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Error.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaError_payload.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Error_payload.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaHelpers.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Helpers.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaHttpFileElement.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\HttpFileElement.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaInstrumentType.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\InstrumentType.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaLimitOrderRequest.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\LimitOrderRequest.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaLimitOrderResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\LimitOrderResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketInstrument.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\MarketInstrument.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketInstrumentList.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\MarketInstrumentList.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketInstrumentListResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\MarketInstrumentListResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketInstrumentResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\MarketInstrumentResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketOrderRequest.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\MarketOrderRequest.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaMarketOrderResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\MarketOrderResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaMoneyAmount.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\MoneyAmount.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaObject.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Object.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOperation.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Operation.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOperations.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Operations.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOperationsResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\OperationsResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOperationStatus.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\OperationStatus.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOperationTrade.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\OperationTrade.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOperationType.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\OperationType.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOperationTypeWithCommission.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\OperationTypeWithCommission.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOrder.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Order.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOrderbook.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Orderbook.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOrderbookResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\OrderbookResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOrderResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\OrderResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOrdersResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\OrdersResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOrderStatus.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\OrderStatus.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaOrderType.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\OrderType.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaPlacedLimitOrder.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\PlacedLimitOrder.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaPlacedMarketOrder.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\PlacedMarketOrder.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaPortfolio.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\Portfolio.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaPortfolioCurrenciesResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\PortfolioCurrenciesResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaPortfolioPosition.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\PortfolioPosition.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxAccount.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\SandboxAccount.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxCurrency.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\SandboxCurrency.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxRegisterRequest.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\SandboxRegisterRequest.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxRegisterResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\SandboxRegisterResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxSetCurrencyBalanceRequest.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\SandboxSetCurrencyBalanceRequest.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaSandboxSetPositionBalanceRequest.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\SandboxSetPositionBalanceRequest.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaSearchMarketInstrument.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\SearchMarketInstrument.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaSearchMarketInstrumentResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\SearchMarketInstrumentResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaTradeStatus.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\TradeStatus.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaUserAccount.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\UserAccount.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaUserAccounts.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\UserAccounts.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi_models\client\QTkfInvestOaUserAccountsResponse.h">
+    <QtMoc Include="..\src\invest_openapi_models\client\UserAccountsResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
   </ItemGroup>
