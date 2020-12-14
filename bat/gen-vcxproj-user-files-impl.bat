@@ -8,4 +8,5 @@
 :src_assigned
 @set EXT=vcxproj.user
 
-@copy /Y vcxproj\%SRC% vcxproj\example001.%EXT%
+@rem copy /Y vcxproj\%SRC% vcxproj\example001.%EXT%
+@copy /Y vcxproj\%SRC% vcxproj\test001.%EXT%
