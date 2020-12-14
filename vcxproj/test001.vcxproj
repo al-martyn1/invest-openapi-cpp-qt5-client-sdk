@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{85DCFE5B-7E54-4D43-A88C-56F26B84D960}</ProjectGuid>
+    <ProjectGuid>{7CA03583-0724-4FED-9A9E-6651F35E42A9}</ProjectGuid>
     <Keyword>Qt4VSv1.0</Keyword>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>

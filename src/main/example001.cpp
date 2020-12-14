@@ -4,6 +4,8 @@
 #include <QString>
 #include <QSettings>
 
+#include "MarketInstrumentList.h"
+
 
 int main(int argc, char* argv[])
 {

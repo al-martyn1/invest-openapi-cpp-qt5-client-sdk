@@ -38,3 +38,5 @@
 /doc.generated
 /doxygen.log
 /doxygen_undocumented.log
+/gen-vcxproj-user-files.bat
+/auth.properties
