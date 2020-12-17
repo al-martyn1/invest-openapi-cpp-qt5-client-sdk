@@ -42,6 +42,13 @@ struct AuthConfig
         checkValid();
     }
 
+    AuthConfig( const QString &tk, bool sm )
+    {
+        token       = tk;
+        sandboxMode = sm;
+    }
+
+
 };
 
 

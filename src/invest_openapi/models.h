@@ -64,3 +64,13 @@
 #include "models/client/UserAccounts.h"
 #include "models/client/UserAccountsResponse.h"
 #include "models/client/UserApi.h"
+
+
+
+namespace invest_openapi
+{
+
+    using namespace OpenAPI;
+
+} // namespace invest_openapi
+

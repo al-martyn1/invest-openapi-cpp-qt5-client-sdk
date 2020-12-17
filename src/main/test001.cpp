@@ -1,3 +1,8 @@
+/*! \file
+    \brief Read configuration files test
+
+ */
+
 #include <iostream>
 
 #include <QCoreApplication>
@@ -13,7 +18,7 @@
 int main(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("example001");
+    QCoreApplication::setApplicationName("test001");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");
