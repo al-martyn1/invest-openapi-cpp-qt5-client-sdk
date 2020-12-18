@@ -72,16 +72,10 @@ int main(int argc, char* argv[])
                }
                );
 
-        tkf::NetworkCompletableFuture< tkf::SandboxRegisterResponse >  sandboxRegisterResponse;
+        tkf::OpenApiCompletableFuture< tkf::SandboxRegisterResponse >  sandboxRegisterResponse;
         sandboxRegisterResponse.connectTo( pSandboxApi, &tkf::SandboxApi::sandboxRegisterPostSignal, &tkf::SandboxApi::sandboxRegisterPostSignalE );
 
-        /*
-        QObject::connect( pSandboxApi, &tkf::SandboxApi::sandboxRegisterPostSignal
-                        , &sandboxRegisterResponse
-                        //, &tkf::NetworkCompletableFuture< tkf::SandboxRegisterResponse >::onComplete
-                        , &tkf::NetworkCompletableFutureBase::onComplete
-                        );
-        */
+
         tkf::BrokerAccountType        brokerAccountType;
         brokerAccountType.setValue( tkf::BrokerAccountType::eBrokerAccountType::TINKOFF ); // TINKOFFIIS
 

@@ -11,17 +11,17 @@
 namespace invest_openapi
 {
 
-template<typename ValueType> class NetworkCompletableFuture;
+template<typename ValueType> class OpenApiCompletableFuture;
 
 
-class NetworkCompletableFutureBase : public QObject
+class OpenApiCompletableFutureBase : public QObject
 {
 
     Q_OBJECT
 
 public:
 
-    template<typename ValueType> friend class NetworkCompletableFuture;
+    template<typename ValueType> friend class OpenApiCompletableFuture;
 
     bool isCompleted() const
     {
@@ -72,7 +72,7 @@ protected slots:
     
 
 
-}; // class NetworkCompletableFuture
+}; // class OpenApiCompletableFuture
 
 
 } // namespace invest_openapi

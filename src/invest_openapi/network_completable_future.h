@@ -9,7 +9,7 @@ namespace invest_openapi
 
 
 template<typename ValueType>
-class NetworkCompletableFuture : public NetworkCompletableFutureBase
+class OpenApiCompletableFuture : public OpenApiCompletableFutureBase
 {
 
 public:
@@ -18,11 +18,11 @@ public:
 
     value_type  value; //!< Do not touch 'value' while isCompleted() returns false
 
-    NetworkCompletableFuture<ValueType>& join() const
+    OpenApiCompletableFuture<ValueType>& join() const
     {
         joinImpl();
 
-        return const_cast< NetworkCompletableFuture<ValueType>& >(*this);
+        return const_cast< OpenApiCompletableFuture<ValueType>& >(*this);
     }
 
 
@@ -48,10 +48,10 @@ connect(sender  , &std::remove_pointer<decltype(sender)>::type::signal, \
                   , SignalErrorType    errorSignal
                   )
     {
-        connect( pSource, completeSignal, this, qOverload<value_type>(&NetworkCompletableFutureBase::onComplete) );
-        connect( pSource, errorSignal   , this, qOverload<value_type, QNetworkReply::NetworkError, QString>(&NetworkCompletableFutureBase::onError) );
-        //SUPER_CONNECT(pSource, completeSignal, this, &NetworkCompletableFutureBase::onComplete);
-        //SUPER_CONNECT(pSource, errorSignal   , this, &NetworkCompletableFutureBase::onError);
+        connect( pSource, completeSignal, this, qOverload<value_type>(&OpenApiCompletableFutureBase::onComplete) );
+        connect( pSource, errorSignal   , this, qOverload<value_type, QNetworkReply::NetworkError, QString>(&OpenApiCompletableFutureBase::onError) );
+        //SUPER_CONNECT(pSource, completeSignal, this, &OpenApiCompletableFutureBase::onComplete);
+        //SUPER_CONNECT(pSource, errorSignal   , this, &OpenApiCompletableFutureBase::onError);
     }
 
 
@@ -66,7 +66,7 @@ protected:
     
 
 
-}; // class NetworkCompletableFuture
+}; // class OpenApiCompletableFuture
 
 
 } // namespace invest_openapi
