@@ -7,6 +7,8 @@
 #include <atomic>
 
 #include "models.h"
+#include "invest_openapi.h"
+
 
 namespace invest_openapi
 {
@@ -50,7 +52,7 @@ protected:
     {
         while(!isCompleted())
         {
-            QTest::qWait(0);
+            pollMessageQueue();
         }
     }
 

@@ -4,12 +4,14 @@
  */
 
 #include <iostream>
+#include <exception>
+#include <stdexcept>
 
 #include <QCoreApplication>
 #include <QString>
 #include <QSettings>
 #include <QTest>
-
+#include <QDir>
 
 #include "invest_openapi/api_config.h"
 #include "invest_openapi/auth_config.h"
@@ -18,12 +20,19 @@
 #include "invest_openapi/factory.h"
 #include "invest_openapi/network_completable_future.h"
 
+
+
 //NOTE: OpenSSL need to be installed
 
 
+#define TRY_QT_CONCURENT
 
-int main(int argc, char* argv[])
+
+//int main(int argc, char* argv[])
+INVEST_OPENAPI_MAIN()
 {
+
+
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("test002");
     QCoreApplication::setApplicationVersion("1.0");
@@ -33,6 +42,10 @@ int main(int argc, char* argv[])
 
     using std::cout;
     using std::endl;
+
+
+    cout<<"Launched from: "<<QDir::currentPath().toStdString()<<endl;
+
 
     namespace tkf=invest_openapi;
 
@@ -73,7 +86,9 @@ int main(int argc, char* argv[])
                );
 
         tkf::OpenApiCompletableFuture< tkf::SandboxRegisterResponse >  sandboxRegisterResponse;
-        sandboxRegisterResponse.connectTo( pSandboxApi, &tkf::SandboxApi::sandboxRegisterPostSignal, &tkf::SandboxApi::sandboxRegisterPostSignalE );
+
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( &sandboxRegisterResponse, pSandboxApi, sandboxRegister, Post );
+        //sandboxRegisterResponse.connectTo( pSandboxApi, &tkf::SandboxApi::sandboxRegisterPostSignal, &tkf::SandboxApi::sandboxRegisterPostSignalE );
 
 
         tkf::BrokerAccountType        brokerAccountType;
@@ -83,7 +98,16 @@ int main(int argc, char* argv[])
         sandboxRegisterRequest.setBrokerAccountType(brokerAccountType);
 
         qDebug() << QDateTime::currentDateTime() << "Query SandboxRegister";
-        pSandboxApi->sandboxRegisterPost(sandboxRegisterRequest);
+
+        #if defined(TRY_QT_CONCURENT)
+            //QFuture<void> future = 
+            QtConcurrent::run([=]() {
+                                        // Code in this block will run in another thread
+                                        pSandboxApi->sandboxRegisterPost(sandboxRegisterRequest);
+                                    });
+        #else
+            pSandboxApi->sandboxRegisterPost(sandboxRegisterRequest);
+        #endif
 
         sandboxRegisterResponse.join();
 
