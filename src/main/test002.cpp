@@ -16,6 +16,7 @@
 
 #include "invest_openapi/invest_openapi.h"
 #include "invest_openapi/factory.h"
+#include "invest_openapi/network_completable_future.h"
 
 //NOTE: OpenSSL need to be installed
 
@@ -71,7 +72,16 @@ int main(int argc, char* argv[])
                }
                );
 
+        tkf::NetworkCompletableFuture< tkf::SandboxRegisterResponse >  sandboxRegisterResponse;
+        sandboxRegisterResponse.connectTo( pSandboxApi, &tkf::SandboxApi::sandboxRegisterPostSignal, &tkf::SandboxApi::sandboxRegisterPostSignalE );
 
+        /*
+        QObject::connect( pSandboxApi, &tkf::SandboxApi::sandboxRegisterPostSignal
+                        , &sandboxRegisterResponse
+                        //, &tkf::NetworkCompletableFuture< tkf::SandboxRegisterResponse >::onComplete
+                        , &tkf::NetworkCompletableFutureBase::onComplete
+                        );
+        */
         tkf::BrokerAccountType        brokerAccountType;
         brokerAccountType.setValue( tkf::BrokerAccountType::eBrokerAccountType::TINKOFF ); // TINKOFFIIS
 
@@ -80,6 +90,9 @@ int main(int argc, char* argv[])
 
         qDebug() << QDateTime::currentDateTime() << "Query SandboxRegister";
         pSandboxApi->sandboxRegisterPost(sandboxRegisterRequest);
+
+        sandboxRegisterResponse.join();
+
     }
 
     unsigned counter = 0;

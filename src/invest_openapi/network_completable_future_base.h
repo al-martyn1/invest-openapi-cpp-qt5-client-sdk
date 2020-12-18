@@ -11,12 +11,17 @@
 namespace invest_openapi
 {
 
+template<typename ValueType> class NetworkCompletableFuture;
+
+
 class NetworkCompletableFutureBase : public QObject
 {
 
     Q_OBJECT
 
 public:
+
+    template<typename ValueType> friend class NetworkCompletableFuture;
 
     bool isCompleted() const
     {
@@ -28,17 +33,6 @@ public:
     {
         return m_errorType != QNetworkReply::NoError;
     }
-
-    
-
-protected slots:
-
-    virtual void onComplete(Empty v) {}
-    virtual void onComplete(SandboxRegisterResponse v) {}
-
-    virtual void onError(Empty                   v, QNetworkReply::NetworkError et, QString es) { errorComplete( v, et, es); }
-    virtual void onError(SandboxRegisterResponse v, QNetworkReply::NetworkError et, QString es) { errorComplete( v, et, es); }
-    
 
 
 protected:
@@ -68,6 +62,15 @@ protected:
     QString                     m_errorMessage ;
 
     
+protected slots:
+
+    virtual void onComplete(Empty v)                   {}
+    virtual void onComplete(SandboxRegisterResponse v) {}
+
+    virtual void onError(Empty                   v, QNetworkReply::NetworkError et, QString es) { errorComplete( et, es); }
+    virtual void onError(SandboxRegisterResponse v, QNetworkReply::NetworkError et, QString es) { errorComplete( et, es); }
+    
+
 
 }; // class NetworkCompletableFuture
 
