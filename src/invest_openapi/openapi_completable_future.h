@@ -1,7 +1,7 @@
 #pragma once
 
 #include <type_traits>
-#include "network_completable_future_base.h"
+#include "openapi_completable_future_base.h"
 
 
 /*
