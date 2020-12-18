@@ -315,8 +315,8 @@
     <QtMoc Include="..\src\invest_openapi\models\client\HttpRequest.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="..\src\invest_openapi\network_completable_future.h" />
-    <QtMoc Include="..\src\invest_openapi\network_completable_future_base.h" />
+    <QtMoc Include="..\src\invest_openapi\openapi_completable_future.h" />
+    <QtMoc Include="..\src\invest_openapi\openapi_completable_future_base.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

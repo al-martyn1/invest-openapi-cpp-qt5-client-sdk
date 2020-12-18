@@ -389,10 +389,10 @@
     <QtMoc Include="..\src\invest_openapi\models\client\UserAccountsResponse.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi\network_completable_future.h">
+    <QtMoc Include="..\src\invest_openapi\openapi_completable_future.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
-    <QtMoc Include="..\src\invest_openapi\network_completable_future_base.h">
+    <QtMoc Include="..\src\invest_openapi\openapi_completable_future_base.h">
       <Filter>invest_openapi_h</Filter>
     </QtMoc>
   </ItemGroup>
