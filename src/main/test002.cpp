@@ -25,7 +25,7 @@
 //NOTE: OpenSSL need to be installed
 
 
-#define TRY_QT_CONCURENT
+//#define TRY_QT_CONCURENT
 
 
 //int main(int argc, char* argv[])
@@ -109,15 +109,21 @@ INVEST_OPENAPI_MAIN()
             pSandboxApi->sandboxRegisterPost(sandboxRegisterRequest);
         #endif
 
+        qDebug() << QDateTime::currentDateTime() << "Query SandboxRegister finished, start waiting result";
+
         sandboxRegisterResponse.join();
+
+        qDebug() << QDateTime::currentDateTime() << "Query SandboxRegister - got result";
 
     }
 
+    /*
     unsigned counter = 0;
     while(++counter < 10000)
     {
         QTest::qWait(1);
     }
+    */
    
     return 0;
 }
