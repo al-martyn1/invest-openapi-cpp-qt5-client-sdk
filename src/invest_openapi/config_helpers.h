@@ -25,7 +25,7 @@ namespace config_helpers
 //----------------------------------------------------------------------------
 struct FileExists
 {
-    bool operator()( const QString &fileFullName )
+    bool operator()( const QString &fileFullName ) const
     {
         //QFile qf = QFile(fileFullName);
         QFile qf{fileFullName};
@@ -36,7 +36,7 @@ struct FileExists
 //------------------------------
 struct FileReadable
 {
-    bool operator()( const QString &fileFullName )
+    bool operator()( const QString &fileFullName ) const
     {
         //QFile qf = QFile(fileFullName);
         QFile qf{fileFullName};
@@ -50,7 +50,7 @@ struct FileReadable
 //------------------------------
 struct FileWriteable
 {
-    bool operator()( const QString &fileFullName )
+    bool operator()( const QString &fileFullName ) const
     {
         //QFile qf = QFile(fileFullName);
         QFile qf{fileFullName};
@@ -126,7 +126,7 @@ inline
 QStringList generateFileNamesUpToRoot( const QString          &fileName
                                      , const QString           subfolderNames
                                      , const QString          &startPath
-                                     , bool                    useSubfoldersFirst = true
+                                     , bool                    useSubfoldersFirst  = true
                                      , bool                    skipNonexistentDirs = true
                                      , unsigned                maxUpLevel          = (unsigned)-1
                                      )
@@ -145,26 +145,107 @@ QStringList generateFileNamesUpToRoot( const QString          &fileName
 //----------------------------------------------------------------------------
 template< typename LookupCriteriaFileAvailabilityType >
 inline
-QStringList lookupForConfigFiles( const QString                              &ConfigFileName
+QStringList lookupForConfigFiles( const QString                              &configFileName
                                 , const QStringList                          &configSubfolderNames  = QStringList()
                                 , const LookupCriteriaFileAvailabilityType   &availabilityType      = FileReadable()
                                 , const QString                              &startPath             = QCoreApplication::applicationDirPath() // applicationExeDir
+                                , bool                                        useSubfoldersFirst    = true
+                                , unsigned                                    maxUpLevel            = (unsigned)-1
                                 )
 {
+    QStringList resList;
 
-    return QString();
+    QStringList foundCandidates = generateFileNamesUpToRoot( configFileName
+                                                           , configSubfolderNames
+                                                           , startPath
+                                                           , useSubfoldersFirst
+                                                           , true // skipNonexistentDirs
+                                                           , maxUpLevel
+                                                           );
+
+    for (int i = 0; i < foundCandidates.size(); ++i)
+    {
+        QString candidateFileName = foundCandidates.at(i).trimmed();
+        
+        if (candidateFileName.isEmpty()) 
+            continue; // Нахуй пустышки, насрать как появились
+
+        if (!availabilityType(candidateFileName))
+            continue; // Неподходящие под критерию - нахуй
+
+        resList.append(candidateFileName);
+    }
+
+    return resList;
 }
-//QDir::absolutePath() 
-//[static]QString QCoreApplication::applicationFilePath()
-// bool QFileInfo::isReadable() 
-// bool QFileInfo::isRoot()
-// bool QDir::cdUp()
-// bool QDir::exists(const QString &name) // for file
-// bool QDir::exists() // for dir
 
-// QString QDir::dirName() const return empty for root dir
-// bool QFile::exists()
+//----------------------------------------------------------------------------
+template< typename LookupCriteriaFileAvailabilityType >
+inline
+QStringList lookupForConfigFiles( const QString                              &configFileName
+                                , const QString                              &configSubfolderNames  = QString()
+                                , const LookupCriteriaFileAvailabilityType   &availabilityType      = FileReadable()
+                                , const QString                              &startPath             = QCoreApplication::applicationDirPath() // applicationExeDir
+                                , bool                                        useSubfoldersFirst    = true
+                                , unsigned                                    maxUpLevel            = (unsigned)-1
+                                )
+{
+    QString subfolderNamesCopy = configSubfolderNames;
+    subfolderNamesCopy.replace(':', ";"); // replace *nix style list separator to windows style separator
+    return lookupForConfigFiles( configFileName
+                               , subfolderNamesCopy.split( ';', Qt::SkipEmptyParts )
+                               , availabilityType
+                               , startPath
+                               , useSubfoldersFirst
+                               , maxUpLevel
+                               );
+}
 
+//----------------------------------------------------------------------------
+template< typename LookupCriteriaFileAvailabilityType >
+inline
+QString lookupForConfigFile( const QString                              &configFileName
+                           , const QStringList                          &configSubfolderNames  = QStringList()
+                           , const LookupCriteriaFileAvailabilityType   &availabilityType      = FileReadable()
+                           , const QString                              &startPath             = QCoreApplication::applicationDirPath() // applicationExeDir
+                           , bool                                        useSubfoldersFirst    = true
+                           #if defined(DEBUG) || defined(_DEBUG)
+                           , unsigned                                    maxUpLevel            = (unsigned)-1
+                           #else
+                           , unsigned                                    maxUpLevel            = 1
+                           #endif
+                           )
+{
+    QStringList lst = lookupForConfigFiles( configFileName, configSubfolderNames, availabilityType, startPath, useSubfoldersFirst, maxUpLevel );
+    if (lst.isEmpty())
+        return QString();
+    return lst.at(0);
+}
+
+//----------------------------------------------------------------------------
+template< typename LookupCriteriaFileAvailabilityType >
+inline
+QString lookupForConfigFile( const QString                              &configFileName
+                           , const QString                              &configSubfolderNames  = QString()
+                           , const LookupCriteriaFileAvailabilityType   &availabilityType      = FileReadable()
+                           , const QString                              &startPath             = QCoreApplication::applicationDirPath() // applicationExeDir
+                           , bool                                        useSubfoldersFirst    = true
+                           #if defined(DEBUG) || defined(_DEBUG)
+                           , unsigned                                    maxUpLevel            = (unsigned)-1
+                           #else
+                           , unsigned                                    maxUpLevel            = 1
+                           #endif
+                           )
+{
+    QString subfolderNamesCopy = configSubfolderNames;
+    subfolderNamesCopy.replace(':', ";"); // replace *nix style list separator to windows style separator
+    return lookupForConfigFile( configFileName, subfolderNamesCopy.split( ';', Qt::SkipEmptyParts ), availabilityType, startPath, useSubfoldersFirst, maxUpLevel );
+}
+
+
+
+
+//----------------------------------------------------------------------------
 
 } // namespace config_helpers
 
