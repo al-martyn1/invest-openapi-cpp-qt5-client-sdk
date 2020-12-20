@@ -1,6 +1,5 @@
 /*! \file
     \brief Configs lookup test
-
  */
 
 #include <iostream>
@@ -63,7 +62,7 @@ INVEST_OPENAPI_MAIN()
     
 
     cout<<"Found config file: " << lookupForConfigFile( "config.properties", "conf;config", FileReadable() ).toStdString() << endl;
-    cout<<"Found config file: " << lookupForConfigFile( "auth.properties", "conf;config"  , FileReadable() ).toStdString() << endl;
+    cout<<"Found config file: " << lookupForConfigFile( "auth.properties"  , "conf;config", FileReadable() ).toStdString() << endl;
     
     return 0;
 }

@@ -1,6 +1,5 @@
 /*! \file
     \brief Sending sandbox register request test.
-
  */
 
 #include <iostream>

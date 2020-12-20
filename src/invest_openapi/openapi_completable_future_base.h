@@ -13,6 +13,9 @@
 namespace invest_openapi
 {
 
+
+void pollMessageQueue();
+
 template<typename ValueType> class OpenApiCompletableFuture;
 
 

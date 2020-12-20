@@ -10,23 +10,23 @@
 #include <exception>
 #include <stdexcept>
 
+#include "models.h"
+
+#include "invest_openapi_safe_main.h"
+#include "openapi_completable_future.h"
+#include "api_config.h"
+#include "auth_config.h"
+
 
 #if defined(_MSC_VER)
     #pragma comment(lib, "tkf_invest_oa")
 #endif
 
+// Invest OpenAPI interface method
+// #define IOAIM
 
-int safeMain(int argc, char* argv[]);
-
-
-#define INVEST_OPENAPI_MAIN()                                     \
-               int main(int argc, char* argv[])                   \
-               {                                                  \
-                   return invest_openapi::mainImpl(argc, argv);   \
-               }                                                  \
-                                                                  \
-               int safeMain(int argc, char* argv[])
-
+#define IOA_ABSTRACT_METHOD = 0
+#define IOA_METHOD_IMPL override
 
 
 namespace invest_openapi
@@ -42,34 +42,71 @@ void pollMessageQueue()
 
 
 
-inline
-int mainImpl(int argc, char* argv[])
+
+struct IOpenApi
 {
-    using std::cout;
-    using std::endl;
 
-    try
+}; // struct IOpenApi
+
+
+
+struct ISanboxOpenApi : public IOpenApi
+{
+
+    virtual QSharedPointer<SandboxRegisterResponse>
+        sandboxRegister( BrokerAccountType v )
+    IOA_ABSTRACT_METHOD;
+    
+}; // struct ISanboxOpenApi
+
+
+
+class OpenApi : public IOpenApi
+{
+
+public:
+
+    OpenApi( const ApiConfig  &apiConfig
+           , const AuthConfig &authConfig
+           )
+    : m_apiConfig(apiConfig)
+    , m_authConfig(authConfig)
+    {}
+
+protected:
+
+    ApiConfig  m_apiConfig;
+    AuthConfig m_authConfig;
+
+
+}; // class OpenApi
+
+
+
+
+class SanboxOpenApi : public OpenApi
+                    , public ISanboxOpenApi
+{
+
+    virtual QSharedPointer<SandboxRegisterResponse>
+        sandboxRegister( BrokerAccountType v )
+    IOA_METHOD_IMPL
     {
-        return safeMain(argc, argv);
-    }
-    catch( const std::runtime_error &e )
-    {
-        cout<<"Error: runtime_error: "<<e.what()<<endl;
-        return -1;
-    }
-    catch( const std::exception &e )
-    {
-        cout<<"Error: exception: "<<e.what()<<endl;
-        return -1;
-    }
-    catch( ... )
-    {
-        cout<<"Error: unknown error"<<endl;
-        return -1;
+        SandboxRegisterRequest   sandboxRegisterRequest;
+        sandboxRegisterRequest.setBrokerAccountType(v);
+  
     }
 
-    // return 0;
-}
+}; // class SanboxOpenApi
+
+
+
+
+
+
+
+
+
 
 
 } // namespace invest_openapi

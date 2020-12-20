@@ -1,6 +1,5 @@
 /*! \file
     \brief Read configuration files test
-
  */
 
 #include <iostream>

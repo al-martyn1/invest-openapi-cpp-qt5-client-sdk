@@ -1,6 +1,5 @@
 /*! \file
     \brief Calculate timings
-
  */
 
 #include <iostream>

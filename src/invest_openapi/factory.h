@@ -40,6 +40,29 @@ public:
         m_apiConfig.checkValid();
     }
 
+    template< typename ApiType >
+    QSharedPointer<ApiType>
+    getApiImpl( const int timeOut = 0 )
+    {
+        QUrl apiUrl = getApiUrl();
+
+        ApiType *pApi = new ApiType( apiUrl.scheme(), apiUrl.host(), apiUrl.port(0), apiUrl.path(), timeOut );
+
+        if (!pApi)
+        {
+            throw std::runtime_error("Something goes wrong");
+            return QSharedPointer<ApiType>(pApi);
+        }
+
+        pApi->addHeaders( "Authorization", QString("Bearer ") + m_authConfig.token );
+        pApi->addHeaders( "Accept", "application/json" );
+
+        return QSharedPointer<ApiType>(pApi);
+    }
+
+#if !defined(IOA_NO_OBSOLETE_METHODS_SANDBOX_MARKET_API)
+
+// Obsolete 
 
     SandboxApi* getSandboxApi(const int timeOut = 0) const
     {
@@ -75,6 +98,10 @@ public:
         
         return pApi;
     }
+
+// End of obsolete
+#endif
+
 
     bool isSandboxMode() const
     {

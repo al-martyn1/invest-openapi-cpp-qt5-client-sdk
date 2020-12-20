@@ -1,6 +1,5 @@
 /*! \file
     \brief Configs lookup test
-
  */
 
 #include <iostream>

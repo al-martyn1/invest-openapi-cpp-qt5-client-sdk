@@ -1,6 +1,5 @@
 /*! \file
-    \brief Configs lookup test
-
+    \brief New style API test
  */
 
 #include <iostream>
@@ -24,27 +23,11 @@
 
 
 
-inline
-void printQStringList( QString indent, QStringList strings )
-{
-    using std::cout;
-    using std::endl;
-
-    for (int i = 0; i < strings.size(); ++i)
-    {
-        QString s = strings.at(i).trimmed();
-        cout << indent.toStdString() << s.toStdString() << endl;
-    }
-
-    cout << endl;
-
-}
-
 
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("test007.cpp");
+    QCoreApplication::setApplicationName("test007");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");
@@ -60,10 +43,35 @@ INVEST_OPENAPI_MAIN()
 
     using invest_openapi::config_helpers::lookupForConfigFile;
     using invest_openapi::config_helpers::FileReadable;
-    
 
-    cout<<"Found config file: " << lookupForConfigFile( "config.properties", "conf;config", FileReadable() ).toStdString() << endl;
-    cout<<"Found config file: " << lookupForConfigFile( "auth.properties", "conf;config"  , FileReadable() ).toStdString() << endl;
+    namespace tkf=invest_openapi;
+
+
+    tkf::OpenApiFactory factory = tkf::OpenApiFactory( lookupForConfigFile( "config.properties", "conf;config", FileReadable() )
+                                                     , lookupForConfigFile( "auth.properties"  , "conf;config", FileReadable() )
+                                                     );
+
+    QSharedPointer< tkf::SandboxApi > pApi = factory.getApiImpl< tkf::SandboxApi >();
+
+    if (pApi)
+    {
+        tkf::BrokerAccountType        brokerAccountType;
+        brokerAccountType.setValue( tkf::BrokerAccountType::eBrokerAccountType::TINKOFF ); // TINKOFFIIS
+
+        tkf::SandboxRegisterRequest   sandboxRegisterRequest;
+        sandboxRegisterRequest.setBrokerAccountType(brokerAccountType);
+
+        tkf::OpenApiCompletableFuture< tkf::SandboxRegisterResponse >  sandboxRegisterResponse;
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( &sandboxRegisterResponse, &(*pApi), sandboxRegister, Post );
+
+        pApi->sandboxRegisterPost(sandboxRegisterRequest);
+
+        sandboxRegisterResponse.join();
+
+        cout << sandboxRegisterResponse.value.asJson().toStdString() << endl;
+    }
+
+
     
     return 0;
 }
