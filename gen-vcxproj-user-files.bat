@@ -1,0 +1,1 @@
+call bat\gen-vcxproj-user-files.bat
