@@ -1,3 +1,7 @@
+/*! \file
+    \brief 
+ */
+
 #pragma once
 
 #include <QObject>
@@ -7,7 +11,6 @@
 #include <atomic>
 
 #include "models.h"
-#include "invest_openapi.h"
 
 
 namespace invest_openapi

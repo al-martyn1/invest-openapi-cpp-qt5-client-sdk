@@ -1,3 +1,7 @@
+/*! \file
+    \brief 
+ */
+
 #include <QVector>
 #include <QString>
 #include <QStringList>

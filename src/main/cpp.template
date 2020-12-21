@@ -17,6 +17,7 @@
 #include "invest_openapi/config_helpers.h"
 #include "invest_openapi/api_config.h"
 #include "invest_openapi/auth_config.h"
+#include "invest_openapi/currencies_config.h"
 
 #include "invest_openapi/invest_openapi.h"
 #include "invest_openapi/factory.h"
@@ -58,9 +59,9 @@ INVEST_OPENAPI_MAIN()
     cout<<"Launched exe  : "<<QCoreApplication::applicationFilePath().toStdString()<<endl;
     cout<<"Launched from : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
 
-    using invest_openapi::config_helpers::lookupForConfigFile;
-    using invest_openapi::config_helpers::FileReadable;
-    
+    namespace tkf=invest_openapi;
+    using tkf::config_helpers::lookupForConfigFile;
+    using tkf::config_helpers::FileReadable;
 
     cout<<"Found config file: " << lookupForConfigFile( "config.properties", "conf;config", FileReadable() ).toStdString() << endl;
     cout<<"Found config file: " << lookupForConfigFile( "auth.properties", "conf;config"  , FileReadable() ).toStdString() << endl;

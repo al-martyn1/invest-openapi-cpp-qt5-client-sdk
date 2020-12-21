@@ -1,10 +1,14 @@
+/*! \file
+    \brief 
+ */
+
 #pragma once
 
 #include <QObject>
 #include <QDebug>
 #include <QtDebug>
 #include <QTest>
-#include <QtConcurrent/QtConcurrent>
+//#include <QtConcurrent/QtConcurrent>
 
 #include <iostream>
 #include <exception>

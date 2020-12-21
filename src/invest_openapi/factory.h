@@ -1,3 +1,7 @@
+/*! \file
+    \brief 
+ */
+
 #pragma once
 
 #include <QString>
@@ -13,8 +17,15 @@ namespace invest_openapi
 {
 
 
+class OpenApiImpl;
+class SanboxOpenApiImpl;
+
+
 class OpenApiFactory
 {
+
+    friend class OpenApiImpl;
+    friend class SanboxOpenApiImpl;
 
 public:
 
@@ -24,6 +35,7 @@ public:
     , m_authConfig( token, sandboxMode )
     {
         m_apiConfig.checkValid();
+        m_authConfig.checkValid();
     }
 
     OpenApiFactory( const ApiConfig &apiConfig, const AuthConfig &authConfig )
@@ -31,6 +43,7 @@ public:
     , m_authConfig(authConfig)
     {
         m_apiConfig.checkValid();
+        m_authConfig.checkValid();
     }
 
     OpenApiFactory( const OpenApiFactory &f )
@@ -38,11 +51,16 @@ public:
     , m_authConfig(f.m_authConfig)
     {
         m_apiConfig.checkValid();
+        m_authConfig.checkValid();
     }
+
+#if !defined(TEST_MODE)
+protected:
+#endif
 
     template< typename ApiType >
     QSharedPointer<ApiType>
-    getApiImpl( const int timeOut = 0 )
+    getApiImpl( const int timeOut = 0 ) const
     {
         QUrl apiUrl = getApiUrl();
 
@@ -99,14 +117,14 @@ public:
         return pApi;
     }
 
-// End of obsolete
-#endif
-
-
     bool isSandboxMode() const
     {
         return m_authConfig.sandboxMode;
     }
+
+// End of obsolete
+#endif
+
 
 
 protected:

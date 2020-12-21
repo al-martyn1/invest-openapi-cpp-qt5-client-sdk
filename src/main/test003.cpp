@@ -13,6 +13,8 @@
 #include <QDir>
 #include <QElapsedTimer>
 
+#define TEST_MODE
+
 #include "invest_openapi/api_config.h"
 #include "invest_openapi/auth_config.h"
 
