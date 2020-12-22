@@ -113,8 +113,11 @@ struct IOpenApi
 
 
 //----------------------------------------------------------------------------
-struct ISanboxOpenApi : public IOpenApi
+struct ISanboxOpenApi // : public IOpenApi
 {
+    virtual void    setBrokerAccountId( const QString &id ) = 0;
+    virtual QString getBrokerAccountId()                    = 0;
+
     TKF_IOA_ABSTRACT_METHOD( SandboxRegisterResponse, sandboxRegister(BrokerAccountType v) );
     TKF_IOA_ABSTRACT_METHOD( SandboxRegisterResponse, sandboxRegister(BrokerAccountType::eBrokerAccountType v) );
 
@@ -473,6 +476,7 @@ public:
 
 
 protected:
+
 
     QSharedPointer<SandboxApi>  m_pSandboxApi;
 

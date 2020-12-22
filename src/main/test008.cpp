@@ -22,6 +22,7 @@
 
 #include "invest_openapi/invest_openapi.h"
 
+#include "invest_openapi/utility.h"
 
 
 inline
@@ -64,8 +65,15 @@ INVEST_OPENAPI_MAIN()
 
 
     QSharedPointer<tkf::IOpenApi> pOpenApi = tkf::createOpenApi( lookupForConfigFile( "config.properties", "conf;config", FileReadable() )
-                                                          , lookupForConfigFile( "auth.properties"  , "conf;config", FileReadable() )
-                                                          );
+                                                               , lookupForConfigFile( "auth.properties"  , "conf;config", FileReadable() )
+                                                               );
+
+    auto marketInstruments = pOpenApi->marketInstruments();
+    marketInstruments->join();
+    auto marketInstrumentList = marketInstruments->value.getPayload().getInstruments();
+    auto instrumentList = tkf::toInstrumentList<double>(marketInstrumentList);
+    
+
     
     tkf::ISanboxOpenApi* pSandboxOpenApi = dynamic_cast<tkf::ISanboxOpenApi*>(pOpenApi.get());
 
@@ -101,9 +109,9 @@ INVEST_OPENAPI_MAIN()
         tkf::checkAbort(res);
     }
 
-    auto instruments = pOpenApi->marketInstruments();
-    instruments.join();
-    instrumentList = instruments.getPayload().getInstruments();
+    // auto instruments = pOpenApi->marketInstruments();
+    // instruments->join();
+    // auto instrumentList = instruments->value.getPayload().getInstruments();
 
 
     if (pSandboxOpenApi)
@@ -118,7 +126,7 @@ INVEST_OPENAPI_MAIN()
             //tkf::checkAbort(res);
         }
 
-        res = pSandboxOpenApi->sandboxClear();
+        auto res = pSandboxOpenApi->sandboxClear();
         res->join();
         tkf::checkAbort(res);
 

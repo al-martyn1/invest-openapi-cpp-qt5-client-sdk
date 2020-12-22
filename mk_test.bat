@@ -14,7 +14,7 @@
 @copy /Y vcxproj\_filters.template vcxproj\%TEST%.vcxproj.filters
 @copy /Y vcxproj\_user.template    vcxproj\%TEST%.vcxproj.user
 @copy /Y vcxproj\_vcxproj.template vcxproj\%TEST%.vcxproj
-@copy /Y src\main\cpp.template     src\main\%TEST%.cpp
+@copy /Y src\main\_cpp.template    src\main\%TEST%.cpp
 
 git add vcxproj\%TEST%.vcxproj.filters
 git add vcxproj\%TEST%.vcxproj
