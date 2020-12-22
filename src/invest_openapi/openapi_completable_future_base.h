@@ -42,6 +42,17 @@ public:
         return m_errorType != QNetworkReply::NoError;
     }
 
+    QNetworkReply::NetworkError getError() const
+    {
+        return m_errorType;
+    }
+
+    QString getErrorMessage() const
+    {
+        return m_errorMessage;
+    }
+
+
 
 protected:
 
@@ -72,11 +83,49 @@ protected:
     
 protected slots:
 
-    virtual void onComplete(Empty v)                   {}
-    virtual void onComplete(SandboxRegisterResponse v) {}
+    virtual void onComplete( Empty                          v ) {}
 
-    virtual void onError(Empty                   v, QNetworkReply::NetworkError et, QString es) { errorComplete( et, es); }
-    virtual void onError(SandboxRegisterResponse v, QNetworkReply::NetworkError et, QString es) { errorComplete( et, es); }
+    virtual void onComplete( SandboxRegisterResponse        v ) {}
+
+    virtual void onComplete( MarketInstrumentListResponse   v ) {}
+
+    virtual void onComplete( CandlesResponse                v ) {}
+    virtual void onComplete( OrderbookResponse              v ) {}
+    virtual void onComplete( SearchMarketInstrumentResponse v ) {}
+
+    virtual void onComplete( UserAccountsResponse           v ) {}
+
+    virtual void onComplete( OperationsResponse             v ) {}
+
+    virtual void onComplete( OrdersResponse                 v ) {}
+    virtual void onComplete( LimitOrderResponse             v ) {}
+    virtual void onComplete( MarketOrderResponse            v ) {}
+
+    virtual void onComplete( PortfolioCurrenciesResponse    v ) {}
+    virtual void onComplete( PortfolioResponse              v ) {}
+
+    
+
+    virtual void onError( Empty                          v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+
+    virtual void onError( SandboxRegisterResponse        v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+
+    virtual void onError( MarketInstrumentListResponse   v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+
+    virtual void onError( CandlesResponse                v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError( OrderbookResponse              v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError( SearchMarketInstrumentResponse v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+
+    virtual void onError( UserAccountsResponse           v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+
+    virtual void onError( OperationsResponse             v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+
+    virtual void onError( OrdersResponse                 v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError( LimitOrderResponse             v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError( MarketOrderResponse            v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+
+    virtual void onError( PortfolioCurrenciesResponse    v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError( PortfolioResponse              v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
     
 
 

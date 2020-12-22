@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include <QDebug>
+#include <QSharedPointer>
+
 #include <type_traits>
 #include "openapi_completable_future_base.h"
 
@@ -14,6 +17,7 @@ connect(sender  , &std::remove_pointer<decltype(sender)>::type::signal, \
         receiver, &std::remove_pointer<decltype(receiver)>::type::slot)
 */
 
+//----------------------------------------------------------------------------
 #define INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( completableFutureObjPtr, pApi, apiMethod, httpMethod )                      \
                 (completableFutureObjPtr)->connectTo( pApi                                                                            \
                                                     , &std::remove_pointer<decltype(pApi)>::type:: apiMethod ## httpMethod ## Signal  \
@@ -28,14 +32,19 @@ connect(sender  , &std::remove_pointer<decltype(sender)>::type::signal, \
 #define INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API_POST( completableFutureObjPtr, pApi, apiMethod ) \
                 OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( pApi, apiMethod, completableFutureObjPtr, Post )
 
+//----------------------------------------------------------------------------
 
 
+
+
+//----------------------------------------------------------------------------
 namespace invest_openapi
 {
 
 
 
 
+//----------------------------------------------------------------------------
 template<typename ValueType>
 class OpenApiCompletableFuture : public OpenApiCompletableFutureBase
 {
@@ -81,8 +90,46 @@ protected:
         m_complete.store(true, std::memory_order_relaxed);
     }
 
+    virtual void onError( value_type v, QNetworkReply::NetworkError et, QString es ) override
+    {
+        value = v;
+        errorComplete(et, es);
+    }
+
+
 
 }; // class OpenApiCompletableFuture
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+template<typename T>
+inline
+void dump( const QSharedPointer< OpenApiCompletableFuture< T > > &val )
+{
+    qDebug() << val->value.asJson();
+}
+
+template<typename T>
+inline
+void dumpIfError( const QSharedPointer< OpenApiCompletableFuture< T > > &val )
+{
+    if (!val->isCompletionError())
+        return;
+
+    qDebug() << val->getErrorMessage();
+    dump(val);
+}
+
+
+
+
+//----------------------------------------------------------------------------
+
+
 
 
 } // namespace invest_openapi

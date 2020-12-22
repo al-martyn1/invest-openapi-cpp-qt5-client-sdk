@@ -18,7 +18,7 @@
 #include "invest_openapi/api_config.h"
 #include "invest_openapi/auth_config.h"
 #include "invest_openapi/currencies_config.h"
-
+#include "invest_openapi/positions_config.h"
 
 #include "invest_openapi/invest_openapi.h"
 
@@ -73,31 +73,64 @@ INVEST_OPENAPI_MAIN()
     {
         auto sandboxRegisterRes = pSandboxOpenApi->sandboxRegister(tkf::BrokerAccountType::eBrokerAccountType::TINKOFF); // TINKOFFIIS
         sandboxRegisterRes->join();
+        tkf::checkAbort(sandboxRegisterRes);
 
-        cout << "sandboxRegister -----------------" << endl << sandboxRegisterRes->value.asJson().toStdString() << endl;
+        //cout << "sandboxRegister -----------------" << endl << sandboxRegisterRes->value.asJson().toStdString() << endl;
+        //tkf::dumpIfError(sandboxRegisterRes);
 
         pSandboxOpenApi->setBrokerAccountId( sandboxRegisterRes->value.getPayload().getBrokerAccountId() );
 
         {
             auto res = pSandboxOpenApi->sandboxCurrenciesBalanceSet( tkf::SandboxCurrency::eSandboxCurrency::RUB, 1000.0 );
             res->join();
-            cout << "sandboxCurrenciesBalanceSet -----------------" << endl << res->value.asJson().toStdString() << endl;
+            //cout << "sandboxCurrenciesBalanceSet -----------------" << endl << res->value.asJson().toStdString() << endl;
+            //tkf::dumpIfError(res);
+            tkf::checkAbort(res);
         }
 
         tkf::CurrenciesConfig currenciesConfig;
-        try
-        {
-            currenciesConfig = tkf::CurrenciesConfig( lookupForConfigFile( "sandbox.properties", "conf;config", FileReadable() ) );
-            auto curConf = currenciesConfig.getCurrenciesConfigs("RUB;USD;EUR;GBP;HKD;CHF;JPY;CNY;TRY");
+        QSettings sandboxSettings( lookupForConfigFile( "sandbox.properties", "conf;config", FileReadable() ), QSettings::IniFormat);
 
-        }
-        catch(...)
-        {}
-        
-         //= tkf::CurrencyConfig
+        currenciesConfig = tkf::CurrenciesConfig( sandboxSettings );
+        auto currenciesList = currenciesConfig.getCurrencyConfigs("RUB;USD;EUR;GBP;HKD;CHF;JPY;CNY;TRY");
+
+        auto res = pSandboxOpenApi->sandboxCurrenciesBalanceSet( currenciesList );
+        res->join();
+        auto resPtr = res.get();
+        //tkf::dumpIfError( setCurrenciesListResult );
+        tkf::checkAbort(res);
     }
 
-    //pSandboxOpenApi->
+    auto instruments = pOpenApi->marketInstruments();
+    instruments.join();
+    instrumentList = instruments.getPayload().getInstruments();
+
+
+    if (pSandboxOpenApi)
+    {
+        QSettings sandboxSettings( lookupForConfigFile( "sandbox.properties", "conf;config", FileReadable() ), QSettings::IniFormat);
+
+        auto sandboxPositionsBalance = tkf::readSandboxPositionsConfig( sandboxSettings, true  /* readStrict */ );
+        if (!sandboxPositionsBalance.empty())
+        {
+            //res = pSandboxOpenApi->sandboxPositionsBalanceSet(sandboxPositionsBalance);
+            //res->join();
+            //tkf::checkAbort(res);
+        }
+
+        res = pSandboxOpenApi->sandboxClear();
+        res->join();
+        tkf::checkAbort(res);
+
+        res = pSandboxOpenApi->sandboxRemove();
+        res->join();
+        tkf::checkAbort(res);
+    }
+
+
+
+    
+
     
     return 0;
 }

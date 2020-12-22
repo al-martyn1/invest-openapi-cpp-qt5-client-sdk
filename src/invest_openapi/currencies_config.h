@@ -19,8 +19,14 @@
 namespace invest_openapi
 {
 
+
+class CurrenciesConfig;
+
+
 class CurrencyConfig
 {
+
+    friend class CurrenciesConfig;
 
 public:
 
@@ -29,16 +35,33 @@ public:
     , m_value(0.0)
     {}
 
-    inline void fromQVariant( const QVariant qv )
+    inline bool fromQVariant( const QVariant qv )
     {
         if (qv.isValid() && !qv.isNull())
         {
             m_isValid = true;
             m_value   = qv.toDouble();
+            return isValid();
         }
         else
         {
             m_isValid = false;
+            return isValid();
+        }
+    }
+
+    inline void fromSettings( const QSettings &settings, const QString &valueName )
+    {
+        if (fromQVariant(settings.value(valueName)))
+        {
+            QStringList nameSplitted = valueName.split( '.', Qt::SkipEmptyParts );
+            if (nameSplitted.isEmpty())
+            {
+                throw std::runtime_error("Invalid currency property value taken");
+            }
+
+            QString currencyName = nameSplitted.back();
+            m_currency = fromString( currencyName );
         }
     }
 
@@ -57,11 +80,53 @@ public:
         return m_value;
     }
 
+    SandboxCurrency::eSandboxCurrency getCurrency( ) const
+    {
+        return m_currency;
+    }
+    
+    SandboxCurrency::eSandboxCurrency getType( ) const
+    {
+        return m_currency;
+    }
+    
+    QString getName( ) const
+    {
+        return toString(m_currency);
+    }
+
 
 protected:
 
+    static QString toString( SandboxCurrency::eSandboxCurrency c )
+    {
+        SandboxCurrency sbc;
+        sbc.setValue(c);
+        if (!sbc.isSet() || !sbc.isValid() || sbc.asJson().isEmpty())
+        {
+            throw std::runtime_error("Unknown CURRENCY value");
+        }
+
+        return sbc.asJson();
+    }
+
+    static SandboxCurrency::eSandboxCurrency fromString( const QString c )
+    {
+        SandboxCurrency sbc;
+        sbc.fromJson(c);
+        if (!sbc.isSet() || !sbc.isValid())
+        {
+            throw std::runtime_error("Unknown CURRENCY value");
+        }
+
+        return sbc.getValue();
+    }
+
+
     bool     m_isValid;
     double   m_value;
+    SandboxCurrency::eSandboxCurrency m_currency;
+
 
 }; // class CurrencyConfig
 
@@ -87,15 +152,15 @@ protected:
 
     void load( const QSettings &settings )
     {
-        RUB.fromQVariant(settings.value("sandbox.currency.RUB"));
-        USD.fromQVariant(settings.value("sandbox.currency.USD"));
-        EUR.fromQVariant(settings.value("sandbox.currency.EUR"));
-        GBP.fromQVariant(settings.value("sandbox.currency.GBP"));
-        HKD.fromQVariant(settings.value("sandbox.currency.HKD"));
-        CHF.fromQVariant(settings.value("sandbox.currency.CHF"));
-        JPY.fromQVariant(settings.value("sandbox.currency.JPY"));
-        CNY.fromQVariant(settings.value("sandbox.currency.CNY"));
-        TRY.fromQVariant(settings.value("sandbox.currency.TRY"));
+        RUB.fromSettings(settings, "sandbox.currency.RUB");
+        USD.fromSettings(settings, "sandbox.currency.USD");
+        EUR.fromSettings(settings, "sandbox.currency.EUR");
+        GBP.fromSettings(settings, "sandbox.currency.GBP");
+        HKD.fromSettings(settings, "sandbox.currency.HKD");
+        CHF.fromSettings(settings, "sandbox.currency.CHF");
+        JPY.fromSettings(settings, "sandbox.currency.JPY");
+        CNY.fromSettings(settings, "sandbox.currency.CNY");
+        TRY.fromSettings(settings, "sandbox.currency.TRY");
     }
 
 
@@ -103,39 +168,33 @@ public:
 
     CurrenciesConfig() {}
 
-    CurrencyConfig getCurrenciesConfig( const QString &currency ) const
+    CurrencyConfig getCurrencyConfig( const SandboxCurrency::eSandboxCurrency &currency ) const
     {
-             if (currency=="RUB") return RUB;
-        else if (currency=="USD") return USD;
-        else if (currency=="EUR") return EUR;
-        else if (currency=="GBP") return GBP;
-        else if (currency=="HKD") return HKD;
-        else if (currency=="CHF") return CHF;
-        else if (currency=="JPY") return JPY;
-        else if (currency=="CNY") return CNY;
-        else if (currency=="TRY") return TRY;
-        else 
+        switch (currency)
         {
-            throw std::runtime_error("Unknown CURRENCY value");
+            case SandboxCurrency::eSandboxCurrency::RUB: return RUB;
+            case SandboxCurrency::eSandboxCurrency::USD: return USD;
+            case SandboxCurrency::eSandboxCurrency::EUR: return EUR;
+            case SandboxCurrency::eSandboxCurrency::GBP: return GBP;
+            case SandboxCurrency::eSandboxCurrency::HKD: return HKD;
+            case SandboxCurrency::eSandboxCurrency::CHF: return CHF;
+            case SandboxCurrency::eSandboxCurrency::JPY: return JPY;
+            case SandboxCurrency::eSandboxCurrency::CNY: return CNY;
+            case SandboxCurrency::eSandboxCurrency::TRY: return TRY;
+            default:
+                break;
         }
+
+        throw std::runtime_error("Unknown CURRENCY value");
+
+        return RUB;
     }
 
-    CurrencyConfig getCurrenciesConfig( const SandboxCurrency::eSandboxCurrency &currency ) const
+    CurrencyConfig getCurrencyConfig( const QString &currencyName ) const
     {
-             if (currency==SandboxCurrency::eSandboxCurrency::RUB) return RUB;
-        else if (currency==SandboxCurrency::eSandboxCurrency::USD) return USD;
-        else if (currency==SandboxCurrency::eSandboxCurrency::EUR) return EUR;
-        else if (currency==SandboxCurrency::eSandboxCurrency::GBP) return GBP;
-        else if (currency==SandboxCurrency::eSandboxCurrency::HKD) return HKD;
-        else if (currency==SandboxCurrency::eSandboxCurrency::CHF) return CHF;
-        else if (currency==SandboxCurrency::eSandboxCurrency::JPY) return JPY;
-        else if (currency==SandboxCurrency::eSandboxCurrency::CNY) return CNY;
-        else if (currency==SandboxCurrency::eSandboxCurrency::TRY) return TRY;
-        else 
-        {
-            throw std::runtime_error("Unknown CURRENCY value");
-        }
+        return getCurrencyConfig( CurrencyConfig::fromString( currencyName ) );
     }
+
 
     QVector<CurrencyConfig> getCurrenciesConfigs( const QVector<SandboxCurrency::eSandboxCurrency> &v ) const
     {
@@ -146,13 +205,15 @@ public:
 
         for(; b!=e; ++b)
         {
-            res.push_back( getCurrenciesConfig(*b) );
+            CurrencyConfig cfg = getCurrencyConfig(*b);
+            if (cfg.isValid())
+                res.push_back( cfg );
         }
 
         return res;
     }
 
-    QVector<CurrencyConfig> getCurrenciesConfigs( const QVector<QString> &v ) const
+    QVector<CurrencyConfig> getCurrencyConfigs( const QVector<QString> &v ) const
     {
         QVector<CurrencyConfig> res;
 
@@ -161,21 +222,22 @@ public:
 
         for(; b!=e; ++b)
         {
-            res.push_back( getCurrenciesConfig(*b) );
+            CurrencyConfig cfg = getCurrencyConfig(*b);
+            if (cfg.isValid())
+                res.push_back( cfg );
         }
 
         return res;
     }
 
-    QVector<CurrencyConfig> getCurrenciesConfigs( const QStringList &v ) const
+    QVector<CurrencyConfig> getCurrencyConfigs( const QStringList &v ) const
     {
-        return getCurrenciesConfigs(toVector(v));
+        return getCurrencyConfigs(v.toVector());
     }
 
-    QVector<CurrencyConfig> getCurrenciesConfigs( QString v ) const
+    QVector<CurrencyConfig> getCurrencyConfigs( QString v ) const
     {
-        v.replace(':', ";"); // replace *nix style list separator to windows style separator
-        return getCurrenciesConfigs( v.split( ';', Qt::SkipEmptyParts ) );
+        return getCurrencyConfigs( listStringSplit(v) );
     }
 
 // Constructors

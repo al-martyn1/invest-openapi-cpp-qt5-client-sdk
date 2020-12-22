@@ -21,12 +21,17 @@
 #include "openapi_completable_future.h"
 #include "api_config.h"
 #include "auth_config.h"
+#include "currencies_config.h"
 #include "factory.h"
+#include "utility.h"
 
+//----------------------------------------------------------------------------
 
 #if defined(_MSC_VER)
     #pragma comment(lib, "tkf_invest_oa")
 #endif
+
+//----------------------------------------------------------------------------
 
 // Invest OpenAPI interface method
 // #define IOAIM
@@ -42,74 +47,108 @@
 #define TKF_IOA_ABSTRACT_METHOD( ret, nameWithParams )     virtual TKF_IOA_SHARED_COMPLETABLE_FUTURE( ret ) nameWithParams TKF_IOA_ABSTRACT_METHOD_END
 #define TKF_IOA_METHOD_IMPL( ret, nameWithParams )         virtual TKF_IOA_SHARED_COMPLETABLE_FUTURE( ret ) nameWithParams TKF_IOA_METHOD_IMPL_END
 
+//----------------------------------------------------------------------------
 
+
+
+//----------------------------------------------------------------------------
 namespace invest_openapi
 {
 
 
 
+//----------------------------------------------------------------------------
 inline
 void pollMessageQueue()
 {
     QTest::qWait(0);
 }
 
+//----------------------------------------------------------------------------
 
 
+
+
+//----------------------------------------------------------------------------
 class OpenApiFactory;
 
 
+
+
+//----------------------------------------------------------------------------
 struct IOpenApi
 {
     virtual void    setBrokerAccountId( const QString &id ) = 0;
     virtual QString getBrokerAccountId()                    = 0;
 
+    // MarketApi
+
+    TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketBonds() );
+    TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketCurrencies() );
+    TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketEtfs() );
+    TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketStocks() );
+    TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketInstruments( InstrumentType::eInstrumentType instrumentType ) );
+    TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketInstruments( const QString &instrumentType ) );
+    TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketInstruments( ) ); // All instruments
+
+/*
+    void marketBondsGetSignal(MarketInstrumentListResponse summary);
+    void marketCurrenciesGetSignal(MarketInstrumentListResponse summary);
+    void marketEtfsGetSignal(MarketInstrumentListResponse summary);
+    void marketSearchByTickerGetSignal(MarketInstrumentListResponse summary);
+    void marketStocksGetSignal(MarketInstrumentListResponse summary);
+
+    void marketCandlesGetSignal(CandlesResponse summary);
+    void marketSearchByFigiGetSignal(SearchMarketInstrumentResponse summary);
+    void marketOrderbookGetSignal(OrderbookResponse summary);
+
+*/
+
     virtual ~IOpenApi() {};
 }; // struct IOpenApi
 
+//----------------------------------------------------------------------------
 
 
+
+
+//----------------------------------------------------------------------------
 struct ISanboxOpenApi : public IOpenApi
 {
     TKF_IOA_ABSTRACT_METHOD( SandboxRegisterResponse, sandboxRegister(BrokerAccountType v) );
     TKF_IOA_ABSTRACT_METHOD( SandboxRegisterResponse, sandboxRegister(BrokerAccountType::eBrokerAccountType v) );
-    //TKF_IOA_ABSTRACT_METHOD( Empty, sandboxClear(QString broker_account_id = QString() ) );
-    //TKF_IOA_ABSTRACT_METHOD( Empty, sandboxClear(double balance, QString broker_account_id = QString() ) );
-    //SandboxSetPositionBalanceRequest
+
+    TKF_IOA_ABSTRACT_METHOD( Empty, sandboxClear(QString broker_account_id = QString() ) );
 
     TKF_IOA_ABSTRACT_METHOD( Empty, sandboxCurrenciesBalanceSet(const SandboxCurrency::eSandboxCurrency currency, double balance, QString broker_account_id = QString() ) );
+    TKF_IOA_ABSTRACT_METHOD( Empty, sandboxCurrenciesBalanceSet(const QVector<CurrencyConfig> currencies, QString broker_account_id = QString() ) );
+
+    TKF_IOA_ABSTRACT_METHOD( Empty, sandboxPositionsBalanceSet(const SandboxSetPositionBalanceRequest          &positionBalance , QString broker_account_id = QString() ) );
+    TKF_IOA_ABSTRACT_METHOD( Empty, sandboxPositionsBalanceSet(const QVector<SandboxSetPositionBalanceRequest> &positionBalances, QString broker_account_id = QString() ) );
     
+    TKF_IOA_ABSTRACT_METHOD( Empty, sandboxRemove(QString broker_account_id = QString()) );
 
 /*
-    TKF_IOA_ABSTRACT_METHOD( Empty, sandboxCurrenciesBalance() );
     TKF_IOA_ABSTRACT_METHOD( Empty, () );
-    TKF_IOA_ABSTRACT_METHOD( Empty, () );
-    TKF_IOA_ABSTRACT_METHOD( Empty, () );
-    TKF_IOA_ABSTRACT_METHOD( Empty, () );
-
-    void sandboxCurrenciesBalancePost(const SandboxSetCurrencyBalanceRequest &sandbox_set_currency_balance_request, const QString &broker_account_id);
-    void sandboxPositionsBalancePost(const SandboxSetPositionBalanceRequest &sandbox_set_position_balance_request, const QString &broker_account_id);
-    void sandboxRegisterPost(const SandboxRegisterRequest &sandbox_register_request);
-    void sandboxRemovePost(const QString &broker_account_id);
-
-    void sandboxCurrenciesBalancePostSignal(Empty summary);
-    void sandboxPositionsBalancePostSignal(Empty summary);
-    void sandboxRegisterPostSignal(SandboxRegisterResponse summary);
-    void sandboxRemovePostSignal(Empty summary);
 */
-
-    
 }; // struct ISanboxOpenApi
 
+//----------------------------------------------------------------------------
 
 
+
+
+//----------------------------------------------------------------------------
 class OpenApiImpl : public IOpenApi
 {
 
     friend class OpenApiFactory;
 
+    //------------------------------
+
 public:
 
+    //------------------------------
     OpenApiImpl( const ApiConfig  &apiConfig
                , const AuthConfig &authConfig
                )
@@ -119,19 +158,114 @@ public:
         initApis(OpenApiFactory(m_apiConfig, m_authConfig));
     }
 
+    //------------------------------
     virtual void    setBrokerAccountId( const QString &id ) override
     {
         m_brokerAccountId = id;
     }
 
+    //------------------------------
     virtual QString getBrokerAccountId()                    override
     {
         return m_brokerAccountId;
     }
 
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketBonds() )
+    {
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketInstrumentListResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pMarketApi.get(), marketBonds, Get );
+        m_pMarketApi->marketBondsGet();
+
+        return response;
+    }
+
+    TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketCurrencies() )
+    {
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketInstrumentListResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pMarketApi.get(), marketCurrencies, Get );
+        m_pMarketApi->marketCurrenciesGet();
+
+        return response;
+    }
+
+    TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketEtfs() )
+    {
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketInstrumentListResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pMarketApi.get(), marketEtfs, Get );
+        m_pMarketApi->marketEtfsGet();
+
+        return response;
+    }
+
+    TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketStocks() )
+    {
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketInstrumentListResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pMarketApi.get(), marketStocks, Get );
+        m_pMarketApi->marketStocksGet();
+
+        return response;
+    }
+
+    TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketInstruments( InstrumentType::eInstrumentType instrumentType ) )
+    {
+        switch(instrumentType)
+        {
+            case InstrumentType::eInstrumentType::STOCK   : return marketStocks();
+            case InstrumentType::eInstrumentType::CURRENCY: return marketCurrencies();
+            case InstrumentType::eInstrumentType::BOND    : return marketBonds();
+            case InstrumentType::eInstrumentType::ETF     : return marketEtfs();
+        }
+
+        throw std::runtime_error("marketInstruments: Invalid instrument type");
+        return marketStocks();
+    }
+
+    TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketInstruments( const QString &instrumentType ) )
+    {
+        InstrumentType converter;
+        converter.fromJson(instrumentType);
+        if (!converter.isValid())
+            throw std::runtime_error("marketInstruments: Invalid instrument type");
+        return marketInstruments( converter.getValue() );
+    }
+
+    TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketInstruments( ) ) // All instruments
+    {
+        auto resStocks     = marketStocks();
+        auto resCurrencies = marketCurrencies();
+        auto resBonds      = marketBonds();
+        auto resEtfs       = marketEtfs();
+
+        resStocks     ->join();
+        resCurrencies ->join();
+        resBonds      ->join();
+        resEtfs       ->join();
+
+        if (resStocks     ->isCompletionError()) return resStocks     ;
+        if (resCurrencies ->isCompletionError()) return resCurrencies ;
+        if (resBonds      ->isCompletionError()) return resBonds      ;
+        if (resEtfs       ->isCompletionError()) return resEtfs       ;
+
+        mergeResponse(resStocks->value, resCurrencies->value);
+        mergeResponse(resStocks->value, resBonds     ->value);
+        mergeResponse(resStocks->value, resEtfs      ->value);
+
+        return resStocks;
+    }
+
 
 protected:
 
+    void mergeResponse( MarketInstrumentListResponse &mergeTo, const MarketInstrumentListResponse &mergeFrom )
+    {
+        QList<MarketInstrument> listTo = mergeTo.getPayload().getInstruments();
+        listTo.append(mergeFrom.getPayload().getInstruments());
+        MarketInstrumentList tmp; tmp.setInstruments(listTo);
+        mergeTo.setPayload(tmp);
+    }
+
+    //------------------------------
     void initApis( const OpenApiFactory &factory )
     {
         m_pOrdersApi     = factory.getApiImpl< OrdersApi     >();
@@ -142,6 +276,7 @@ protected:
     }
 
 
+    //------------------------------
     ApiConfig  m_apiConfig;
     AuthConfig m_authConfig;
 
@@ -156,9 +291,12 @@ protected:
 
 }; // class OpenApiImpl
 
+//----------------------------------------------------------------------------
 
 
 
+
+//----------------------------------------------------------------------------
 class SanboxOpenApiImpl : public OpenApiImpl
                         , public ISanboxOpenApi
 {
@@ -170,13 +308,16 @@ class SanboxOpenApiImpl : public OpenApiImpl
         if (id.isEmpty())
         {
             if (m_brokerAccountId.isEmpty())
-                throw std::runtime_error("Broker accoubt ID not set");
+                throw std::runtime_error("Broker account ID not set");
             id = m_brokerAccountId;
         }
     }
 
+    //------------------------------
+
 public:
     
+    //------------------------------
     SanboxOpenApiImpl( const ApiConfig  &apiConfig
                      , const AuthConfig &authConfig
                      )
@@ -186,18 +327,31 @@ public:
         m_pSandboxApi = factory.getApiImpl< SandboxApi >();
     }
 
+    //------------------------------
     virtual void    setBrokerAccountId( const QString &id ) override
     {
         OpenApiImpl::setBrokerAccountId(id);
     }
 
+    //------------------------------
     virtual QString getBrokerAccountId()                    override
     {
         return OpenApiImpl::getBrokerAccountId();
     }
 
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( Empty, sandboxClear(QString broker_account_id = QString() ) )
+    {
+        checkBrokerAccountIdParam(broker_account_id);
 
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( Empty, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pSandboxApi.get(), sandboxClear, Post );
+        m_pSandboxApi->sandboxClearPost(broker_account_id);
 
+        return response;
+    }
+
+    //------------------------------
     TKF_IOA_METHOD_IMPL( SandboxRegisterResponse, sandboxRegister(BrokerAccountType v) )
     {
         SandboxRegisterRequest sandboxRegisterRequest;
@@ -210,25 +364,15 @@ public:
         return sandboxRegisterResponse;
     }
 
+    //------------------------------
     TKF_IOA_METHOD_IMPL( SandboxRegisterResponse, sandboxRegister(BrokerAccountType::eBrokerAccountType v) )
     {
         BrokerAccountType brokerAccountType;
         brokerAccountType.setValue( v );
         return sandboxRegister(brokerAccountType);
     }
-/*
-    TKF_IOA_METHOD_IMPL( Empty, sandboxClear(QString broker_account_id = QString() ) )
-    {
-        checkBrokerAccountIdParam(broker_account_id);
 
-
-    
-    }
-
-    TKF_IOA_ABSTRACT_METHOD( Empty, sandboxClear(double balance, QString broker_account_id = QString() ) );
-*/
-
-    //TKF_IOA_METHOD_IMPL( Empty, sandboxClear(const QString &figi, double balance, QString broker_account_id = QString() ) )
+    //------------------------------
     TKF_IOA_METHOD_IMPL( Empty, sandboxCurrenciesBalanceSet(const SandboxCurrency::eSandboxCurrency currency, double balance, QString broker_account_id = QString() ) )
     {
         checkBrokerAccountIdParam(broker_account_id);
@@ -248,31 +392,85 @@ public:
         return response;
     }
 
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( Empty, sandboxCurrenciesBalanceSet(const QVector<CurrencyConfig> currencies, QString broker_account_id = QString() ) )
+    {
+        if (currencies.isEmpty())
+        {
+            throw std::runtime_error("sandboxCurrenciesBalanceSet: at least one currency must be taken");
+        }
 
-/*
-    SandboxCurrency getCurrency() const;
-    void setCurrency(const SandboxCurrency &currency);
-    bool is_currency_Set() const;
-    bool is_currency_Valid() const;
+        QVector< QSharedPointer< OpenApiCompletableFuture< Empty > > > results;
+        for( const auto &currency : currencies)
+        {
+            results.push_back( sandboxCurrenciesBalanceSet( currency.getType(), currency.getValue(), broker_account_id ) );
+            pollMessageQueue();
+        }
 
-    double getBalance() const;
-    void setBalance(const double &balance);
+        joinOpenApiCompletableFutures( results );
 
+        for( const auto &res : results)
+        {
+            if (res->isCompletionError()) // return first bad, if exist
+                return res;
+        }
 
+        return results.front(); // return first
+    }
 
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( Empty, sandboxPositionsBalanceSet(const SandboxSetPositionBalanceRequest          &positionBalance , QString broker_account_id = QString() ) )
+    {
+        checkBrokerAccountIdParam(broker_account_id);
 
-    void sandboxClearPost(const QString &broker_account_id);
-    void sandboxCurrenciesBalancePost(const SandboxSetCurrencyBalanceRequest &sandbox_set_currency_balance_request, const QString &broker_account_id);
-    void sandboxPositionsBalancePost(const SandboxSetPositionBalanceRequest &sandbox_set_position_balance_request, const QString &broker_account_id);
-    void sandboxRegisterPost(const SandboxRegisterRequest &sandbox_register_request);
-    void sandboxRemovePost(const QString &broker_account_id);
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( Empty, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pSandboxApi.get(), sandboxPositionsBalance, Post );
+        m_pSandboxApi->sandboxPositionsBalancePost(positionBalance, broker_account_id);
 
-    void sandboxClearPostSignal(Empty summary);
-    void sandboxCurrenciesBalancePostSignal(Empty summary);
-    void sandboxPositionsBalancePostSignal(Empty summary);
-    void sandboxRegisterPostSignal(SandboxRegisterResponse summary);
-    void sandboxRemovePostSignal(Empty summary);
-*/
+        return response;
+    }
+
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( Empty, sandboxPositionsBalanceSet(const QVector<SandboxSetPositionBalanceRequest> &positionBalances, QString broker_account_id = QString() ) )
+    {
+        if (positionBalances.isEmpty())
+        {
+            throw std::runtime_error("sandboxPositionsBalanceSet: at least one position must be taken");
+        }
+
+        QVector< QSharedPointer< OpenApiCompletableFuture< Empty > > > results;
+        for( const auto &positionBalance : positionBalances)
+        {
+            results.push_back( sandboxPositionsBalanceSet( positionBalance, broker_account_id ) );
+            pollMessageQueue();
+        }
+
+        joinOpenApiCompletableFutures( results );
+
+        for( const auto &res : results)
+        {
+            if (res->isCompletionError()) // return first bad, if exist
+                return res;
+        }
+
+        return results.front(); // return first
+    }
+
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( Empty, sandboxRemove(QString broker_account_id = QString()) )
+    {
+        checkBrokerAccountIdParam(broker_account_id);
+
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( Empty, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pSandboxApi.get(), sandboxRemove, Post );
+        m_pSandboxApi->sandboxRemovePost(broker_account_id);
+
+        return response;
+    
+    }
+
+    //------------------------------
+
 
 protected:
 
@@ -281,7 +479,13 @@ protected:
 
 }; // class SanboxOpenApiImpl
 
+//----------------------------------------------------------------------------
 
+
+
+
+
+//----------------------------------------------------------------------------
 inline
 QSharedPointer<IOpenApi>
 createOpenApi( const ApiConfig  &apiConfig
@@ -298,6 +502,7 @@ createOpenApi( const ApiConfig  &apiConfig
     return QSharedPointer<IOpenApi>( pApi );
 }
 
+//----------------------------------------------------------------------------
 
 
 
