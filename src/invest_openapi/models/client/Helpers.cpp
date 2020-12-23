@@ -14,6 +14,9 @@
 #include <QJsonParseError>
 #include "Helpers.h"
 
+
+QString openapiHelpersFixGetUtcOffsetNumericStr( const QDateTime &dt );
+
 namespace OpenAPI {
 
 class SerializerSettings {
@@ -58,7 +61,9 @@ QString toStringValue(const QString &value) {
 
 QString toStringValue(const QDateTime &value) {
     // ISO 8601
-    return SerializerSettings::getInstance()->getDateTimeFormat().isEmpty()? value.toString(Qt::ISODate):value.toString(SerializerSettings::getInstance()->getDateTimeFormat());
+    return SerializerSettings::getInstance()->getDateTimeFormat().isEmpty()? value.toString(Qt::ISODate):value.toString(SerializerSettings::getInstance()->getDateTimeFormat())
+    + openapiHelpersFixGetUtcOffsetNumericStr(value)
+    ;
 }
 
 QString toStringValue(const QByteArray &value) {
@@ -107,7 +112,9 @@ QJsonValue toJsonValue(const QString &value) {
 }
 
 QJsonValue toJsonValue(const QDateTime &value) {
-    return QJsonValue(value.toString(SerializerSettings::getInstance()->getDateTimeFormat().isEmpty()?value.toString(Qt::ISODate):value.toString(SerializerSettings::getInstance()->getDateTimeFormat())));
+    return QJsonValue( value.toString(SerializerSettings::getInstance()->getDateTimeFormat().isEmpty()?value.toString(Qt::ISODate):value.toString(SerializerSettings::getInstance()->getDateTimeFormat()))
+                     + openapiHelpersFixGetUtcOffsetNumericStr(value)
+                     );
 }
 
 QJsonValue toJsonValue(const QByteArray &value) {

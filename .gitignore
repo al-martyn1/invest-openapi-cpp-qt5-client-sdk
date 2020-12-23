@@ -47,3 +47,9 @@
 /github.txt
 /sandbox.properties.template
 /sandbox.properties
+/.deploy
+/_out
+/_tmp
+/_deploy
+/_out
+/_tmp

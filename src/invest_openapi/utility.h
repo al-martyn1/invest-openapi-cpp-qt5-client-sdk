@@ -6,6 +6,7 @@
 
 #include <exception>
 #include <stdexcept>
+#include <map>
 
 #include <QString>
 #include <QStringList>
@@ -192,6 +193,45 @@ InstrumentType toInstrumentType<QString>(const QString &v)
 
 
 
+//----------------------------------------------------------------------------
+template< typename InstrumentSourceType >
+inline
+CandleResolution toCandleResolution(const InstrumentSourceType &v)
+{
+    throw std::runtime_error("invest_openapi::toCandleResolution(const InstrumentSourceType) not implemented for this type");
+}
+
+//----------------------------------------------------------------------------
+template< >
+inline
+CandleResolution toCandleResolution<CandleResolution>(const CandleResolution &v)
+{
+    return v;
+}
+
+//----------------------------------------------------------------------------
+template< >
+inline
+CandleResolution toCandleResolution<CandleResolution::eCandleResolution>(const CandleResolution::eCandleResolution &v)
+{
+    CandleResolution res;
+    res.setValue(v);
+    return res;
+}
+
+//----------------------------------------------------------------------------
+template< >
+inline
+CandleResolution toCandleResolution<QString>(const QString &v)
+{
+    CandleResolution res;
+    res.fromJson(v);
+    return res;
+}
+
+
+
+//----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------
 template<typename MonetaryType>
@@ -335,12 +375,144 @@ QList<MarketInstrument> toMarketInstrumentList( const QList< Instrument<Monetary
     return res;
 }
 
+//----------------------------------------------------------------------------
+template<typename MonetaryType>
+inline
+std::map<QString,QString> makeTickerFigiMap( const QList< Instrument<MonetaryType> > &list )
+{
+    std::map<QString,QString> resMap;
 
+    for(const auto &instrument : list)
+    {
+        auto key = instrument.ticker.toUpper();
+        if (key.isEmpty())
+            continue;
+        resMap[key] = instrument.figi;
+    }
+
+    return resMap;
+}
+
+//----------------------------------------------------------------------------
+template<typename MonetaryType>
+inline
+std::map<QString,QString> makeTickerIsinMap( const QList< Instrument<MonetaryType> > &list )
+{
+    std::map<QString,QString> resMap;
+
+    for(const auto &instrument : list)
+    {
+        auto key = instrument.ticker.toUpper();
+        if (key.isEmpty())
+            continue;
+        resMap[key] = instrument.isin;
+    }
+
+    return resMap;
+}
+
+//----------------------------------------------------------------------------
+template<typename MonetaryType>
+inline
+std::map<QString,QString> makeFigiTickerMap( const QList< Instrument<MonetaryType> > &list )
+{
+    std::map<QString,QString> resMap;
+
+    for(const auto &instrument : list)
+    {
+        auto key = instrument.figi.toUpper();
+        if (key.isEmpty())
+            continue;
+        resMap[key] = instrument.ticker;
+    }
+
+    return resMap;
+}
+
+//----------------------------------------------------------------------------
+template<typename MonetaryType>
+inline
+std::map<QString,QString> makeFigiIsinMap( const QList< Instrument<MonetaryType> > &list )
+{
+    std::map<QString,QString> resMap;
+
+    for(const auto &instrument : list)
+    {
+        auto key = instrument.figi.toUpper();
+        if (key.isEmpty())
+            continue;
+        resMap[key] = instrument.isin;
+    }
+
+    return resMap;
+}
+
+//----------------------------------------------------------------------------
+template<typename MonetaryType>
+inline
+std::map<QString,QString> makeIsinTickerMap( const QList< Instrument<MonetaryType> > &list )
+{
+    std::map<QString,QString> resMap;
+
+    for(const auto &instrument : list)
+    {
+        auto key = instrument.isin.toUpper();
+        if (key.isEmpty())
+            continue;
+        resMap[key] = instrument.ticker;
+    }
+
+    return resMap;
+}
+
+//----------------------------------------------------------------------------
+template<typename MonetaryType>
+inline
+std::map<QString,QString> makeIsinFigiMap( const QList< Instrument<MonetaryType> > &list )
+{
+    std::map<QString,QString> resMap;
+
+    for(const auto &instrument : list)
+    {
+        auto key = instrument.isin.toUpper();
+        if (key.isEmpty())
+            continue;
+        resMap[key] = instrument.figi;
+    }
+
+    return resMap;
+}
 
 
 //----------------------------------------------------------------------------
 
 } // namespace invest_openapi
+
+
+inline
+QString openapiHelpersFixGetUtcOffsetNumericStr( const QDateTime &dt )
+{
+    int utcOffset = dt.offsetFromUtc();
+
+    QString utcStr;
+    if (utcOffset<0)
+    {
+        utcStr.append("-");
+        utcOffset = -utcOffset;
+    }
+    else
+    {
+        utcStr.append("+");
+    }
+
+    utcOffset /= 60;
+    int hours   = utcOffset/60;
+    int minutes = utcOffset%60;
+
+    return utcStr + QString::asprintf("%02d:%02d", hours, minutes );
+}
+
+
 
 
 #include "instrument.h"

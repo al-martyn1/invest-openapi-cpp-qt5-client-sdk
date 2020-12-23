@@ -63,6 +63,22 @@ INVEST_OPENAPI_MAIN()
     using tkf::config_helpers::lookupForConfigFile;
     using tkf::config_helpers::FileReadable;
 
+    //QString prevDateTimeFormat = tkf::SerializerSettings::getDateTimeFormat();
+    //tkf::SerializerSettings::getDateTimeFormat("");
+    //bool setDateTimeFormat(const QString&);
+    // 2019-08-19T18:38:33.131642+03:00
+    tkf::setDateTimeFormat("yyyy-MM-ddThh:mm:ss.zzzzzz");
+    //QTimeZone tzCurrent = QTimeZone::systemTimeZone()
+    QDateTime tmpDateTime = QDateTime::currentDateTime();
+    int utcOffset = tmpDateTime. /* timeZone(). */ offsetFromUtc();
+    QString strDateTime = tmpDateTime.toString("yyyy-MM-ddThh:mm:ss.zzzzzz");
+
+    QString utcOffsetStr = openapiHelpersFixGetUtcOffsetNumericStr(tmpDateTime);
+
+
+
+
+
 
     QSharedPointer<tkf::IOpenApi> pOpenApi = tkf::createOpenApi( lookupForConfigFile( "config.properties", "conf;config", FileReadable() )
                                                                , lookupForConfigFile( "auth.properties"  , "conf;config", FileReadable() )
@@ -72,7 +88,9 @@ INVEST_OPENAPI_MAIN()
     marketInstruments->join();
     auto marketInstrumentList = marketInstruments->value.getPayload().getInstruments();
     auto instrumentList = tkf::toInstrumentList<double>(marketInstrumentList);
-    
+
+    auto isinFigiMap   = tkf::makeIsinFigiMap(instrumentList);
+    auto tickerFigiMap = tkf::makeTickerFigiMap(instrumentList);
 
     
     tkf::ISanboxOpenApi* pSandboxOpenApi = dynamic_cast<tkf::ISanboxOpenApi*>(pOpenApi.get());
@@ -107,26 +125,19 @@ INVEST_OPENAPI_MAIN()
         auto resPtr = res.get();
         //tkf::dumpIfError( setCurrenciesListResult );
         tkf::checkAbort(res);
-    }
 
-    // auto instruments = pOpenApi->marketInstruments();
-    // instruments->join();
-    // auto instrumentList = instruments->value.getPayload().getInstruments();
-
-
-    if (pSandboxOpenApi)
-    {
-        QSettings sandboxSettings( lookupForConfigFile( "sandbox.properties", "conf;config", FileReadable() ), QSettings::IniFormat);
 
         auto sandboxPositionsBalance = tkf::readSandboxPositionsConfig( sandboxSettings, true  /* readStrict */ );
         if (!sandboxPositionsBalance.empty())
         {
-            //res = pSandboxOpenApi->sandboxPositionsBalanceSet(sandboxPositionsBalance);
-            //res->join();
-            //tkf::checkAbort(res);
+            sandboxPositionsBalance = tkf::positionsConfigToFigi( sandboxPositionsBalance, isinFigiMap, tickerFigiMap );
+            res = pSandboxOpenApi->sandboxPositionsBalanceSet(sandboxPositionsBalance);
+            res->join();
+            tkf::checkAbort(res);
         }
 
-        auto res = pSandboxOpenApi->sandboxClear();
+        //auto 
+        res = pSandboxOpenApi->sandboxClear();
         res->join();
         tkf::checkAbort(res);
 
@@ -135,7 +146,24 @@ INVEST_OPENAPI_MAIN()
         tkf::checkAbort(res);
     }
 
+    QDateTime nowDateTime = QDateTime::currentDateTime();
+    QDateTime hourAgoDateTime = nowDateTime.addSecs(-3600);
 
+    // nowDateTime.setTimeSpec(Qt::OffsetFromUTC);
+    // hourAgoDateTime.setTimeSpec(Qt::OffsetFromUTC);
+    // nowDateTime.setTimeSpec(Qt::TimeZone);
+    // hourAgoDateTime.setTimeSpec(Qt::TimeZone);
+    // nowDateTime.setTimeSpec(Qt::LocalTime);
+    // hourAgoDateTime.setTimeSpec(Qt::LocalTime);
+    //nowDateTime.setTimeSpec(Qt::UTC);
+    //hourAgoDateTime.setTimeSpec(Qt::UTC);
+    
+    
+
+    auto candlesResponse = pOpenApi->candles( tickerFigiMap["ROSN"], hourAgoDateTime, nowDateTime, "1min");
+    candlesResponse->join();
+    tkf::checkAbort(candlesResponse);
+    auto candles = candlesResponse->value.getPayload();
 
     
 

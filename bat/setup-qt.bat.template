@@ -1,0 +1,2 @@
+set QTDIR_X86=D:\Qt\Qt5.14.0\5.14.0\msvc2017
+set QTDIR_X64=D:\Qt\Qt5.14.0\5.14.0\msvc2017_64

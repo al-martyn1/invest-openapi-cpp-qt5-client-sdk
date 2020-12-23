@@ -8,6 +8,8 @@
 #include <QDebug>
 #include <QtDebug>
 #include <QTest>
+#include <QTimeZone>
+
 //#include <QtConcurrent/QtConcurrent>
 
 #include <iostream>
@@ -87,16 +89,22 @@ struct IOpenApi
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketCurrencies() );
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketEtfs() );
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketStocks() );
+    TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketInstruments( const InstrumentType &instrumentType ) );
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketInstruments( InstrumentType::eInstrumentType instrumentType ) );
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketInstruments( const QString &instrumentType ) );
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketInstruments( ) ); // All instruments
 
+    TKF_IOA_ABSTRACT_METHOD( CandlesResponse, candles( const QString &figi, const QDateTime &from, const QDateTime &to, const CandleResolution &interval ) );
+    TKF_IOA_ABSTRACT_METHOD( CandlesResponse, candles( const QString &figi, const QDateTime &from, const QDateTime &to, CandleResolution::eCandleResolution interval ) );
+    TKF_IOA_ABSTRACT_METHOD( CandlesResponse, candles( const QString &figi, const QDateTime &from, const QDateTime &to, const QString &interval ) );
+
+    
+
 /*
-    void marketBondsGetSignal(MarketInstrumentListResponse summary);
-    void marketCurrenciesGetSignal(MarketInstrumentListResponse summary);
-    void marketEtfsGetSignal(MarketInstrumentListResponse summary);
-    void marketSearchByTickerGetSignal(MarketInstrumentListResponse summary);
-    void marketStocksGetSignal(MarketInstrumentListResponse summary);
+
+    void marketCandlesGet(const QString &figi, const QDateTime &from, const QDateTime &to, const CandleResolution &interval);
+    void marketOrderbookGet(const QString &figi, const qint32 &depth);
+
 
     void marketCandlesGetSignal(CandlesResponse summary);
     void marketSearchByFigiGetSignal(SearchMarketInstrumentResponse summary);
@@ -210,9 +218,9 @@ public:
         return response;
     }
 
-    TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketInstruments( InstrumentType::eInstrumentType instrumentType ) )
+    TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketInstruments( const InstrumentType &instrumentType ) )
     {
-        switch(instrumentType)
+        switch(instrumentType.getValue())
         {
             case InstrumentType::eInstrumentType::STOCK   : return marketStocks();
             case InstrumentType::eInstrumentType::CURRENCY: return marketCurrencies();
@@ -224,13 +232,14 @@ public:
         return marketStocks();
     }
 
+    TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketInstruments( InstrumentType::eInstrumentType instrumentType ) )
+    {
+        return marketInstruments( toInstrumentType(instrumentType) );
+    }
+
     TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketInstruments( const QString &instrumentType ) )
     {
-        InstrumentType converter;
-        converter.fromJson(instrumentType);
-        if (!converter.isValid())
-            throw std::runtime_error("marketInstruments: Invalid instrument type");
-        return marketInstruments( converter.getValue() );
+        return marketInstruments( toInstrumentType(instrumentType) );
     }
 
     TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketInstruments( ) ) // All instruments
@@ -255,6 +264,24 @@ public:
         mergeResponse(resStocks->value, resEtfs      ->value);
 
         return resStocks;
+    }
+
+    TKF_IOA_METHOD_IMPL( CandlesResponse, candles( const QString &figi, const QDateTime &from, const QDateTime &to, const CandleResolution &interval ) )
+    {
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( CandlesResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pMarketApi.get(), marketCandles, Get );
+        m_pMarketApi->marketCandlesGet(figi, from, to, interval);
+        return response;
+    }
+
+    TKF_IOA_METHOD_IMPL( CandlesResponse, candles( const QString &figi, const QDateTime &from, const QDateTime &to, CandleResolution::eCandleResolution interval ) )
+    {
+        return candles(figi, from, to, toCandleResolution(interval));
+    }
+
+    TKF_IOA_METHOD_IMPL( CandlesResponse, candles( const QString &figi, const QDateTime &from, const QDateTime &to, const QString &interval ) )
+    {
+        return candles(figi, from, to, toCandleResolution(interval));
     }
 
 
