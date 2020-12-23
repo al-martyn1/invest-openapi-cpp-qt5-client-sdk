@@ -44,6 +44,7 @@ void printQStringList( QString indent, QStringList strings )
 
 INVEST_OPENAPI_MAIN()
 {
+    //------------------------------
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("test008");
     QCoreApplication::setApplicationVersion("1.0");
@@ -55,31 +56,18 @@ INVEST_OPENAPI_MAIN()
     using std::endl;
 
 
+    //------------------------------
     cout<<"Launched from : "<<QDir::currentPath().toStdString()<<endl;
     cout<<"Launched exe  : "<<QCoreApplication::applicationFilePath().toStdString()<<endl;
     cout<<"Launched from : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
 
+    //------------------------------
     namespace tkf=invest_openapi;
     using tkf::config_helpers::lookupForConfigFile;
     using tkf::config_helpers::FileReadable;
 
-    //QString prevDateTimeFormat = tkf::SerializerSettings::getDateTimeFormat();
-    //tkf::SerializerSettings::getDateTimeFormat("");
-    //bool setDateTimeFormat(const QString&);
-    // 2019-08-19T18:38:33.131642+03:00
-    tkf::setDateTimeFormat("yyyy-MM-ddThh:mm:ss.zzzzzz");
-    //QTimeZone tzCurrent = QTimeZone::systemTimeZone()
-    QDateTime tmpDateTime = QDateTime::currentDateTime();
-    int utcOffset = tmpDateTime. /* timeZone(). */ offsetFromUtc();
-    QString strDateTime = tmpDateTime.toString("yyyy-MM-ddThh:mm:ss.zzzzzz");
 
-    QString utcOffsetStr = openapiHelpersFixGetUtcOffsetNumericStr(tmpDateTime);
-
-
-
-
-
-
+    //------------------------------
     QSharedPointer<tkf::IOpenApi> pOpenApi = tkf::createOpenApi( lookupForConfigFile( "config.properties", "conf;config", FileReadable() )
                                                                , lookupForConfigFile( "auth.properties"  , "conf;config", FileReadable() )
                                                                );
@@ -93,27 +81,26 @@ INVEST_OPENAPI_MAIN()
     auto tickerFigiMap = tkf::makeTickerFigiMap(instrumentList);
 
     
-    tkf::ISanboxOpenApi* pSandboxOpenApi = dynamic_cast<tkf::ISanboxOpenApi*>(pOpenApi.get());
+    //------------------------------
+    //tkf::ISanboxOpenApi* pSandboxOpenApi = dynamic_cast<tkf::ISanboxOpenApi*>(pOpenApi.get());
+    tkf::ISanboxOpenApi* pSandboxOpenApi = tkf::getSandboxApi(pOpenApi);
 
     if (pSandboxOpenApi)
     {
+        //------------------------------
         auto sandboxRegisterRes = pSandboxOpenApi->sandboxRegister(tkf::BrokerAccountType::eBrokerAccountType::TINKOFF); // TINKOFFIIS
         sandboxRegisterRes->join();
         tkf::checkAbort(sandboxRegisterRes);
-
-        //cout << "sandboxRegister -----------------" << endl << sandboxRegisterRes->value.asJson().toStdString() << endl;
-        //tkf::dumpIfError(sandboxRegisterRes);
 
         pSandboxOpenApi->setBrokerAccountId( sandboxRegisterRes->value.getPayload().getBrokerAccountId() );
 
         {
             auto res = pSandboxOpenApi->sandboxCurrenciesBalanceSet( tkf::SandboxCurrency::eSandboxCurrency::RUB, 1000.0 );
             res->join();
-            //cout << "sandboxCurrenciesBalanceSet -----------------" << endl << res->value.asJson().toStdString() << endl;
-            //tkf::dumpIfError(res);
             tkf::checkAbort(res);
         }
 
+        //------------------------------
         tkf::CurrenciesConfig currenciesConfig;
         QSettings sandboxSettings( lookupForConfigFile( "sandbox.properties", "conf;config", FileReadable() ), QSettings::IniFormat);
 
@@ -126,7 +113,7 @@ INVEST_OPENAPI_MAIN()
         //tkf::dumpIfError( setCurrenciesListResult );
         tkf::checkAbort(res);
 
-
+        //------------------------------
         auto sandboxPositionsBalance = tkf::readSandboxPositionsConfig( sandboxSettings, true  /* readStrict */ );
         if (!sandboxPositionsBalance.empty())
         {
@@ -136,7 +123,48 @@ INVEST_OPENAPI_MAIN()
             tkf::checkAbort(res);
         }
 
-        //auto 
+    }
+
+    //------------------------------
+    QDateTime nowDateTime     = QDateTime::currentDateTime();
+    QDateTime hourAgoDateTime = nowDateTime.addSecs(-3600);
+
+    auto candlesResponse = pOpenApi->marketCandles( tickerFigiMap["ROSN"], hourAgoDateTime, nowDateTime, "1min");
+    candlesResponse->join();
+    tkf::checkAbort(candlesResponse);
+    auto candles = candlesResponse->value.getPayload();
+
+    //------------------------------
+    auto orderbookResponse = pOpenApi->marketOrderbook( tickerFigiMap["ROSN"] );
+    orderbookResponse->join();
+    tkf::checkAbort(orderbookResponse);
+    //QList<Order> 
+    auto orderbook = orderbookResponse->value.getPayload();
+
+    //------------------------------
+    auto userAccountsResponse = pOpenApi->userAccounts();
+    userAccountsResponse->join();
+    tkf::checkAbort(userAccountsResponse);
+    auto userAccounts = userAccountsResponse->value.getPayload();
+    
+    //------------------------------
+    auto portfolioCurrenciesResponse = pOpenApi->portfolioCurrencies();
+    portfolioCurrenciesResponse->join();
+    tkf::checkAbort(portfolioCurrenciesResponse);
+    auto portfolioCurrencies = portfolioCurrenciesResponse->value.getPayload();
+    
+    //------------------------------
+    auto portfolioResponse = pOpenApi->portfolio();
+    portfolioResponse->join();
+    tkf::checkAbort(portfolioResponse);
+    auto portfolio = portfolioResponse->value.getPayload();
+
+    auto portfolio2 = tkf::joinAndGetPayload(pOpenApi->portfolio());
+    
+    //------------------------------
+    if (pSandboxOpenApi)
+    {
+        auto 
         res = pSandboxOpenApi->sandboxClear();
         res->join();
         tkf::checkAbort(res);
@@ -145,27 +173,6 @@ INVEST_OPENAPI_MAIN()
         res->join();
         tkf::checkAbort(res);
     }
-
-    QDateTime nowDateTime = QDateTime::currentDateTime();
-    QDateTime hourAgoDateTime = nowDateTime.addSecs(-3600);
-
-    // nowDateTime.setTimeSpec(Qt::OffsetFromUTC);
-    // hourAgoDateTime.setTimeSpec(Qt::OffsetFromUTC);
-    // nowDateTime.setTimeSpec(Qt::TimeZone);
-    // hourAgoDateTime.setTimeSpec(Qt::TimeZone);
-    // nowDateTime.setTimeSpec(Qt::LocalTime);
-    // hourAgoDateTime.setTimeSpec(Qt::LocalTime);
-    //nowDateTime.setTimeSpec(Qt::UTC);
-    //hourAgoDateTime.setTimeSpec(Qt::UTC);
-    
-    
-
-    auto candlesResponse = pOpenApi->candles( tickerFigiMap["ROSN"], hourAgoDateTime, nowDateTime, "1min");
-    candlesResponse->join();
-    tkf::checkAbort(candlesResponse);
-    auto candles = candlesResponse->value.getPayload();
-
-    
 
     
     return 0;

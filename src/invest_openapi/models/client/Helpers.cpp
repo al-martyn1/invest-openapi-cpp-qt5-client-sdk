@@ -15,7 +15,30 @@
 #include "Helpers.h"
 
 
-QString openapiHelpersFixGetUtcOffsetNumericStr( const QDateTime &dt );
+//QString openapiHelpersFixGetUtcOffsetNumericStr( const QDateTime &dt );
+inline
+QString openapiHelpersFixGetUtcOffsetNumericStr( const QDateTime &dt )
+{
+    int utcOffset = dt.offsetFromUtc();
+
+    QString utcStr;
+    if (utcOffset<0)
+    {
+        utcStr.append("-");
+        utcOffset = -utcOffset;
+    }
+    else
+    {
+        utcStr.append("+");
+    }
+
+    utcOffset /= 60;
+    int hours   = utcOffset/60;
+    int minutes = utcOffset%60;
+
+    return utcStr + QString::asprintf("%02d:%02d", hours, minutes );
+}
+
 
 namespace OpenAPI {
 
@@ -61,7 +84,9 @@ QString toStringValue(const QString &value) {
 
 QString toStringValue(const QDateTime &value) {
     // ISO 8601
-    return SerializerSettings::getInstance()->getDateTimeFormat().isEmpty()? value.toString(Qt::ISODate):value.toString(SerializerSettings::getInstance()->getDateTimeFormat())
+    //return SerializerSettings::getInstance()->getDateTimeFormat().isEmpty()? value.toString(Qt::ISODate):value.toString(SerializerSettings::getInstance()->getDateTimeFormat())
+    return value.toString("yyyy-MM-ddThh:mm:ss.zzz")
+    + QString("000")
     + openapiHelpersFixGetUtcOffsetNumericStr(value)
     ;
 }
@@ -112,7 +137,10 @@ QJsonValue toJsonValue(const QString &value) {
 }
 
 QJsonValue toJsonValue(const QDateTime &value) {
-    return QJsonValue( value.toString(SerializerSettings::getInstance()->getDateTimeFormat().isEmpty()?value.toString(Qt::ISODate):value.toString(SerializerSettings::getInstance()->getDateTimeFormat()))
+    return QJsonValue( 
+                       //value.toString(SerializerSettings::getInstance()->getDateTimeFormat().isEmpty()?value.toString(Qt::ISODate):value.toString(SerializerSettings::getInstance()->getDateTimeFormat()))
+                       value.toString("yyyy-MM-ddThh:mm:ss.zzz")
+                     + QString("000")
                      + openapiHelpersFixGetUtcOffsetNumericStr(value)
                      );
 }

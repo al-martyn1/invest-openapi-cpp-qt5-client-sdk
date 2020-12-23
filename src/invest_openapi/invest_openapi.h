@@ -83,6 +83,7 @@ struct IOpenApi
     virtual void    setBrokerAccountId( const QString &id ) = 0;
     virtual QString getBrokerAccountId()                    = 0;
 
+    //------------------------------
     // MarketApi
 
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketBonds() );
@@ -94,21 +95,42 @@ struct IOpenApi
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketInstruments( const QString &instrumentType ) );
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketInstruments( ) ); // All instruments
 
-    TKF_IOA_ABSTRACT_METHOD( CandlesResponse, candles( const QString &figi, const QDateTime &from, const QDateTime &to, const CandleResolution &interval ) );
-    TKF_IOA_ABSTRACT_METHOD( CandlesResponse, candles( const QString &figi, const QDateTime &from, const QDateTime &to, CandleResolution::eCandleResolution interval ) );
-    TKF_IOA_ABSTRACT_METHOD( CandlesResponse, candles( const QString &figi, const QDateTime &from, const QDateTime &to, const QString &interval ) );
+    // Границы интервала дат для получения данных по свечам см. doc/candle_intervals.png
+    /*
+    Параметры свечи (Candle)
+    o     double + Цена открытия
+    c     double + Цена закрытия
+    h     double + Наибольшая цена
+    l     double + Наименьшая цена
+    v     double + Объем торгов
+    time  string + Время в формате RFC3339
+    */
 
+    TKF_IOA_ABSTRACT_METHOD( CandlesResponse, marketCandles( const QString &figi, const QDateTime &from, const QDateTime &to, const CandleResolution &interval ) );
+    TKF_IOA_ABSTRACT_METHOD( CandlesResponse, marketCandles( const QString &figi, const QDateTime &from, const QDateTime &to, CandleResolution::eCandleResolution interval ) );
+    TKF_IOA_ABSTRACT_METHOD( CandlesResponse, marketCandles( const QString &figi, const QDateTime &from, const QDateTime &to, const QString &interval ) );
+
+    // Стакан по фиге, глубина макс 20
+    TKF_IOA_ABSTRACT_METHOD( OrderbookResponse, marketOrderbook( const QString &figi, qint32 depth ) );
+    // Выбираем стакан с максимальной глубиной
+    TKF_IOA_ABSTRACT_METHOD( OrderbookResponse, marketOrderbook( const QString &figi ) );
     
 
+    //------------------------------
+    // UserApi
+
+    TKF_IOA_ABSTRACT_METHOD( UserAccountsResponse, userAccounts( ) );
+    
+
+    //------------------------------
+    // PortfolioApi
+
+    TKF_IOA_ABSTRACT_METHOD( PortfolioCurrenciesResponse, portfolioCurrencies(QString broker_account_id = QString()) );
+    TKF_IOA_ABSTRACT_METHOD( PortfolioResponse, portfolio(QString broker_account_id = QString()) );
+
+
+
 /*
-
-    void marketCandlesGet(const QString &figi, const QDateTime &from, const QDateTime &to, const CandleResolution &interval);
-    void marketOrderbookGet(const QString &figi, const qint32 &depth);
-
-
-    void marketCandlesGetSignal(CandlesResponse summary);
-    void marketSearchByFigiGetSignal(SearchMarketInstrumentResponse summary);
-    void marketOrderbookGetSignal(OrderbookResponse summary);
 
 */
 
@@ -157,6 +179,21 @@ class OpenApiImpl : public IOpenApi
 
     //------------------------------
 
+protected:
+
+    void checkBrokerAccountIdParam( QString &id )
+    {
+        if (id.isEmpty())
+        {
+            if (m_brokerAccountId.isEmpty())
+                throw std::runtime_error("Broker account ID not set");
+            id = m_brokerAccountId;
+        }
+    }
+
+    //------------------------------
+
+
 public:
 
     //------------------------------
@@ -182,6 +219,14 @@ public:
     }
 
     //------------------------------
+
+    
+    //------------------------------
+    // MarketApi
+    //------------------------------
+
+    
+    //------------------------------
     TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketBonds() )
     {
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketInstrumentListResponse, response );
@@ -191,6 +236,7 @@ public:
         return response;
     }
 
+    //------------------------------
     TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketCurrencies() )
     {
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketInstrumentListResponse, response );
@@ -200,6 +246,7 @@ public:
         return response;
     }
 
+    //------------------------------
     TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketEtfs() )
     {
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketInstrumentListResponse, response );
@@ -209,6 +256,7 @@ public:
         return response;
     }
 
+    //------------------------------
     TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketStocks() )
     {
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketInstrumentListResponse, response );
@@ -218,6 +266,7 @@ public:
         return response;
     }
 
+    //------------------------------
     TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketInstruments( const InstrumentType &instrumentType ) )
     {
         switch(instrumentType.getValue())
@@ -232,16 +281,19 @@ public:
         return marketStocks();
     }
 
+    //------------------------------
     TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketInstruments( InstrumentType::eInstrumentType instrumentType ) )
     {
         return marketInstruments( toInstrumentType(instrumentType) );
     }
 
+    //------------------------------
     TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketInstruments( const QString &instrumentType ) )
     {
         return marketInstruments( toInstrumentType(instrumentType) );
     }
 
+    //------------------------------
     TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketInstruments( ) ) // All instruments
     {
         auto resStocks     = marketStocks();
@@ -266,7 +318,8 @@ public:
         return resStocks;
     }
 
-    TKF_IOA_METHOD_IMPL( CandlesResponse, candles( const QString &figi, const QDateTime &from, const QDateTime &to, const CandleResolution &interval ) )
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( CandlesResponse, marketCandles( const QString &figi, const QDateTime &from, const QDateTime &to, const CandleResolution &interval ) )
     {
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( CandlesResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pMarketApi.get(), marketCandles, Get );
@@ -274,15 +327,85 @@ public:
         return response;
     }
 
-    TKF_IOA_METHOD_IMPL( CandlesResponse, candles( const QString &figi, const QDateTime &from, const QDateTime &to, CandleResolution::eCandleResolution interval ) )
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( CandlesResponse, marketCandles( const QString &figi, const QDateTime &from, const QDateTime &to, CandleResolution::eCandleResolution interval ) )
     {
-        return candles(figi, from, to, toCandleResolution(interval));
+        return marketCandles(figi, from, to, toCandleResolution(interval));
     }
 
-    TKF_IOA_METHOD_IMPL( CandlesResponse, candles( const QString &figi, const QDateTime &from, const QDateTime &to, const QString &interval ) )
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( CandlesResponse, marketCandles( const QString &figi, const QDateTime &from, const QDateTime &to, const QString &interval ) )
     {
-        return candles(figi, from, to, toCandleResolution(interval));
+        return marketCandles(figi, from, to, toCandleResolution(interval));
     }
+
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( OrderbookResponse, marketOrderbook( const QString &figi, qint32 depth ) )
+    {
+        if (depth>20)
+            depth = 20;
+        if (depth<3)
+            depth = 3;
+
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( OrderbookResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pMarketApi.get(), marketOrderbook, Get );
+        m_pMarketApi->marketOrderbookGet(figi, depth);
+        return response;
+    }
+
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( OrderbookResponse, marketOrderbook( const QString &figi ) )
+    {
+        return marketOrderbook(figi, 20);
+    }
+
+    //------------------------------
+
+
+    //------------------------------
+    // UserApi
+    //------------------------------
+
+
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( UserAccountsResponse, userAccounts( ) )
+    {
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( UserAccountsResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pUserApi.get(), userAccounts, Get );
+        m_pUserApi->userAccountsGet();
+        return response;
+    }
+
+    //------------------------------
+
+
+    //------------------------------
+    // PortfolioApi
+    //------------------------------
+
+
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( PortfolioCurrenciesResponse, portfolioCurrencies(QString broker_account_id = QString()) )
+    {
+        checkBrokerAccountIdParam(broker_account_id);
+
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( PortfolioCurrenciesResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pPortfolioApi.get(), portfolioCurrencies, Get );
+        m_pPortfolioApi->portfolioCurrenciesGet(broker_account_id);
+        return response;
+    }
+
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( PortfolioResponse, portfolio(QString broker_account_id = QString()) )
+    {
+        checkBrokerAccountIdParam(broker_account_id);
+
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( PortfolioResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pPortfolioApi.get(), portfolio, Get );
+        m_pPortfolioApi->portfolioGet(broker_account_id);
+        return response;
+    }
+
 
 
 protected:
@@ -333,15 +456,6 @@ class SanboxOpenApiImpl : public OpenApiImpl
 
     friend class OpenApiFactory;
 
-    void checkBrokerAccountIdParam( QString &id )
-    {
-        if (id.isEmpty())
-        {
-            if (m_brokerAccountId.isEmpty())
-                throw std::runtime_error("Broker account ID not set");
-            id = m_brokerAccountId;
-        }
-    }
 
     //------------------------------
 
@@ -538,6 +652,21 @@ createOpenApi( const ApiConfig  &apiConfig
 
 
 
+//----------------------------------------------------------------------------
+inline
+ISanboxOpenApi* getSandboxApi( IOpenApi* pApi )
+{
+    return dynamic_cast<ISanboxOpenApi*>(pApi);
+}
+
+//------------------------------
+inline
+ISanboxOpenApi* getSandboxApi( QSharedPointer<IOpenApi> pApi )
+{
+    return getSandboxApi(pApi.get());
+}
+
+//----------------------------------------------------------------------------
 
 
 } // namespace invest_openapi

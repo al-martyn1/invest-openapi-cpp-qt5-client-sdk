@@ -483,34 +483,58 @@ std::map<QString,QString> makeIsinFigiMap( const QList< Instrument<MonetaryType>
     return resMap;
 }
 
+//----------------------------------------------------------------------------
+
+
+
 
 //----------------------------------------------------------------------------
+#if 0
+//! Базовый false-тип для детекта наличия метода getPayload() у объекта
+template< typename C, typename = void >
+struct has_getPayload
+  : std::false_type
+{};
+
+//------------------------------
+//! Специализация, тестирующая наличие метода getPayload() у объекта
+template< typename C >
+struct has_getPayload< C, std::enable_if_t<
+                         std::is_same<
+                           decltype( std::declval<C>().getPayload( ) ),
+                           void
+                         >::value
+                       > >
+  : std::true_type
+{};
+
+//------------------------------
+//! Функция возвращает payload после join'а
+/*! 
+     \tparam C Тип контейнера
+ */
+template< typename C >
+std::enable_if_t< has_getPayload< C >::value > inline
+getPayload( C& c )
+{
+  c.reserve( c.size() + n );
+}
+#endif
+
+// https://en.cppreference.com/w/cpp/language/auto
+template< typename ResponseType >
+inline
+auto joinAndGetPayload( ResponseType response ) -> decltype(response->value.getPayload())
+{
+    response->join();
+    checkAbort(response);
+    return response->value.getPayload();
+}
+
 
 } // namespace invest_openapi
 
 
-inline
-QString openapiHelpersFixGetUtcOffsetNumericStr( const QDateTime &dt )
-{
-    int utcOffset = dt.offsetFromUtc();
-
-    QString utcStr;
-    if (utcOffset<0)
-    {
-        utcStr.append("-");
-        utcOffset = -utcOffset;
-    }
-    else
-    {
-        utcStr.append("+");
-    }
-
-    utcOffset /= 60;
-    int hours   = utcOffset/60;
-    int minutes = utcOffset%60;
-
-    return utcStr + QString::asprintf("%02d:%02d", hours, minutes );
-}
 
 
 

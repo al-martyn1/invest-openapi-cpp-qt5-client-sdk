@@ -1,0 +1,7 @@
+Параметры свечи (Candle)
+o	double	+	Цена открытия
+c	double	+	Цена закрытия
+h	double	+	Наибольшая цена
+l	double	+	Наименьшая цена
+v	double	+	Объем торгов
+time	string	+	Время в формате RFC3339
