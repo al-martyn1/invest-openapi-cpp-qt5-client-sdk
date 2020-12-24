@@ -173,7 +173,6 @@ INVEST_OPENAPI_MAIN()
         res = tkf::joinAndGetPayload( pSandboxOpenApi->sandboxClear() );
         res = tkf::joinAndGetPayload( pSandboxOpenApi->sandboxRemove() );
     }
-
     
     return 0;
 }
