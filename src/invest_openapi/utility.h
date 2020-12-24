@@ -116,7 +116,7 @@ template< typename CurrencySourceType >
 inline
 Currency toCurrency(const CurrencySourceType &v)
 {
-    throw std::runtime_error("invest_openapi::toCurrency(CurrencySourceType) not implemented for this type");
+    throw std::runtime_error("invest_openapi::toCurrency(const CurrencySourceType&) not implemented for this type");
 }
 
 //----------------------------------------------------------------------------
@@ -157,7 +157,7 @@ template< typename InstrumentSourceType >
 inline
 InstrumentType toInstrumentType(const InstrumentSourceType &v)
 {
-    throw std::runtime_error("invest_openapi::toInstrumentType(const InstrumentSourceType) not implemented for this type");
+    throw std::runtime_error("invest_openapi::toInstrumentType(const InstrumentSourceType&) not implemented for this type");
 }
 
 //----------------------------------------------------------------------------
@@ -198,7 +198,7 @@ template< typename InstrumentSourceType >
 inline
 CandleResolution toCandleResolution(const InstrumentSourceType &v)
 {
-    throw std::runtime_error("invest_openapi::toCandleResolution(const InstrumentSourceType) not implemented for this type");
+    throw std::runtime_error("invest_openapi::toCandleResolution(const InstrumentSourceType&) not implemented for this type");
 }
 
 //----------------------------------------------------------------------------
@@ -229,9 +229,59 @@ CandleResolution toCandleResolution<QString>(const QString &v)
     return res;
 }
 
+//----------------------------------------------------------------------------
+
+
+
 
 
 //----------------------------------------------------------------------------
+template< typename OperationSourceType >
+inline
+OperationType toOperationType(const OperationSourceType &v)
+{
+    throw std::runtime_error("invest_openapi::toOperationType(const OperationSourceType&) not implemented for this type");
+}
+
+//----------------------------------------------------------------------------
+template< >
+inline
+OperationType toOperationType<OperationType>(const OperationType &v)
+{
+    return v;
+}
+
+//----------------------------------------------------------------------------
+template< >
+inline
+OperationType toOperationType<OperationType::eOperationType>(const OperationType::eOperationType &v)
+{
+    OperationType res;
+    res.setValue(v);
+    return res;
+}
+
+//----------------------------------------------------------------------------
+template< >
+inline
+OperationType toOperationType<QString>(const QString &v)
+{
+    OperationType res;
+    res.fromJson(v);
+    return res;
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
 
 //----------------------------------------------------------------------------
 template<typename MonetaryType>
@@ -343,6 +393,8 @@ MarketInstrument toMarketInstrument( const MarketInstrument &i )
 }
 
 //----------------------------------------------------------------------------
+
+
 
 
 

@@ -26,6 +26,8 @@
 #include "currencies_config.h"
 #include "factory.h"
 #include "utility.h"
+#include "qdebug_support.h"
+
 
 //----------------------------------------------------------------------------
 
@@ -127,6 +129,24 @@ struct IOpenApi
 
     TKF_IOA_ABSTRACT_METHOD( PortfolioCurrenciesResponse, portfolioCurrencies(QString broker_account_id = QString()) );
     TKF_IOA_ABSTRACT_METHOD( PortfolioResponse, portfolio(QString broker_account_id = QString()) );
+
+
+    //------------------------------
+    // OrdersApi
+
+    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const LimitOrderRequest  &limit_order_request , QString broker_account_id = QString()) );
+    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const OperationType &operation, qint32 nLots  , double price, QString broker_account_id = QString()) );
+    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const OperationType::eOperationType &operation, qint32 nLots, double price, QString broker_account_id = QString()) );
+    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const QString &operation      , qint32 nLots  , double price, QString broker_account_id = QString()) );
+
+    TKF_IOA_ABSTRACT_METHOD( MarketOrderResponse, ordersMarketOrder(const QString &figi, const MarketOrderRequest &market_order_request, QString broker_account_id = QString()) );
+    TKF_IOA_ABSTRACT_METHOD( MarketOrderResponse, ordersMarketOrder(const QString &figi, const OperationType &operation, qint32 nLots  , QString broker_account_id = QString()) );
+    TKF_IOA_ABSTRACT_METHOD( MarketOrderResponse, ordersMarketOrder(const QString &figi, const OperationType::eOperationType &operation, qint32 nLots, QString broker_account_id = QString()) );
+    TKF_IOA_ABSTRACT_METHOD( MarketOrderResponse, ordersMarketOrder(const QString &figi, const QString &operation      , qint32 nLots  , QString broker_account_id = QString()) );
+
+    TKF_IOA_ABSTRACT_METHOD( Empty, ordersCancel(const QString &order_id, QString broker_account_id = QString() ));
+    TKF_IOA_ABSTRACT_METHOD( OrdersResponse, orders(QString broker_account_id = QString() ));
+
 
 
 
@@ -405,6 +425,99 @@ public:
         m_pPortfolioApi->portfolioGet(broker_account_id);
         return response;
     }
+
+    //------------------------------
+
+    
+    //------------------------------
+    // OrdersApi
+    //------------------------------
+
+
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( LimitOrderResponse , ordersLimitOrder(const QString &figi, const LimitOrderRequest &limit_order_request  , QString broker_account_id = QString()) )
+    {
+        checkBrokerAccountIdParam(broker_account_id);
+
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( LimitOrderResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pOrdersApi.get(), ordersLimitOrder, Post );
+        m_pOrdersApi->ordersLimitOrderPost(figi, limit_order_request, broker_account_id);
+        return response;
+    }
+
+    TKF_IOA_METHOD_IMPL( LimitOrderResponse, ordersLimitOrder(const QString &figi, const OperationType &operation, qint32 nLots  , double price, QString broker_account_id = QString()) )
+    {
+        LimitOrderRequest request;
+        request.setLots(nLots);
+        request.setOperation(operation);
+        request.setPrice(price);
+        return ordersLimitOrder(figi, request, broker_account_id);
+    }
+
+    TKF_IOA_METHOD_IMPL( LimitOrderResponse, ordersLimitOrder(const QString &figi, const OperationType::eOperationType &operation, qint32 nLots, double price, QString broker_account_id = QString()) )
+    {
+        return ordersLimitOrder( figi, toOperationType(operation), nLots, price, broker_account_id);
+    }
+
+    TKF_IOA_METHOD_IMPL( LimitOrderResponse, ordersLimitOrder(const QString &figi, const QString &operation      , qint32 nLots  , double price, QString broker_account_id = QString()) )
+    {
+        return ordersLimitOrder( figi, toOperationType(operation), nLots, price, broker_account_id);
+    }
+
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( MarketOrderResponse, ordersMarketOrder(const QString &figi, const MarketOrderRequest &market_order_request, QString broker_account_id = QString()) )
+    {
+        checkBrokerAccountIdParam(broker_account_id);
+
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketOrderResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pOrdersApi.get(), ordersMarketOrder, Post );
+        m_pOrdersApi->ordersMarketOrderPost(figi, market_order_request, broker_account_id);
+        return response;
+    }
+
+    TKF_IOA_METHOD_IMPL( MarketOrderResponse, ordersMarketOrder(const QString &figi, const OperationType &operation, qint32 nLots  , QString broker_account_id = QString()) )
+    {
+        MarketOrderRequest request;
+        request.setLots(nLots);
+        request.setOperation(operation);
+        return ordersMarketOrder(figi, request, broker_account_id);
+    }
+
+    TKF_IOA_METHOD_IMPL( MarketOrderResponse, ordersMarketOrder(const QString &figi, const OperationType::eOperationType &operation, qint32 nLots, QString broker_account_id = QString()) )
+    {
+        return ordersMarketOrder( figi, toOperationType(operation), nLots, broker_account_id);
+    }
+
+    TKF_IOA_METHOD_IMPL( MarketOrderResponse, ordersMarketOrder(const QString &figi, const QString &operation      , qint32 nLots  , QString broker_account_id = QString()) )
+    {
+        return ordersMarketOrder( figi, toOperationType(operation), nLots, broker_account_id);
+    }
+
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( Empty, ordersCancel(const QString &order_id, QString broker_account_id = QString() ))
+    {
+        checkBrokerAccountIdParam(broker_account_id);
+
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( Empty, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pOrdersApi.get(), ordersCancel, Post );
+        m_pOrdersApi->ordersCancelPost(order_id,broker_account_id);
+        return response;
+    }
+
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( OrdersResponse, orders(QString broker_account_id = QString() ))
+    {
+        checkBrokerAccountIdParam(broker_account_id);
+
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( OrdersResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pOrdersApi.get(), orders, Get );
+        m_pOrdersApi->ordersGet(broker_account_id);
+        return response;
+    }
+
+    //------------------------------
+
+
 
 
 
