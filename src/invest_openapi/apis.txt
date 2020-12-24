@@ -1,0 +1,6 @@
+[v] MarketApi
+[ ] OperationsApi
+[ ] OrdersApi
+[v] PortfolioApi
+[v] SandboxApi
+[v] UserApi
