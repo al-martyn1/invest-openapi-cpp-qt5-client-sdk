@@ -85,6 +85,12 @@ struct IOpenApi
     virtual void    setBrokerAccountId( const QString &id ) = 0;
     virtual QString getBrokerAccountId()                    = 0;
 
+    virtual void setRequestsDebug( bool v )  = 0;
+    virtual bool getRequestsDebug( )         = 0;
+    virtual void setResponsesDebug( bool v ) = 0;
+    virtual bool getResponsesDebug( )        = 0;
+
+
     //------------------------------
     // MarketApi
 
@@ -239,6 +245,29 @@ public:
     }
 
     //------------------------------
+    virtual void setRequestsDebug( bool v )  override
+    {
+        ::OpenAPI::setRequestsDebug(v); // prevent self-calling by using full qualified name
+    }
+
+    virtual bool getRequestsDebug( )         override
+    {
+        return ::OpenAPI::getRequestsDebug(); // prevent self-calling by using full qualified name
+    }
+
+    virtual void setResponsesDebug( bool v ) override
+    {
+        ::OpenAPI::setResponsesDebug(v); // prevent self-calling by using full qualified name
+    }
+
+    virtual bool getResponsesDebug( )        override
+    {
+        return ::OpenAPI::getResponsesDebug(); // prevent self-calling by using full qualified name
+    }
+
+    //------------------------------
+
+
 
     
     //------------------------------

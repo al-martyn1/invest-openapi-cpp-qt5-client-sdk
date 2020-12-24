@@ -126,6 +126,8 @@ INVEST_OPENAPI_MAIN()
     auto portfolio = tkf::joinAndGetPayload(pOpenApi->portfolio());
 
     //------------------------------
+    qDebug() << "------------------------------";
+
     auto orders = tkf::joinAndGetPayload(pOpenApi->orders());
     qDebug() << "Orders (before): " << orders; //.asJson();
 
@@ -141,7 +143,8 @@ INVEST_OPENAPI_MAIN()
     qDebug() << "Orders (after sell): " << orders; //.asJson();
 
     //------------------------------
-    /*
+    qDebug() << "------------------------------";
+
     auto 
     limitOrder = tkf::joinAndGetPayload(pOpenApi->ordersLimitOrder( tickerFigiMap["ROSN"], "BUY", 1, 420.0 ) );
     qDebug() << "Limit order: " << marketOrder;
@@ -152,7 +155,6 @@ INVEST_OPENAPI_MAIN()
     qDebug() << "Limit order: " << marketOrder;
     orders = tkf::joinAndGetPayload(pOpenApi->orders());
     qDebug() << "Orders (after sell): " << orders; //.asJson();
-    */
     
     //------------------------------
     if (pSandboxOpenApi)

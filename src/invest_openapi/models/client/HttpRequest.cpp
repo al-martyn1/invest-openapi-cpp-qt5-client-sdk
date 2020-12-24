@@ -21,6 +21,9 @@
 
 #include "HttpRequest.h"
 
+#include "../../models_helpers.h"
+
+
 namespace OpenAPI {
 
 HttpRequestInput::HttpRequestInput() {
@@ -305,7 +308,7 @@ void HttpRequestWorker::execute(HttpRequestInput *input) {
     }
 
     if (input->request_body.size() > 0) {
-        qDebug() << "got a request body";
+        //qDebug() << "got a request body";
         request_content.clear();
         if(!isFormData && (input->var_layout != MULTIPART) && isRequestCompressionEnabled){
             request_content.append(compress(input->request_body, 7, CompressionType::Gzip));
@@ -342,6 +345,8 @@ void HttpRequestWorker::execute(HttpRequestInput *input) {
     } else {
         request.setRawHeader("Accept-Encoding", "identity");
     }
+
+    dumpHttpRequestInput( *input, request );
 
     if (input->http_method == "GET") {
         reply = manager->get(request);

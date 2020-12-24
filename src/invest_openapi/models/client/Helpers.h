@@ -27,6 +27,9 @@
 #include "HttpFileElement.h"
 #include "Object.h"
 
+#include "../../models_helpers.h"
+
+
 namespace OpenAPI {
 
 bool setDateTimeFormat(const QString&);

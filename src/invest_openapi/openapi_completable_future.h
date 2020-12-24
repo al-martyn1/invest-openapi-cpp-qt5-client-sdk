@@ -110,7 +110,7 @@ template<typename T>
 inline
 void dump( const QSharedPointer< OpenApiCompletableFuture< T > > &val )
 {
-    qDebug() << val->value.asJson();
+    qDebug().nospace().noquote() << val->value.asJson();
 }
 
 template<typename T>
@@ -120,7 +120,7 @@ void dumpIfError( const QSharedPointer< OpenApiCompletableFuture< T > > &val )
     if (!val->isCompletionError())
         return;
 
-    qDebug() << val->getErrorMessage();
+    qDebug().nospace().noquote() << val->getErrorMessage();
     dump(val);
 }
 

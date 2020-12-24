@@ -2,6 +2,9 @@
     \brief 
  */
 
+//----------------------------------------------------------------------------
+#pragma once
+
 #include <QVector>
 #include <QString>
 #include <QStringList>

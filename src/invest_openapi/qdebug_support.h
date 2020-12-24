@@ -18,21 +18,21 @@
 inline
 QDebug& operator<<( QDebug& d, const OpenAPI::Order &v )
 {
-    d << v.asJson();
+    d.nospace().noquote() << v.asJson();
     return d;
 }
 
 inline
 QDebug& operator<<( QDebug& d, const OpenAPI::PlacedLimitOrder &v )
 {
-    d << v.asJson();
+    d.nospace().noquote() << v.asJson();
     return d;
 }
 
 inline
 QDebug& operator<<( QDebug& d, const OpenAPI::PlacedMarketOrder &v )
 {
-    d << v.asJson();
+    d.nospace().noquote() << v.asJson();
     return d;
 }
 
