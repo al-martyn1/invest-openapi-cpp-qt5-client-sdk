@@ -153,10 +153,14 @@ struct IOpenApi
     TKF_IOA_ABSTRACT_METHOD( Empty, ordersCancel(const QString &order_id, QString broker_account_id = QString() ));
     TKF_IOA_ABSTRACT_METHOD( OrdersResponse, orders(QString broker_account_id = QString() ));
 
+    //------------------------------
+    // OperationsApi
 
-
+    TKF_IOA_ABSTRACT_METHOD( OperationsResponse , operations ( const QDateTime &from, const QDateTime &to, const QString &figi, QString broker_account_id = QString()) );
 
 /*
+    void operationsGet(const QDateTime &from, const QDateTime &to, const QString &figi, const QString &broker_account_id);
+    void operationsGetSignal(OperationsResponse summary);
 
 */
 
@@ -546,6 +550,22 @@ public:
 
     //------------------------------
 
+
+    //------------------------------
+    // OperationsApi
+    //------------------------------
+
+
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( OperationsResponse , operations ( const QDateTime &from, const QDateTime &to, const QString &figi, QString broker_account_id = QString()) )
+    {
+        checkBrokerAccountIdParam(broker_account_id);
+
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( OperationsResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pOperationsApi.get(), operations, Get );
+        m_pOperationsApi->operationsGet( from, to, figi, broker_account_id);
+        return response;
+    }
 
 
 

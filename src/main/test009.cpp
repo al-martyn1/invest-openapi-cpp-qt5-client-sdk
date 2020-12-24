@@ -157,6 +157,16 @@ INVEST_OPENAPI_MAIN()
     qDebug() << "Orders (after sell): " << orders; //.asJson();
     
     //------------------------------
+    qDebug() << "------------------------------";
+
+    //QDateTime nowDateTime     = QDateTime::currentDateTime();
+    QDateTime yearAgoDateTime = nowDateTime.addYears(-1);
+
+    auto 
+    operations = tkf::joinAndGetPayload(pOpenApi->operations( nowDateTime, yearAgoDateTime, tickerFigiMap["ROSN"] ) );
+
+    //------------------------------
+
     if (pSandboxOpenApi)
     {
         auto 
