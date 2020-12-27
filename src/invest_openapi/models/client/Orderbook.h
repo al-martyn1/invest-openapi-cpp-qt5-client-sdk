@@ -29,6 +29,9 @@
 #include "Enum.h"
 #include "Object.h"
 
+#include "../../marty_decimal.h"
+
+
 namespace OpenAPI {
 
 class Orderbook : public Object {
@@ -67,33 +70,33 @@ public:
     bool is_trade_status_Set() const;
     bool is_trade_status_Valid() const;
 
-    double getMinPriceIncrement() const;
-    void setMinPriceIncrement(const double &min_price_increment);
+    marty::Decimal getMinPriceIncrement() const;
+    void setMinPriceIncrement(const marty::Decimal &min_price_increment);
     bool is_min_price_increment_Set() const;
     bool is_min_price_increment_Valid() const;
 
-    double getFaceValue() const;
-    void setFaceValue(const double &face_value);
+    marty::Decimal getFaceValue() const;
+    void setFaceValue(const marty::Decimal &face_value);
     bool is_face_value_Set() const;
     bool is_face_value_Valid() const;
 
-    double getLastPrice() const;
-    void setLastPrice(const double &last_price);
+    marty::Decimal getLastPrice() const;
+    void setLastPrice(const marty::Decimal &last_price);
     bool is_last_price_Set() const;
     bool is_last_price_Valid() const;
 
-    double getClosePrice() const;
-    void setClosePrice(const double &close_price);
+    marty::Decimal getClosePrice() const;
+    void setClosePrice(const marty::Decimal &close_price);
     bool is_close_price_Set() const;
     bool is_close_price_Valid() const;
 
-    double getLimitUp() const;
-    void setLimitUp(const double &limit_up);
+    marty::Decimal getLimitUp() const;
+    void setLimitUp(const marty::Decimal &limit_up);
     bool is_limit_up_Set() const;
     bool is_limit_up_Valid() const;
 
-    double getLimitDown() const;
-    void setLimitDown(const double &limit_down);
+    marty::Decimal getLimitDown() const;
+    void setLimitDown(const marty::Decimal &limit_down);
     bool is_limit_down_Set() const;
     bool is_limit_down_Valid() const;
 
@@ -123,27 +126,27 @@ private:
     bool m_trade_status_isSet;
     bool m_trade_status_isValid;
 
-    double min_price_increment;
+    marty::Decimal min_price_increment;
     bool m_min_price_increment_isSet;
     bool m_min_price_increment_isValid;
 
-    double face_value;
+    marty::Decimal face_value;
     bool m_face_value_isSet;
     bool m_face_value_isValid;
 
-    double last_price;
+    marty::Decimal last_price;
     bool m_last_price_isSet;
     bool m_last_price_isValid;
 
-    double close_price;
+    marty::Decimal close_price;
     bool m_close_price_isSet;
     bool m_close_price_isValid;
 
-    double limit_up;
+    marty::Decimal limit_up;
     bool m_limit_up_isSet;
     bool m_limit_up_isValid;
 
-    double limit_down;
+    marty::Decimal limit_down;
     bool m_limit_down_isSet;
     bool m_limit_down_isValid;
 };

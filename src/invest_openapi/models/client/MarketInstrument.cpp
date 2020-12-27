@@ -186,10 +186,10 @@ bool MarketInstrument::is_isin_Valid() const{
     return m_isin_isValid;
 }
 
-double MarketInstrument::getMinPriceIncrement() const {
+marty::Decimal MarketInstrument::getMinPriceIncrement() const {
     return min_price_increment;
 }
-void MarketInstrument::setMinPriceIncrement(const double &min_price_increment) {
+void MarketInstrument::setMinPriceIncrement(const marty::Decimal &min_price_increment) {
     this->min_price_increment = min_price_increment;
     this->m_min_price_increment_isSet = true;
 }

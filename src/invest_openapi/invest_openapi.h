@@ -27,6 +27,7 @@
 #include "factory.h"
 #include "utility.h"
 #include "qdebug_support.h"
+#include "marty_decimal.h"
 
 
 //----------------------------------------------------------------------------
@@ -58,6 +59,12 @@
 //----------------------------------------------------------------------------
 namespace invest_openapi
 {
+
+
+using marty::DecimalPrecision;
+using marty::Decimal         ;
+using marty::toString        ;
+using marty::fromString      ;
 
 
 
@@ -183,7 +190,7 @@ struct ISanboxOpenApi // : public IOpenApi
 
     TKF_IOA_ABSTRACT_METHOD( Empty, sandboxClear(QString broker_account_id = QString() ) );
 
-    TKF_IOA_ABSTRACT_METHOD( Empty, sandboxCurrenciesBalanceSet(const SandboxCurrency::eSandboxCurrency currency, double balance, QString broker_account_id = QString() ) );
+    TKF_IOA_ABSTRACT_METHOD( Empty, sandboxCurrenciesBalanceSet(const SandboxCurrency::eSandboxCurrency currency, Decimal balance, QString broker_account_id = QString() ) );
     TKF_IOA_ABSTRACT_METHOD( Empty, sandboxCurrenciesBalanceSet(const QVector<CurrencyConfig> currencies, QString broker_account_id = QString() ) );
 
     TKF_IOA_ABSTRACT_METHOD( Empty, sandboxPositionsBalanceSet(const SandboxSetPositionBalanceRequest          &positionBalance , QString broker_account_id = QString() ) );
@@ -679,7 +686,7 @@ public:
     }
 
     //------------------------------
-    TKF_IOA_METHOD_IMPL( Empty, sandboxCurrenciesBalanceSet(const SandboxCurrency::eSandboxCurrency currency, double balance, QString broker_account_id = QString() ) )
+    TKF_IOA_METHOD_IMPL( Empty, sandboxCurrenciesBalanceSet(const SandboxCurrency::eSandboxCurrency currency, Decimal balance, QString broker_account_id = QString() ) )
     {
         checkBrokerAccountIdParam(broker_account_id);
 

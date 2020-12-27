@@ -91,10 +91,10 @@ bool MoneyAmount::is_currency_Valid() const{
     return m_currency_isValid;
 }
 
-double MoneyAmount::getValue() const {
+marty::Decimal MoneyAmount::getValue() const {
     return value;
 }
-void MoneyAmount::setValue(const double &value) {
+void MoneyAmount::setValue(const marty::Decimal &value) {
     this->value = value;
     this->m_value_isSet = true;
 }

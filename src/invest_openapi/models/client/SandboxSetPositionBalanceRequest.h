@@ -26,6 +26,9 @@
 #include "Enum.h"
 #include "Object.h"
 
+#include "../../marty_decimal.h"
+
+
 namespace OpenAPI {
 
 class SandboxSetPositionBalanceRequest : public Object {
@@ -44,8 +47,8 @@ public:
     bool is_figi_Set() const;
     bool is_figi_Valid() const;
 
-    double getBalance() const;
-    void setBalance(const double &balance);
+    marty::Decimal getBalance() const;
+    void setBalance(const marty::Decimal &balance);
     bool is_balance_Set() const;
     bool is_balance_Valid() const;
 
@@ -59,7 +62,7 @@ private:
     bool m_figi_isSet;
     bool m_figi_isValid;
 
-    double balance;
+    marty::Decimal balance;
     bool m_balance_isSet;
     bool m_balance_isValid;
 };

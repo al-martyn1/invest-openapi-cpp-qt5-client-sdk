@@ -100,10 +100,10 @@ bool CurrencyPosition::is_currency_Valid() const{
     return m_currency_isValid;
 }
 
-double CurrencyPosition::getBalance() const {
+marty::Decimal CurrencyPosition::getBalance() const {
     return balance;
 }
-void CurrencyPosition::setBalance(const double &balance) {
+void CurrencyPosition::setBalance(const marty::Decimal &balance) {
     this->balance = balance;
     this->m_balance_isSet = true;
 }
@@ -116,10 +116,10 @@ bool CurrencyPosition::is_balance_Valid() const{
     return m_balance_isValid;
 }
 
-double CurrencyPosition::getBlocked() const {
+marty::Decimal CurrencyPosition::getBlocked() const {
     return blocked;
 }
-void CurrencyPosition::setBlocked(const double &blocked) {
+void CurrencyPosition::setBlocked(const marty::Decimal &blocked) {
     this->blocked = blocked;
     this->m_blocked_isSet = true;
 }

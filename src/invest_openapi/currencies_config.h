@@ -17,8 +17,14 @@
 
 #include "utility.h"
 
+#include "marty_decimal.h"
+
+
 namespace invest_openapi
 {
+
+
+using marty::Decimal         ;
 
 
 class CurrenciesConfig;
@@ -41,7 +47,7 @@ public:
         if (qv.isValid() && !qv.isNull())
         {
             m_isValid = true;
-            m_value   = qv.toDouble();
+            m_value   = marty::fromString(qv.toString().toStdString());
             return isValid();
         }
         else
@@ -71,12 +77,12 @@ public:
         return m_isValid;
     }
 
-    double getValue() const
+    Decimal getValue() const
     {
         return m_value;
     }
 
-    double value() const
+    Decimal value() const
     {
         return m_value;
     }
@@ -125,7 +131,7 @@ protected:
 
 
     bool     m_isValid;
-    double   m_value;
+    Decimal   m_value;
     SandboxCurrency::eSandboxCurrency m_currency;
 
 

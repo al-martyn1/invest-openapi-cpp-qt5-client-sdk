@@ -220,10 +220,10 @@ bool PortfolioPosition::is_instrument_type_Valid() const{
     return m_instrument_type_isValid;
 }
 
-double PortfolioPosition::getBalance() const {
+marty::Decimal PortfolioPosition::getBalance() const {
     return balance;
 }
-void PortfolioPosition::setBalance(const double &balance) {
+void PortfolioPosition::setBalance(const marty::Decimal &balance) {
     this->balance = balance;
     this->m_balance_isSet = true;
 }
@@ -236,10 +236,10 @@ bool PortfolioPosition::is_balance_Valid() const{
     return m_balance_isValid;
 }
 
-double PortfolioPosition::getBlocked() const {
+marty::Decimal PortfolioPosition::getBlocked() const {
     return blocked;
 }
-void PortfolioPosition::setBlocked(const double &blocked) {
+void PortfolioPosition::setBlocked(const marty::Decimal &blocked) {
     this->blocked = blocked;
     this->m_blocked_isSet = true;
 }

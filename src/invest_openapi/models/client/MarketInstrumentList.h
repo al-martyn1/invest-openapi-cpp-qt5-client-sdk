@@ -27,6 +27,9 @@
 #include "Enum.h"
 #include "Object.h"
 
+#include "../../marty_decimal.h"
+
+
 namespace OpenAPI {
 
 class MarketInstrumentList : public Object {
@@ -40,8 +43,8 @@ public:
     void fromJsonObject(QJsonObject json) override;
     void fromJson(QString jsonString) override;
 
-    double getTotal() const;
-    void setTotal(const double &total);
+    marty::Decimal getTotal() const;
+    void setTotal(const marty::Decimal &total);
     bool is_total_Set() const;
     bool is_total_Valid() const;
 
@@ -56,7 +59,7 @@ public:
 private:
     void initializeModel();
 
-    double total;
+    marty::Decimal total;
     bool m_total_isSet;
     bool m_total_isValid;
 

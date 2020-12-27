@@ -13,6 +13,7 @@
 
 #include "models.h"
 // #include "utility.h"
+#include "monetary_helpers.h"
 
 //----------------------------------------------------------------------------
 
@@ -25,19 +26,6 @@ namespace invest_openapi
 
 
 
-
-//----------------------------------------------------------------------------
-template<typename MonetaryType>
-MonetaryType toMonetary( const QVariant &s );
-
-template<typename MonetaryType>
-MonetaryType toMonetary( const QString &s );
-
-template<typename MonetaryType>
-QVariant monetaryToVariant( const MonetaryType &m );
-
-template<typename MonetaryType>
-QString monetaryToString( const MonetaryType &m );
 
 //----------------------------------------------------------------------------
 
@@ -159,7 +147,7 @@ protected:
         }
         else
         {
-            minPriceIncrement = toMonetary<MonetaryType>( QVariant(i.getMinPriceIncrement()));
+            minPriceIncrement = toMonetary<MonetaryType>( fromMonetary<MonetaryType, decltype(i.getMinPriceIncrement()) >(i.getMinPriceIncrement()));
         }
 
         if (!i.is_lot_Set() || !i.is_lot_Valid())

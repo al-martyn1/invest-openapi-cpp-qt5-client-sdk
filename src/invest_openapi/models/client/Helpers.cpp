@@ -78,6 +78,52 @@ bool setDateTimeFormat(const QString& dateTimeFormat){
 }
 
 
+
+QString toStringValue(const marty::Decimal &value)
+{
+    return QString::fromStdString( marty::toString(value) );
+}
+
+QJsonValue toJsonValue(const marty::Decimal &value)
+{
+    return QJsonValue( toStringValue(value) );
+}
+
+bool fromStringValue(const QString &inStr, marty::Decimal &value)
+{
+    if (inStr.isEmpty())
+    {
+        return false;
+    }
+    else
+    {
+        try
+        {
+            value = marty::fromString( inStr.toStdString() );
+        }
+        catch(...)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool fromJsonValue(marty::Decimal &value, const QJsonValue &jval)
+{
+    QString inStr;
+
+    if (!fromJsonValue( inStr, jval ))
+        return false;
+
+    return fromStringValue(inStr, value);
+}
+
+
+
+
+
 QString toStringValue(const QString &value) {
     return value;
 }

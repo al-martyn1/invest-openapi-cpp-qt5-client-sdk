@@ -28,6 +28,9 @@
 #include "Enum.h"
 #include "Object.h"
 
+#include "../../marty_decimal.h"
+
+
 namespace OpenAPI {
 
 class SearchMarketInstrument : public Object {
@@ -56,8 +59,8 @@ public:
     bool is_isin_Set() const;
     bool is_isin_Valid() const;
 
-    double getMinPriceIncrement() const;
-    void setMinPriceIncrement(const double &min_price_increment);
+    marty::Decimal getMinPriceIncrement() const;
+    void setMinPriceIncrement(const marty::Decimal &min_price_increment);
     bool is_min_price_increment_Set() const;
     bool is_min_price_increment_Valid() const;
 
@@ -99,7 +102,7 @@ private:
     bool m_isin_isSet;
     bool m_isin_isValid;
 
-    double min_price_increment;
+    marty::Decimal min_price_increment;
     bool m_min_price_increment_isSet;
     bool m_min_price_increment_isValid;
 

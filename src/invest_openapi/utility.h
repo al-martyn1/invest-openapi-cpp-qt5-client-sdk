@@ -18,6 +18,8 @@
 #include "openapi_completable_future_base.h"
 #include "openapi_completable_future.h"
 
+#include "marty_decimal.h"
+
 
 namespace invest_openapi
 {
@@ -273,86 +275,6 @@ OperationType toOperationType<QString>(const QString &v)
 
 //----------------------------------------------------------------------------
 
-
-
-
-
-
-
-
-
-
-
-//----------------------------------------------------------------------------
-template<typename MonetaryType>
-inline
-MonetaryType toMonetary( const QVariant &s )
-{
-    throw std::runtime_error("invest_openapi::toMonetary(QVariant) not implemented for this type");
-}
-
-//----------------------------------------------------------------------------
-template<typename MonetaryType>
-inline
-MonetaryType toMonetary( const QString &s )
-{
-    throw std::runtime_error("invest_openapi::toMonetary(QVariant) not implemented for this type");
-}
-
-//----------------------------------------------------------------------------
-template<typename MonetaryType>
-inline
-QVariant monetaryToVariant( const MonetaryType &m )
-{
-    throw std::runtime_error("invest_openapi::toVariant(MonetaryType) not implemented for this type");
-}
-
-//----------------------------------------------------------------------------
-template<typename MonetaryType>
-inline
-QString monetaryToString( const MonetaryType &m )
-{
-    throw std::runtime_error("invest_openapi::toString(MonetaryType) not implemented for this type");
-}
-
-
-
-
-
-//----------------------------------------------------------------------------
-template<>
-inline
-double toMonetary<double>( const QVariant &s )
-{
-    return s.toDouble();
-}
-
-//----------------------------------------------------------------------------
-template<>
-inline
-double toMonetary<double>( const QString &s )
-{
-    QVariant qv = QVariant(s);
-    return toMonetary<double>(qv);
-}
-
-//----------------------------------------------------------------------------
-template<>
-inline
-QVariant monetaryToVariant<double>( const double &m )
-{
-    return QVariant(m);
-}
-
-//----------------------------------------------------------------------------
-template<>
-inline
-QString monetaryToString<double>( const double &m )
-{
-    return QVariant(m).toString();
-}
-
-//----------------------------------------------------------------------------
 
 
 

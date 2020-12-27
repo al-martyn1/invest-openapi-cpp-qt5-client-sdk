@@ -25,6 +25,9 @@
 #include "Enum.h"
 #include "Object.h"
 
+#include "../../marty_decimal.h"
+
+
 namespace OpenAPI {
 
 class OrderResponse : public Object {
@@ -38,8 +41,8 @@ public:
     void fromJsonObject(QJsonObject json) override;
     void fromJson(QString jsonString) override;
 
-    double getPrice() const;
-    void setPrice(const double &price);
+    marty::Decimal getPrice() const;
+    void setPrice(const marty::Decimal &price);
     bool is_price_Set() const;
     bool is_price_Valid() const;
 
@@ -54,7 +57,7 @@ public:
 private:
     void initializeModel();
 
-    double price;
+    marty::Decimal price;
     bool m_price_isSet;
     bool m_price_isValid;
 

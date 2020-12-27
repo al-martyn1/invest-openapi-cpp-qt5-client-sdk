@@ -75,10 +75,10 @@ QJsonObject OrderResponse::asJsonObject() const {
     return obj;
 }
 
-double OrderResponse::getPrice() const {
+marty::Decimal OrderResponse::getPrice() const {
     return price;
 }
-void OrderResponse::setPrice(const double &price) {
+void OrderResponse::setPrice(const marty::Decimal &price) {
     this->price = price;
     this->m_price_isSet = true;
 }

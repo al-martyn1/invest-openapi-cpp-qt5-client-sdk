@@ -263,10 +263,10 @@ bool Operation::is_currency_Valid() const{
     return m_currency_isValid;
 }
 
-double Operation::getPayment() const {
+marty::Decimal Operation::getPayment() const {
     return payment;
 }
-void Operation::setPayment(const double &payment) {
+void Operation::setPayment(const marty::Decimal &payment) {
     this->payment = payment;
     this->m_payment_isSet = true;
 }
@@ -279,10 +279,10 @@ bool Operation::is_payment_Valid() const{
     return m_payment_isValid;
 }
 
-double Operation::getPrice() const {
+marty::Decimal Operation::getPrice() const {
     return price;
 }
-void Operation::setPrice(const double &price) {
+void Operation::setPrice(const marty::Decimal &price) {
     this->price = price;
     this->m_price_isSet = true;
 }

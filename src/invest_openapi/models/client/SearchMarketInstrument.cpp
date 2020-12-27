@@ -177,10 +177,10 @@ bool SearchMarketInstrument::is_isin_Valid() const{
     return m_isin_isValid;
 }
 
-double SearchMarketInstrument::getMinPriceIncrement() const {
+marty::Decimal SearchMarketInstrument::getMinPriceIncrement() const {
     return min_price_increment;
 }
-void SearchMarketInstrument::setMinPriceIncrement(const double &min_price_increment) {
+void SearchMarketInstrument::setMinPriceIncrement(const marty::Decimal &min_price_increment) {
     this->min_price_increment = min_price_increment;
     this->m_min_price_increment_isSet = true;
 }

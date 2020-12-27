@@ -75,10 +75,10 @@ QJsonObject MarketInstrumentList::asJsonObject() const {
     return obj;
 }
 
-double MarketInstrumentList::getTotal() const {
+marty::Decimal MarketInstrumentList::getTotal() const {
     return total;
 }
-void MarketInstrumentList::setTotal(const double &total) {
+void MarketInstrumentList::setTotal(const marty::Decimal &total) {
     this->total = total;
     this->m_total_isSet = true;
 }

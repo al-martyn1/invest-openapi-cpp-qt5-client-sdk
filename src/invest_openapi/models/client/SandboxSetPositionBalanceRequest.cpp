@@ -91,10 +91,10 @@ bool SandboxSetPositionBalanceRequest::is_figi_Valid() const{
     return m_figi_isValid;
 }
 
-double SandboxSetPositionBalanceRequest::getBalance() const {
+marty::Decimal SandboxSetPositionBalanceRequest::getBalance() const {
     return balance;
 }
-void SandboxSetPositionBalanceRequest::setBalance(const double &balance) {
+void SandboxSetPositionBalanceRequest::setBalance(const marty::Decimal &balance) {
     this->balance = balance;
     this->m_balance_isSet = true;
 }

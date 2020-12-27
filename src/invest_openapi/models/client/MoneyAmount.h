@@ -26,6 +26,9 @@
 #include "Enum.h"
 #include "Object.h"
 
+#include "../../marty_decimal.h"
+
+
 namespace OpenAPI {
 
 class MoneyAmount : public Object {
@@ -44,8 +47,8 @@ public:
     bool is_currency_Set() const;
     bool is_currency_Valid() const;
 
-    double getValue() const;
-    void setValue(const double &value);
+    marty::Decimal getValue() const;
+    void setValue(const marty::Decimal &value);
     bool is_value_Set() const;
     bool is_value_Valid() const;
 
@@ -59,7 +62,7 @@ private:
     bool m_currency_isSet;
     bool m_currency_isValid;
 
-    double value;
+    marty::Decimal value;
     bool m_value_isSet;
     bool m_value_isValid;
 };

@@ -28,9 +28,12 @@
 #include "Object.h"
 
 #include "../../models_helpers.h"
+#include "../../marty_decimal.h"
 
 
 namespace OpenAPI {
+
+
 
 bool setDateTimeFormat(const QString&);
 
@@ -54,6 +57,7 @@ bool fromJsonValue(QList<T> &val, const QJsonValue &jval);
 
 template <typename T>
 bool fromJsonValue(QMap<QString, T> &val, const QJsonValue &jval);
+
 
 QString toStringValue(const QString &value);
 QString toStringValue(const QDateTime &value);
@@ -111,6 +115,7 @@ QJsonValue toJsonValue(const QMap<QString, T> &val) {
     return jObject;
 }
 
+
 bool fromStringValue(const QString &inStr, QString &value);
 bool fromStringValue(const QString &inStr, QDateTime &value);
 bool fromStringValue(const QString &inStr, QByteArray &value);
@@ -145,6 +150,7 @@ bool fromStringValue(const QMap<QString, QString> &inStr, QMap<QString, T> &val)
     }
     return ok;
 }
+
 
 bool fromJsonValue(QString &value, const QJsonValue &jval);
 bool fromJsonValue(QDateTime &value, const QJsonValue &jval);
@@ -191,6 +197,14 @@ bool fromJsonValue(QMap<QString, T> &val, const QJsonValue &jval) {
     }
     return ok;
 }
+
+
+QString toStringValue(const marty::Decimal &value);
+QJsonValue toJsonValue(const marty::Decimal &value);
+bool fromStringValue(const QString &inStr, marty::Decimal &value);
+bool fromJsonValue(marty::Decimal &value, const QJsonValue &jval);
+
+
 
 } // namespace OpenAPI
 

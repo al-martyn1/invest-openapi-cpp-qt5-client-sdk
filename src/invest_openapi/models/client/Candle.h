@@ -28,6 +28,9 @@
 #include "Enum.h"
 #include "Object.h"
 
+#include "../../marty_decimal.h"
+
+
 namespace OpenAPI {
 
 class Candle : public Object {
@@ -51,23 +54,23 @@ public:
     bool is_interval_Set() const;
     bool is_interval_Valid() const;
 
-    double getO() const;
-    void setO(const double &o);
+    marty::Decimal getO() const;
+    void setO(const marty::Decimal &o);
     bool is_o_Set() const;
     bool is_o_Valid() const;
 
-    double getC() const;
-    void setC(const double &c);
+    marty::Decimal getC() const;
+    void setC(const marty::Decimal &c);
     bool is_c_Set() const;
     bool is_c_Valid() const;
 
-    double getH() const;
-    void setH(const double &h);
+    marty::Decimal getH() const;
+    void setH(const marty::Decimal &h);
     bool is_h_Set() const;
     bool is_h_Valid() const;
 
-    double getL() const;
-    void setL(const double &l);
+    marty::Decimal getL() const;
+    void setL(const marty::Decimal &l);
     bool is_l_Set() const;
     bool is_l_Valid() const;
 
@@ -95,19 +98,19 @@ private:
     bool m_interval_isSet;
     bool m_interval_isValid;
 
-    double o;
+    marty::Decimal o;
     bool m_o_isSet;
     bool m_o_isValid;
 
-    double c;
+    marty::Decimal c;
     bool m_c_isSet;
     bool m_c_isValid;
 
-    double h;
+    marty::Decimal h;
     bool m_h_isSet;
     bool m_h_isValid;
 
-    double l;
+    marty::Decimal l;
     bool m_l_isSet;
     bool m_l_isValid;
 

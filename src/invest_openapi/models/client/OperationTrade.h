@@ -27,6 +27,9 @@
 #include "Enum.h"
 #include "Object.h"
 
+#include "../../marty_decimal.h"
+
+
 namespace OpenAPI {
 
 class OperationTrade : public Object {
@@ -50,8 +53,8 @@ public:
     bool is_date_Set() const;
     bool is_date_Valid() const;
 
-    double getPrice() const;
-    void setPrice(const double &price);
+    marty::Decimal getPrice() const;
+    void setPrice(const marty::Decimal &price);
     bool is_price_Set() const;
     bool is_price_Valid() const;
 
@@ -74,7 +77,7 @@ private:
     bool m_date_isSet;
     bool m_date_isValid;
 
-    double price;
+    marty::Decimal price;
     bool m_price_isSet;
     bool m_price_isValid;
 

@@ -91,10 +91,10 @@ bool SandboxSetCurrencyBalanceRequest::is_currency_Valid() const{
     return m_currency_isValid;
 }
 
-double SandboxSetCurrencyBalanceRequest::getBalance() const {
+marty::Decimal SandboxSetCurrencyBalanceRequest::getBalance() const {
     return balance;
 }
-void SandboxSetCurrencyBalanceRequest::setBalance(const double &balance) {
+void SandboxSetCurrencyBalanceRequest::setBalance(const marty::Decimal &balance) {
     this->balance = balance;
     this->m_balance_isSet = true;
 }

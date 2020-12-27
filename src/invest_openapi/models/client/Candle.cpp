@@ -161,10 +161,10 @@ bool Candle::is_interval_Valid() const{
     return m_interval_isValid;
 }
 
-double Candle::getO() const {
+marty::Decimal Candle::getO() const {
     return o;
 }
-void Candle::setO(const double &o) {
+void Candle::setO(const marty::Decimal &o) {
     this->o = o;
     this->m_o_isSet = true;
 }
@@ -177,10 +177,10 @@ bool Candle::is_o_Valid() const{
     return m_o_isValid;
 }
 
-double Candle::getC() const {
+marty::Decimal Candle::getC() const {
     return c;
 }
-void Candle::setC(const double &c) {
+void Candle::setC(const marty::Decimal &c) {
     this->c = c;
     this->m_c_isSet = true;
 }
@@ -193,10 +193,10 @@ bool Candle::is_c_Valid() const{
     return m_c_isValid;
 }
 
-double Candle::getH() const {
+marty::Decimal Candle::getH() const {
     return h;
 }
-void Candle::setH(const double &h) {
+void Candle::setH(const marty::Decimal &h) {
     this->h = h;
     this->m_h_isSet = true;
 }
@@ -209,10 +209,10 @@ bool Candle::is_h_Valid() const{
     return m_h_isValid;
 }
 
-double Candle::getL() const {
+marty::Decimal Candle::getL() const {
     return l;
 }
-void Candle::setL(const double &l) {
+void Candle::setL(const marty::Decimal &l) {
     this->l = l;
     this->m_l_isSet = true;
 }

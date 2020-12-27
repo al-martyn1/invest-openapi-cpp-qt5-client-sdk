@@ -236,10 +236,10 @@ bool Orderbook::is_trade_status_Valid() const{
     return m_trade_status_isValid;
 }
 
-double Orderbook::getMinPriceIncrement() const {
+marty::Decimal Orderbook::getMinPriceIncrement() const {
     return min_price_increment;
 }
-void Orderbook::setMinPriceIncrement(const double &min_price_increment) {
+void Orderbook::setMinPriceIncrement(const marty::Decimal &min_price_increment) {
     this->min_price_increment = min_price_increment;
     this->m_min_price_increment_isSet = true;
 }
@@ -252,10 +252,10 @@ bool Orderbook::is_min_price_increment_Valid() const{
     return m_min_price_increment_isValid;
 }
 
-double Orderbook::getFaceValue() const {
+marty::Decimal Orderbook::getFaceValue() const {
     return face_value;
 }
-void Orderbook::setFaceValue(const double &face_value) {
+void Orderbook::setFaceValue(const marty::Decimal &face_value) {
     this->face_value = face_value;
     this->m_face_value_isSet = true;
 }
@@ -268,10 +268,10 @@ bool Orderbook::is_face_value_Valid() const{
     return m_face_value_isValid;
 }
 
-double Orderbook::getLastPrice() const {
+marty::Decimal Orderbook::getLastPrice() const {
     return last_price;
 }
-void Orderbook::setLastPrice(const double &last_price) {
+void Orderbook::setLastPrice(const marty::Decimal &last_price) {
     this->last_price = last_price;
     this->m_last_price_isSet = true;
 }
@@ -284,10 +284,10 @@ bool Orderbook::is_last_price_Valid() const{
     return m_last_price_isValid;
 }
 
-double Orderbook::getClosePrice() const {
+marty::Decimal Orderbook::getClosePrice() const {
     return close_price;
 }
-void Orderbook::setClosePrice(const double &close_price) {
+void Orderbook::setClosePrice(const marty::Decimal &close_price) {
     this->close_price = close_price;
     this->m_close_price_isSet = true;
 }
@@ -300,10 +300,10 @@ bool Orderbook::is_close_price_Valid() const{
     return m_close_price_isValid;
 }
 
-double Orderbook::getLimitUp() const {
+marty::Decimal Orderbook::getLimitUp() const {
     return limit_up;
 }
-void Orderbook::setLimitUp(const double &limit_up) {
+void Orderbook::setLimitUp(const marty::Decimal &limit_up) {
     this->limit_up = limit_up;
     this->m_limit_up_isSet = true;
 }
@@ -316,10 +316,10 @@ bool Orderbook::is_limit_up_Valid() const{
     return m_limit_up_isValid;
 }
 
-double Orderbook::getLimitDown() const {
+marty::Decimal Orderbook::getLimitDown() const {
     return limit_down;
 }
-void Orderbook::setLimitDown(const double &limit_down) {
+void Orderbook::setLimitDown(const marty::Decimal &limit_down) {
     this->limit_down = limit_down;
     this->m_limit_down_isSet = true;
 }

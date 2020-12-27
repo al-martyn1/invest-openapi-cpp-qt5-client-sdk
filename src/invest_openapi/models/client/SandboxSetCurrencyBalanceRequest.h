@@ -26,6 +26,9 @@
 #include "Enum.h"
 #include "Object.h"
 
+#include "../../marty_decimal.h"
+
+
 namespace OpenAPI {
 
 class SandboxSetCurrencyBalanceRequest : public Object {
@@ -44,8 +47,8 @@ public:
     bool is_currency_Set() const;
     bool is_currency_Valid() const;
 
-    double getBalance() const;
-    void setBalance(const double &balance);
+    marty::Decimal getBalance() const;
+    void setBalance(const marty::Decimal &balance);
     bool is_balance_Set() const;
     bool is_balance_Valid() const;
 
@@ -59,7 +62,7 @@ private:
     bool m_currency_isSet;
     bool m_currency_isValid;
 
-    double balance;
+    marty::Decimal balance;
     bool m_balance_isSet;
     bool m_balance_isValid;
 };

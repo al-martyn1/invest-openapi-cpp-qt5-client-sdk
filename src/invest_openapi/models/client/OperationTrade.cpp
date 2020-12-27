@@ -125,10 +125,10 @@ bool OperationTrade::is_date_Valid() const{
     return m_date_isValid;
 }
 
-double OperationTrade::getPrice() const {
+marty::Decimal OperationTrade::getPrice() const {
     return price;
 }
-void OperationTrade::setPrice(const double &price) {
+void OperationTrade::setPrice(const marty::Decimal &price) {
     this->price = price;
     this->m_price_isSet = true;
 }

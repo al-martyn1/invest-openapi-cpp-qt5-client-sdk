@@ -116,10 +116,10 @@ bool LimitOrderRequest::is_operation_Valid() const{
     return m_operation_isValid;
 }
 
-double LimitOrderRequest::getPrice() const {
+marty::Decimal LimitOrderRequest::getPrice() const {
     return price;
 }
-void LimitOrderRequest::setPrice(const double &price) {
+void LimitOrderRequest::setPrice(const marty::Decimal &price) {
     this->price = price;
     this->m_price_isSet = true;
 }

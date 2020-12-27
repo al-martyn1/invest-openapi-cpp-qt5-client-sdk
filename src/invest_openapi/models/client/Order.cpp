@@ -241,10 +241,10 @@ bool Order::is_type_Valid() const{
     return m_type_isValid;
 }
 
-double Order::getPrice() const {
+marty::Decimal Order::getPrice() const {
     return price;
 }
-void Order::setPrice(const double &price) {
+void Order::setPrice(const marty::Decimal &price) {
     this->price = price;
     this->m_price_isSet = true;
 }
