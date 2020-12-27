@@ -1,5 +1,5 @@
 /*! \file
-    \brief Configs lookup test
+    \brief Decimal type test
 
  */
 

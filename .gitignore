@@ -53,3 +53,4 @@
 /_deploy
 /_out
 /_tmp
+/database.properties

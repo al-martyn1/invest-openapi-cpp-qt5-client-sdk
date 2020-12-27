@@ -109,6 +109,14 @@ QStringList listStringSplit( QString s )
 }
 
 //----------------------------------------------------------------------------
+inline
+QStringList pathListSplit( QString pathList )
+{
+    pathList.replace(':', ";"); // replace *nix style list separator to windows style separator
+    return pathList.split( ';', Qt::SkipEmptyParts );
+}
+
+//----------------------------------------------------------------------------
 
 
 
