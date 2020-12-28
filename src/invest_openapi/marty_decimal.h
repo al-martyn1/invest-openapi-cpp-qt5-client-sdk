@@ -741,10 +741,94 @@ int charIsSpaceOrTab( CharType ch )
 
 //----------------------------------------------------------------------------
 inline
-Decimal     fromString( const std::string &numberStr)
+bool isDecimalStringCandidateExactPlainDecimalValueChar( char ch )
 {
-    std::string::size_type pos = 0;
-    std::string::size_type sz  = numberStr.size();
+    switch(ch)
+    {
+        case '0': case '1': case '2': case '3': case '4':            
+        case '5': case '6': case '7': case '8': case '9':
+            continue; // good char - this is a digit
+
+        case ',': case '.':
+            continue; // good char - this is a decimal separator
+
+        case ' ': case '\'': case '`':
+            continue; // good char - this is a group separator
+
+        case '+': case '-':
+            continue; // nice signum sign
+
+        default: return false;
+    }
+
+    return true;
+}
+
+//----------------------------------------------------------------------------
+inline
+bool isDecimalStringCandidateExactPlainDecimalValueString( const std::string &numberStr )
+{
+    typedef std::string::size_type sz_t;
+    sz_t pos = 0, sz = numberStr.size();
+
+    for(; pos!=sz; ++pos)
+    {
+        if (!isDecimalStringCandidateExactPlainDecimalValueChar(numberStr[pos]))
+            return false;
+    }
+
+    return true;
+}
+
+//----------------------------------------------------------------------------
+inline
+char decimalStringPrepareConvertChar( char ch )
+{
+    if (ch==' ' || ch=='\'' || ch=='`') return 0;
+    if (ch==',' ) return '.';
+    return ch;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::string decimalStringPrepareForConvert( const std::string &s )
+{
+    typedef std::string::size_type sz_t;
+    sz_t pos = 0, sz = numberStr.size();
+    std::string res;
+
+    for(; pos!=sz; ++pos)
+    {
+        char ch = decimalStringPrepareConvertChar(s[pos]);
+        if (ch)
+           res.append(1,ch);
+    }
+
+    return res;
+}
+
+//----------------------------------------------------------------------------
+inline
+Decimal     fromString( std::string numberStr )
+{
+    numberStr = decimalStringPrepareForConvert(numberStr); // change ',' to '.' and skip thousands separator
+
+    typedef std::string::size_type sz_t;
+    sz_t pos = 0, sz = numberStr.size();
+
+    if (!isDecimalStringCandidateExactPlainDecimalValueString(numberStr))
+    {
+        // may be double in exponential format
+        // Лень самому парсить
+        sz_t cnt = 0;
+        double dbl = std::stod( numberStr, &cnt );
+
+        if (cnt!=sz)
+            throw std::runtime_error("Decimal fromString - possible exponential form parsing failed");
+
+        return Decimal(dbl);
+    }
+
 
     bool neg = false;
 
