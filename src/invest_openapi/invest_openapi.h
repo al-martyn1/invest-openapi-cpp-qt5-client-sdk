@@ -93,8 +93,8 @@ struct IOpenApi
     virtual QString getBrokerAccountId()                    = 0;
 
     virtual void setRequestsDebug( bool v )  = 0;
-    virtual bool getRequestsDebug( )         = 0;
     virtual void setResponsesDebug( bool v ) = 0;
+    virtual bool getRequestsDebug( )         = 0;
     virtual bool getResponsesDebug( )        = 0;
 
 
@@ -241,6 +241,9 @@ public:
     , m_authConfig(authConfig)
     {
         initApis(OpenApiFactory(m_apiConfig, m_authConfig));
+
+        setRequestsDebug (m_apiConfig.debugRequests);
+        setResponsesDebug(m_apiConfig.debugResponses);
     }
 
     //------------------------------

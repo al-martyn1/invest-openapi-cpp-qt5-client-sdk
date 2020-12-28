@@ -13,6 +13,10 @@
 #include <QTest>
 #include <QDir>
 #include <QElapsedTimer>
+#include <QSqlDatabase>
+#include <QSqlDriver>
+
+
 
 #include "invest_openapi/config_helpers.h"
 #include "invest_openapi/api_config.h"
@@ -56,6 +60,21 @@ INVEST_OPENAPI_MAIN()
     tkf::DatabasePlacementStrategyDefault defStrategy = tkf::DatabasePlacementStrategyDefault();
     auto dbName = defStrategy( dbConfigFullName, "dbPathTest.sql" );
     cout<<"DB name: " << dbName.toStdString() << endl;
+
+    tkf::DatabaseConfig databaseConfig = tkf::DatabaseConfig(dbConfigFullName, tkf::DatabasePlacementStrategyDefault() );
+
+
+    QSqlDatabase sqlDb = QSqlDatabase::addDatabase("QSQLITE");
+    sqlDb.setDatabaseName(databaseConfig.dbFilename);
+
+    databaseConfig = databaseConfig.escapeForDb(sqlDb);
+
+    if (!sqlDb.open())
+    {
+      qDebug() << sqlDb.lastError().text();
+      return 0;
+    }
+
 
 
     return 0;

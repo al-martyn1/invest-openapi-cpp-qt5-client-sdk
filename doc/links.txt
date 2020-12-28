@@ -1,1 +1,3 @@
 https://tinkoffcreditsystems.github.io/invest-openapi/marketdata/
+About FIGI - https://news.itmo.ru/ru/science/it/news/6894/
+           https://ru.qaz.wiki/wiki/Financial_Instrument_Global_Identifier

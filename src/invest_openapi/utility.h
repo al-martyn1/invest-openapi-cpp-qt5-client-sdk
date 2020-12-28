@@ -12,6 +12,14 @@
 #include <QStringList>
 #include <QVector>
 #include <QDebug>
+#include <QNetworkReply>
+
+#if defined(QT_SQL_LIB)
+    #include <QSqlDatabase>
+    #include <QSqlDriver>
+    #include <QSqlField>
+    #include <QSqlError>
+#endif
 
 #include "models.h"
 
@@ -122,40 +130,25 @@ QStringList pathListSplit( QString pathList )
 
 
 //----------------------------------------------------------------------------
-template< typename CurrencySourceType >
-inline
-Currency toCurrency(const CurrencySourceType &v)
-{
-    throw std::runtime_error("invest_openapi::toCurrency(const CurrencySourceType&) not implemented for this type");
-}
+#define INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_STRING( TypeTo ) \
+            TypeTo res;                                        \
+            res.fromJson(v);                                   \
+            return res
+
+#define INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_ENUM( TypeTo )   \
+            TypeTo res;                                        \
+            res.setValue(v);                                   \
+            return res;
+
+#define INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_UNDEFINED( methodName, UndefinedTypeName ) \
+            throw std::runtime_error("template<> invest_openapi::" #methodName "(const " #UndefinedTypeName "&) not implemented for this type")
 
 //----------------------------------------------------------------------------
-template< >
-inline
-Currency toCurrency<Currency>(const Currency &v)
-{
-    return v;
-}
-
-//----------------------------------------------------------------------------
-template< >
-inline
-Currency toCurrency<Currency::eCurrency>(const Currency::eCurrency &v)
-{
-    Currency res;
-    res.setValue(v);
-    return res;
-}
-
-//----------------------------------------------------------------------------
-template< >
-inline
-Currency toCurrency<QString>(const QString &v)
-{
-    Currency res;
-    res.fromJson(v);
-    return res;
-}
+template< typename CurrencySourceType > 
+            inline Currency             toCurrency                             (const CurrencySourceType           &v) { INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_UNDEFINED(toCurrency,CurrencySourceType); }
+template< > inline Currency             toCurrency<Currency                   >(const Currency                     &v) { return v; }
+template< > inline Currency             toCurrency<Currency::eCurrency        >(const Currency::eCurrency          &v) { INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_ENUM( Currency ); }
+template< > inline Currency             toCurrency<QString                    >(const QString                      &v) { INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_STRING( Currency ); }
 
 //----------------------------------------------------------------------------
 
@@ -516,9 +509,21 @@ auto joinAndGetPayload( ResponseType response ) -> decltype(response->value.getP
 
 } // namespace invest_openapi
 
+//------------------------------
 
 
 
+
+
+//------------------------------
+#if defined(QT_SQL_LIB)
+QString sqlEscape( const QSqlDatabase &db, const QString &str )
+{
+    QSqlField f(QLatin1String(""), QVariant::String);
+    f.setValue(str);
+    return db.driver()->formatValue(f);
+}
+#endif
 
 
 #include "instrument.h"

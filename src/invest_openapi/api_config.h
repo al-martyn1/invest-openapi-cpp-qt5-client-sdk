@@ -28,6 +28,9 @@ struct ApiConfig
     QString  url;
     QString  urlSandbox;
     QString  urlStreaming;
+    bool debugRequests ;
+    bool debugResponses;
+
 
 
     void load( const QSettings &settings )
@@ -35,6 +38,10 @@ struct ApiConfig
         url          = settings.value("ru.tinkoff.invest.openapi.host").toString();
         urlSandbox   = settings.value("ru.tinkoff.invest.openapi.host-sandbox").toString();
         urlStreaming = settings.value("ru.tinkoff.invest.openapi.streaming").toString();
+
+        debugRequests  = settings.value("app.debug.dump.requests" , QVariant(false)).toBool();
+        debugResponses = settings.value("app.debug.dump.responses", QVariant(false)).toBool();
+
     }
 
     void checkValid() const

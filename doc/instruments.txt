@@ -1,0 +1,32 @@
+{"instruments":[
+{"figi":"BBG0013HGFT4","ticker":"USD000UTSTOM","minPriceIncrement":0.0025,"lot":1000,"currency":"RUB","name":"Доллар США","type":"Currency"},
+{"figi":"BBG0013HJJ31","ticker":"EUR_RUB__TOM","minPriceIncrement":0.0025,"lot":1000,"currency":"RUB","name":"Евро","type":"Currency"}
+],"total":2},"status":"Ok"}
+...
+
+
+{"instruments":[
+{"figi":"BBG333333333","ticker":"TMOS","isin":"RU000A101X76","minPriceIncrement":0.002,"lot":1,"currency":"RUB","name":"Тинькофф iMOEX","type":"Etf"},
+{"figi":"BBG005DXDPK9","ticker":"FXGD","isin":"IE00B8XB7377","minPriceIncrement":0.2,"lot":1,"currency":"RUB","name":"FinEx Золото","type":"Etf"},
+{"figi":"BBG00NB6KGN0","ticker":"SBCB","isin":"RU000A1000Q6","minPriceIncrement":0.01,"lot":1,"currency":"USD","name":"Сбербанк Индекс Еврооблигаций","type":"Etf"},
+{"figi":"BBG00PVNWQ15","ticker":"VTBE","isin":"RU000A100HQ5","minPriceIncrement":0.01,"lot":1,"currency":"USD","name":"ВТБ Акции развивающихся рынков","type":"Etf"},
+...
+
+{"instruments":[
+{"figi":"BBG00T22WKV5","ticker":"SU29013RMFS8","isin":"RU000A101KT1","minPriceIncrement":0.01,"faceValue":1E+3,"lot":1,"currency":"RUB","name":"ОФЗ 29013","type":"Bond"},
+{"figi":"BBG00R05JT04","ticker":"RU000A1013Y3","isin":"RU000A1013Y3","minPriceIncrement":0.1,"faceValue":1E+3,"lot":1,"currency":"RUB","name":"Черкизово выпуск 2","type":"Bond"},
+{"figi":"BBG00PNLY692","ticker":"RU000A100DC4","isin":"RU000A100DC4","minPriceIncrement":0.085419,"faceValue":854.19,"lot":1,"currency":"RUB","name":"МСБ-Лизинг 002P выпуск 2","type":"Bond"},
+{"figi":"BBG00KHGQP89","ticker":"RU000A0ZZ1F6","isin":"RU000A0ZZ1F6","minPriceIncrement":0.1,"faceValue":1E+3,"lot":1,"currency":"RUB","name":"КарМани выпуск 2","type":"Bond"},
+{"figi":"BBG00JYHHXN7","ticker":"RU000A0ZYR18","isin":"RU000A0ZYR18","minPriceIncrement":0.1,"faceValue":1E+3,"lot":1,"currency":"RUB","name":"Башкирская содовая компания выпуск 1","type":"Bond"}
+...
+
+{"instruments":[
+{"figi":"BBG000HLJ7M4","ticker":"IDCC","isin":"US45867G1013","minPriceIncrement":0.01,"lot":1,"currency":"USD","name":"InterDigItal Inc","type":"Stock"},
+{"figi":"BBG002293PJ4","ticker":"RH","isin":"US74967X1037","minPriceIncrement":0.01,"lot":1,"currency":"USD","name":"RH","type":"Stock"},
+{"figi":"BBG000BPL8G3","ticker":"MTSC","isin":"US5537771033","minPriceIncrement":0.01,"lot":1,"currency":"USD","name":"MTS Systems Corp","type":"Stock"},
+{"figi":"BBG000CTQBF3","ticker":"SBUX","isin":"US8552441094","minPriceIncrement":0.01,"lot":1,"currency":"USD","name":"Starbucks Corporation","type":"Stock"},
+{"figi":"BBG000BH0FR6","ticker":"SGEN","isin":"US81181C1045","minPriceIncrement":0.01,"lot":1,"currency":"USD","name":"Seagen Inc.","type":"Stock"},
+{"figi":"BBG004S68758","ticker":"BANE","isin":"RU0007976957","minPriceIncrement":0.5,"lot":1,"currency":"RUB","name":"Башнефть","type":"Stock"},
+{"figi":"BBG004MN1R41","ticker":"NAVI","isin":"US63938C1080","minPriceIncrement":0.01,"lot":1,"currency":"USD","name":"Navient","type":"Stock"},
+{"figi":"BBG000BPNP00","ticker":"MXIM","isin":"US57772K1016","minPriceIncrement":0.01,"lot":1,"currency":"USD","name":"Maxim Integrated Products Inc","type":"Stock"},
+...

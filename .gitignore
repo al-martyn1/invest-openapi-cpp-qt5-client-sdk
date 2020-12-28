@@ -55,3 +55,6 @@
 /_tmp
 /database.properties
 /src/main/_cpp.template
+/_run_logs
+/*.log
+/windeployqt.txt

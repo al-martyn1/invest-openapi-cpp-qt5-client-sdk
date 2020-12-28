@@ -411,6 +411,9 @@ void HttpRequestWorker::on_manager_timeout(QNetworkReply *reply) {
 }
 
 void HttpRequestWorker::process_response(QNetworkReply *reply) {
+
+    dumpHttpResponse(*reply);
+
     if (getResponseHeaders().contains(QString("Content-Disposition"))) {
         auto contentDisposition = getResponseHeaders().value(QString("Content-Disposition").toUtf8()).split(QString(";"), QString::SkipEmptyParts);
         auto contentType =
