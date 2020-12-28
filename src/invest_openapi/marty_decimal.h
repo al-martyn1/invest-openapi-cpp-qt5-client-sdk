@@ -747,16 +747,16 @@ bool isDecimalStringCandidateExactPlainDecimalValueChar( char ch )
     {
         case '0': case '1': case '2': case '3': case '4':            
         case '5': case '6': case '7': case '8': case '9':
-            continue; // good char - this is a digit
+            return true; // good char - this is a digit
 
         case ',': case '.':
-            continue; // good char - this is a decimal separator
+            return true; // good char - this is a decimal separator
 
         case ' ': case '\'': case '`':
-            continue; // good char - this is a group separator
+            return true; // good char - this is a group separator
 
         case '+': case '-':
-            continue; // nice signum sign
+            return true; // nice signum sign
 
         default: return false;
     }
@@ -791,7 +791,7 @@ char decimalStringPrepareConvertChar( char ch )
 
 //----------------------------------------------------------------------------
 inline
-std::string decimalStringPrepareForConvert( const std::string &s )
+std::string decimalStringPrepareForConvert( const std::string &numberStr )
 {
     typedef std::string::size_type sz_t;
     sz_t pos = 0, sz = numberStr.size();
@@ -799,7 +799,7 @@ std::string decimalStringPrepareForConvert( const std::string &s )
 
     for(; pos!=sz; ++pos)
     {
-        char ch = decimalStringPrepareConvertChar(s[pos]);
+        char ch = decimalStringPrepareConvertChar(numberStr[pos]);
         if (ch)
            res.append(1,ch);
     }
@@ -809,9 +809,9 @@ std::string decimalStringPrepareForConvert( const std::string &s )
 
 //----------------------------------------------------------------------------
 inline
-Decimal     fromString( std::string numberStr )
+Decimal     fromString( const std::string &numberStr_ )
 {
-    numberStr = decimalStringPrepareForConvert(numberStr); // change ',' to '.' and skip thousands separator
+    std::string numberStr = decimalStringPrepareForConvert(numberStr_); // change ',' to '.' and skip thousands separator
 
     typedef std::string::size_type sz_t;
     sz_t pos = 0, sz = numberStr.size();
