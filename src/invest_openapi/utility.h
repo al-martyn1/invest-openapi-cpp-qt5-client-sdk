@@ -144,138 +144,32 @@ QStringList pathListSplit( QString pathList )
             throw std::runtime_error("template<> invest_openapi::" #methodName "(const " #UndefinedTypeName "&) not implemented for this type")
 
 //----------------------------------------------------------------------------
+/*
 template< typename CurrencySourceType > 
             inline Currency             toCurrency                             (const CurrencySourceType           &v) { INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_UNDEFINED(toCurrency,CurrencySourceType); }
 template< > inline Currency             toCurrency<Currency                   >(const Currency                     &v) { return v; }
 template< > inline Currency             toCurrency<Currency::eCurrency        >(const Currency::eCurrency          &v) { INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_ENUM( Currency ); }
 template< > inline Currency             toCurrency<QString                    >(const QString                      &v) { INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_STRING( Currency ); }
+*/
+
+#define INVEST_OPENAPI_TO_TYPE_CONVERTER( methodName, targetType, targetTypeEnum, templateTypeName )                                                                                                                         \
+               template< typename templateTypeName >                                                                                                                                                                         \
+                           inline targetType             methodName                              (const templateTypeName              &v) { INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_UNDEFINED(methodName,templateTypeName); }  \
+               template< > inline targetType             methodName<targetType                  >(const targetType                    &v) { return v; }                                                                      \
+               template< > inline targetType             methodName<targetType::targetTypeEnum  >(const targetType :: targetTypeEnum  &v) { INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_ENUM( targetType ); }                      \
+               template< > inline targetType             methodName<QString                     >(const QString                       &v) { INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_STRING( targetType ); }
 
 //----------------------------------------------------------------------------
 
 
 
+//----------------------------------------------------------------------------
+INVEST_OPENAPI_TO_TYPE_CONVERTER( toCurrency           , Currency           , eCurrency          , CurrencySourceType   )
+INVEST_OPENAPI_TO_TYPE_CONVERTER( toInstrumentType     , InstrumentType     , eInstrumentType    , InstrumentSourceType )
+INVEST_OPENAPI_TO_TYPE_CONVERTER( toCandleResolution   , CandleResolution   , eCandleResolution  , CandleResolutionSourceType )
+INVEST_OPENAPI_TO_TYPE_CONVERTER( toOperationType      , OperationType      , eOperationType     , OperationSourceType )
 
 //----------------------------------------------------------------------------
-template< typename InstrumentSourceType >
-inline
-InstrumentType toInstrumentType(const InstrumentSourceType &v)
-{
-    throw std::runtime_error("invest_openapi::toInstrumentType(const InstrumentSourceType&) not implemented for this type");
-}
-
-//----------------------------------------------------------------------------
-template< >
-inline
-InstrumentType toInstrumentType<InstrumentType>(const InstrumentType &v)
-{
-    return v;
-}
-
-//----------------------------------------------------------------------------
-template< >
-inline
-InstrumentType toInstrumentType<InstrumentType::eInstrumentType>(const InstrumentType::eInstrumentType &v)
-{
-    InstrumentType res;
-    res.setValue(v);
-    return res;
-}
-
-//----------------------------------------------------------------------------
-template< >
-inline
-InstrumentType toInstrumentType<QString>(const QString &v)
-{
-    InstrumentType res;
-    res.fromJson(v);
-    return res;
-}
-
-//----------------------------------------------------------------------------
-
-
-
-
-//----------------------------------------------------------------------------
-template< typename InstrumentSourceType >
-inline
-CandleResolution toCandleResolution(const InstrumentSourceType &v)
-{
-    throw std::runtime_error("invest_openapi::toCandleResolution(const InstrumentSourceType&) not implemented for this type");
-}
-
-//----------------------------------------------------------------------------
-template< >
-inline
-CandleResolution toCandleResolution<CandleResolution>(const CandleResolution &v)
-{
-    return v;
-}
-
-//----------------------------------------------------------------------------
-template< >
-inline
-CandleResolution toCandleResolution<CandleResolution::eCandleResolution>(const CandleResolution::eCandleResolution &v)
-{
-    CandleResolution res;
-    res.setValue(v);
-    return res;
-}
-
-//----------------------------------------------------------------------------
-template< >
-inline
-CandleResolution toCandleResolution<QString>(const QString &v)
-{
-    CandleResolution res;
-    res.fromJson(v);
-    return res;
-}
-
-//----------------------------------------------------------------------------
-
-
-
-
-
-//----------------------------------------------------------------------------
-template< typename OperationSourceType >
-inline
-OperationType toOperationType(const OperationSourceType &v)
-{
-    throw std::runtime_error("invest_openapi::toOperationType(const OperationSourceType&) not implemented for this type");
-}
-
-//----------------------------------------------------------------------------
-template< >
-inline
-OperationType toOperationType<OperationType>(const OperationType &v)
-{
-    return v;
-}
-
-//----------------------------------------------------------------------------
-template< >
-inline
-OperationType toOperationType<OperationType::eOperationType>(const OperationType::eOperationType &v)
-{
-    OperationType res;
-    res.setValue(v);
-    return res;
-}
-
-//----------------------------------------------------------------------------
-template< >
-inline
-OperationType toOperationType<QString>(const QString &v)
-{
-    OperationType res;
-    res.fromJson(v);
-    return res;
-}
-
-//----------------------------------------------------------------------------
-
 
 
 
