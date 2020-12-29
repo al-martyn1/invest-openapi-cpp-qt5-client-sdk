@@ -75,6 +75,8 @@ INVEST_OPENAPI_MAIN()
       return 0;
     }
 
+    databaseConfig.createDatabaseShema(sqlDb);
+
 
 
     return 0;

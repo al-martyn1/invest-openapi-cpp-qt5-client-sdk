@@ -32,10 +32,16 @@ struct DatabasePlacementStrategyDefault
 }; // struct DatabasePlacementStrategyDefault
 
 
+
+
+
+
+
+
 struct DatabaseConfig
 {
     QString   dbFilename;
-    QString   instrumentsTableName;
+    QString   tableNameInstruments;
 
     void load( const QSettings &settings )
     {
@@ -44,7 +50,7 @@ struct DatabaseConfig
             dbFilename = settings.value("database").toString(); // defStrategy( dbConfigFullName, "dbPathTest.sql" );
         }
 
-        instrumentsTableName = settings.value("database.schema.table.name.instruments").toString();
+        tableNameInstruments = settings.value("database.schema.table.name.instruments").toString();
     }
 
     template<typename DatabasePlacementStrategyType>
@@ -86,16 +92,26 @@ struct DatabaseConfig
     {
         DatabaseConfig res;
         res.dbFilename = dbFilename;
-        res.instrumentsTableName = sqlEscape(db, instrumentsTableName);
+        res.tableNameInstruments = sqlEscape(db, tableNameInstruments);
         return res;
     }
 
     bool createDatabaseShema(QSqlDatabase &db) const
     {
-        QSqlQuery q(db);
-        q.exec(QString("DROP TABLE ") + instrumentsTableName + QString(";") );
+        QSqlQuery query(db);
+
+        query.exec(QString("DROP TABLE ") + tableNameInstruments + QString(";") );
 
 
+        query.exec( QString("CREATE TABLE ") + tableNameInstruments + QString(""
+            "(id integer primary key, "
+            "firstname varchar(20), "
+            "lastname varchar(30), "
+            "age integer)"
+            )
+        );
+
+        return true;
         
     }
 
