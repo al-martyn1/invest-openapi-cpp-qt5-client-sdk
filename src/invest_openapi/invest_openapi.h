@@ -23,6 +23,7 @@
 #include "openapi_completable_future.h"
 #include "api_config.h"
 #include "auth_config.h"
+#include "logging_config.h"
 #include "currencies_config.h"
 #include "factory.h"
 #include "utility.h"
@@ -236,14 +237,16 @@ public:
     //------------------------------
     OpenApiImpl( const ApiConfig  &apiConfig
                , const AuthConfig &authConfig
+               , const LoggingConfig &loggingConfig
                )
     : m_apiConfig(apiConfig)
     , m_authConfig(authConfig)
+    , m_loggingConfig(loggingConfig)
     {
         initApis(OpenApiFactory(m_apiConfig, m_authConfig));
 
-        setRequestsDebug (m_apiConfig.debugRequests);
-        setResponsesDebug(m_apiConfig.debugResponses);
+        setRequestsDebug (m_loggingConfig.debugRequests);
+        setResponsesDebug(m_loggingConfig.debugResponses);
     }
 
     //------------------------------
@@ -602,8 +605,9 @@ protected:
 
 
     //------------------------------
-    ApiConfig  m_apiConfig;
-    AuthConfig m_authConfig;
+    ApiConfig       m_apiConfig;
+    AuthConfig      m_authConfig;
+    LoggingConfig   m_loggingConfig;
 
     QSharedPointer<OrdersApi    >  m_pOrdersApi    ;
     QSharedPointer<PortfolioApi >  m_pPortfolioApi ;
@@ -636,8 +640,9 @@ public:
     //------------------------------
     SanboxOpenApiImpl( const ApiConfig  &apiConfig
                      , const AuthConfig &authConfig
+                     , const LoggingConfig &loggingConfig
                      )
-    : OpenApiImpl( apiConfig, authConfig )
+    : OpenApiImpl( apiConfig, authConfig, loggingConfig )
     {
         OpenApiFactory factory = OpenApiFactory(m_apiConfig, m_authConfig);
         m_pSandboxApi = factory.getApiImpl< SandboxApi >();
@@ -807,13 +812,14 @@ inline
 QSharedPointer<IOpenApi>
 createOpenApi( const ApiConfig  &apiConfig
              , const AuthConfig &authConfig
+             , const LoggingConfig &loggingConfig
              )
 {
-    OpenApiFactory faq = OpenApiFactory(apiConfig,authConfig);
+    OpenApiFactory faq = OpenApiFactory(apiConfig, authConfig);
 
     IOpenApi *pApi = authConfig.sandboxMode
-                   ? static_cast<IOpenApi*>(static_cast<OpenApiImpl*>(new SanboxOpenApiImpl(apiConfig,authConfig)))
-                   : static_cast<IOpenApi*>(new OpenApiImpl(apiConfig,authConfig))
+                   ? static_cast<IOpenApi*>(static_cast<OpenApiImpl*>(new SanboxOpenApiImpl(apiConfig, authConfig, loggingConfig)))
+                   : static_cast<IOpenApi*>(new OpenApiImpl(apiConfig, authConfig, loggingConfig))
                    ;
 
     return QSharedPointer<IOpenApi>( pApi );

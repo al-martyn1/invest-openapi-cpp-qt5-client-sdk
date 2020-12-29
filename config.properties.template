@@ -3,5 +3,3 @@ ru.tinkoff.invest.openapi.host-sandbox=https://api-invest.tinkoff.ru/openapi/san
 ru.tinkoff.invest.openapi.streaming=wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws
 ru.tinkoff.invest.openapi.streaming-parallelism=0
 
-app.debug.dump.requests  = true
-app.debug.dump.responses = true

@@ -1,1 +1,4 @@
 database = database.sqlite
+database.reopen = true
+
+database.schema.table.name.instruments = INSTRUMENTS

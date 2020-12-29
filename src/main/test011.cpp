@@ -27,7 +27,7 @@
 #include "invest_openapi/factory.h"
 #include "invest_openapi/openapi_completable_future.h"
 
-#include "invest_openapi/database_config.h"
+#include "invest_openapi/database_manager.h"
 
 
 // https://sqlitebrowser.org/
@@ -64,9 +64,18 @@ INVEST_OPENAPI_MAIN()
     tkf::DatabaseConfig databaseConfig = tkf::DatabaseConfig(dbConfigFullName, tkf::DatabasePlacementStrategyDefault() );
 
 
-    QSqlDatabase sqlDb = QSqlDatabase::addDatabase("QSQLITE");
-    sqlDb.setDatabaseName(databaseConfig.dbFilename);
+    //QSqlDatabase sqlDb = QSqlDatabase::addDatabase("QSQLITE");
+    //sqlDb.setDatabaseName(databaseConfig.dbFilename);
+    QSharedPointer<QSqlDatabase> pSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
+    pSqlDb->setDatabaseName( databaseConfig.dbFilename );
 
+    if (!pSqlDb->open())
+    {
+      qDebug() << pSqlDb->lastError().text();
+      return 0;
+    }
+
+    /*
     databaseConfig = databaseConfig.escapeForDb(sqlDb);
 
     if (!sqlDb.open())
@@ -76,6 +85,12 @@ INVEST_OPENAPI_MAIN()
     }
 
     databaseConfig.createDatabaseShema(sqlDb);
+
+    */
+
+    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createDatabaseManager( pSqlDb, databaseConfig );
+
+    qDebug() << "Table INSTRUMENTS: " << (pDbMan->tableCheckExist( "INSTRUMENTS" ) ? "EXIST" : "NOT EXIST");
 
 
 

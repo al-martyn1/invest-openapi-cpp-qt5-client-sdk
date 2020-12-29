@@ -68,8 +68,9 @@ INVEST_OPENAPI_MAIN()
 
 
     //------------------------------
-    QSharedPointer<tkf::IOpenApi> pOpenApi = tkf::createOpenApi( lookupForConfigFile( "config.properties", "conf;config", FileReadable() )
-                                                               , lookupForConfigFile( "auth.properties"  , "conf;config", FileReadable() )
+    QSharedPointer<tkf::IOpenApi> pOpenApi = tkf::createOpenApi( lookupForConfigFile( "config.properties"  , "conf;config", FileReadable() )
+                                                               , lookupForConfigFile( "auth.properties"    , "conf;config", FileReadable() )
+                                                               , lookupForConfigFile( "logging.properties" , "conf;config", FileReadable() )
                                                                );
 
     auto marketInstruments = pOpenApi->marketInstruments();

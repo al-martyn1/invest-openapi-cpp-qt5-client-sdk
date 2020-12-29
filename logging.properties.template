@@ -1,0 +1,2 @@
+logging.debug.dump.requests  = true
+logging.debug.dump.responses = true

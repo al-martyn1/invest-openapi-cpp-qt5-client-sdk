@@ -34,6 +34,9 @@ struct DatabasePlacementStrategyDefault
 
 
 
+class DatabaseConfig;
+class IDatabaseManager;
+QSharedPointer<IDatabaseManager> createDatabaseManager( QSharedPointer<QSqlDatabase> pDb, const DatabaseConfig &dbConfig );
 
 
 
@@ -41,14 +44,23 @@ struct DatabasePlacementStrategyDefault
 struct DatabaseConfig
 {
     QString   dbFilename;
+    bool      reopenMode; // reopen for each query or not
+
     QString   tableNameInstruments;
+
+
+    friend QSharedPointer<IDatabaseManager> createDatabaseManager( QSharedPointer<QSqlDatabase> pDb, const DatabaseConfig &dbConfig );
+
+
 
     void load( const QSettings &settings )
     {
         if (dbFilename.isEmpty())
         {
-            dbFilename = settings.value("database").toString(); // defStrategy( dbConfigFullName, "dbPathTest.sql" );
+            dbFilename = settings.value("database").toString();
         }
+
+        reopenMode = settings.value("database.reopen", QVariant(false)).toBool();
 
         tableNameInstruments = settings.value("database.schema.table.name.instruments").toString();
     }
@@ -88,6 +100,9 @@ struct DatabaseConfig
         checkValid();
     }
 
+
+protected:
+
     DatabaseConfig escapeForDb( const QSqlDatabase &db ) const
     {
         DatabaseConfig res;
@@ -95,27 +110,6 @@ struct DatabaseConfig
         res.tableNameInstruments = sqlEscape(db, tableNameInstruments);
         return res;
     }
-
-    bool createDatabaseShema(QSqlDatabase &db) const
-    {
-        QSqlQuery query(db);
-
-        query.exec(QString("DROP TABLE ") + tableNameInstruments + QString(";") );
-
-
-        query.exec( QString("CREATE TABLE ") + tableNameInstruments + QString(""
-            "(id integer primary key, "
-            "firstname varchar(20), "
-            "lastname varchar(30), "
-            "age integer)"
-            )
-        );
-
-        return true;
-        
-    }
-
-
 
 };
 

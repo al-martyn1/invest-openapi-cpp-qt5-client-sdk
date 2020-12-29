@@ -59,3 +59,4 @@
 /*.log
 /windeployqt.txt
 *.sqlite
+/logging.properties
