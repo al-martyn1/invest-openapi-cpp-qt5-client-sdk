@@ -55,17 +55,19 @@ INVEST_OPENAPI_MAIN()
     using tkf::config_helpers::FileReadable;
 
     auto dbConfigFullName = lookupForConfigFile( "database.properties", "conf;config", FileReadable() ); // .toStdString();
-    cout<<"Found config file: " << dbConfigFullName.toStdString() << endl;
-
-    tkf::DatabasePlacementStrategyDefault defStrategy = tkf::DatabasePlacementStrategyDefault();
-    auto dbName = defStrategy( dbConfigFullName, "dbPathTest.sql" );
-    cout<<"DB name: " << dbName.toStdString() << endl;
+    // cout<<"Found config file: " << dbConfigFullName.toStdString() << endl;
+    //  
+    // tkf::DatabasePlacementStrategyDefault defStrategy = tkf::DatabasePlacementStrategyDefault();
+    // auto dbName = defStrategy( dbConfigFullName, "dbPathTest.sql" );
+    // cout<<"DB name: " << dbName.toStdString() << endl;
 
     tkf::DatabaseConfig databaseConfig = tkf::DatabaseConfig(dbConfigFullName, tkf::DatabasePlacementStrategyDefault() );
 
-
     //QSqlDatabase sqlDb = QSqlDatabase::addDatabase("QSQLITE");
     //sqlDb.setDatabaseName(databaseConfig.dbFilename);
+
+    qDebug().nospace().noquote() << "DB name: " << databaseConfig.dbFilename;
+
     QSharedPointer<QSqlDatabase> pSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
     pSqlDb->setDatabaseName( databaseConfig.dbFilename );
 
@@ -88,9 +90,61 @@ INVEST_OPENAPI_MAIN()
 
     */
 
+    // auto pairs = tkf::simpleSplitToPairs( "USD:US Dollar;EUR,Euro;RUB,Russian ruble" );
+
+    // int         usdInt    = tkf::toInt( tkf::toCurrency("usd") );
+    // std::string usdStr    = tkf::toStdString( tkf::toCurrency("usd") );
+
     QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createDatabaseManager( pSqlDb, databaseConfig );
 
-    qDebug() << "Table INSTRUMENTS: " << (pDbMan->tableCheckExist( "INSTRUMENTS" ) ? "EXIST" : "NOT EXIST");
+    pDbMan->setDefDecimal(17,11);
+
+    qDebug().nospace().noquote() << pDbMan->getTableExistString("INSTRUMENTS");
+    qDebug().nospace().noquote() << pDbMan->getTableExistString("CURRENCIES");
+
+    qDebug() << "";
+
+    qDebug().nospace().noquote() << "Drop table TEST if exists (def)       : " << pDbMan->tableDrop("TEST")                                                << ", SQL Error:" << pSqlDb->lastError();
+    qDebug().nospace().noquote() << "Drop table TEST if not exists         : " << pDbMan->tableDrop("TEST", tkf::IDatabaseManager::IfExists::ifNotExists ) << ", SQL Error:" << pSqlDb->lastError();
+    qDebug().nospace().noquote() << "Drop table TEST in anyway             : " << pDbMan->tableDrop("TEST", tkf::IDatabaseManager::IfExists::ifAnyway    ) << ", SQL Error:" << pSqlDb->lastError();
+
+    qDebug() << "";
+
+    qDebug().nospace().noquote() << "Create table TEST if not exists (def) : " << pDbMan->tableCreate("TEST")                                              << ", SQL Error:" << pSqlDb->lastError();
+    qDebug().nospace().noquote() << "Create table TEST if exists           : " << pDbMan->tableCreate("TEST", tkf::IDatabaseManager::IfExists::ifExists  ) << ", SQL Error:" << pSqlDb->lastError();
+    qDebug().nospace().noquote() << "Create table TEST in anyway           : " << pDbMan->tableCreate("TEST", tkf::IDatabaseManager::IfExists::ifAnyway  ) << ", SQL Error:" << pSqlDb->lastError();
+
+    qDebug() << "";
+    
+    qDebug().nospace().noquote() << "Drop table TEST if not exists         : " << pDbMan->tableDrop("TEST", tkf::IDatabaseManager::IfExists::ifNotExists ) << ", SQL Error:" << pSqlDb->lastError();
+    qDebug().nospace().noquote() << "Drop table TEST in anyway             : " << pDbMan->tableDrop("TEST", tkf::IDatabaseManager::IfExists::ifAnyway    ) << ", SQL Error:" << pSqlDb->lastError();
+
+    qDebug() << "";
+
+    qDebug().nospace().noquote() << "Create table TEST if exists           : " << pDbMan->tableCreate("TEST", tkf::IDatabaseManager::IfExists::ifExists  ) << ", SQL Error:" << pSqlDb->lastError();
+    qDebug().nospace().noquote() << "Create table TEST in anyway           : " << pDbMan->tableCreate("TEST", tkf::IDatabaseManager::IfExists::ifAnyway  ) << ", SQL Error:" << pSqlDb->lastError();
+
+    qDebug() << "";
+
+    qDebug().nospace().noquote() << "Drop   table CURRENCY_TYPES    : " << pDbMan->tableDrop("CURRENCY_TYPES");
+    qDebug().nospace().noquote() << "Create table CURRENCY_TYPES    : " << pDbMan->tableCreate("CURRENCY_TYPES");
+
+    qDebug() << "";
+
+    qDebug().nospace().noquote() << "Drop   table INSTRUMENT_TYPES  : " << pDbMan->tableDrop("INSTRUMENT_TYPES");
+    qDebug().nospace().noquote() << "Create table INSTRUMENT_TYPES  : " << pDbMan->tableCreate("INSTRUMENT_TYPES");
+
+    tkf::IOaDatabaseManager *pOaDbMan = dynamic_cast<tkf::IOaDatabaseManager*>(pDbMan.get());
+    if (!pOaDbMan)
+        throw std::runtime_error("dynamic_cast<tkf::IOaDatabaseManager*>() failed");
+
+    qDebug() << "";
+
+    //qDebug().nospace().noquote() << "Adding USD:" << pOaDbMan->insertNewCurrencyType("USD", "US Dollar");
+    pOaDbMan->insertNewCurrencyTypes("RUB:Russian ruble;USD:US Dollar;EUR:European Euro");
+
+    // RUB/USD/EUR/GBP/HKD/CHF/JPY/CNY/TRY
+
 
 
 

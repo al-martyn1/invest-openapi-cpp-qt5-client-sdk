@@ -130,18 +130,18 @@ QStringList pathListSplit( QString pathList )
 
 
 //----------------------------------------------------------------------------
-#define INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_STRING( TypeTo ) \
-            TypeTo res;                                        \
-            res.fromJson(v);                                   \
+#define INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_QSTRING( TypeTo ) \
+            TypeTo res;                                         \
+            res.fromJson(v);                                    \
             return res
 
-#define INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_ENUM( TypeTo )   \
-            TypeTo res;                                        \
-            res.setValue(v);                                   \
+#define INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_ENUM( TypeTo )    \
+            TypeTo res;                                         \
+            res.setValue(v);                                    \
             return res;
 
 #define INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_UNDEFINED( methodName, UndefinedTypeName ) \
-            throw std::runtime_error("template<> invest_openapi::" #methodName "(const " #UndefinedTypeName "&) not implemented for this type")
+            throw std::runtime_error("template<> invest_openapi::" #methodName "( " #UndefinedTypeName " ) not implemented for this type")
 
 //----------------------------------------------------------------------------
 /*
@@ -157,17 +157,56 @@ template< > inline Currency             toCurrency<QString                    >(
                            inline targetType             methodName                              (const templateTypeName              &v) { INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_UNDEFINED(methodName,templateTypeName); }  \
                template< > inline targetType             methodName<targetType                  >(const targetType                    &v) { return v; }                                                                      \
                template< > inline targetType             methodName<targetType::targetTypeEnum  >(const targetType :: targetTypeEnum  &v) { INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_ENUM( targetType ); }                      \
-               template< > inline targetType             methodName<QString                     >(const QString                       &v) { INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_STRING( targetType ); }
+               template< > inline targetType             methodName<QString                     >(const QString                       &v) { INVEST_OPENAPI_TO_TYPE_CONVERTER_FROM_QSTRING( targetType ); }                   \
+               template< > inline targetType             methodName<std::string                 >(const std::string                   &v) { return methodName( QString::fromStdString(v) ); }                                \
+               template< > inline targetType             methodName<int                         >(const int                           &v) { return methodName( (targetType :: targetTypeEnum)v ); }                          \
+                           inline targetType             methodName                              (const char*                          v) { return methodName( QString::fromLatin1(v) ); }
+
+
+#define INVEST_OPENAPI_TO_INT_CONVERTER( sourceType, sourceEnumType )                             \
+               inline int toInt( sourceType :: sourceEnumType f ) { return (int)f; }              \
+               inline int toInt( const sourceType &f )            { return toInt(f.getValue()); }
+
+
+#define INVEST_OPENAPI_TO_QSTRING_CONVERTER( sourceType, sourceEnumType )                                                       \
+               inline QString toQString( const sourceType &f )            { return f.asJson().toUpper(); }                      \
+               inline QString toQString( sourceType :: sourceEnumType f ) { sourceType s; s.setValue(f); return toQString(s); }
+
+
+#define INVEST_OPENAPI_TO_STD_STRING_CONVERTER( sourceType, sourceEnumType )                                                    \
+               inline std::string toStdString( const sourceType &f )            { return toQString(f).toStdString(); }          \
+               inline std::string toStdString( sourceType :: sourceEnumType f ) { return toQString(f).toStdString(); }
+
+
+#define INVEST_OPENAPI_TO_STRINGS_CONVERTER( sourceType, sourceEnumType )           \
+               INVEST_OPENAPI_TO_QSTRING_CONVERTER( sourceType, sourceEnumType )    \
+               INVEST_OPENAPI_TO_STD_STRING_CONVERTER( sourceType, sourceEnumType )
 
 //----------------------------------------------------------------------------
 
 
 
+
+
 //----------------------------------------------------------------------------
+inline int toInt( int f ) { return f; }
+template<typename TInt> inline QString       toQString  ( TInt i ) { return QString::number(i); }
+template<typename TInt> inline std::string   toStdString( TInt i ) { return QString::number(i).toStdString(); }
+
 INVEST_OPENAPI_TO_TYPE_CONVERTER( toCurrency           , Currency           , eCurrency          , CurrencySourceType   )
 INVEST_OPENAPI_TO_TYPE_CONVERTER( toInstrumentType     , InstrumentType     , eInstrumentType    , InstrumentSourceType )
 INVEST_OPENAPI_TO_TYPE_CONVERTER( toCandleResolution   , CandleResolution   , eCandleResolution  , CandleResolutionSourceType )
 INVEST_OPENAPI_TO_TYPE_CONVERTER( toOperationType      , OperationType      , eOperationType     , OperationSourceType )
+
+INVEST_OPENAPI_TO_INT_CONVERTER( Currency           , eCurrency         )
+INVEST_OPENAPI_TO_INT_CONVERTER( InstrumentType     , eInstrumentType   )
+INVEST_OPENAPI_TO_INT_CONVERTER( CandleResolution   , eCandleResolution )
+INVEST_OPENAPI_TO_INT_CONVERTER( OperationType      , eOperationType    )
+
+INVEST_OPENAPI_TO_STRINGS_CONVERTER( Currency           , eCurrency         )
+INVEST_OPENAPI_TO_STRINGS_CONVERTER( InstrumentType     , eInstrumentType   )
+INVEST_OPENAPI_TO_STRINGS_CONVERTER( CandleResolution   , eCandleResolution )
+INVEST_OPENAPI_TO_STRINGS_CONVERTER( OperationType      , eOperationType    )
 
 //----------------------------------------------------------------------------
 
@@ -243,6 +282,18 @@ QList<MarketInstrument> toMarketInstrumentList( const QList< Instrument<Monetary
 
     return res;
 }
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+//#define IOA_DEFINE_INSTRUMENT_ATTRS_MAP_MAKE_FUNCTION( instrumentType, methodName, fieldMapFrom, fieldMapTo )
+
+
+
+
 
 //----------------------------------------------------------------------------
 template<typename MonetaryType>
@@ -400,16 +451,72 @@ auto joinAndGetPayload( ResponseType response ) -> decltype(response->value.getP
     return response->value.getPayload();
 }
 
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+struct QStringPair
+{
+    QString first;
+    QString second;
+
+}; // struct QstringPair
+
+//----------------------------------------------------------------------------
+
+inline
+QList<QStringPair> simpleSplitToPairs( const QString &str )
+{
+    QList<QStringPair> resLst;
+
+    QStringList lst = str.split(";");
+
+    QStringList::const_iterator constIterator;
+    for (constIterator = lst.constBegin(); constIterator != lst.constEnd(); ++constIterator)
+    {
+        QString strPair = *constIterator;
+        strPair.replace(',', ":");
+
+        QStringList p = strPair.split(":");
+
+        int sz = p.size();
+
+        if (!sz)
+            continue;
+
+        if (sz==1)
+        {
+            resLst.push_back( QStringPair{ p.at(0), QString() } );
+            continue;
+        }
+
+        resLst.push_back( QStringPair{ p.at(0), p.at(1) } );
+    }
+
+    return resLst;
+
+}
+
+//----------------------------------------------------------------------------
+
+
+
 
 } // namespace invest_openapi
 
-//------------------------------
+//----------------------------------------------------------------------------
 
 
 
 
 
-//------------------------------
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
 #if defined(QT_SQL_LIB)
 QString sqlEscape( const QSqlDatabase &db, const QString &str )
 {
@@ -419,6 +526,10 @@ QString sqlEscape( const QSqlDatabase &db, const QString &str )
 }
 #endif
 
+//----------------------------------------------------------------------------
+
+
 
 #include "instrument.h"
+
 
