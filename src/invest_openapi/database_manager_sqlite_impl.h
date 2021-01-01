@@ -47,12 +47,12 @@ class DatabaseManagerSQLiteImpl : public DatabaseManagerSQLiteImplBase
 protected:
 
     //------------------------------
-    friend QSharedPointer<IDatabaseManager> createDatabaseManager( QSharedPointer<QSqlDatabase> pDb, const DatabaseConfig &dbConfig );
+    friend QSharedPointer<IDatabaseManager> createDatabaseManager( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig );
 
 
     //------------------------------
-    DatabaseManagerSQLiteImpl( QSharedPointer<QSqlDatabase> pDb, const DatabaseConfig &databaseConfig )
-    : DatabaseManagerSQLiteImplBase(pDb, databaseConfig)
+    DatabaseManagerSQLiteImpl( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig )
+    : DatabaseManagerSQLiteImplBase(pDb, pDatabaseConfig, pLoggingConfig)
     {}
 
     //------------------------------
@@ -75,10 +75,10 @@ protected:
     virtual bool   insertNewCurrencyType     ( Currency         c, const QString & description ) const override
     {
         QString queryText
-        = QString( "INSERT INTO " ) + tableMapName("CURRENCY_TYPES")
-        + QString("\r\n(CURRENCY_ID, CURRENCY, DESCRIPTION)")
-        + QString("\r\nVALUES(")
-        + QString(" ") + q( toQString(toInt(c)) )
+        = QString( "INSERT INTO " ) + tableMapName("CURRENCIES")
+        + QString("\r\n(ID, CURRENCY, DESCRIPTION)")
+        + QString("\r\nVALUES(\r\n")
+        + tab() + q( toQString(toInt(c)) )
         + QString(",") + q( toQString(c) )
         + QString(",") + q( description )
         + QString("\r\n)") // end of values
@@ -92,9 +92,9 @@ protected:
     {
         QString queryText
         = QString( "INSERT INTO " ) + tableMapName("INSTRUMENT_TYPES")
-        + QString("\r\n(INSTRUMENT_ID, INSTRUMENT, DESCRIPTION)")
-        + QString("\r\nVALUES(")
-        + QString(" ") + q( toQString(toInt(t)) )
+        + QString("\r\n(ID, INSTRUMENT_TYPE, DESCRIPTION)")
+        + QString("\r\nVALUES(\r\n")
+        + tab() + q( toQString(toInt(t)) )
         + QString(",") + q( toQString(t) )
         + QString(",") + q( description )
         + QString("\r\n)") // end of values
@@ -118,7 +118,7 @@ protected:
     //----------------------------------------------------------------------------
     virtual bool   insertNewCurrencyTypes    ( const QString &all ) const override
     {
-        QList<QStringPair>           pairs = simpleSplitToPairs( all );
+        QList<QStringPair>           pairs = simpleSplitTo<QStringPair>( all );
         QList<QStringPair>::iterator it    = pairs.begin();
 
         for(; it != pairs.end(); ++it)
@@ -131,7 +131,7 @@ protected:
 
     virtual bool   insertNewInstrumentTypes  ( const QString &all ) const override
     {
-        QList<QStringPair>           pairs = simpleSplitToPairs( all );
+        QList<QStringPair>           pairs = simpleSplitTo<QStringPair>( all );
         QList<QStringPair>::iterator it    = pairs.begin();
 
         for(; it != pairs.end(); ++it)
@@ -157,37 +157,51 @@ protected:
 
         if (tableName.toUpper()=="INSTRUMENTS")
         {
-            return 
-            QString(
-            ""
-            );
+            return lf()    + QString("INSTRUMENT_ID")       + tab() + QString("INTEGER NOT NULL UNIQUE") 
+                 + lf(',') + QString("FIGI")                + tab() + QString("VARCHAR(12) NOT NULL UNIQUE")
+                 + lf(',') + QString("ISIN")                + tab() + QString("VARCHAR(12) UNIQUE")
+                 + lf(',') + QString("TICKER")              + tab() + QString("VARCHAR(12) NOT NULL UNIQUE")
+                 + lf(',') + QString("PROCE_INCREMENT")     + tab() + defDecimal()
+                 + lf(',') + QString("FACE_VALUE")          + tab() + defDecimal()
+                 + lf(',') + QString("LOT_SIZE_LIMIT")      + tab() + QString("INTEGER") 
+                 + lf(',') + QString("LOT_SIZE_MARKET")     + tab() + QString("INTEGER") 
+                 + lf(',') + QString("MIN_QUANTITY")        + tab() + QString("INTEGER") 
+                 + lf(',') + QString("CURRENCY_ID")         + tab() + QString("INTEGER") 
+                 + lf(',') + QString("CURRENCY")            + tab() + QString("VARCHAR(4)")
+                 + lf(',') + QString("INSTRUMENT_TYPE_ID")  + tab() + QString("INTEGER") 
+                 + lf(',') + QString("INSTRUMENT_TYPE")     + tab() + QString("VARCHAR(4)")
+                 + lf(',') + QString("NAME")                + tab() + QString("TEXT")
+                 + lf(',') + QString("PRIMARY KEY(INSTRUMENT_ID AUTOINCREMENT)")
+                 + lf(',') + QString("FOREIGN KEY(CURRENCY_ID) REFERENCES CURRENCIES(ID)")
+                 + lf(',') + QString("FOREIGN KEY(INSTRUMENT_TYPE_ID) REFERENCES INSTRUMENT_TYPES(ID)")
+                 ;
         }
-        else if (tableName.toUpper()=="CURRENCY_TYPES")
+        else if (tableName.toUpper()=="CURRENCIES")
         {
             // CURRENCY - RUB/USD/EUR/GBP/HKD/CHF/JPY/CNY/TRY
-            return QString("\r\n ") + QString("CURRENCY_ID")         + QString(" ") + QString("INTEGER NOT NULL UNIQUE") 
-                 + QString("\r\n,") + QString("CURRENCY")            + QString(" ") + QString("VARCHAR(4) NOT NULL UNIQUE")
-                 + QString("\r\n,") + QString("DESCRIPTION")         + QString(" ") + QString("TEXT")
-                 + QString("\r\n,") + QString("PRIMARY KEY(CURRENCY_ID)")
+            return lf()    + QString("ID")                  + tab() + QString("INTEGER NOT NULL UNIQUE") 
+                 + lf(',') + QString("CURRENCY")            + tab() + QString("VARCHAR(4) NOT NULL UNIQUE")
+                 + lf(',') + QString("DESCRIPTION")         + tab() + QString("TEXT")
+                 + lf(',') + QString("PRIMARY KEY(ID)")
                  ;
         }
         else if (tableName.toUpper()=="INSTRUMENT_TYPES")
         {
             // CURRENCY - RUB/USD/EUR/GBP/HKD/CHF/JPY/CNY/TRY
-            return QString("\r\n ") + QString("INSTRUMENT_ID")         + QString(" ") + QString("INTEGER NOT NULL UNIQUE") 
-                 + QString("\r\n,") + QString("INSTRUMENT")            + QString(" ") + QString("VARCHAR(8) NOT NULL UNIQUE")
-                 + QString("\r\n,") + QString("DESCRIPTION")           + QString(" ") + QString("TEXT")
-                 + QString("\r\n,") + QString("PRIMARY KEY(INSTRUMENT_ID)")
+            return lf()    + QString("ID")                    + tab() + QString("INTEGER NOT NULL UNIQUE") 
+                 + lf(',') + QString("INSTRUMENT_TYPE")       + tab() + QString("VARCHAR(8) NOT NULL UNIQUE")
+                 + lf(',') + QString("DESCRIPTION")           + tab() + QString("TEXT")
+                 + lf(',') + QString("PRIMARY KEY(ID)")
                  ;
         }
         else if (tableName.toUpper()=="TEST")
         {
-            return QString("\r\n ") + QString("DECIMAL_12_3")        + QString(" ") + QString("DECIMAL(12,3)") 
-                 + QString("\r\n,") + QString("DECIMAL_18_6_NN")     + QString(" ") + QString("DECIMAL(18,6) NOT NULL")
-                 + QString("\r\n,") + QString("CHAR_12")             + QString(" ") + QString("CHAR(12)")
-                 + QString("\r\n,") + QString("CHAR_12_NN")          + QString(" ") + QString("CHAR(12) NOT NULL")
-                 + QString("\r\n,") + QString("DEF_DEC_111_1")       + QString(" ") + defDecimal(111, 1)
-                 + QString("\r\n,") + QString("DEF_DEC")             + QString(" ") + defDecimal()
+            return lf()    + QString("DECIMAL_12_3")        + tab() + QString("DECIMAL(12,3)") 
+                 + lf(',') + QString("DECIMAL_18_6_NN")     + tab() + QString("DECIMAL(18,6) NOT NULL")
+                 + lf(',') + QString("CHAR_12")             + tab() + QString("CHAR(12)")
+                 + lf(',') + QString("CHAR_12_NN")          + tab() + QString("CHAR(12) NOT NULL")
+                 + lf(',') + QString("DEF_DEC_111_1")       + tab() + defDecimal(111, 1)
+                 + lf(',') + QString("DEF_DEC")             + tab() + defDecimal()
                  //+ QString("")    +        QString("")        +      QString("")
                  ;
         }

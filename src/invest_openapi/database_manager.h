@@ -13,6 +13,7 @@
 #include <stdexcept>
 
 
+#include "logging_config.h"
 #include "database_manager_sqlite_impl.h"
 
 //----------------------------------------------------------------------------
@@ -29,9 +30,9 @@ namespace invest_openapi
 
 //----------------------------------------------------------------------------
 inline
-QSharedPointer<IDatabaseManager> createDatabaseManager( QSharedPointer<QSqlDatabase> pDb, const DatabaseConfig &dbConfig )
+QSharedPointer<IDatabaseManager> createDatabaseManager( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig )
 {
-    DatabaseConfig escapedDbConfig = dbConfig.escapeForDb( * pDb.get() );
+    QSharedPointer<DatabaseConfig> escapedDbConfig = QSharedPointer<DatabaseConfig>( new DatabaseConfig(pDatabaseConfig->escapeForDb( * pDb.get() )) );
 
     QString driverName = pDb->driverName();
     if (driverName=="")
@@ -40,7 +41,7 @@ QSharedPointer<IDatabaseManager> createDatabaseManager( QSharedPointer<QSqlDatab
     }
     else if (driverName=="QSQLITE")
     {
-        return QSharedPointer<IDatabaseManager>( new DatabaseManagerSQLiteImpl(pDb, dbConfig) );
+        return QSharedPointer<IDatabaseManager>( new DatabaseManagerSQLiteImpl(pDb, escapedDbConfig, pLoggingConfig) );
     }
 
     throw std::runtime_error("invest_openapi::createDatabaseManager: Unknown database driver name");

@@ -31,12 +31,12 @@ class DatabaseManagerSQLiteImplBase : public DatabaseManagerImplBase
 protected:
 
     //------------------------------
-    friend QSharedPointer<IDatabaseManager> createDatabaseManager( QSharedPointer<QSqlDatabase> pDb, const DatabaseConfig &dbConfig );
+    friend QSharedPointer<IDatabaseManager> createDatabaseManager( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig );
 
 
     //------------------------------
-    DatabaseManagerSQLiteImplBase( QSharedPointer<QSqlDatabase> pDb, const DatabaseConfig &databaseConfig )
-    : DatabaseManagerImplBase(pDb, databaseConfig)
+    DatabaseManagerSQLiteImplBase( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig )
+    : DatabaseManagerImplBase(pDb, pDatabaseConfig, pLoggingConfig)
     {}
 
     //------------------------------
@@ -63,6 +63,15 @@ protected:
     }
 
     //------------------------------
+    virtual QString lf( char comma = ' ' ) const override
+    {
+        return QString("\r\n")
+             + QString( (QChar)comma )
+             + QString(" ")
+             ;
+    }
+
+    //------------------------------
     virtual QString   defDecimal      ( unsigned total, unsigned frac ) const override
     {
         return QString("DECIMAL(") 
@@ -78,14 +87,10 @@ protected:
     {
         // https://stackoverflow.com/questions/1601151/how-do-i-check-in-sqlite-whether-a-table-exists
 
-        QString queryText = QString("SELECT name FROM sqlite_master WHERE type='table' AND name='") + tableMapName(tableName) + QString("';");
+        QString queryText = QString("SELECT name FROM sqlite_master WHERE type='table' AND name=") + tableMapName(tableName) + QString(";");
         QSqlQuery query(*m_pDb);
 
-        if (!query.exec(queryText))
-        {
-            qDebug().nospace().noquote() << "DatabaseManagerSQLite::tableCheckExist - query exec failed: " << query.lastError();
-            return false;
-        }
+        IOA_SQL_EXEC_QUERY( query, queryText );
 
         if (getQueryResultSize( query, true /* needBool */ ))
             return true;

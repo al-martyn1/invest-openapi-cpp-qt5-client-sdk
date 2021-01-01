@@ -14,6 +14,8 @@
 
 
 #include "i_database_manager.h"
+#include "logging_config.h"
+
 
 //----------------------------------------------------------------------------
 
@@ -32,8 +34,9 @@ class DatabaseManagerImplBase : public IDatabaseManager
 protected:
 
     //------------------------------
-    DatabaseManagerImplBase( QSharedPointer<QSqlDatabase> pDb, const DatabaseConfig &databaseConfig )
-    : m_databaseConfig(databaseConfig)
+    DatabaseManagerImplBase( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig )
+    : m_pDatabaseConfig(pDatabaseConfig)
+    , m_pLoggingConfig(pLoggingConfig)
     , m_pDb(pDb)
     {}
 
@@ -42,6 +45,12 @@ protected:
     DatabaseManagerImplBase( const DatabaseManagerImplBase &);
     DatabaseManagerImplBase& operator=( const DatabaseManagerImplBase &);
 
+
+    //------------------------------
+    virtual QString tab() const override
+    {
+        return QString("        ");
+    }
 
     //------------------------------
     virtual QString getTableExistString( const QString &tableName ) const override
@@ -103,16 +112,17 @@ protected:
     {
         if (tableName.toUpper()=="INSTRUMENTS")
         {
-            return m_databaseConfig.tableNameInstruments;
+            return m_pDatabaseConfig->tableNameInstruments;
         }
 
         //checkTableName(QString());
         //return QString();
-        return tableName; // return unmapped value
+        return QString('\'') + tableName + QString('\''); // return unmapped value
     }
 
     //------------------------------
-    DatabaseConfig                    m_databaseConfig;
+    QSharedPointer<DatabaseConfig>    m_pDatabaseConfig;
+    QSharedPointer<LoggingConfig>     m_pLoggingConfig;
     QSharedPointer<QSqlDatabase>      m_pDb;
 
     unsigned                          m_defDecimalTotal = 0;

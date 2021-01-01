@@ -43,7 +43,9 @@ struct IDatabaseManager
     virtual QString getTableExistString( const QString &tableName ) const = 0;
 
     // Common helpers
-    virtual QString q( const QString &str ) const = 0;
+    virtual QString q( const QString &str  ) const = 0;
+    virtual QString lf( char comma = ' ' ) const = 0;
+    virtual QString tab() const = 0;
 
 
     // Core functions

@@ -27,13 +27,15 @@ struct LoggingConfig
 {
     bool debugRequests ;
     bool debugResponses;
+    bool debugSqlQueries;
 
 
 
     void load( const QSettings &settings )
     {
-        debugRequests  = settings.value("logging.debug.dump.requests" , QVariant(false)).toBool();
-        debugResponses = settings.value("logging.debug.dump.responses", QVariant(false)).toBool();
+        debugRequests   = settings.value("logging.debug.dump.requests" , QVariant(false)).toBool();
+        debugResponses  = settings.value("logging.debug.dump.responses", QVariant(false)).toBool();
+        debugSqlQueries = settings.value("logging.debug.dump.sql"      , QVariant(false)).toBool();
     }
 
     void checkValid() const

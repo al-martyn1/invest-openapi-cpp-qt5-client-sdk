@@ -457,19 +457,155 @@ auto joinAndGetPayload( ResponseType response ) -> decltype(response->value.getP
 
 
 //----------------------------------------------------------------------------
+#define IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_LIST( typeName )     \
+                static                                           \
+                typeName makeFromList( const QStringList &lst )  \
+                {                                                \
+                    typeName tmp;                                \
+                    tmp.fromList(lst);                           \
+                    return tmp;                                  \
+                }
+
+
+//----------------------------------------------------------------------------
+struct QStringSingle
+{
+    QString first;
+
+    void fromList( const QStringList &lst )
+    {
+        int sz = lst.size();
+        if (sz>=1) first = lst.at(0);
+    }
+
+    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_LIST(QStringSingle)
+
+}; // struct QStringSingle
+
+//------------------------------
 struct QStringPair
 {
     QString first;
     QString second;
 
+    void fromList( const QStringList &lst )
+    {
+        int sz = lst.size();
+        if (sz>=1) first  = lst.at(0);
+        if (sz>=2) second = lst.at(1);
+    }
+
+    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_LIST(QStringPair)
+
 }; // struct QstringPair
 
+//------------------------------
+struct QStringTriple
+{
+    QString first;
+    QString second;
+    QString third;
+
+    void fromList( const QStringList &lst )
+    {
+        int sz = lst.size();
+        if (sz>=1) first  = lst.at(0);
+        if (sz>=2) second = lst.at(1);
+        if (sz>=3) third  = lst.at(2);
+    }
+
+    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_LIST(QStringTriple)
+
+}; // struct QStringTriple
+
+//------------------------------
+struct QStringQuadro
+{
+    QString first;
+    QString second;
+    QString third;
+    QString fourth;
+
+    void fromList( const QStringList &lst )
+    {
+        int sz = lst.size();
+        if (sz>=1) first  = lst.at(0);
+        if (sz>=2) second = lst.at(1);
+        if (sz>=3) third  = lst.at(2);
+        if (sz>=4) fourth = lst.at(3);
+    }
+
+    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_LIST(QStringQuadro)
+
+}; // struct QStringQuadro
+
 //----------------------------------------------------------------------------
+inline
+QList<QStringList> simpleSplitTo_ImplBase(const QString &str)
+{
+    QStringList         lst = str.split(";");
+
+    QList<QStringList>  res;
+
+    QStringList::const_iterator constIterator;
+    for (constIterator = lst.constBegin(); constIterator != lst.constEnd(); ++constIterator)
+    {
+        QString strList = *constIterator;
+        strList.replace(',', ":");
+        strList.replace('.', ":");
+
+        res.push_back( strList.split(":") );
+    }
+
+    return res;
+}
+
+//----------------------------------------------------------------------------
+template< typename CoupleType >
+inline
+QList<CoupleType> simpleSplitTo( const QString &str )
+{
+    QList<CoupleType> resLst;
+
+    QList<QStringList> lstOfLst = simpleSplitTo_ImplBase(str);
+
+    QList<QStringList>::const_iterator it = lstOfLst.begin();
+    for(; it != lstOfLst.end(); ++it)
+    {
+        /*
+        CoupleType tmpPair;
+        tmpPair.fromList(*it);
+        resLst.push_back(tmpPair);
+        */
+
+        resLst.push_back(CoupleType::makeFromList(*it));
+        
+    }
+
+    return resLst;
+}
+
+/*
+// Obsolete
 
 inline
 QList<QStringPair> simpleSplitToPairs( const QString &str )
 {
     QList<QStringPair> resLst;
+
+    QList<QStringList> lstOfLst = simpleSplitTo_ImplBase(str);
+
+    QList<QStringList>::const_iterator it = lstOfLst.begin();
+    for(; it != lstOfLst.end(); ++it)
+    {
+        QStringPair tmpPair;
+        tmpPair.fromList(*it);
+        resLst.push_back(tmpPair);
+    }
+
+    return resLst;
+    
+    #if 0
 
     QStringList lst = str.split(";");
 
@@ -478,6 +614,7 @@ QList<QStringPair> simpleSplitToPairs( const QString &str )
     {
         QString strPair = *constIterator;
         strPair.replace(',', ":");
+        strPair.replace('.', ":");
 
         QStringList p = strPair.split(":");
 
@@ -494,10 +631,13 @@ QList<QStringPair> simpleSplitToPairs( const QString &str )
 
         resLst.push_back( QStringPair{ p.at(0), p.at(1) } );
     }
+    #endif
 
     return resLst;
 
 }
+*/
+
 
 //----------------------------------------------------------------------------
 
