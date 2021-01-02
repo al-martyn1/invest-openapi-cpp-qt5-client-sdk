@@ -1,0 +1,4 @@
+Внутренние таблицы SQLite - https://habr.com/ru/post/223451/
+SQLite — замечательная встраиваемая БД - https://habr.com/ru/post/149356/
+                                         https://habr.com/ru/post/149390/
+                                         https://habr.com/ru/post/149635/
