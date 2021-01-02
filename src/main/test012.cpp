@@ -84,6 +84,16 @@ INVEST_OPENAPI_MAIN()
 
     qDebug() << "";
 
+    qDebug().nospace().noquote() << "Drop   table _META_TABLES      : " << pDbMan->tableDrop("_META_TABLES");
+    qDebug().nospace().noquote() << "Create table _META_TABLES      : " << pDbMan->tableCreate("_META_TABLES");
+
+    qDebug() << "";
+
+    qDebug().nospace().noquote() << "Drop   table _META_COLUMNS     : " << pDbMan->tableDrop("_META_COLUMNS");
+    qDebug().nospace().noquote() << "Create table _META_COLUMNS      : " << pDbMan->tableCreate("_META_COLUMNS");
+
+    qDebug() << "";
+
     qDebug().nospace().noquote() << "Drop   table CURRENCIES        : " << pDbMan->tableDrop("CURRENCIES");
     qDebug().nospace().noquote() << "Create table CURRENCIES        : " << pDbMan->tableCreate("CURRENCIES");
 
@@ -107,7 +117,29 @@ INVEST_OPENAPI_MAIN()
 
     pOaDbMan->insertNewCurrencyTypes   ("UNK:Unknown;RUB:Russian ruble;USD:US Dollar;EUR:European Euro;GBP:Great Britain Pound;HKD:Hong Kong Dollar;CHF:Swiss Franc;JPY:Japanese Yen;CNY:Chinese Yuan;TRY:Turkish Lira");
     pOaDbMan->insertNewInstrumentTypes ("UNK:Unknown;Stock:Stock;Bond:Bond;Currency:Currency;Etf:Etf");
+
+
+    qDebug() << "";
+
+    qDebug().nospace().noquote() << "Database tables: ";
     
+
+    QVector<QString> dbTableNames = pDbMan->tableGetNames();
+
+    for( QVector<QString>::const_iterator tableNameIt = dbTableNames.begin(); tableNameIt!=dbTableNames.end(); ++tableNameIt)
+    {
+        qDebug() << "";
+    
+        qDebug().nospace().noquote() << "Table: " << *tableNameIt;
+        QVector<QString> cols = pDbMan->tableGetColumnsInternal(*tableNameIt);
+        for( QVector<QString>::const_iterator colIt = cols.begin(); colIt!=cols.end(); ++colIt)
+        {
+            qDebug().nospace().noquote() << "    " << *colIt;
+        }
+    }
+
+
+  
 
 
     return 0;

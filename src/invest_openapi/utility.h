@@ -519,7 +519,7 @@ struct QStringTriple
 }; // struct QStringTriple
 
 //------------------------------
-struct QStringQuadro
+struct QStringQuatro
 {
     QString first;
     QString second;
@@ -535,9 +535,9 @@ struct QStringQuadro
         if (sz>=4) fourth = lst.at(3);
     }
 
-    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_LIST(QStringQuadro)
+    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_LIST(QStringQuatro)
 
-}; // struct QStringQuadro
+}; // struct QStringQuatro
 
 //----------------------------------------------------------------------------
 inline

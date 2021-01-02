@@ -145,8 +145,15 @@ protected:
     //----------------------------------------------------------------------------
     // IDatabaseManager
 
+
     //------------------------------
-    virtual QString tableGetShema      ( QString tableName  ) const override
+    virtual QVector<QString> tableGetColumns  ( const QString &tableName ) const override
+    {
+        return tableGetColumnsInternal( tableMapName(tableName) );
+    }
+
+    //------------------------------
+    virtual QString tableGetShema      ( const QString &tableName  ) const override
     {
         // tableName = tableMapName(tableName)
 
@@ -157,7 +164,7 @@ protected:
 
         if (tableName.toUpper()=="INSTRUMENTS")
         {
-            return lf()    + QString("INSTRUMENT_ID")       + tab() + QString("INTEGER NOT NULL UNIQUE") 
+            return lf()    + QString("ID")                  + tab() + QString("INTEGER NOT NULL UNIQUE") 
                  + lf(',') + QString("FIGI")                + tab() + QString("VARCHAR(12) NOT NULL UNIQUE")
                  + lf(',') + QString("ISIN")                + tab() + QString("VARCHAR(12) UNIQUE")
                  + lf(',') + QString("TICKER")              + tab() + QString("VARCHAR(12) NOT NULL UNIQUE")
@@ -171,7 +178,7 @@ protected:
                  + lf(',') + QString("INSTRUMENT_TYPE_ID")  + tab() + QString("INTEGER") 
                  + lf(',') + QString("INSTRUMENT_TYPE")     + tab() + QString("VARCHAR(4)")
                  + lf(',') + QString("NAME")                + tab() + QString("TEXT")
-                 + lf(',') + QString("PRIMARY KEY(INSTRUMENT_ID AUTOINCREMENT)")
+                 + lf(',') + QString("PRIMARY KEY(ID AUTOINCREMENT)")
                  + lf(',') + QString("FOREIGN KEY(CURRENCY_ID) REFERENCES CURRENCIES(ID)")
                  + lf(',') + QString("FOREIGN KEY(INSTRUMENT_TYPE_ID) REFERENCES INSTRUMENT_TYPES(ID)")
                  ;
@@ -187,11 +194,25 @@ protected:
         }
         else if (tableName.toUpper()=="INSTRUMENT_TYPES")
         {
-            // CURRENCY - RUB/USD/EUR/GBP/HKD/CHF/JPY/CNY/TRY
             return lf()    + QString("ID")                    + tab() + QString("INTEGER NOT NULL UNIQUE") 
                  + lf(',') + QString("INSTRUMENT_TYPE")       + tab() + QString("VARCHAR(8) NOT NULL UNIQUE")
                  + lf(',') + QString("DESCRIPTION")           + tab() + QString("TEXT")
                  + lf(',') + QString("PRIMARY KEY(ID)")
+                 ;
+        }
+        else if (tableName.toUpper()=="_META_TABLES")
+        {
+            return lf()    + QString("TABLE_NAME")            + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
+                 + lf(',') + QString("DISPLAY_NAME")          + tab() + QString("TEXT")
+                 + lf(',') + QString("DESCRIPTION")           + tab() + QString("TEXT")
+                 ;
+        }
+        else if (tableName.toUpper()=="_META_COLUMNS")
+        {
+            return lf()    + QString("TABLE_NAME")            + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
+                 + lf(',') + QString("COLUMN_NAME")           + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
+                 + lf(',') + QString("DISPLAY_NAME")          + tab() + QString("TEXT")
+                 + lf(',') + QString("DESCRIPTION")           + tab() + QString("TEXT")
                  ;
         }
         else if (tableName.toUpper()=="TEST")

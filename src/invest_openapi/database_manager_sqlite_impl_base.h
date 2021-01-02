@@ -74,12 +74,7 @@ protected:
     //------------------------------
     virtual QString   defDecimal      ( unsigned total, unsigned frac ) const override
     {
-        return QString("DECIMAL(") 
-             + QString::number(total)
-             + QString(",") 
-             + QString::number(frac)
-             + QString(")")
-             ;
+        return QString("DECIMAL(%1,%2)").arg(total).arg(frac);
     }
 
     //------------------------------
@@ -110,16 +105,25 @@ protected:
     }
 
     //------------------------------
+    virtual QVector<QString> tableGetNames    () const override
+    {
+        QSqlQuery query = selectExecHelper("SELECT NAME FROM sqlite_master where type=\'table\';");
+        return queryToSingleStringVector( query, 0, "sqlite_sequence", false );
+    }
+    
+    //------------------------------
+    virtual QVector<QString> tableGetColumnsInternal ( const QString &internalTableName ) const override
+    {
+        QSqlQuery query = selectExecHelper(QString("PRAGMA table_info(%1);").arg(escape(internalTableName)));
+        return queryToSingleStringVector( query, 1 );
+    }
+
+    //------------------------------
     virtual bool    tableDrop          ( const QString &tableName, IfExists existence ) const override
     {
         // https://www.sqlitetutorial.net/sqlite-drop-table/
         QSqlQuery query(*m_pDb);
-
-        QString queryText = QString("DROP TABLE ") 
-                          + exists(existence) + QString(" ") 
-                          + tableMapName(tableName) 
-                          + QString(";");
-
+        QString queryText = QString("DROP TABLE %1 %2;").arg(exists(existence)).arg(tableMapName(tableName));
         RETURN_IOA_SQL_EXEC_QUERY( query, queryText );
         // return query.exec( queryText );
     }
@@ -128,16 +132,48 @@ protected:
     virtual bool    tableCreate        ( const QString &tableName, IfExists existence ) const override
     {
         QSqlQuery query(*m_pDb);
-
-        QString queryText = QString("CREATE TABLE ") + exists(existence) + QString(" ")
-                          + tableMapName(tableName)
-                          + QString(" (") 
-                          + tableGetShema(tableName)
-                          + QString(");") ;
-
+        QString queryText = QString("CREATE TABLE %1 %2 (%3)").arg(exists(existence)).arg(tableMapName(tableName)).arg(tableGetShema(tableName));
         RETURN_IOA_SQL_EXEC_QUERY( query, queryText );
         // return query.exec( queryText );
     }
+
+    //------------------------------
+    virtual bool      metaInsertForTableExact  ( QString tableName, QString tableDisplayName, QString tableDescription ) const override
+    {
+        return true;
+    }
+
+    //------------------------------
+    virtual bool      metaInsertForColumnExact ( QString tableName, QString columnName, QString tableDisplayName, QString tableDescription ) const override
+    {
+        return true;
+    }
+
+    //------------------------------
+    virtual bool      metaInsertForTable       ( QStringTriple tripple ) const override
+    {
+        return true;
+    }
+
+    //------------------------------
+    virtual bool      metaInsertForColumn      ( QStringQuatro quatro  ) const override
+    {
+        return true;
+    }
+
+    //------------------------------
+    virtual bool      metaInsertForTableBulk   ( const QString &bulkText ) const override
+    {
+        return true;
+    }
+
+    //------------------------------
+    virtual bool      metaInsertForColumnBulk  ( const QString &bulkText ) const override
+    {
+        return true;
+    }
+
+
 
 }; // DatabaseManagerSQLiteImplBase
 

@@ -11,6 +11,7 @@
 
 #include <exception>
 #include <stdexcept>
+#include <set>
 
 
 #include "i_database_manager.h"
@@ -49,7 +50,14 @@ protected:
     //------------------------------
     virtual QString tab() const override
     {
-        return QString("        ");
+        return QString("                ");
+    }
+
+    virtual QString escape( const QString &str ) const override
+    {
+        QSqlField f(QLatin1String(""), QVariant::String);
+        f.setValue(str);
+        return m_pDb->driver()->formatValue(f);
     }
 
     //------------------------------
@@ -120,6 +128,89 @@ protected:
         return QString('\'') + tableName + QString('\''); // return unmapped value
     }
 
+    //------------------------------
+    virtual QSqlQuery   selectExecHelper ( const QString &queryText ) const override
+    {
+        QSqlQuery query(*m_pDb);
+        if (!query.exec(queryText))
+            return query;
+
+        query.first();
+        return query;
+    }
+
+    //------------------------------
+    virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx, const QVector<QString> &except, bool caseCompare ) const override
+    {
+        std::set<QString> exceptsSet;
+
+        for( QVector<QString>::const_iterator eit = except.begin(); eit != except.end(); ++eit )
+        {
+            #if defined(_DEBUG) || defined(DEBUG)
+            QString curStr = caseCompare ? *eit : eit->toUpper();
+            #endif
+
+            exceptsSet.insert( caseCompare ? *eit : eit->toUpper() );
+        }
+
+        QVector<QString> resVec;
+
+        if (!query.isValid())
+            return resVec;
+
+        do
+        {
+            //int sz = query.record().count();// query.size();
+            QString str = query.value(valIdx).toString();
+
+            if (!caseCompare)
+                str = str.toUpper();
+
+            if (exceptsSet.find(str)!=exceptsSet.end())
+                continue;
+
+            resVec.push_back(str);
+            
+        } while(query.next());
+
+        return resVec;
+
+    }
+
+    //------------------------------
+    virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx, const QStringList      &except, bool caseCompare ) const override
+    {
+        QVector<QString> vec;
+        for (QStringList::const_iterator it = except.constBegin(); it != except.constEnd(); ++it)
+        {
+            #if defined(_DEBUG) || defined(DEBUG)
+            QString curStr = *it;
+            #endif
+            vec.push_back(*it);
+        }
+
+        return queryToSingleStringVector( query, valIdx, vec, caseCompare );
+    }
+
+    //------------------------------
+    virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx,       QString           except, bool caseCompare ) const override
+    {
+        except.replace(':', ";");
+        except.replace(',', ";");
+        except.replace('.', ";");
+        return queryToSingleStringVector( query, valIdx, except.split( ';', Qt::SkipEmptyParts ), caseCompare );
+    }
+
+    //------------------------------
+    virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx ) const override
+    {
+        return queryToSingleStringVector( query, valIdx, QVector<QString>(), false );
+    }
+
+    //------------------------------
+    
+    
+    
     //------------------------------
     QSharedPointer<DatabaseConfig>    m_pDatabaseConfig;
     QSharedPointer<LoggingConfig>     m_pLoggingConfig;
