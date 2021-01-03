@@ -12,6 +12,9 @@
 #include <exception>
 #include <stdexcept>
 #include <set>
+#include <algorithm>
+#include <iterator>
+
 
 
 #include "i_database_manager.h"
@@ -53,12 +56,45 @@ protected:
         return QString("                ");
     }
 
-    virtual QString escape( const QString &str ) const override
+    virtual QString sqlQuote( const QString &str ) const override
     {
         QSqlField f(QLatin1String(""), QVariant::String);
         f.setValue(str);
         return m_pDb->driver()->formatValue(f);
     }
+
+    virtual QString sqlQuote( const QVariant &str ) const override
+    {
+        if (str.isNull() || !str.isValid())
+            return sqlQuote(QString());
+        return sqlQuote(str.toString());
+    }
+
+    virtual QVector<QString> sqlQuote( const QVector<QString > &strs ) const override
+    {
+        QVector<QString> resVec;
+        std::transform( strs.begin(), strs.end(), std::back_inserter(resVec)
+                      , [this]( const QString &s )
+                        {
+                            return sqlQuote(s);
+                        }
+                      );
+        return resVec;
+    }
+
+    virtual QVector<QString> sqlQuote( const QVector<QVariant> &strs ) const override
+    {
+        QVector<QString> resVec;
+        std::transform( strs.begin(), strs.end(), std::back_inserter(resVec)
+                      , [this]( const QVariant &s )
+                        {
+                            return sqlQuote(s);
+                        }
+                      );
+        return resVec;
+    }
+
+
 
     //------------------------------
     virtual QString getTableExistString( const QString &tableName ) const override
@@ -142,16 +178,7 @@ protected:
     //------------------------------
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx, const QVector<QString> &except, bool caseCompare ) const override
     {
-        std::set<QString> exceptsSet;
-
-        for( QVector<QString>::const_iterator eit = except.begin(); eit != except.end(); ++eit )
-        {
-            #if defined(_DEBUG) || defined(DEBUG)
-            QString curStr = caseCompare ? *eit : eit->toUpper();
-            #endif
-
-            exceptsSet.insert( caseCompare ? *eit : eit->toUpper() );
-        }
+        QSet<QString> exceptsSet = makeSet( except, !caseCompare );
 
         QVector<QString> resVec;
 
@@ -174,31 +201,18 @@ protected:
         } while(query.next());
 
         return resVec;
-
     }
 
     //------------------------------
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx, const QStringList      &except, bool caseCompare ) const override
     {
-        QVector<QString> vec;
-        for (QStringList::const_iterator it = except.constBegin(); it != except.constEnd(); ++it)
-        {
-            #if defined(_DEBUG) || defined(DEBUG)
-            QString curStr = *it;
-            #endif
-            vec.push_back(*it);
-        }
-
-        return queryToSingleStringVector( query, valIdx, vec, caseCompare );
+        return queryToSingleStringVector( query, valIdx, toStringVector(except), caseCompare );
     }
 
     //------------------------------
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx,       QString           except, bool caseCompare ) const override
     {
-        except.replace(':', ";");
-        except.replace(',', ";");
-        except.replace('.', ";");
-        return queryToSingleStringVector( query, valIdx, except.split( ';', Qt::SkipEmptyParts ), caseCompare );
+        return queryToSingleStringVector( query, valIdx, splitString( except, ".,:;" ), caseCompare );
     }
 
     //------------------------------
@@ -207,7 +221,77 @@ protected:
         return queryToSingleStringVector( query, valIdx, QVector<QString>(), false );
     }
 
+
+
     //------------------------------
+    virtual bool insertTo( const QString &tableName, const QVector<QVariant> &vals, const QVector<QString> &tableColumns ) const override
+    {
+        QVector<QVector<QVariant> > tmp; tmp.push_back(vals); return insertToImpl(tableName, tmp, tableColumns);
+    }
+
+    //------------------------------
+    virtual bool insertTo( const QString &tableName, const QVector<QVariant> &vals, const QStringList      &tableColumns ) const override
+    {
+        QVector<QVector<QVariant> > tmp; tmp.push_back(vals); return insertToImpl(tableName, tmp, toStringVector(tableColumns) );
+    }
+
+    //------------------------------
+    virtual bool insertTo( const QString &tableName, const QVector<QVariant> &vals,       QString           tableColumns ) const override
+    {
+        QVector<QVector<QVariant> > tmp; tmp.push_back(vals); return insertToImpl(tableName, tmp, toStringVector(splitString(tableColumns, ",.:")) );
+    }
+
+    //------------------------------
+    virtual bool insertTo( const QString &tableName, const QVector<QString > &vals, const QVector<QString> &tableColumns ) const override
+    {
+        QVector<QVector<QString> > tmp; tmp.push_back(vals); return insertToImpl(tableName, tmp, tableColumns);
+    }
+
+    //------------------------------
+    virtual bool insertTo( const QString &tableName, const QVector<QString > &vals, const QStringList      &tableColumns ) const override
+    {
+        QVector<QVector<QString> > tmp; tmp.push_back(vals); return insertToImpl(tableName, tmp, toStringVector(tableColumns) );
+    }
+
+    //------------------------------
+    virtual bool insertTo( const QString &tableName, const QVector<QString > &vals,       QString           tableColumns ) const override
+    {
+        QVector<QVector<QString> > tmp; tmp.push_back(vals); return insertToImpl(tableName, tmp, toStringVector(splitString(tableColumns, ",.:")) );
+    }
+
+    //------------------------------
+
+
+    virtual bool insertTo( const QString &tableName, const QVector<QVector<QVariant> > &vals, const QVector<QString> &tableColumns ) const override
+    {
+        return insertToImpl(tableName, vals, tableColumns);
+    }
+
+    virtual bool insertTo( const QString &tableName, const QVector<QVector<QVariant> > &vals, const QStringList      &tableColumns ) const override
+    {
+        return insertTo( tableName, vals, makeVector(tableColumns, false) );
+    }
+
+    virtual bool insertTo( const QString &tableName, const QVector<QVector<QVariant> > &vals,       QString           tableColumns ) const override
+    {
+        return insertTo( tableName, vals, splitString( tableColumns, ".,:;" ) );
+    }
+
+    virtual bool insertTo( const QString &tableName, const QVector<QVector<QString > > &vals, const QVector<QString> &tableColumns ) const override
+    {
+        return insertToImpl(tableName, vals, tableColumns);
+    }
+
+    virtual bool insertTo( const QString &tableName, const QVector<QVector<QString > > &vals, const QStringList      &tableColumns ) const override
+    {
+        return insertTo( tableName, vals, makeVector(tableColumns, false) );
+    }
+
+    virtual bool insertTo( const QString &tableName, const QVector<QVector<QString > > &vals,       QString           tableColumns ) const override
+    {
+        return insertTo( tableName, vals, splitString( tableColumns, ".,:;" ) );
+    }
+
     
     
     

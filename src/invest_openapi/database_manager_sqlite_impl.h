@@ -118,8 +118,8 @@ protected:
     //----------------------------------------------------------------------------
     virtual bool   insertNewCurrencyTypes    ( const QString &all ) const override
     {
-        QList<QStringPair>           pairs = simpleSplitTo<QStringPair>( all );
-        QList<QStringPair>::iterator it    = pairs.begin();
+        QVector<QStringPair>           pairs = simpleSplitTo<QStringPair>( all );
+        QVector<QStringPair>::iterator it    = pairs.begin();
 
         for(; it != pairs.end(); ++it)
         {
@@ -131,8 +131,8 @@ protected:
 
     virtual bool   insertNewInstrumentTypes  ( const QString &all ) const override
     {
-        QList<QStringPair>           pairs = simpleSplitTo<QStringPair>( all );
-        QList<QStringPair>::iterator it    = pairs.begin();
+        QVector<QStringPair>           pairs = simpleSplitTo<QStringPair>( all );
+        QVector<QStringPair>::iterator it    = pairs.begin();
 
         for(; it != pairs.end(); ++it)
         {

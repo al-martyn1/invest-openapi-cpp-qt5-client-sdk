@@ -419,17 +419,20 @@ public:
 
     Decimal operator * ( Decimal d2 ) const
     {
+        //minimizePrecision();
+        d2.minimizePrecision();
+
         num_t num = m_num * d2.m_num;
 
         if (m_denum < d2.m_denum)
         {
             num /= m_denum.denum();
-            return Decimal( num, d2.m_denum );
+            return Decimal( num, d2.m_denum ).minimizePrecision();
         }
         else
         {
             num /= d2.m_denum.denum();
-            return Decimal( num, m_denum );
+            return Decimal( num, m_denum ).minimizePrecision();
         }
     }
 
@@ -613,13 +616,15 @@ protected:
            m_num *= (denum_t)adjust;
     }
 
-    void minimizePrecision()
+    Decimal& minimizePrecision()
     {
         while( ((m_num%10)==0) && (m_denum.prec()>0) )
         {
             m_num /= 10;
             m_denum.decPrec();
         }
+
+        return *this;
     }
 
 

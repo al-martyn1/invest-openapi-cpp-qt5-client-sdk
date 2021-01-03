@@ -3,6 +3,8 @@
 #include <QObject>
 #include <QVariant>
 #include <QString>
+#include <QVector>
+#include <QSet>
 #include <QSqlDatabase>
 #include <QSqlDriver>
 #include <QSqlField>
@@ -51,7 +53,10 @@ struct IDatabaseManager
     virtual QString q( const QString &str  ) const = 0;
     virtual QString lf( char comma = ' ' ) const = 0;
     virtual QString tab() const = 0;
-    virtual QString escape( const QString &str ) const = 0;
+    virtual QString sqlQuote( const QString &str ) const = 0;
+    virtual QString sqlQuote( const QVariant &str ) const = 0;
+    virtual QVector<QString> sqlQuote( const QVector<QString > &strs ) const = 0;
+    virtual QVector<QString> sqlQuote( const QVector<QVariant> &strs ) const = 0;
 
     // Core functions
 
@@ -59,25 +64,39 @@ struct IDatabaseManager
     virtual QString     tableGetShema    ( const QString &tableName                   ) const = 0;
     virtual QSqlQuery   selectExecHelper ( const QString &queryText                   ) const = 0;
 
+    virtual QVector<QString> tableGetNames    () const = 0;
+    virtual QVector<QString> tableGetColumnsInternal ( const QString &internalTableName ) const = 0;
+    virtual QVector<QString> tableGetColumns  ( const QString &tableName ) const = 0;
+
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx, const QVector<QString> &except, bool caseCompare ) const = 0;
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx, const QStringList      &except, bool caseCompare ) const = 0;
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx,       QString           except, bool caseCompare ) const = 0;
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx                                                   ) const = 0;
 
-    virtual QVector<QString> tableGetNames    () const = 0;
-    virtual QVector<QString> tableGetColumnsInternal ( const QString &internalTableName ) const = 0;
-    virtual QVector<QString> tableGetColumns  ( const QString &tableName ) const = 0;
 
+
+    #define INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE( valType )                                                         \
+    virtual bool insertToImpl( const QString &tableName, const valType &vals, const QVector<QString> &tableColumns ) const = 0; \
+    virtual bool insertTo( const QString &tableName, const valType     &vals, const QVector<QString> &tableColumns ) const = 0; \
+    virtual bool insertTo( const QString &tableName, const valType     &vals, const QStringList      &tableColumns ) const = 0; \
+    virtual bool insertTo( const QString &tableName, const valType     &vals,       QString           tableColumns ) const = 0
+
+    typedef QVector<QVector<QVariant> >  QVector_QVector_QVariant;
+    typedef QVector<QVector<QString>  >  QVector_QVector_QString ;
+    typedef QVector<QVariant>            QVector_QVariant        ;
+    typedef QVector<QString>             QVector_QString         ;
+
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE( QVector_QVector_QVariant );
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE( QVector_QVector_QString  );
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE( QVector_QVariant         );
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE( QVector_QString          );
 
     // Meta helpers
-    virtual bool      metaInsertForTableExact  ( QString tableName                    , QString tableDisplayName , QString tableDescription ) const = 0;
-    virtual bool      metaInsertForColumnExact ( QString tableName, QString columnName, QString columnDisplayName, QString tableDescription ) const = 0;
 
-    virtual bool      metaInsertForTable       ( QStringTriple tripple ) const = 0;
-    virtual bool      metaInsertForColumn      ( QStringQuatro quatro  ) const = 0;
-
-    virtual bool      metaInsertForTableBulk   ( const QString &bulkText ) const = 0;
-    virtual bool      metaInsertForColumnBulk  ( const QString &bulkText ) const = 0;
+    //! insert meta for all tables on single call
+    virtual bool      metaInsertForTablesBulk ( const QString &bulkText ) const = 0;
+    //! insert meta for all columns of single table on single call
+    virtual bool      metaInsertForColumnBulk ( QString tableName, const QString &bulkText ) const = 0;
 
     // Table creation helpers
     virtual bool      tableCheckExist    ( const QString &tableName                                              ) const = 0;

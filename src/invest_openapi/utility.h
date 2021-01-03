@@ -4,10 +4,6 @@
 
 #pragma once
 
-#include <exception>
-#include <stdexcept>
-#include <map>
-
 #include <QString>
 #include <QStringList>
 #include <QVector>
@@ -20,6 +16,15 @@
     #include <QSqlField>
     #include <QSqlError>
 #endif
+
+#include <exception>
+#include <stdexcept>
+#include <map>
+#include <set>
+
+#include <algorithm>
+#include <iterator>
+
 
 #include "models.h"
 
@@ -410,14 +415,14 @@ std::map<QString,QString> makeIsinFigiMap( const QList< Instrument<MonetaryType>
 
 //----------------------------------------------------------------------------
 #if 0
-//! Базовый false-тип для детекта наличия метода getPayload() у объекта
+//! Р‘Р°Р·РѕРІС‹Р№ false-С‚РёРї РґР»СЏ РґРµС‚РµРєС‚Р° РЅР°Р»РёС‡РёСЏ РјРµС‚РѕРґР° getPayload() Сѓ РѕР±СЉРµРєС‚Р°
 template< typename C, typename = void >
 struct has_getPayload
   : std::false_type
 {};
 
 //------------------------------
-//! Специализация, тестирующая наличие метода getPayload() у объекта
+//! РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ, С‚РµСЃС‚РёСЂСѓСЋС‰Р°СЏ РЅР°Р»РёС‡РёРµ РјРµС‚РѕРґР° getPayload() Сѓ РѕР±СЉРµРєС‚Р°
 template< typename C >
 struct has_getPayload< C, std::enable_if_t<
                          std::is_same<
@@ -429,9 +434,9 @@ struct has_getPayload< C, std::enable_if_t<
 {};
 
 //------------------------------
-//! Функция возвращает payload после join'а
+//! Р¤СѓРЅРєС†РёСЏ РІРѕР·РІСЂР°С‰Р°РµС‚ payload РїРѕСЃР»Рµ join'Р°
 /*! 
-     \tparam C Тип контейнера
+     \tparam C РўРёРї РєРѕРЅС‚РµР№РЅРµСЂР°
  */
 template< typename C >
 std::enable_if_t< has_getPayload< C >::value > inline
@@ -456,15 +461,99 @@ auto joinAndGetPayload( ResponseType response ) -> decltype(response->value.getP
 
 
 
+
 //----------------------------------------------------------------------------
-#define IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_LIST( typeName )     \
-                static                                           \
-                typeName makeFromList( const QStringList &lst )  \
-                {                                                \
-                    typeName tmp;                                \
-                    tmp.fromList(lst);                           \
-                    return tmp;                                  \
+inline QVector<QString> makeVector(const QStringList      &v, bool bUpper = true )
+{
+    QVector<QString> resVec;
+    for (QStringList::const_iterator it = v.constBegin(); it != v.constEnd(); ++it)
+    {
+        QString curStr = (bUpper ? it->toUpper() : *it);
+        resVec.push_back(curStr);
+    }
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+inline QVector<QString> toStringVector(const QStringList      &v )
+{
+    return makeVector(v, false);
+}
+
+//----------------------------------------------------------------------------
+inline QVector<QString> toStringVector(const QVector<QVariant> &v )
+{
+    QVector<QString> resVec;
+
+    std::transform( v.begin(), v.end(), std::back_inserter(resVec)
+                  , []( const QVariant &q ) -> QString
+                    {
+                        if (q.isNull() || !q.isValid())
+                            return QString();
+                        return q.toString();
+                    }
+                  );
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+inline QVector<QVector<QString> > toStringVector(const QVector<QVector<QVariant> > &v )
+{
+    QVector<QVector<QString> > resVec;
+
+    std::transform( v.begin(), v.end(), std::back_inserter(resVec)
+                  , []( const QVector<QVariant> &v)
+                    {
+                        return toStringVector(v);
+                    }
+                  );
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+inline QVector<QString> toStringVector(const QList<QString> &v )
+{
+    QVector<QString> resVec;
+
+    std::transform( v.begin(), v.end(), std::back_inserter(resVec)
+                  , []( const QString &s )
+                    {
+                        return s;
+                    }
+                  );
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+
+//----------------------------------------------------------------------------
+#define IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_VECTOR( typeName )           \
+                static                                                   \
+                typeName makeFrom( const QVector<QString> &lst )         \
+                {                                                        \
+                    typeName tmp;                                        \
+                    tmp.from(lst);                                       \
+                    return tmp;                                          \
                 }
+
+#define IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_STRINGLIST( typeName )       \
+                static                                                   \
+                typeName makeFrom( const QStringList &lst )              \
+                {                                                        \
+                    return makeFrom(toStringVector(lst));                \
+                }
+
+//----------------------------------------------------------------------------
+
+
 
 
 //----------------------------------------------------------------------------
@@ -472,13 +561,14 @@ struct QStringSingle
 {
     QString first;
 
-    void fromList( const QStringList &lst )
+    void from( const QVector<QString> &lst )
     {
         int sz = lst.size();
         if (sz>=1) first = lst.at(0);
     }
 
-    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_LIST(QStringSingle)
+    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_VECTOR(QStringSingle)
+    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_STRINGLIST(QStringSingle)
 
 }; // struct QStringSingle
 
@@ -488,14 +578,15 @@ struct QStringPair
     QString first;
     QString second;
 
-    void fromList( const QStringList &lst )
+    void from( const QVector<QString> &lst )
     {
         int sz = lst.size();
         if (sz>=1) first  = lst.at(0);
         if (sz>=2) second = lst.at(1);
     }
 
-    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_LIST(QStringPair)
+    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_VECTOR(QStringPair)
+    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_STRINGLIST(QStringPair)
 
 }; // struct QstringPair
 
@@ -506,7 +597,7 @@ struct QStringTriple
     QString second;
     QString third;
 
-    void fromList( const QStringList &lst )
+    void from( const QVector<QString> &lst )
     {
         int sz = lst.size();
         if (sz>=1) first  = lst.at(0);
@@ -514,7 +605,8 @@ struct QStringTriple
         if (sz>=3) third  = lst.at(2);
     }
 
-    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_LIST(QStringTriple)
+    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_VECTOR(QStringTriple)
+    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_STRINGLIST(QStringTriple)
 
 }; // struct QStringTriple
 
@@ -526,7 +618,7 @@ struct QStringQuatro
     QString third;
     QString fourth;
 
-    void fromList( const QStringList &lst )
+    void from( const QVector<QString> &lst )
     {
         int sz = lst.size();
         if (sz>=1) first  = lst.at(0);
@@ -535,55 +627,151 @@ struct QStringQuatro
         if (sz>=4) fourth = lst.at(3);
     }
 
-    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_LIST(QStringQuatro)
+    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_VECTOR(QStringQuatro)
+    IOA_QUADRIPLE_IMPL_STATIC_MAKE_FROM_STRINGLIST(QStringQuatro)
 
 }; // struct QStringQuatro
 
+
 //----------------------------------------------------------------------------
-inline
-QList<QStringList> simpleSplitTo_ImplBase(const QString &str)
+inline QStringList splitString( QString v, const QString &seps )
 {
-    QStringList         lst = str.split(";");
-
-    QList<QStringList>  res;
-
-    QStringList::const_iterator constIterator;
-    for (constIterator = lst.constBegin(); constIterator != lst.constEnd(); ++constIterator)
+    for( QString::const_iterator it=seps.begin(); it!=seps.end(); ++it )
     {
-        QString strList = *constIterator;
-        strList.replace(',', ":");
-        strList.replace('.', ":");
-
-        res.push_back( strList.split(":") );
+        v.replace( *it, ";" );
     }
 
-    return res;
+    return v.split( ';', Qt::SkipEmptyParts );
+}
+
+//----------------------------------------------------------------------------
+inline QVector<QVector<QString> > splitString( QString v, const QString &recordSeps, const QString &itemSeps )
+{
+    QVector<QString> records = toStringVector(splitString( v, recordSeps ));
+
+    QVector<QVector<QString> > resVec;
+
+    std::transform( records.begin(), records.end(), std::back_inserter(resVec)
+                  , [itemSeps]( const QString &s )
+                    {
+                        return makeVector(splitString( s, itemSeps ));
+                    }
+                  );
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+inline
+QVector<QVector<QString> > simpleSplitTo_ImplBase(const QString &str)
+{
+    return splitString( str, ";", ",.:" );
 }
 
 //----------------------------------------------------------------------------
 template< typename CoupleType >
 inline
-QList<CoupleType> simpleSplitTo( const QString &str )
+QVector<CoupleType> simpleSplitTo( const QString &str )
 {
-    QList<CoupleType> resLst;
+    QVector<CoupleType> resVec;
 
-    QList<QStringList> lstOfLst = simpleSplitTo_ImplBase(str);
+    QVector<QVector<QString> > strsVec = simpleSplitTo_ImplBase(str);
 
-    QList<QStringList>::const_iterator it = lstOfLst.begin();
-    for(; it != lstOfLst.end(); ++it)
+    std::transform( strsVec.begin(), strsVec.end(), std::back_inserter(resVec)
+                  , []( const QVector<QString> &v )
+                    {
+                        CoupleType couple;
+                        couple.makeFrom(v);
+                        return couple;
+                    }
+                  );
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+inline std::set<QString> makeStdSet   (const QVector<QString> &v, bool bUpper = true )
+{
+    std::set<QString> resSet;
+
+    QVector<QString>::const_iterator it = v.begin();
+    for(; it != v.end(); ++it)
     {
-        /*
-        CoupleType tmpPair;
-        tmpPair.fromList(*it);
-        resLst.push_back(tmpPair);
-        */
-
-        resLst.push_back(CoupleType::makeFromList(*it));
-        
+        QString str = (bUpper ? it->toUpper() : *it);
+        resSet.insert(str);
     }
 
-    return resLst;
+    /*
+    // Р§С‘С‚ РЅРµ СЂР°Р±РѕС‚Р°РµС‚
+    std::transform( v.begin(), v.end(), std::inserter(resSet)
+                  , [bUpper]( const QString &v )
+                    {
+                        return bUpper ? v.toUpper() : v;
+                    }
+                  );
+    */
+    return resSet;
 }
+
+//----------------------------------------------------------------------------
+inline QSet<QString>    makeSet   (const QVector<QString> &v, bool bUpper = true )
+{
+    std::set<QString> stdSet = makeStdSet(v, bUpper);
+    return QSet<QString>( stdSet.begin(), stdSet.end() );
+}
+
+//----------------------------------------------------------------------------
+inline QSet<QString>    makeSet   (const QStringList      &v, bool bUpper = true )
+{
+    return makeSet(makeVector(v, bUpper), false);
+}
+
+//----------------------------------------------------------------------------
+inline QVector<QString> removeFirstItems(QVector<QString> v, int numItemsToRemove )
+{
+    if (numItemsToRemove>=v.size())
+    {
+        return QVector<QString>();
+    }
+
+    QVector<QString>::iterator eraseBegin = v.begin(), eraseEnd = v.begin();
+    std::advance(eraseEnd, (std::size_t)(numItemsToRemove));
+
+    v.erase(eraseBegin, eraseEnd);
+
+    return v;
+}
+
+//----------------------------------------------------------------------------
+inline QString mergeString(const QVector<QString> &v, const QString &sep )
+{
+    if (v.empty())
+        return QString();
+
+    if (v.size()==1)
+        return v[0];
+
+    QString resStr;
+
+    QVector<QString>::const_iterator it = v.begin();
+
+    do
+    {
+        resStr.append(*it);
+        resStr.append(sep);
+        ++it;
+
+    } while(it!=v.end());
+
+    return resStr;
+}
+
+//----------------------------------------------------------------------------
+inline QString mergeString(const QStringList &v, const QString &sep )
+{
+    return mergeString( toStringVector(v), sep );
+}
+
 
 /*
 // Obsolete

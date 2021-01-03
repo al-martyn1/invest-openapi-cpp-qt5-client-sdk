@@ -11,7 +11,8 @@
 
 #include <exception>
 #include <stdexcept>
-
+#include <algorithm>
+#include <iterator>
 
 #include "database_manager_impl_base.h"
 
@@ -114,7 +115,7 @@ protected:
     //------------------------------
     virtual QVector<QString> tableGetColumnsInternal ( const QString &internalTableName ) const override
     {
-        QSqlQuery query = selectExecHelper(QString("PRAGMA table_info(%1);").arg(escape(internalTableName)));
+        QSqlQuery query = selectExecHelper(QString("PRAGMA table_info(%1);").arg(sqlQuote(internalTableName)));
         return queryToSingleStringVector( query, 1 );
     }
 
@@ -137,38 +138,60 @@ protected:
         // return query.exec( queryText );
     }
 
-    //------------------------------
-    virtual bool      metaInsertForTableExact  ( QString tableName, QString tableDisplayName, QString tableDescription ) const override
+    virtual bool insertToImpl( const QString &tableName, const QVector<QVector<QString> >  &vals, const QVector<QString> &tableColumns ) const override
     {
-        return true;
+        QVector<QString> valuesList;
+
+        int columnsSize = tableColumns.size();
+
+        std::transform( vals.begin(), vals.end(), std::back_inserter(valuesList)
+                      , [this, columnsSize]( const QVector<QString> &v )
+                        {
+                            if (columnsSize!=v.size())
+                            {
+                                throw std::runtime_error("DatabaseManagerSQLiteImplBase::insertToImpl: number of columns mismatch number of taken values");
+                            }
+
+                            return QString("(%1)").arg(mergeString( sqlQuote(v), ", "));
+                        }
+                      );
+
+        QString queryText = QString("INSERT INTO %1 (%2)%3VALUES %5").arg(tableMapName(tableName))
+                                                                     .arg( mergeString(tableColumns, ", ") )
+                                                                     .arg(lf())
+                                                                     .arg(mergeString( valuesList, QString(",") + lf() + QString("       ")) )
+                                                                     ;
+        QSqlQuery query(*m_pDb);
+        RETURN_IOA_SQL_EXEC_QUERY( query, queryText );
+    }
+
+    virtual bool insertToImpl( const QString &tableName, const QVector<QString>   &vals, const QVector<QString> &tableColumns ) const override
+    {
+        QVector<QVector<QString> > tmp; tmp.push_back(vals);
+        return insertToImpl( tableName, tmp, tableColumns );
+    }
+
+    virtual bool insertToImpl( const QString &tableName, const QVector<QVector<QVariant> > &vals, const QVector<QString> &tableColumns ) const override
+    {
+        return insertToImpl( tableName, toStringVector(vals), tableColumns );
+    }
+
+    virtual bool insertToImpl( const QString &tableName, const QVector<QVariant> &vals, const QVector<QString> &tableColumns ) const override
+    {
+        return insertToImpl( tableName, toStringVector(vals), tableColumns );
+    }
+
+
+    //------------------------------
+    virtual bool      metaInsertForTablesBulk ( const QString &bulkText ) const override
+    {
+        //QStringList = toStringVector(splitString(bulkText, ";"));
+        auto vec = splitString(bulkText, ";", ",.:;");
+        return insertTo( "_META_TABLES", splitString(bulkText, ";", ",.:;"), "TABLE_NAME;DISPLAY_NAME;DESCRIPTION" );
     }
 
     //------------------------------
-    virtual bool      metaInsertForColumnExact ( QString tableName, QString columnName, QString tableDisplayName, QString tableDescription ) const override
-    {
-        return true;
-    }
-
-    //------------------------------
-    virtual bool      metaInsertForTable       ( QStringTriple tripple ) const override
-    {
-        return true;
-    }
-
-    //------------------------------
-    virtual bool      metaInsertForColumn      ( QStringQuatro quatro  ) const override
-    {
-        return true;
-    }
-
-    //------------------------------
-    virtual bool      metaInsertForTableBulk   ( const QString &bulkText ) const override
-    {
-        return true;
-    }
-
-    //------------------------------
-    virtual bool      metaInsertForColumnBulk  ( const QString &bulkText ) const override
+    virtual bool      metaInsertForColumnBulk ( QString tableName, const QString &bulkText ) const override
     {
         return true;
     }
