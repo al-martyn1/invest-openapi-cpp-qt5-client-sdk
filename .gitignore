@@ -60,3 +60,4 @@
 /windeployqt.txt
 *.sqlite
 /logging.properties
+/src/yaml-cpp

@@ -107,7 +107,10 @@ INVEST_OPENAPI_MAIN()
     qDebug().nospace().noquote() << "Drop   table INSTRUMENTS  : " << pDbMan->tableDrop("INSTRUMENTS");
     qDebug().nospace().noquote() << "Create table INSTRUMENTS  : " << pDbMan->tableCreate("INSTRUMENTS");
 
-
+    pDbMan->metaInsertForTablesBulk( "CURRENCIES,Currencies,Currency dictionary;"
+                                     "INSTRUMENT_TYPES,Instrument types,Instrument types dictionary;"
+                                     "INSTRUMENTS,Instruments,Instruments dictionary"
+                                   );
 
     tkf::IOaDatabaseManager *pOaDbMan = dynamic_cast<tkf::IOaDatabaseManager*>(pDbMan.get());
     if (!pOaDbMan)

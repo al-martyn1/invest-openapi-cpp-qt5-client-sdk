@@ -654,7 +654,7 @@ inline QVector<QVector<QString> > splitString( QString v, const QString &recordS
     std::transform( records.begin(), records.end(), std::back_inserter(resVec)
                   , [itemSeps]( const QString &s )
                     {
-                        return makeVector(splitString( s, itemSeps ));
+                        return toStringVector(splitString( s, itemSeps ));
                     }
                   );
 
@@ -680,9 +680,7 @@ QVector<CoupleType> simpleSplitTo( const QString &str )
     std::transform( strsVec.begin(), strsVec.end(), std::back_inserter(resVec)
                   , []( const QVector<QString> &v )
                     {
-                        CoupleType couple;
-                        couple.makeFrom(v);
-                        return couple;
+                        return CoupleType :: makeFrom(v);
                     }
                   );
 
@@ -755,13 +753,13 @@ inline QString mergeString(const QVector<QString> &v, const QString &sep )
 
     QVector<QString>::const_iterator it = v.begin();
 
-    do
-    {
-        resStr.append(*it);
-        resStr.append(sep);
-        ++it;
+    resStr.append(*it); ++it;
 
-    } while(it!=v.end());
+    for( ; it!=v.end(); ++it)
+    {
+        resStr.append(sep);
+        resStr.append(*it);
+    }
 
     return resStr;
 }

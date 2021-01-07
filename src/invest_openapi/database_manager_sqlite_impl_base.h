@@ -187,13 +187,14 @@ protected:
     {
         //QStringList = toStringVector(splitString(bulkText, ";"));
         auto vec = splitString(bulkText, ";", ",.:;");
-        return insertTo( "_META_TABLES", splitString(bulkText, ";", ",.:;"), "TABLE_NAME;DISPLAY_NAME;DESCRIPTION" );
+        return insertTo( "_META_TABLES", splitString(bulkText, ";", ",.:;"), tableGetColumns("_META_TABLES") /* "TABLE_NAME;DISPLAY_NAME;DESCRIPTION" */  );
     }
 
     //------------------------------
     virtual bool      metaInsertForColumnBulk ( QString tableName, const QString &bulkText ) const override
     {
-        return true;
+        auto vec = splitString(bulkText, ";", ",.:;");
+        return insertTo( "_META_COLUMNS", splitString(bulkText, ";", ",.:;"), tableGetColumns("_META_COLUMNS") /* "TABLE_NAME;DISPLAY_NAME;DESCRIPTION" */  );
     }
 
 

@@ -41,7 +41,7 @@ INVEST_OPENAPI_MAIN()
 
     cout<<"Launched from : "<<QDir::currentPath().toStdString()<<endl;
     cout<<"Launched exe  : "<<QCoreApplication::applicationFilePath().toStdString()<<endl;
-    cout<<"Launched from : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
+    cout<<"Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
 
     cout<<"Going up to the root"<<endl;
 
