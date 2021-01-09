@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <map>
 #include <set>
+#include <cstring>
 
 #include <QCoreApplication>
 #include <QString>
@@ -108,6 +109,12 @@ INVEST_OPENAPI_MAIN()
     {
         //cpp::NameStyle nameStyle = cpp::detectNameStyle(testName);
         //testedNameStyles.insert(nameStyle);
+
+        if (!std::strlen(testName) || std::strcmp(testName,"__")==0)
+        {
+            testName    = testNames[++testNameIdx];
+            continue;
+        }
 
         cout<< endl << "Format \"" << testName << "\":" << endl;
         

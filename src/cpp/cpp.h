@@ -37,6 +37,16 @@ enum class NameStyle
 
 };
 
+enum NameCharClass
+{
+    unknown      ,
+    digit        ,
+    lower        ,
+    upper        ,
+    underscore
+};
+
+
 
 inline std::string toString( NameStyle ns )
 {
@@ -73,6 +83,7 @@ inline std::set<NameStyle> makeAllNameStyles()
 inline bool    isAlpha( char ch )     { return std::isalpha( ch ) ? true : false; }
 inline bool    isLower( char ch )     { return std::islower( ch ) ? true : false; }
 inline bool    isUpper( char ch )     { return std::isupper( ch ) ? true : false; }
+inline bool    isDigit( char ch )     { return std::isdigit( ch ) ? true : false; }
 inline bool    getCase( char ch )     { return isUpper(ch); }
 inline char    toLower( char ch )     { return (char)std::tolower(ch); }
 inline char    toUpper( char ch )     { return (char)std::toupper(ch); }
@@ -80,9 +91,31 @@ inline char    toUpper( char ch )     { return (char)std::toupper(ch); }
 inline bool    isAlpha( wchar_t ch )  { return std::iswalpha( ch ) ? true : false; }
 inline bool    isLower( wchar_t ch )  { return std::iswlower( ch ) ? true : false; }
 inline bool    isUpper( wchar_t ch )  { return std::iswupper( ch ) ? true : false; }
+inline bool    isDigit( wchar_t ch )  { return std::iswdigit( ch ) ? true : false; }
 inline bool    getCase( wchar_t ch )  { return isUpper(ch); }
 inline wchar_t toLower( wchar_t ch )  { return (wchar_t)std::towlower(ch); }
 inline wchar_t toUpper( wchar_t ch )  { return (wchar_t)std::towupper(ch); }
+
+
+template <typename CharT> inline
+NameCharClass getNameCharClass( CharT ch, NameCharClass digitCharClass = NameCharClass::digit ) // NameCharClass::lower
+{
+    if (ch==(CharT)'_')
+        return NameCharClass::underscore;
+
+    if (isDigit(ch))
+        return digitCharClass;
+
+    if (isAlpha(ch))
+    {
+        if (isLower(ch))
+           return NameCharClass::lower;
+        else
+           return NameCharClass::upper;
+    }
+
+    return NameCharClass::unknown;
+}
 
 
 template< class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
@@ -309,11 +342,87 @@ inline std::vector< std::basic_string< CharT, Traits, Allocator > >
 splitName( const std::basic_string< CharT, Traits, Allocator > &str )
 {
     std::vector< std::basic_string< CharT, Traits, Allocator > > resVec;
+    //std::basic_string< CharT, Traits, Allocator > postfixString;
 
+    auto beginIt = str.begin();
+
+    // Find undercsore prefix
+    for(; beginIt!=str.end() && *beginIt==(CharT)'_'; ++beginIt ) {}
+
+    if (beginIt!=str.begin())
+    {
+        resVec.push_back( std::basic_string< CharT, Traits, Allocator >( str.begin(), beginIt ) );
+        // prefixString = std::basic_string< CharT, Traits, Allocator >( str.begin(), it );
+    }
+
+    // Find undercsore postfix
+    auto endIt = str.end();
+    auto endItPrev = endIt;
+    if (endItPrev!=str.begin())
+       --endItPrev;
+    
+    for(; endIt!=beginIt && *endItPrev==(CharT)'_'; --endIt, --endItPrev ) { }
+
+    auto postfixBegin = str.end();
+    auto postfixEnd   = str.end();
+
+    if (endIt!=str.end())
+    {
+        // resVec.push_back( std::basic_string< CharT, Traits, Allocator >( endIt, str.end() ) );
+        //postfixString = std::basic_string< CharT, Traits, Allocator >( postfixBegin, postfixEnd );
+        postfixBegin = endIt;
+    }
+
+
+    NameCharClass prevCharClass = NameCharClass::unknown;
+    if (beginIt!=endIt)
+    {
+        prevCharClass = getNameCharClass( *beginIt, NameCharClass::lower );
+    }
+
+
+    auto startIt = beginIt;
+    auto it      = beginIt;
+
+    for( ; it!=endIt; ++it)
+    {
+        auto curCharClass = getNameCharClass( *it, NameCharClass::lower );
+        if (prevCharClass!=curCharClass && !(prevCharClass==NameCharClass::upper && curCharClass==NameCharClass::lower) )
+        {
+            auto curPartStr = std::basic_string< CharT, Traits, Allocator >(startIt, it);
+            startIt = it;
+            if (!isUnderscoreString(curPartStr))
+            {
+                resVec.push_back(curPartStr);
+            }
+        }
+
+        prevCharClass = curCharClass;
+    }
+
+    if (startIt != it)
+    {
+        auto curPartStr = std::basic_string< CharT, Traits, Allocator >(startIt, it);
+        if (!isUnderscoreString(curPartStr))
+        {
+            resVec.push_back(curPartStr);
+        }
+    }
+
+    if (postfixBegin!=postfixEnd)
+        resVec.push_back(std::basic_string< CharT, Traits, Allocator >( postfixBegin, postfixEnd ));
+
+
+//  NameCharClass getNameCharClass( CharT ch, NameCharClass digitCharClass = NameCharClass::digit ) // NameCharClass::lower
+
+
+
+    /*
     resVec.push_back( makeString<CharT, Traits, Allocator>( "__" ) );
     resVec.push_back( makeString<CharT, Traits, Allocator>( "Youuu" ) );
     resVec.push_back( makeString<CharT, Traits, Allocator>( "Man" ) );
     resVec.push_back( makeString<CharT, Traits, Allocator>( "__" ) );
+    */
 
     return resVec;
 }
@@ -329,7 +438,7 @@ formatName( const std::basic_string< CharT, Traits, Allocator > &str, NameStyle 
     std::vector< std::basic_string< CharT, Traits, Allocator > > nameParts = splitName(str);
 
     if (nameParts.empty())
-        std::basic_string< CharT, Traits, Allocator >();
+        return std::basic_string< CharT, Traits, Allocator >();
 
     auto beginIt  = nameParts.begin();
     auto endIt    = nameParts.end();

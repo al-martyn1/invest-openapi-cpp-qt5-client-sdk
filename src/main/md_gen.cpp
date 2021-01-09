@@ -25,6 +25,9 @@
 
 #include "invest_openapi/invest_openapi.h"
 
+#include "cpp/cpp.h"
+
+
 
 template <typename StringType> inline bool ends_with( const StringType &str, const StringType &postfix )
 {
@@ -87,6 +90,27 @@ std::string toString( YAML::NodeType::value v )
     }
 }
 
+inline
+bool isRefTypeName( const std::string &typeName )
+{
+    if (typeName.empty())
+        return false;
+
+    return typeName[0] == '#';
+}
+
+inline
+std::string extractTypeNameFromRef( const std::string &typeName )
+{
+    std::string::size_type slashPos = typeName.find_last_of('/');
+    if (slashPos==std::string::npos)
+    {
+        return false;
+    }
+   
+    return std::string( typeName, slashPos+1, std::string::npos );
+}
+
 bool getProperyType( const YAML::Node &propProperties, std::string &propType )
 {
     try
@@ -99,14 +123,7 @@ bool getProperyType( const YAML::Node &propProperties, std::string &propType )
         try
         {
             propType = propProperties["$ref"].as<std::string>();
-            std::string::size_type slashPos = propType.find_last_of('/');
-            if (slashPos==std::string::npos)
-            {
-                return false;
-            }
-   
-            propType = std::string( propType, slashPos+1, std::string::npos );
-   
+            return true;
         }
         catch(...)
         {
@@ -116,8 +133,9 @@ bool getProperyType( const YAML::Node &propProperties, std::string &propType )
     }
 
     return true;
-
 }
+
+
 
 bool getProperyTypeFormat( const YAML::Node &propProperties, std::string &propTypeFormat )
 {
@@ -449,7 +467,7 @@ INVEST_OPENAPI_MAIN()
             <<"using namespace OpenAPI;"                <<endl
                                                         <<endl
                                                         <<endl
-                                                        <<endl
+            <<"//----------------------------------------------------------------------------" << endl;
             ;
 
 
@@ -501,7 +519,12 @@ INVEST_OPENAPI_MAIN()
             fout<<"QVector<QString> modelToStringVector( const " << typeName << " &v );" << endl;
         }
 
-        fout << endl << endl << endl;
+        fout << "//----------------------------------------------------------------------------" << endl;
+        fout << endl << endl << endl; // << endl;
+        //fout << "//----------------------------------------------------------------------------" << endl;
+
+
+        std::map< std::string, std::string > usedPropTypes;
 
         typeIt = schemasNode.begin();
         for (; typeIt!=schemasNode.end(); ++typeIt)
@@ -520,9 +543,11 @@ INVEST_OPENAPI_MAIN()
                 continue;
             }
 
+            fout << endl << "//----------------------------------------------------------------------------" << endl;
             fout<< "QVector<QString> modelToStringVector( const " << typeName << " &v )" << endl
                 << "{" << endl
-                << "    QVector<QString> resVec;" << endl
+                << "    QVector<QString> resVec;" 
+                << endl
                 ;
 
             YAML::Node::const_iterator propIt = propertiesNode.begin();
@@ -541,9 +566,65 @@ INVEST_OPENAPI_MAIN()
                     return false;
                 }
 
+                std::string propTypeFormat;
+                getProperyTypeFormat( propProperties, propTypeFormat );
+                usedPropTypes[propType] = propTypeFormat;
+
+                cerr << "  Type: " << cpp::expandAtBack(propType, 20);
+                if (!propTypeFormat.empty())
+                    cerr << " : " << propTypeFormat << endl;
+                else
+                    cerr << endl;
+
+                if (isRefTypeName(propType))
+                {
+                    propType = extractTypeNameFromRef(propType);
+                }
+
+                //------------------------------
+
+                fout << endl
+                     << "    //------------------------------" << endl
+                     << "    if ( !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Set() " << endl
+                     << "      || !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Valid()" << endl
+                     << "       )" << endl
+                     << "    {"    << endl
+                     << "        appendToStringVector(resVec, QString());" << endl
+                     << "    }"    << endl
+                     << "    else" << endl
+                     << "    {"    << endl
+                     << "        appendToStringVector(resVec, v.get" << cpp::formatName(propName,cpp::NameStyle::pascalStyle) << "());" << endl
+                     << "    }"    << endl
+                     ;
+
+                //fout << "appendToStringVector( resVec,  )";
+
+                // 
+                /*
+                    bool isRefTypeName( const std::string &typeName )
+                    std::string extractTypeNameFromRef( const std::string &typeName )
+
+                    qint32
+
+                    marty::Decimal getMinPriceIncrement() const;
+                    void setMinPriceIncrement(const marty::Decimal &min_price_increment);
+                    bool is_min_price_increment_Set() const;
+                    bool is_min_price_increment_Valid() const;
+                
+                */
+
+
+                // usedPropTypes
+                // bool getProperyTypeFormat( const YAML::Node &propProperties, std::string &propTypeFormat )
+
                 //fout << "    " << propName << "    " << propType << endl << flush;
 
             }
+
+            fout << endl
+                 << "    //------------------------------" << endl
+                 << "    return resVec;" << endl
+                 ;
 
             fout<< "}" << endl ;
 
@@ -552,6 +633,19 @@ INVEST_OPENAPI_MAIN()
 
         fout<<"} // namespace invest_openapi"           <<endl;
 
+
+        cerr << endl;
+        cerr << "Used types:" << endl;
+
+        std::map< std::string, std::string >::const_iterator usedIt = usedPropTypes.begin();
+        for(; usedIt != usedPropTypes.end(); ++usedIt)
+        {
+            std::string typeName = usedIt->first;
+            if (isRefTypeName(typeName))
+                typeName = extractTypeNameFromRef(typeName);
+            
+            cerr << cpp::expandAtBack(typeName, 20) << ": " << usedIt->second << endl;
+        }
 
         // std::cout << "Root node type: " << toString( rootNode.Type() ) << endl;
 
