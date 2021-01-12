@@ -11,6 +11,8 @@
 #include <vector>
 #include <cstring>
 #include <string>
+#include <map>
+#include <vector>
 
 #include <QCoreApplication>
 #include <QString>
@@ -75,6 +77,150 @@ YAML::Node parse(const char *inputName)
     return parse(fin);
 }
 
+std::string trimHelper( const std::string &str )
+{
+    return QString::fromStdString(str).trimmed().toStdString();
+}
+
+std::map<std::string, std::string> parseSchemaIni(std::istream& input)
+{
+    using std::cout;
+    using std::cerr;
+    using std::endl;
+
+    std::map<std::string, std::string> resMap;
+
+    std::string str;
+
+    //cerr << "Reading INI" << endl;
+
+    while( std::getline( input, str) )
+    {
+        //cerr << "INI line: " << str << endl;
+
+        str = trimHelper(str);
+        if (str.empty() || str[0]=='#' || str[0]==';')
+            continue;
+
+        std::string::size_type sepPos = str.find_first_of('=');
+        if (sepPos==std::string::npos)
+        {
+            resMap[trimHelper( std::string( str, 0, sepPos ) )] = std::string();
+        }
+        else
+        {
+            resMap[trimHelper( std::string( str, 0, sepPos ) )] = trimHelper( std::string( str, sepPos+1, std::string::npos ) );
+        }
+
+    }
+
+    //cerr << endl;
+
+    return resMap;
+}
+
+std::map<std::string, std::string> parseSchemaIni(const char *inputName)
+{
+    std::ifstream fin;
+    fin.open(inputName);
+    return parseSchemaIni(fin);
+}
+
+std::string getSqlSpec( const std::map<std::string, std::string> &sqlSpec
+                      , const std::string &modelTypeName
+                      , const std::string &fieldName
+                      , const std::string &fieldType
+                      , const std::string &fieldTypeFormat
+                      , std::string *lookupForItems = 0
+                      )
+{
+    std::vector< std::string > lookupFor;
+
+    if (!fieldTypeFormat.empty())
+        lookupFor.push_back( std::string("::") + fieldType + std::string("::") + fieldTypeFormat );
+
+    lookupFor.push_back( std::string("::") + fieldType );
+    lookupFor.push_back( fieldName );
+    lookupFor.push_back( modelTypeName + std::string("::") + fieldType );
+
+    if (lookupForItems)
+        *lookupForItems = invest_openapi::mergeString( lookupFor, ", ");
+        // invest_openapi::mergeString( QString::fromStdString(str), QString(", ") ).toStdString();
+
+    std::string resStr;
+
+    using std::cout;
+    using std::cerr;
+    using std::endl;
+
+    cerr<<"SQL spec order: ";
+    for (auto it = lookupFor.begin(); it!=lookupFor.end(); ++it )
+    {
+        if (it != lookupFor.begin())
+            cerr<<", ";
+        cerr<< *it;
+    }
+
+    cerr << endl;
+
+
+
+    for (auto it = lookupFor.begin(); it!=lookupFor.end(); ++it )
+    {
+        std::string strSqlSpecName = trimHelper(*it);
+        if (strSqlSpecName.empty())
+            continue;
+
+        auto fountSpecIt = sqlSpec.find(*it);
+        if (fountSpecIt==sqlSpec.end())
+            continue;
+
+        auto curSpecString = fountSpecIt->second;
+        if (curSpecString.empty())
+            continue;
+
+        /*
+           Префиксы
+           '-' - сбрасываем всё предыдущее, присваиваем новое значение и продолжаем поиск
+           '+' - добавляем к ранее собранному и продолжаем поиск
+           '=' - возвращаем только найденное на данном шаге
+       
+           Без префикса - переназначаемо, пока примем, что это тоже, что и префикс '+'
+        
+        */
+
+        char ruleSpec = '+';
+
+        if (curSpecString[0]=='+' || curSpecString[0]=='-' || curSpecString[0]=='=')
+        {
+            ruleSpec = curSpecString[0];
+            curSpecString.erase(0,1);
+            curSpecString = trimHelper(curSpecString);
+        }
+
+        switch(ruleSpec)
+        {
+            case '-':
+                      resStr = curSpecString;
+                      break;
+
+            case '+':
+                      if (!resStr.empty())
+                          resStr.append(1, ' ');
+                      resStr.append(curSpecString);
+                      break;
+
+            case '=':
+                      resStr = curSpecString;
+                      return resStr;
+
+            default :
+                      throw std::runtime_error("getSqlSpec - invalid SQL spec");
+        }
+    }
+
+    return resStr;
+}
 
 inline
 std::string toString( YAML::NodeType::value v )
@@ -219,7 +365,7 @@ bool hasPayloadPropery( const std::string &typeName, const YAML::Node &typeInfoN
     {
         cerr << typeName << ".hasPayloadPropery (1)" << endl;
         const YAML::Node &propsNode   = typeInfoNode["properties"];
-        if (propsNode.Type()!=YAML::NodeType::Map) // if (!propsNode.IsDefined() || !propsNode.IsNull())
+        if (propsNode.Type()!=YAML::NodeType::Map)
         {
             cerr << typeName << " - 'properties' is not a map" << endl;
             //cerr << typeName << " - no 'properties'" << endl;
@@ -236,7 +382,7 @@ bool hasPayloadPropery( const std::string &typeName, const YAML::Node &typeInfoN
         YAML::NodeType::value payloadNodeType = payloadNode.Type();
         cerr << typeName << ", payloadNode - type: " << toString(payloadNodeType) << endl;
 
-        if (propsNode.Type()!=YAML::NodeType::Map) // if (!payloadNode.IsDefined() || !payloadNode.IsNull())
+        if (propsNode.Type()!=YAML::NodeType::Map)
         {
             cerr << typeName << " - no 'payload'" << endl;
             cerr << typeName << ".hasPayloadPropery - false" << endl << endl;
@@ -382,30 +528,38 @@ INVEST_OPENAPI_MAIN()
     using std::endl;
     using std::flush;
 
-    if (argc<2)
+    if (argc<4)
     {
-        std::cerr<<"No input file taken";
+        std::cerr<<"No input files taken";
         return -1;
     }
 
     try
     {
-        YAML::Node rootNode = parse(argv[1]);
+        std::string arg1 = argv[1];
+        std::string arg2 = argv[2];
+        std::string arg3 = argv[3];
 
-        if (argc>3)
+        YAML::Node rootNode = parse(argv[1]);
+        std::map<std::string, std::string> sqlSchemaMap = parseSchemaIni(argv[2]);
+
+        // Schema file name - argv[2]
+        // Output file name - argv[3]
+
+        if (argc>4)
         {
             QVariant qvDepth = 1;
 
-            if (argc>4)
+            if (argc>5)
             {
-                QLatin1String arg4latin1 = QLatin1String( argv[4] );
+                QLatin1String arg4latin1 = QLatin1String( argv[5] );
                 qvDepth = arg4latin1;
             }
 
             int depth = qvDepth.toInt();
             depth++;
 
-            std::string subNodeName = argv[3];
+            std::string subNodeName = argv[4];
 
             if (subNodeName=="")
             {
@@ -441,9 +595,9 @@ INVEST_OPENAPI_MAIN()
 
         std::ofstream foutStream;
         std::ostream *pOut = &std::cout;
-        if (std::strcmp(argv[2],"-")!=0)
+        if (std::strcmp(argv[3],"-")!=0)
         {
-            foutStream.open(argv[2]);
+            foutStream.open(argv[3]);
             pOut = &foutStream;
         }
 
@@ -460,6 +614,7 @@ INVEST_OPENAPI_MAIN()
                                                         <<endl
             <<"#include \"models.h\""                   <<endl
             <<"#include \"models_helpers.h\""           <<endl
+            <<"#include \"utility.h\""                  <<endl
                                                         <<endl
             <<"namespace invest_openapi"                <<endl
             <<"{"                                       <<endl
@@ -482,6 +637,11 @@ INVEST_OPENAPI_MAIN()
 
         std::set<std::string>  skippingSet;
 
+        fout<<"template <typename ModelType> QString modelMakeSqlSchemaStringVector( );" << endl << endl;
+        fout<<"//----------------------------------------------------------------------------" << endl;
+
+        //!!! First iteration - generating prototypes for 'modelToStrings'
+
         YAML::Node::const_iterator typeIt = schemasNode.begin();
         for (; typeIt!=schemasNode.end(); ++typeIt)
         {
@@ -490,14 +650,14 @@ INVEST_OPENAPI_MAIN()
 
             if (isRequestType(typeName))
             {
-                cerr<<"Skip request type: " << typeName << endl << endl << endl;
+                cerr<<"Skipping request type: " << typeName << endl << endl << endl;
                 skippingSet.insert(typeName);
                 continue;
             }
 
             if (isResponseType(typeName))
             {
-                cerr<<"Skip response type: " << typeName << endl << endl << endl;
+                cerr<<"Skipping response type: " << typeName << endl << endl << endl;
                 skippingSet.insert(typeName);
                 continue;
             }
@@ -505,7 +665,7 @@ INVEST_OPENAPI_MAIN()
 
             if (hasPayloadPropery(typeName, typeIt->second))
             {
-                cerr<<"Skip type with payload: " << typeName << endl << endl << endl;
+                cerr<<"Skipping type with payload: " << typeName << endl << endl << endl;
                 skippingSet.insert(typeName);
                 continue;
             }
@@ -516,13 +676,38 @@ INVEST_OPENAPI_MAIN()
                 continue;
             }
 
-            fout<<"QVector<QString> modelToStringVector( const " << typeName << " &v );" << endl;
+            const YAML::Node &propertiesNode = typeIt->second["properties"];
+            if (!propertiesNode.IsDefined())
+            {
+                cerr<<"Skipping type: " << typeName << " due propertiesNode !IsDefined()" << endl << endl << endl;
+                skippingSet.insert(typeName);
+                continue;
+            }
+
+            if (propertiesNode.IsNull())
+            {
+                cerr<<"Skipping type: " << typeName << " due propertiesNode IsNull()" << endl << endl << endl;
+                skippingSet.insert(typeName);
+                continue;
+            }
+
+            if (propertiesNode.begin()==propertiesNode.end())
+            {
+                cerr<<"Skipping type: " << typeName << " due no properties" << endl << endl << endl;
+                skippingSet.insert(typeName);
+                continue;
+            }
+
+
+            fout<<"QVector<QString> modelToStrings ( const " << typeName << " &v );" << endl;
+            //fout<<"template <> QVector<QString> modelMakeSchema< " << typeName << " >( );" << endl;
         }
 
         fout << "//----------------------------------------------------------------------------" << endl;
         fout << endl << endl << endl; // << endl;
         //fout << "//----------------------------------------------------------------------------" << endl;
 
+        //!!! Second iteration - generating 'modelToStrings' methods
 
         std::map< std::string, std::string > usedPropTypes;
 
@@ -538,13 +723,16 @@ INVEST_OPENAPI_MAIN()
 
             const YAML::Node &propertiesNode = typeIt->second["properties"];
 
-            if (skipNoTypeOrRefOrArray( typeName, typeIt->second["properties"] ))
-            {
+            if (!propertiesNode.IsDefined() || propertiesNode.IsNull() || propertiesNode.begin()==propertiesNode.end())
                 continue;
-            }
+
+
+            if (skipNoTypeOrRefOrArray( typeName, typeIt->second["properties"] ))
+                continue;
 
             fout << endl << "//----------------------------------------------------------------------------" << endl;
-            fout<< "QVector<QString> modelToStringVector( const " << typeName << " &v )" << endl
+            fout << "//! Converts " << typeName << " to QVector of QString's " << endl;
+            fout<< "inline QVector<QString> modelToStrings( const " << typeName << " &v )" << endl
                 << "{" << endl
                 << "    QVector<QString> resVec;" 
                 << endl
@@ -558,6 +746,7 @@ INVEST_OPENAPI_MAIN()
                 cerr<<"Processing property: " << propName << endl << flush;
 
                 const YAML::Node &propProperties = propIt->second;
+
 
                 std::string propType;
                 if (!getProperyType( propProperties, propType ))
@@ -585,40 +774,11 @@ INVEST_OPENAPI_MAIN()
 
                 fout << endl
                      << "    //------------------------------" << endl
-                     << "    if ( !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Set() " << endl
-                     << "      || !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Valid()" << endl
-                     << "       )" << endl
-                     << "    {"    << endl
+                     << "    if ( !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Set() || !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Valid() ) // type: " << propType << endl
                      << "        appendToStringVector(resVec, QString());" << endl
-                     << "    }"    << endl
                      << "    else" << endl
-                     << "    {"    << endl
-                     << "        appendToStringVector(resVec, v.get" << cpp::formatName(propName,cpp::NameStyle::pascalStyle) << "());" << endl
-                     << "    }"    << endl
+                     << "        appendToStringVector(resVec, modelToStrings( v.get" << cpp::formatName(propName,cpp::NameStyle::pascalStyle) << "() ) );" << endl
                      ;
-
-                //fout << "appendToStringVector( resVec,  )";
-
-                // 
-                /*
-                    bool isRefTypeName( const std::string &typeName )
-                    std::string extractTypeNameFromRef( const std::string &typeName )
-
-                    qint32
-
-                    marty::Decimal getMinPriceIncrement() const;
-                    void setMinPriceIncrement(const marty::Decimal &min_price_increment);
-                    bool is_min_price_increment_Set() const;
-                    bool is_min_price_increment_Valid() const;
-                
-                */
-
-
-                // usedPropTypes
-                // bool getProperyTypeFormat( const YAML::Node &propProperties, std::string &propTypeFormat )
-
-                //fout << "    " << propName << "    " << propType << endl << flush;
-
             }
 
             fout << endl
@@ -630,8 +790,89 @@ INVEST_OPENAPI_MAIN()
 
         }
 
+        fout << endl << "//----------------------------------------------------------------------------" << endl;
 
-        fout<<"} // namespace invest_openapi"           <<endl;
+        fout << endl << endl << endl << endl << endl;
+
+        //!!! Third iteration - generating 'modelMakeSqlSchema' specializations
+
+        typeIt = schemasNode.begin();
+        for (; typeIt!=schemasNode.end(); ++typeIt)
+        {
+            //fout << "Type: " << it->first << endl;
+            std::string typeName = typeIt->first.as<std::string>();
+
+            if (skippingSet.find(typeName)!=skippingSet.end())
+                continue;
+
+
+            const YAML::Node &propertiesNode = typeIt->second["properties"];
+
+            if (!propertiesNode.IsDefined() || propertiesNode.IsNull() || propertiesNode.begin()==propertiesNode.end())
+                continue;
+
+
+            if (skipNoTypeOrRefOrArray( typeName, typeIt->second["properties"] ))
+                continue;
+
+            fout << endl << "//----------------------------------------------------------------------------" << endl;
+            fout << "//! Creates SQL schema format " << typeName << " model " << endl;
+            fout<<"template <> QString modelMakeSqlSchema< " << typeName << " >( )" << endl;
+            fout<< "{" << endl
+                << "    QVector<QString> schemaVec;" 
+                << endl
+                ;
+
+            YAML::Node::const_iterator propIt = propertiesNode.begin();
+            for (; propIt!=propertiesNode.end(); ++propIt)
+            {
+                std::string propName = propIt->first.as<std::string>();
+
+                const YAML::Node &propProperties = propIt->second;
+
+                std::string propType;
+                if (!getProperyType( propProperties, propType ))
+                    return false;
+
+                std::string propTypeFormat;
+                getProperyTypeFormat( propProperties, propTypeFormat );
+                //usedPropTypes[propType] = propTypeFormat;
+
+                if (isRefTypeName(propType))
+                    propType = extractTypeNameFromRef(propType);
+
+                //auto propNameUpper = cpp::toUpper(propName);
+                auto propNameUpper = cpp::formatName( propName, cpp::NameStyle::defineStyle );
+
+                std::string lookupFor;
+                auto sqlSpec = getSqlSpec( sqlSchemaMap, typeName, propNameUpper /* propName */ , propType, propTypeFormat, &lookupFor );
+
+                auto typeNameStyle = cpp::detectNameStyle(propName);
+
+                if (typeNameStyle == cpp::NameStyle::pascalStyle)
+                {
+                
+                }
+                else
+                {
+                
+                }
+
+                fout << "    appendToStringVector( schemaVec, " << "\"" << cpp::expandAtBack(propNameUpper, 24) << " " << sqlSpec << "\" );" 
+                     << "// " << lookupFor
+                     << endl;
+            }
+
+            fout << "    return schemaVec;" << endl
+                 ;
+
+            fout<< "}" << endl ;
+
+        }
+
+
+
+        fout<<"} // namespace invest_openapi"           << endl << endl << endl;
 
 
         cerr << endl;
@@ -644,7 +885,10 @@ INVEST_OPENAPI_MAIN()
             if (isRefTypeName(typeName))
                 typeName = extractTypeNameFromRef(typeName);
             
-            cerr << cpp::expandAtBack(typeName, 20) << ": " << usedIt->second << endl;
+            if (usedIt->second.empty())
+                cerr << typeName << endl;
+            else
+                cerr << cpp::expandAtBack(typeName, 20) << ": " << usedIt->second << endl;
         }
 
         // std::cout << "Root node type: " << toString( rootNode.Type() ) << endl;

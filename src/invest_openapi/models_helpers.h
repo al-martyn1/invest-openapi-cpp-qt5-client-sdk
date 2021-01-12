@@ -20,6 +20,8 @@
 
 #include "models/client/HttpRequest.h"
 
+#include "marty_decimal.h"
+
 //----------------------------------------------------------------------------
 
 
@@ -41,12 +43,10 @@ bool getResponsesDebug( );
 
 
 //----------------------------------------------------------------------------
-inline
-QString openapiHelpersFixGetUtcOffsetNumericStr( const QDateTime &dt )
+inline QString formatUtcOffset( int utcOffset )
 {
-    int utcOffset = dt.offsetFromUtc();
-
     QString utcStr;
+
     if (utcOffset<0)
     {
         utcStr.append("-");
@@ -66,11 +66,17 @@ QString openapiHelpersFixGetUtcOffsetNumericStr( const QDateTime &dt )
 
 //----------------------------------------------------------------------------
 inline
-QString formatDateTimeISO8601( const QDateTime &value )
+QString formatDateTimeISO8601( const QDateTime &dt, bool utcOffsetAuto = false )
 {
-    return value.toString("yyyy-MM-ddThh:mm:ss.zzz")
+    int utcOffset = dt.offsetFromUtc();
+    QString utcOffsetStr;
+
+    if (!utcOffsetAuto || utcOffset!=0)
+        utcOffsetStr = formatUtcOffset(utcOffset);
+
+    return dt.toString("yyyy-MM-ddThh:mm:ss.zzz")
     + QString("000")
-    + openapiHelpersFixGetUtcOffsetNumericStr(value)
+    + utcOffsetStr
     ;
 }
 
@@ -214,7 +220,37 @@ void dumpHttpResponse( const QNetworkReply &reply )
 
 
 
+
 //----------------------------------------------------------------------------
+inline void appendToStringVector( QVector<QString> &vec, const QString &v )
+{
+    vec.append(v);
+}
+
+inline void appendToStringVector( QVector<QString> &vec, const QVector<QString> &v )
+{
+    vec.append(v);
+}
+
+//----------------------------------------------------------------------------
+inline QString modelToStrings( const QString &v )
+{
+    return v;
+}
+
+//----------------------------------------------------------------------------
+inline QString modelToStrings( const marty::Decimal &v )
+{
+    return QString::fromStdString( marty::toString(v) );
+}
+
+//----------------------------------------------------------------------------
+inline QVector<QString> modelToStrings( const QVector<QString> &v )
+{
+    return v;
+}
+
+
 
 
 

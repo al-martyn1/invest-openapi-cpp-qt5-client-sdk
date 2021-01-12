@@ -770,6 +770,29 @@ inline QString mergeString(const QStringList &v, const QString &sep )
     return mergeString( toStringVector(v), sep );
 }
 
+//----------------------------------------------------------------------------
+inline std::string mergeString(const std::vector<std::string> &v, const std::string &sep )
+{
+    if (v.empty())
+        return std::string();
+
+    if (v.size()==1)
+        return v[0];
+
+    std::string resStr;
+
+    std::vector<std::string>::const_iterator it = v.begin();
+
+    resStr.append(*it); ++it;
+
+    for( ; it!=v.end(); ++it)
+    {
+        resStr.append(sep);
+        resStr.append(*it);
+    }
+
+    return resStr;
+}
 
 /*
 // Obsolete
