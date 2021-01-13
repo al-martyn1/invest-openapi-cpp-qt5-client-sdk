@@ -54,6 +54,12 @@ INVEST_OPENAPI_MAIN()
     ,   "_test_Name"
     ,   "_TEST_NAME"
     ,   "_test_name"
+    ,   "__TestName__"
+    ,   "__testName__"
+    ,   "__Test_Name__"
+    ,   "__test_Name__"
+    ,   "__TEST_NAME__"
+    ,   "__test_name__"
     ,   "TEST_NAME"
     ,   "testName"
     ,   "TestName"
@@ -71,9 +77,9 @@ INVEST_OPENAPI_MAIN()
         testedNameStyles.insert(nameStyle);
         
         if (!std::strlen(testName))
-            cout << "\"\"          ";
+            cout << "\"\"            ";
         else
-            cout << cpp::expandAtBack(testName, 12);
+            cout << cpp::expandAtBack(testName, 14);
         cout << "  : " << cpp::toString(nameStyle) << endl;
         testName    = testNames[++testNameIdx];
     }
@@ -116,12 +122,13 @@ INVEST_OPENAPI_MAIN()
             continue;
         }
 
-        cout<< endl << "Format \"" << testName << "\":" << endl;
-        
+        cout<< endl << "Format        : \"" << testName << "\":" << endl;
+        cout<<         "No underscores: \"" << cpp::trimUnderscores(testName) << "\":" << endl;
+
         for ( auto nameStyleIt = allNameStyles.begin(); nameStyleIt!=allNameStyles.end(); ++nameStyleIt)
         {
             auto formattedName = cpp::formatName(testName, *nameStyleIt);
-            cout << "    as " << cpp::expandAtBack( cpp::toString(*nameStyleIt), 22) << " : \"" << formattedName << "\"" << endl;
+            cout << "    as " << cpp::expandAtBack( cpp::toString(*nameStyleIt), 30) << " : \"" << formattedName << "\"" << endl;
         }
         
         testName    = testNames[++testNameIdx];

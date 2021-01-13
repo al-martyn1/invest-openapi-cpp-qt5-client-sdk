@@ -1,3 +1,7 @@
+@if not exist _run_logs mkdir _run_logs
+
+@call cp_exe.bat
+
 @set GEN=_deploy\x64\Debug\md_gen.exe
 @set YAML=..\pptrade\_invest-openapi\invest-openapi\src\docs\swagger-ui\swagger.yaml
 @set TARGET=-

@@ -3,6 +3,7 @@
 
  */
 
+//----------------------------------------------------------------------------
 #include <iostream>
 #include <fstream>
 #include <exception>
@@ -29,8 +30,38 @@
 
 #include "cpp/cpp.h"
 
+//----------------------------------------------------------------------------
 
 
+
+//----------------------------------------------------------------------------
+std::string q()
+{
+    return "\"";
+}
+
+//------------------------------
+std::string q( const std::string &str )
+{
+    return q() + str + q();
+}
+
+//------------------------------
+std::string q( const std::string &str1, const std::string &str2 )
+{
+    return q( str1+std::string(" ")+str2 );
+}
+
+//----------------------------------------------------------------------------
+template <typename StringType> inline bool starts_with( const StringType &str, const StringType &prefix )
+{
+    if (str.size()<prefix.size())
+        return false;
+
+    return str.compare( 0, prefix.size(), prefix )==0;
+}
+
+//------------------------------
 template <typename StringType> inline bool ends_with( const StringType &str, const StringType &postfix )
 {
     if (str.size()<postfix.size())
@@ -39,23 +70,7 @@ template <typename StringType> inline bool ends_with( const StringType &str, con
     return str.compare( str.size()-postfix.size(), postfix.size(), postfix )==0;
 }
 
-
-bool isResponseType( const std::string &str )
-{
-    if (ends_with(str, std::string("Response")))
-        return true;
-    return false;
-}
-
-bool isRequestType( const std::string &str )
-{
-    if (ends_with(str, std::string("Request")))
-        return true;
-    return false;
-}
-
-
-
+//----------------------------------------------------------------------------
 YAML::Node parse(std::istream& input)
 {
     return YAML::Load(input);
@@ -65,6 +80,7 @@ YAML::Node parse(std::istream& input)
   //}
 }
 
+//------------------------------
 YAML::Node parse(const char *inputName)
 {
     if (std::strcmp(inputName,"-")==0)
@@ -77,11 +93,13 @@ YAML::Node parse(const char *inputName)
     return parse(fin);
 }
 
+//----------------------------------------------------------------------------
 std::string trimHelper( const std::string &str )
 {
     return QString::fromStdString(str).trimmed().toStdString();
 }
 
+//----------------------------------------------------------------------------
 std::map<std::string, std::string> parseSchemaIni(std::istream& input)
 {
     using std::cout;
@@ -119,6 +137,7 @@ std::map<std::string, std::string> parseSchemaIni(std::istream& input)
     return resMap;
 }
 
+//----------------------------------------------------------------------------
 std::map<std::string, std::string> parseSchemaIni(const char *inputName)
 {
     std::ifstream fin;
@@ -126,6 +145,7 @@ std::map<std::string, std::string> parseSchemaIni(const char *inputName)
     return parseSchemaIni(fin);
 }
 
+//----------------------------------------------------------------------------
 std::string getSqlSpec( const std::map<std::string, std::string> &sqlSpec
                       , const std::string &modelTypeName
                       , const std::string &fieldName
@@ -222,6 +242,7 @@ std::string getSqlSpec( const std::map<std::string, std::string> &sqlSpec
     return resStr;
 }
 
+//----------------------------------------------------------------------------
 inline
 std::string toString( YAML::NodeType::value v )
 {
@@ -236,6 +257,23 @@ std::string toString( YAML::NodeType::value v )
     }
 }
 
+//----------------------------------------------------------------------------
+bool isResponseType( const std::string &str )
+{
+    if (ends_with(str, std::string("Response")))
+        return true;
+    return false;
+}
+
+//----------------------------------------------------------------------------
+bool isRequestType( const std::string &str )
+{
+    if (ends_with(str, std::string("Request")))
+        return true;
+    return false;
+}
+
+//----------------------------------------------------------------------------
 inline
 bool isRefTypeName( const std::string &typeName )
 {
@@ -245,6 +283,7 @@ bool isRefTypeName( const std::string &typeName )
     return typeName[0] == '#';
 }
 
+//----------------------------------------------------------------------------
 inline
 std::string extractTypeNameFromRef( const std::string &typeName )
 {
@@ -257,6 +296,7 @@ std::string extractTypeNameFromRef( const std::string &typeName )
     return std::string( typeName, slashPos+1, std::string::npos );
 }
 
+//----------------------------------------------------------------------------
 bool getProperyType( const YAML::Node &propProperties, std::string &propType )
 {
     try
@@ -281,8 +321,7 @@ bool getProperyType( const YAML::Node &propProperties, std::string &propType )
     return true;
 }
 
-
-
+//----------------------------------------------------------------------------
 bool getProperyTypeFormat( const YAML::Node &propProperties, std::string &propTypeFormat )
 {
     try
@@ -297,12 +336,13 @@ bool getProperyTypeFormat( const YAML::Node &propProperties, std::string &propTy
     return false;
 }
 
-
+//----------------------------------------------------------------------------
 bool isProperyTypeArray( const std::string &propType )
 {
     return propType=="array";
 }
 
+//----------------------------------------------------------------------------
 bool skipNoTypeOrRefOrArray( const std::string &typeName, const YAML::Node &propertiesNode )
 {
     using std::cout;
@@ -335,8 +375,7 @@ bool skipNoTypeOrRefOrArray( const std::string &typeName, const YAML::Node &prop
     return false;
 }
 
-
-
+//----------------------------------------------------------------------------
 bool isSequenceOrMap(YAML::NodeType::value v)
 {
     switch(v)
@@ -347,7 +386,7 @@ bool isSequenceOrMap(YAML::NodeType::value v)
     }
 }
 
-
+//----------------------------------------------------------------------------
 bool isTagMeanfull( const std::string &tagName )
 {
     if (tagName=="?" || tagName=="!")
@@ -355,6 +394,7 @@ bool isTagMeanfull( const std::string &tagName )
     return true;
 }
 
+//----------------------------------------------------------------------------
 bool hasPayloadPropery( const std::string &typeName, const YAML::Node &typeInfoNode )
 {
     using std::cout;
@@ -406,8 +446,11 @@ bool hasPayloadPropery( const std::string &typeName, const YAML::Node &typeInfoN
     }
 }
 
+//----------------------------------------------------------------------------
 
 
+
+//----------------------------------------------------------------------------
 static const int maxRecurseLevel = 0x7FFFFFFF;
 
 void printNode( const YAML::Node &node, int recurseCounter = maxRecurseLevel, const std::string &indend = "" )
@@ -513,7 +556,11 @@ void printNode( const YAML::Node &node, int recurseCounter = maxRecurseLevel, co
 
 }
 
+//----------------------------------------------------------------------------
 
+
+
+//----------------------------------------------------------------------------
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
@@ -527,6 +574,7 @@ INVEST_OPENAPI_MAIN()
     using std::cerr;
     using std::endl;
     using std::flush;
+
 
     if (argc<4)
     {
@@ -637,8 +685,8 @@ INVEST_OPENAPI_MAIN()
 
         std::set<std::string>  skippingSet;
 
-        fout<<"template <typename ModelType> QString modelMakeSqlSchemaStringVector( );" << endl << endl;
-        fout<<"//----------------------------------------------------------------------------" << endl;
+        // fout<<"template <typename ModelType> QString modelMakeSqlSchemaStringVector( );" << endl << endl;
+        // fout<<"//----------------------------------------------------------------------------" << endl;
 
         //!!! First iteration - generating prototypes for 'modelToStrings'
 
@@ -794,6 +842,8 @@ INVEST_OPENAPI_MAIN()
 
         fout << endl << endl << endl << endl << endl;
 
+        const std::string appendToSchemaVecStart = "    appendToStringVector( schemaVec, ";
+
         //!!! Third iteration - generating 'modelMakeSqlSchema' specializations
 
         typeIt = schemasNode.begin();
@@ -817,7 +867,7 @@ INVEST_OPENAPI_MAIN()
 
             fout << endl << "//----------------------------------------------------------------------------" << endl;
             fout << "//! Creates SQL schema format " << typeName << " model " << endl;
-            fout<<"template <> QString modelMakeSqlSchema< " << typeName << " >( )" << endl;
+            fout<<"template <> QVector<QString> modelMakeSqlSchemaStringVector< " << typeName << " >( const QString &nameOrPrefix )" << endl;
             fout<< "{" << endl
                 << "    QVector<QString> schemaVec;" 
                 << endl
@@ -841,26 +891,32 @@ INVEST_OPENAPI_MAIN()
                 if (isRefTypeName(propType))
                     propType = extractTypeNameFromRef(propType);
 
+                using cpp::formatName;
+                using cpp::detectNameStyle;
+                using cpp::NameStyle;
+                using cpp::expandAtBack;
+                using cpp::expandAtFront;
+
                 //auto propNameUpper = cpp::toUpper(propName);
-                auto propNameUpper = cpp::formatName( propName, cpp::NameStyle::defineStyle );
+                auto propNameSql = formatName( propName, cpp::NameStyle::defineStyle );
 
                 std::string lookupFor;
-                auto sqlSpec = getSqlSpec( sqlSchemaMap, typeName, propNameUpper /* propName */ , propType, propTypeFormat, &lookupFor );
+                auto sqlSpec = getSqlSpec( sqlSchemaMap, typeName, propNameSql , propType, propTypeFormat, &lookupFor );
+                std::string specLookupComment = std::string(" // Spec lookup order: ") + lookupFor ;
 
-                auto typeNameStyle = cpp::detectNameStyle(propName);
+                auto propTypeStyle = detectNameStyle(propType);
 
-                if (typeNameStyle == cpp::NameStyle::pascalStyle)
+                if (propTypeStyle == NameStyle::pascalStyle)
                 {
-                
+                    fout << appendToSchemaVecStart << "modelMakeSqlSchemaStringVector<" << propType << ">( " << propNameSql << " ) ); " << endl;
+                    // nameOrPrefix
                 }
                 else
                 {
-                
+                    fout << appendToSchemaVecStart << q( expandAtBack(propNameSql,23), expandAtBack(sqlSpec,16) ) << " );" << specLookupComment << endl;
                 }
 
-                fout << "    appendToStringVector( schemaVec, " << "\"" << cpp::expandAtBack(propNameUpper, 24) << " " << sqlSpec << "\" );" 
-                     << "// " << lookupFor
-                     << endl;
+                
             }
 
             fout << "    return schemaVec;" << endl

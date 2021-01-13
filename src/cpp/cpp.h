@@ -26,14 +26,23 @@ namespace cpp
 
 enum class NameStyle
 {
-    unknownStyle        ,
-    invalidName         ,
-    cppStyle            ,
-    camelStyle          ,
-    pascalStyle         ,
-    cppCamelMixedStyle  ,
-    cppPascalMixedStyle ,
-    defineStyle
+    unknownStyle                   ,
+    invalidName                    ,
+
+    cppStyle                       ,
+    camelStyle                     ,
+    pascalStyle                    ,
+    cppCamelMixedStyle             ,
+    cppPascalMixedStyle            ,
+    defineStyle                    ,
+
+    cppUnderscoredStyle            ,
+    camelUnderscoredStyle          ,
+    pascalUnderscoredStyle         ,
+    cppCamelMixedUnderscoredStyle  ,
+    cppPascalMixedUnderscoredStyle ,
+    defineUnderscoredStyle
+
 
 };
 
@@ -53,12 +62,21 @@ inline std::string toString( NameStyle ns )
     switch(ns)
     {
         case NameStyle::invalidName         : return "InvalidName";
+
         case NameStyle::cppStyle            : return "CppStyle";
         case NameStyle::camelStyle          : return "CamelStyle";
         case NameStyle::pascalStyle         : return "PascalStyle";
         case NameStyle::cppCamelMixedStyle  : return "CppCamelMixedStyle";
         case NameStyle::cppPascalMixedStyle : return "CppPascalMixedStyle";
         case NameStyle::defineStyle         : return "DefineStyle";
+
+        case NameStyle::cppUnderscoredStyle            : return "CppUnderscoredStyle";
+        case NameStyle::camelUnderscoredStyle          : return "CamelUnderscoredStyle";
+        case NameStyle::pascalUnderscoredStyle         : return "PascalUnderscoredStyle";
+        case NameStyle::cppCamelMixedUnderscoredStyle  : return "CppCamelMixedUnderscoredStyle";
+        case NameStyle::cppPascalMixedUnderscoredStyle : return "CppPascalMixedUnderscoredStyle";
+        case NameStyle::defineUnderscoredStyle         : return "DefineUnderscoredStyle";
+
         default                             : return "UnknownStyle";
     }
 }
@@ -66,14 +84,20 @@ inline std::string toString( NameStyle ns )
 inline std::set<NameStyle> makeAllNameStyles()
 {
     std::set<NameStyle> allNameStyles;
-    allNameStyles.insert( NameStyle::unknownStyle        );
-    allNameStyles.insert( NameStyle::invalidName         );
-    allNameStyles.insert( NameStyle::cppStyle            );
-    allNameStyles.insert( NameStyle::camelStyle          );
-    allNameStyles.insert( NameStyle::pascalStyle         );
-    allNameStyles.insert( NameStyle::cppCamelMixedStyle  );
-    allNameStyles.insert( NameStyle::cppPascalMixedStyle );
-    allNameStyles.insert( NameStyle::defineStyle         );
+    allNameStyles.insert( NameStyle::unknownStyle                   );
+    allNameStyles.insert( NameStyle::invalidName                    );
+    allNameStyles.insert( NameStyle::cppStyle                       );
+    allNameStyles.insert( NameStyle::camelStyle                     );
+    allNameStyles.insert( NameStyle::pascalStyle                    );
+    allNameStyles.insert( NameStyle::cppCamelMixedStyle             );
+    allNameStyles.insert( NameStyle::cppPascalMixedStyle            );
+    allNameStyles.insert( NameStyle::defineStyle                    );
+    allNameStyles.insert( NameStyle::cppUnderscoredStyle            );
+    allNameStyles.insert( NameStyle::camelUnderscoredStyle          );
+    allNameStyles.insert( NameStyle::pascalUnderscoredStyle         );
+    allNameStyles.insert( NameStyle::cppCamelMixedUnderscoredStyle  );
+    allNameStyles.insert( NameStyle::cppPascalMixedUnderscoredStyle );
+    allNameStyles.insert( NameStyle::defineUnderscoredStyle         );
 
     return allNameStyles;
 }
@@ -219,10 +243,30 @@ makeString( const char* pStr )
 }
 
 
+template< class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
+inline std::basic_string< CharT, Traits, Allocator >
+trimUnderscores( const std::basic_string< CharT, Traits, Allocator > &str )
+{
+    auto beginIt = str.begin();
+    for(; beginIt!=str.end() && *beginIt==(CharT)'_'; ++beginIt ) {}
+
+    auto endIt = str.end();
+    auto endItPrev = endIt;
+    if (endItPrev!=str.begin())
+       --endItPrev;
+    
+    for(; endIt!=beginIt && *endItPrev==(CharT)'_'; --endIt, --endItPrev ) { }
+
+    return std::basic_string< CharT, Traits, Allocator >( beginIt, endIt );
+}
+
+inline std::string  trimUnderscores( const char    * pStr ) { return trimUnderscores( std::string(pStr ) ); }
+inline std::wstring trimUnderscores( const wchar_t * pStr ) { return trimUnderscores( std::wstring(pStr) ); }
+
 
 
 template< class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
-NameStyle detectNameStyle( const std::basic_string< CharT, Traits, Allocator > &str )
+NameStyle detectNameStyleImpl( const std::basic_string< CharT, Traits, Allocator > &str )
 {
     bool isValid       = false;
     bool hasFirstUpper = false;
@@ -330,12 +374,43 @@ NameStyle detectNameStyle( const std::basic_string< CharT, Traits, Allocator > &
     }
 }
 
+template< class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
+NameStyle detectNameStyle( const std::basic_string< CharT, Traits, Allocator > &str )
+{
+    if (isUnderscoreString(str))
+        return NameStyle::unknownStyle;
 
+    std::basic_string< CharT, Traits, Allocator > ltUnderscoresRemoved = trimUnderscores(str);
 
+    bool hasLeadingOrTrailingUnderscores = false;
+
+    if (ltUnderscoresRemoved!=str)
+    {
+        hasLeadingOrTrailingUnderscores = true;
+    }
+
+    NameStyle baseStyle = detectNameStyleImpl(ltUnderscoresRemoved);
+
+    if (!hasLeadingOrTrailingUnderscores)
+        return baseStyle;
+
+    switch(baseStyle)
+    {
+        case NameStyle::cppStyle           :  return NameStyle::cppUnderscoredStyle           ;
+        case NameStyle::camelStyle         :  return NameStyle::camelUnderscoredStyle         ;
+        case NameStyle::pascalStyle        :  return NameStyle::pascalUnderscoredStyle        ;
+        case NameStyle::cppCamelMixedStyle :  return NameStyle::cppCamelMixedUnderscoredStyle ;
+        case NameStyle::cppPascalMixedStyle:  return NameStyle::cppPascalMixedUnderscoredStyle;
+        case NameStyle::defineStyle        :  return NameStyle::defineUnderscoredStyle        ;
+        default: return baseStyle;
+    }
+
+}
  
 inline NameStyle detectNameStyle( const char    * pStr )   { return detectNameStyle( std::string(pStr ) ); }
 inline NameStyle detectNameStyle( const wchar_t * pStr )   { return detectNameStyle( std::wstring(pStr) ); }
- 
+
+
 
 template< class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
 inline std::vector< std::basic_string< CharT, Traits, Allocator > >
@@ -471,21 +546,29 @@ formatName( const std::basic_string< CharT, Traits, Allocator > &str, NameStyle 
     {
         if (!strRes.empty())
         {
-            if (nameStyle==NameStyle::cppStyle
-             || nameStyle==NameStyle::cppCamelMixedStyle
-             || nameStyle==NameStyle::cppPascalMixedStyle
-             || nameStyle==NameStyle::defineStyle)
+            if ( nameStyle==NameStyle::cppStyle
+              || nameStyle==NameStyle::cppUnderscoredStyle
+              || nameStyle==NameStyle::cppCamelMixedStyle
+              || nameStyle==NameStyle::cppCamelMixedUnderscoredStyle
+              || nameStyle==NameStyle::cppPascalMixedStyle
+              || nameStyle==NameStyle::cppPascalMixedUnderscoredStyle
+              || nameStyle==NameStyle::defineStyle
+              || nameStyle==NameStyle::defineUnderscoredStyle
+               )
                 strRes.append(1, (CharT)'_');
         }
 
         switch(nameStyle)
         {
-            case NameStyle::cppStyle            :
+            case NameStyle::cppStyle             :
+            case NameStyle::cppUnderscoredStyle  :
                  strRes.append(toLower(*it));
                  break;
 
-            case NameStyle::cppCamelMixedStyle  :
-            case NameStyle::camelStyle          :
+            case NameStyle::cppCamelMixedStyle   :
+            case NameStyle::camelStyle           :
+            case NameStyle::cppCamelMixedUnderscoredStyle:
+            case NameStyle::camelUnderscoredStyle:
                  if (isFirst)
                      strRes.append(toLower(*it));
                  else
@@ -494,10 +577,13 @@ formatName( const std::basic_string< CharT, Traits, Allocator > &str, NameStyle 
 
             case NameStyle::cppPascalMixedStyle :
             case NameStyle::pascalStyle         :
+            case NameStyle::cppPascalMixedUnderscoredStyle:
+            case NameStyle::pascalUnderscoredStyle        :
                  strRes.append(toPascal(*it));
                  break;
 
-            case NameStyle::defineStyle         :
+            case NameStyle::defineStyle           :
+            case NameStyle::defineUnderscoredStyle:
                  strRes.append(toUpper(*it));
                  break;
 
@@ -509,17 +595,18 @@ formatName( const std::basic_string< CharT, Traits, Allocator > &str, NameStyle 
     }
 
 
-/*
-    unknownStyle        ,
-    invalidName         ,
-    cppStyle            ,
-    camelStyle          ,
-    pascalStyle         ,
-    cppCamelMixedStyle  ,
-    cppPascalMixedStyle ,
-    defineStyle
-
-*/
+    switch(nameStyle)
+    {
+        //case NameStyle::unknownStyle       :
+        //case NameStyle::invalidName        :
+        case NameStyle::cppStyle           :
+        case NameStyle::camelStyle         :
+        case NameStyle::pascalStyle        :
+        case NameStyle::cppCamelMixedStyle :
+        case NameStyle::cppPascalMixedStyle:
+        case NameStyle::defineStyle        :
+             return strRes; // Don't add underscore prefix/suffix
+    }
 
     // add prefix
     if (prefixIt!=nameParts.end())

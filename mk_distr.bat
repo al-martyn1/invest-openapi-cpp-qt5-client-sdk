@@ -14,11 +14,11 @@
 %QTDIR_X64%\bin\windeployqt.exe --help-all >windeployqt.txt
 
 @call bat\call-vcvars64.bat
-%QTDIR_X64%\bin\windeployqt.exe --debug   --compiler-runtime --network --sql _deploy\x64\Debug    > deploy.log
-%QTDIR_X64%\bin\windeployqt.exe --release --compiler-runtime --network --sql _deploy\x64\Release  >>deploy.log
+@if exist _deploy\x64\Debug\*.exe     %QTDIR_X64%\bin\windeployqt.exe --debug   --compiler-runtime --network --sql _deploy\x64\Debug    > deploy.log
+@if exist _deploy\x64\Release\*.exe   %QTDIR_X64%\bin\windeployqt.exe --release --compiler-runtime --network --sql _deploy\x64\Release  >>deploy.log
 
 call bat\call-vcvars32.bat
-%QTDIR_X86%\bin\windeployqt.exe --debug   --compiler-runtime --network --sql _deploy\x86\Debug    >>deploy.log
-%QTDIR_X86%\bin\windeployqt.exe --release --compiler-runtime --network --sql _deploy\x86\Release  >>deploy.log
+@if exist _deploy\x86\Debug\*.exe     %QTDIR_X86%\bin\windeployqt.exe --debug   --compiler-runtime --network --sql _deploy\x86\Debug    >>deploy.log
+@if exist _deploy\x86\Release\*.exe   %QTDIR_X86%\bin\windeployqt.exe --release --compiler-runtime --network --sql _deploy\x86\Release  >>deploy.log
 
 
