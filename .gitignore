@@ -61,3 +61,5 @@
 *.sqlite
 /logging.properties
 /src/yaml-cpp
+/bat/call-vcvars64.bat
+/bat/call-vcvars32.bat

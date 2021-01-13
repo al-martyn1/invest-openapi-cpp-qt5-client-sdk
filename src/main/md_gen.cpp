@@ -866,10 +866,11 @@ INVEST_OPENAPI_MAIN()
                 continue;
 
             fout << endl << "//----------------------------------------------------------------------------" << endl;
-            fout << "//! Creates SQL schema format " << typeName << " model " << endl;
-            fout<<"template <> QVector<QString> modelMakeSqlSchemaStringVector< " << typeName << " >( const QString &nameOrPrefix )" << endl;
+            fout << "//! Creates SQL schema format for '" << typeName << "' model " << endl;
+            fout<<"template <> inline QVector<QString> modelMakeSqlSchemaStringVector< " << typeName << " >( const QString &nameOrPrefix )" << endl;
             fout<< "{" << endl
-                << "    QVector<QString> schemaVec;" 
+                << "    QVector<QString> schemaVec;" << endl
+                << "    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString(\"_\");" << endl
                 << endl
                 ;
 
@@ -899,6 +900,7 @@ INVEST_OPENAPI_MAIN()
 
                 //auto propNameUpper = cpp::toUpper(propName);
                 auto propNameSql = formatName( propName, cpp::NameStyle::defineStyle );
+                auto propTypeSql = formatName( propType, cpp::NameStyle::defineStyle );
 
                 std::string lookupFor;
                 auto sqlSpec = getSqlSpec( sqlSchemaMap, typeName, propNameSql , propType, propTypeFormat, &lookupFor );
@@ -908,18 +910,23 @@ INVEST_OPENAPI_MAIN()
 
                 if (propTypeStyle == NameStyle::pascalStyle)
                 {
-                    fout << appendToSchemaVecStart << "modelMakeSqlSchemaStringVector<" << propType << ">( " << propNameSql << " ) ); " << endl;
+                    std::string typeSqlGenerationPrefix = propNameSql + "_" + propTypeSql;
+                    if (propTypeSql.find(propNameSql)!=propTypeSql.npos)
+                        typeSqlGenerationPrefix = propTypeSql;
+
+                    fout << appendToSchemaVecStart << "modelMakeSqlSchemaStringVector<" << propType << ">( " << "p + " << q(typeSqlGenerationPrefix) << " ) ); // " << propName << endl;
                     // nameOrPrefix
                 }
                 else
                 {
-                    fout << appendToSchemaVecStart << q( expandAtBack(propNameSql,23), expandAtBack(sqlSpec,16) ) << " );" << specLookupComment << endl;
+                    fout << appendToSchemaVecStart << "p + " << q( expandAtBack(propNameSql,23), expandAtBack(sqlSpec,16) ) << " );" << specLookupComment << endl;
                 }
 
                 
             }
 
-            fout << "    return schemaVec;" << endl
+            fout << endl
+                 << "    return schemaVec;" << endl
                  ;
 
             fout<< "}" << endl ;

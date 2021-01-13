@@ -222,41 +222,6 @@ void dumpHttpResponse( const QNetworkReply &reply )
 
 
 //----------------------------------------------------------------------------
-inline void appendToStringVector( QVector<QString> &vec, const QString &v )
-{
-    vec.append(v);
-}
-
-inline void appendToStringVector( QVector<QString> &vec, const QVector<QString> &v )
-{
-    vec.append(v);
-}
-
-//----------------------------------------------------------------------------
-inline QString modelToStrings( const QString &v )
-{
-    return v;
-}
-
-//----------------------------------------------------------------------------
-inline QString modelToStrings( const marty::Decimal &v )
-{
-    return QString::fromStdString( marty::toString(v) );
-}
-
-//----------------------------------------------------------------------------
-inline QVector<QString> modelToStrings( const QVector<QString> &v )
-{
-    return v;
-}
-
-
-
-
-
-
-
-//----------------------------------------------------------------------------
 
 } // namespace OpenAPI
 

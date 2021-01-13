@@ -14,9 +14,84 @@
 namespace invest_openapi
 {
 
+
 using namespace OpenAPI;
 
+
+
 template <typename ModelType> QVector<QString> modelMakeSqlSchemaStringVector( const QString &nameOrPrefix );
+
+
+
+
+//----------------------------------------------------------------------------
+inline void appendToStringVector( QVector<QString> &vec, const QString &v )
+{
+    vec.append(v);
+}
+
+//----------------------------------------------------------------------------
+inline void appendToStringVector( QVector<QString> &vec, const QVector<QString> &v )
+{
+    vec.append(v);
+}
+
+//----------------------------------------------------------------------------
+inline QVector<QString> modelToStrings( const QString &s )
+{
+    QVector<QString> resVec;
+    appendToStringVector( resVec, s );
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+inline QVector<QString> modelToStrings( const QVector<QString> &v )
+{
+    return v;
+}
+
+//----------------------------------------------------------------------------
+inline QVector<QString> modelToStrings( const marty::Decimal &v )
+{
+    return modelToStrings( QString::fromStdString( marty::toString(v) ) );
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+template <typename ModelType> 
+inline 
+QVector<QString> modelToStringsConvertHelper( const ModelType &m )
+{
+    QVector<QString> resVec;
+    appendToStringVector( resVec, m.asJson() );
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+inline QVector<QString> modelToStrings( const QDateTime         &v ) { return modelToStrings( formatDateTimeISO8601(v) ); }
+inline QVector<QString> modelToStrings( const BrokerAccountType &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings( const Currency          &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings( const InstrumentType    &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings( const CandleResolution  &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings( const OperationType     &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings( const OrderStatus       &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings( const OrderType         &v ) { return modelToStringsConvertHelper(v); }
+
+
+
+
+
+
+
 
 
 } // namespace invest_openapi
