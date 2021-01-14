@@ -20,8 +20,12 @@ using namespace OpenAPI;
 
 
 template <typename ModelType> QVector<QString> modelMakeSqlSchemaStringVector( const QString &nameOrPrefix );
+template <typename ModelType> QVector<QString> modelMakeSqlFieldsStringVector( const QString &nameOrPrefix );
 
-
+inline QString modelMakeSqlCreateTableSchema( const QVector<QString> &sqlSchema )
+{
+    return mergeString( sqlSchema, "\r\n,"  );
+}
 
 
 //----------------------------------------------------------------------------

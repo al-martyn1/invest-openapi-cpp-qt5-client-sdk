@@ -34,6 +34,22 @@ QVector<QString> modelToStrings ( const MarketInstrument &v );
 
 
 
+//----------------------------------------------------------------------------
+template <> QVector<QString> modelMakeSqlSchemaStringVector< UserAccount >( const QString &nameOrPrefix );
+template <> QVector<QString> modelMakeSqlSchemaStringVector< CurrencyPosition >( const QString &nameOrPrefix );
+template <> QVector<QString> modelMakeSqlSchemaStringVector< PortfolioPosition >( const QString &nameOrPrefix );
+template <> QVector<QString> modelMakeSqlSchemaStringVector< MoneyAmount >( const QString &nameOrPrefix );
+template <> QVector<QString> modelMakeSqlSchemaStringVector< Candle >( const QString &nameOrPrefix );
+template <> QVector<QString> modelMakeSqlSchemaStringVector< OperationTrade >( const QString &nameOrPrefix );
+template <> QVector<QString> modelMakeSqlSchemaStringVector< Order >( const QString &nameOrPrefix );
+template <> QVector<QString> modelMakeSqlSchemaStringVector< PlacedLimitOrder >( const QString &nameOrPrefix );
+template <> QVector<QString> modelMakeSqlSchemaStringVector< PlacedMarketOrder >( const QString &nameOrPrefix );
+template <> QVector<QString> modelMakeSqlSchemaStringVector< SandboxAccount >( const QString &nameOrPrefix );
+template <> QVector<QString> modelMakeSqlSchemaStringVector< SearchMarketInstrument >( const QString &nameOrPrefix );
+template <> QVector<QString> modelMakeSqlSchemaStringVector< MarketInstrument >( const QString &nameOrPrefix );
+//----------------------------------------------------------------------------
+
+
 
 //----------------------------------------------------------------------------
 //! Converts UserAccount to QVector of QString's 
@@ -804,6 +820,52 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector< MarketInstru
 
     return schemaVec;
 }
+
+
+inline QMap<QString,QString> modelMakeAllSqlShemas()
+{
+    QMap<QString,QString> resMap;
+
+    resMap[ "USER_ACCOUNT"             ]  = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< UserAccount            >( QString() ) ); 
+    resMap[ "CURRENCY_POSITION"        ]  = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< CurrencyPosition       >( QString() ) ); 
+    resMap[ "PORTFOLIO_POSITION"       ]  = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< PortfolioPosition      >( QString() ) ); 
+    resMap[ "MONEY_AMOUNT"             ]  = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< MoneyAmount            >( QString() ) ); 
+    resMap[ "CANDLE"                   ]  = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< Candle                 >( QString() ) ); 
+    resMap[ "OPERATION_TRADE"          ]  = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< OperationTrade         >( QString() ) ); 
+    resMap[ "ORDER"                    ]  = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< Order                  >( QString() ) ); 
+    resMap[ "PLACED_LIMIT_ORDER"       ]  = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< PlacedLimitOrder       >( QString() ) ); 
+    resMap[ "PLACED_MARKET_ORDER"      ]  = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< PlacedMarketOrder      >( QString() ) ); 
+    resMap[ "SANDBOX_ACCOUNT"          ]  = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< SandboxAccount         >( QString() ) ); 
+    resMap[ "SEARCH_MARKET_INSTRUMENT" ]  = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< SearchMarketInstrument >( QString() ) ); 
+    resMap[ "MARKET_INSTRUMENT"        ]  = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< MarketInstrument       >( QString() ) ); 
+
+    return resMap;
+}
+
+
+
+
+inline QSet<QString> modelMakeAllSqlTablesSet()
+{
+    QSet<QString> resSet;
+
+    resSet.insert( "USER_ACCOUNT"             );
+    resSet.insert( "CURRENCY_POSITION"        );
+    resSet.insert( "PORTFOLIO_POSITION"       );
+    resSet.insert( "MONEY_AMOUNT"             );
+    resSet.insert( "CANDLE"                   );
+    resSet.insert( "OPERATION_TRADE"          );
+    resSet.insert( "ORDER"                    );
+    resSet.insert( "PLACED_LIMIT_ORDER"       );
+    resSet.insert( "PLACED_MARKET_ORDER"      );
+    resSet.insert( "SANDBOX_ACCOUNT"          );
+    resSet.insert( "SEARCH_MARKET_INSTRUMENT" );
+    resSet.insert( "MARKET_INSTRUMENT"        );
+
+    return resSet;
+}
+
+
 } // namespace invest_openapi
 
 

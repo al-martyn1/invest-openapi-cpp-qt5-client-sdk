@@ -197,7 +197,7 @@ toPascal( const std::basic_string< CharT, Traits, Allocator > &str )
 
 template< class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
 inline std::basic_string< CharT, Traits, Allocator >
-makeExpandString( const std::basic_string< CharT, Traits, Allocator > &str, std::size_t expandToSize, CharT ch )
+makeExpandString( const std::basic_string< CharT, Traits, Allocator > &str, std::size_t expandToSize, CharT ch = (CharT)' ' )
 {
     if (str.size() >= expandToSize)
         return std::basic_string< CharT, Traits, Allocator >();

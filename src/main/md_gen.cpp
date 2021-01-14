@@ -753,7 +753,32 @@ INVEST_OPENAPI_MAIN()
 
         fout << "//----------------------------------------------------------------------------" << endl;
         fout << endl << endl << endl; // << endl;
-        //fout << "//----------------------------------------------------------------------------" << endl;
+        fout << "//----------------------------------------------------------------------------" << endl;
+
+        typeIt = schemasNode.begin();
+        for (; typeIt!=schemasNode.end(); ++typeIt)
+        {
+            //fout << "Type: " << it->first << endl;
+            std::string typeName = typeIt->first.as<std::string>();
+
+            if (skippingSet.find(typeName)!=skippingSet.end())
+                continue;
+
+
+            const YAML::Node &propertiesNode = typeIt->second["properties"];
+
+            if (!propertiesNode.IsDefined() || propertiesNode.IsNull() || propertiesNode.begin()==propertiesNode.end())
+                continue;
+
+
+            if (skipNoTypeOrRefOrArray( typeName, typeIt->second["properties"] ))
+                continue;
+
+            fout<<"template <> QVector<QString> modelMakeSqlSchemaStringVector< " << typeName << " >( const QString &nameOrPrefix );" << endl;
+        }
+
+
+        fout << "//----------------------------------------------------------------------------" << endl << endl << endl ;
 
         //!!! Second iteration - generating 'modelToStrings' methods
 
@@ -786,6 +811,7 @@ INVEST_OPENAPI_MAIN()
                 << endl
                 ;
 
+            //!!! Third iteration - 
             YAML::Node::const_iterator propIt = propertiesNode.begin();
             for (; propIt!=propertiesNode.end(); ++propIt)
             {
@@ -844,7 +870,7 @@ INVEST_OPENAPI_MAIN()
 
         const std::string appendToSchemaVecStart = "    appendToStringVector( schemaVec, ";
 
-        //!!! Third iteration - generating 'modelMakeSqlSchema' specializations
+        //!!! Fourth iteration - generating 'modelMakeSqlSchema' specializations
 
         typeIt = schemasNode.begin();
         for (; typeIt!=schemasNode.end(); ++typeIt)
@@ -931,8 +957,85 @@ INVEST_OPENAPI_MAIN()
 
             fout<< "}" << endl ;
 
+        } //!!! Fourth iteration - generating 'modelMakeSqlSchema' specializations
+
+
+        fout << endl << endl
+             << "inline QMap<QString,QString> modelMakeAllSqlShemas()" << endl
+             << "{" << endl
+             << "    QMap<QString,QString> resMap;" << endl << endl
+             ;
+
+        typeIt = schemasNode.begin();
+        for (; typeIt!=schemasNode.end(); ++typeIt)
+        {
+            //fout << "Type: " << it->first << endl;
+            std::string typeName = typeIt->first.as<std::string>();
+
+            if (skippingSet.find(typeName)!=skippingSet.end())
+                continue;
+
+
+            const YAML::Node &propertiesNode = typeIt->second["properties"];
+
+            if (!propertiesNode.IsDefined() || propertiesNode.IsNull() || propertiesNode.begin()==propertiesNode.end())
+                continue;
+
+
+            if (skipNoTypeOrRefOrArray( typeName, typeIt->second["properties"] ))
+                continue;
+
+
+            auto tableNameSql  = formatName( typeName, cpp::NameStyle::defineStyle );
+            auto expandSqlStr  = cpp::makeExpandString( tableNameSql, 24 );
+            auto expandTypeStr = cpp::makeExpandString( typeName    , 22 );
+
+            fout << "    resMap[ \"" << tableNameSql << "\"" << expandSqlStr << " ] " << " = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< " << typeName << expandTypeStr << " >( QString() ) " << "); " << endl;
+
+            //fout<<"template <> inline QVector<QString> modelMakeSqlSchemaStringVector< " << typeName << " >( const QString &nameOrPrefix )" << endl;
         }
 
+        fout << endl << "    return resMap;" << endl
+             << "}" << endl << endl << endl;
+
+
+        fout << endl << endl
+             << "inline QSet<QString> modelMakeAllSqlTablesSet()" << endl
+             << "{" << endl
+             << "    QSet<QString> resSet;" << endl << endl
+             ;
+
+        typeIt = schemasNode.begin();
+        for (; typeIt!=schemasNode.end(); ++typeIt)
+        {
+            //fout << "Type: " << it->first << endl;
+            std::string typeName = typeIt->first.as<std::string>();
+
+            if (skippingSet.find(typeName)!=skippingSet.end())
+                continue;
+
+
+            const YAML::Node &propertiesNode = typeIt->second["properties"];
+
+            if (!propertiesNode.IsDefined() || propertiesNode.IsNull() || propertiesNode.begin()==propertiesNode.end())
+                continue;
+
+
+            if (skipNoTypeOrRefOrArray( typeName, typeIt->second["properties"] ))
+                continue;
+
+
+            auto tableNameSql  = formatName( typeName, cpp::NameStyle::defineStyle );
+            auto expandSqlStr  = cpp::makeExpandString( tableNameSql, 24 );
+            auto expandTypeStr = cpp::makeExpandString( typeName    , 22 );
+
+            fout << "    resSet.insert( \"" << tableNameSql << "\"" << expandSqlStr << " );" << endl;
+
+            //fout<<"template <> inline QVector<QString> modelMakeSqlSchemaStringVector< " << typeName << " >( const QString &nameOrPrefix )" << endl;
+        }
+
+        fout << endl << "    return resSet;" << endl
+             << "}" << endl << endl << endl;
 
 
         fout<<"} // namespace invest_openapi"           << endl << endl << endl;

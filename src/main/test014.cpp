@@ -38,9 +38,7 @@ INVEST_OPENAPI_MAIN()
     using std::endl;
 
 
-    cout<<"Launched from : "<<QDir::currentPath().toStdString()<<endl;
     cout<<"Launched exe  : "<<QCoreApplication::applicationFilePath().toStdString()<<endl;
-    cout<<"Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
 
     cout << endl;
 
@@ -48,8 +46,17 @@ INVEST_OPENAPI_MAIN()
     using tkf::config_helpers::lookupForConfigFile;
     using tkf::config_helpers::FileReadable;
 
-    cout<<"Found config file: " << lookupForConfigFile( "config.properties", "conf;config", FileReadable() ).toStdString() << endl;
-    cout<<"Found config file: " << lookupForConfigFile( "auth.properties", "conf;config"  , FileReadable() ).toStdString() << endl;
+    QSet<QString>         allSqlTables  = tkf::modelMakeAllSqlTablesSet();
+    QMap<QString,QString> allSqlSchemas = tkf::modelMakeAllSqlShemas();
+
+    for( auto sqlTable : allSqlTables )
+    {
+    
+    }
+
+
+    
+
     
     return 0;
 }
