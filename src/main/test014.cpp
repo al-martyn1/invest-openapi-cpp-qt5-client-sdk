@@ -51,7 +51,18 @@ INVEST_OPENAPI_MAIN()
 
     for( auto sqlTable : allSqlTables )
     {
-    
+        auto it = allSqlSchemas.find(sqlTable);
+        if (it==allSqlSchemas.end())
+        {
+            cout << "Table '" << sqlTable.toStdString() << "' not found in schemes" << endl << endl;
+        }
+        else
+        {
+            QString key = *it;
+            cout << "Table '" << sqlTable.toStdString() << "' schema:" << endl;
+            //cout << it->second << endl << endl;
+            cout << allSqlSchemas[key].toStdString() << endl << endl;
+        }
     }
 
 

@@ -10,6 +10,8 @@
 #include "models.h"
 #include "models_helpers.h"
 #include "utility.h"
+#include "cpp/cpp.h"
+
 
 namespace invest_openapi
 {
@@ -66,13 +68,26 @@ inline QVector<QString> modelToStrings( const marty::Decimal &v )
 
 
 //----------------------------------------------------------------------------
+inline
+QVector<QString> stringToVector( const QString &s )
+{
+    QVector<QString> resVec;
+    appendToStringVector( resVec, s );
+    return resVec;
+}
+
+inline
+QVector<QString> stringToVector( const std::string &s )
+{
+    return stringToVector( QString::fromStdString(s));
+}
+
+//----------------------------------------------------------------------------
 template <typename ModelType> 
 inline 
 QVector<QString> modelToStringsConvertHelper( const ModelType &m )
 {
-    QVector<QString> resVec;
-    appendToStringVector( resVec, m.asJson() );
-    return resVec;
+    return stringToVector( m.asJson() );
 }
 
 //----------------------------------------------------------------------------
@@ -90,13 +105,59 @@ inline QVector<QString> modelToStrings( const OperationType     &v ) { return mo
 inline QVector<QString> modelToStrings( const OrderStatus       &v ) { return modelToStringsConvertHelper(v); }
 inline QVector<QString> modelToStrings( const OrderType         &v ) { return modelToStringsConvertHelper(v); }
 
+//----------------------------------------------------------------------------
 
 
 
 
+//----------------------------------------------------------------------------
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector<BrokerAccountType>( const QString &nameOrPrefix )
+{
+    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("VARCHAR(12)",16) );
+}
+
+//----------------------------------------------------------------------------
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector<Currency>( const QString &nameOrPrefix )
+{
+    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("VARCHAR(4) NOT NULL",16) ); // UNIQUE
+}
+
+//----------------------------------------------------------------------------
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector<InstrumentType>( const QString &nameOrPrefix )
+{
+    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
+}
+
+//----------------------------------------------------------------------------
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector<CandleResolution>( const QString &nameOrPrefix )
+{
+    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
+}
+
+//----------------------------------------------------------------------------
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector<OperationType>( const QString &nameOrPrefix )
+{
+    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
+}
+
+//----------------------------------------------------------------------------
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector<OrderStatus>( const QString &nameOrPrefix )
+{
+    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
+}
+
+//----------------------------------------------------------------------------
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector<OrderType>( const QString &nameOrPrefix )
+{
+    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
+}
+
+//----------------------------------------------------------------------------
 
 
 
+
+//----------------------------------------------------------------------------
 
 } // namespace invest_openapi
 
