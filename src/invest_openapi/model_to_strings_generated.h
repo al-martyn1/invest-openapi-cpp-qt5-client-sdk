@@ -624,7 +624,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector< UserAccount 
     QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
 
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE" ) ); // brokerAccountType
-    appendToStringVector( schemaVec, p + "BROKER_ACCOUNT_ID       VARCHAR(255)    " ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, UserAccount::string
+    appendToStringVector( schemaVec, p + "BROKER_ACCOUNT_ID       VARCHAR(255)    " ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, ::UserAccount::string, ::USER_ACCOUNT::string
 
     return schemaVec;
 }
@@ -637,8 +637,8 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector< CurrencyPosi
     QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
 
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<Currency>( p + "CURRENCY" ) ); // currency
-    appendToStringVector( schemaVec, p + "BALANCE                 DECIMAL(18,8)   " ); // Spec lookup order: ::number::double, ::number, BALANCE, CurrencyPosition::number
-    appendToStringVector( schemaVec, p + "BLOCKED                 DECIMAL(18,8)   " ); // Spec lookup order: ::number::double, ::number, BLOCKED, CurrencyPosition::number
+    appendToStringVector( schemaVec, p + "BALANCE                 DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, BALANCE, ::CurrencyPosition::number, ::CURRENCY_POSITION::number, ::CurrencyPosition::number::double, ::CURRENCY_POSITION::number::double
+    appendToStringVector( schemaVec, p + "BLOCKED                 DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, BLOCKED, ::CurrencyPosition::number, ::CURRENCY_POSITION::number, ::CurrencyPosition::number::double, ::CURRENCY_POSITION::number::double
 
     return schemaVec;
 }
@@ -650,17 +650,17 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector< PortfolioPos
     QVector<QString> schemaVec;
     QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
 
-    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12)     " ); // Spec lookup order: ::string, FIGI, PortfolioPosition::string
-    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12)     " ); // Spec lookup order: ::string, TICKER, PortfolioPosition::string
-    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12)     " ); // Spec lookup order: ::string, ISIN, PortfolioPosition::string
+    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
+    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12) UNIQUE" ); // Spec lookup order: ::string, TICKER, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
+    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, ISIN, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<InstrumentType>( p + "INSTRUMENT_TYPE" ) ); // instrumentType
-    appendToStringVector( schemaVec, p + "BALANCE                 DECIMAL(18,8)   " ); // Spec lookup order: ::number::double, ::number, BALANCE, PortfolioPosition::number
-    appendToStringVector( schemaVec, p + "BLOCKED                 DECIMAL(18,8)   " ); // Spec lookup order: ::number::double, ::number, BLOCKED, PortfolioPosition::number
+    appendToStringVector( schemaVec, p + "BALANCE                 DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, BALANCE, ::PortfolioPosition::number, ::PORTFOLIO_POSITION::number, ::PortfolioPosition::number::double, ::PORTFOLIO_POSITION::number::double
+    appendToStringVector( schemaVec, p + "BLOCKED                 DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, BLOCKED, ::PortfolioPosition::number, ::PORTFOLIO_POSITION::number, ::PortfolioPosition::number::double, ::PORTFOLIO_POSITION::number::double
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<MoneyAmount>( p + "EXPECTED_YIELD_MONEY_AMOUNT" ) ); // expectedYield
-    appendToStringVector( schemaVec, p + "LOTS                    INTEGER         " ); // Spec lookup order: ::integer::int32, ::integer, LOTS, PortfolioPosition::integer
+    appendToStringVector( schemaVec, p + "LOTS                    INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, LOTS, ::PortfolioPosition::integer, ::PORTFOLIO_POSITION::integer, ::PortfolioPosition::integer::int32, ::PORTFOLIO_POSITION::integer::int32
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_MONEY_AMOUNT" ) ); // averagePositionPrice
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_NO_NKD_MONEY_AMOUNT" ) ); // averagePositionPriceNoNkd
-    appendToStringVector( schemaVec, p + "NAME                    VARCHAR(255)    " ); // Spec lookup order: ::string, NAME, PortfolioPosition::string
+    appendToStringVector( schemaVec, p + "NAME                    VARCHAR(255)    " ); // Spec lookup order: ::string, NAME, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
 
     return schemaVec;
 }
@@ -673,7 +673,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector< MoneyAmount 
     QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
 
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<Currency>( p + "CURRENCY" ) ); // currency
-    appendToStringVector( schemaVec, p + "VALUE                   DECIMAL(18,8)   " ); // Spec lookup order: ::number::double, ::number, VALUE, MoneyAmount::number
+    appendToStringVector( schemaVec, p + "VALUE                   DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, VALUE, ::MoneyAmount::number, ::MONEY_AMOUNT::number, ::MoneyAmount::number::double, ::MONEY_AMOUNT::number::double
 
     return schemaVec;
 }
@@ -685,14 +685,14 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector< Candle >( co
     QVector<QString> schemaVec;
     QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
 
-    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12)     " ); // Spec lookup order: ::string, FIGI, Candle::string
+    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::Candle::string, ::CANDLE::string
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<CandleResolution>( p + "INTERVAL_CANDLE_RESOLUTION" ) ); // interval
-    appendToStringVector( schemaVec, p + "O                       DECIMAL(18,8)   " ); // Spec lookup order: ::number::double, ::number, O, Candle::number
-    appendToStringVector( schemaVec, p + "C                       DECIMAL(18,8)   " ); // Spec lookup order: ::number::double, ::number, C, Candle::number
-    appendToStringVector( schemaVec, p + "H                       DECIMAL(18,8)   " ); // Spec lookup order: ::number::double, ::number, H, Candle::number
-    appendToStringVector( schemaVec, p + "L                       DECIMAL(18,8)   " ); // Spec lookup order: ::number::double, ::number, L, Candle::number
-    appendToStringVector( schemaVec, p + "V                       INTEGER         " ); // Spec lookup order: ::integer::int32, ::integer, V, Candle::integer
-    appendToStringVector( schemaVec, p + "TIME                    VARCHAR(255)    " ); // Spec lookup order: ::string::date-time, ::string, TIME, Candle::string
+    appendToStringVector( schemaVec, p + "O                       DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, O, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double
+    appendToStringVector( schemaVec, p + "C                       DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, C, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double
+    appendToStringVector( schemaVec, p + "H                       DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, H, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double
+    appendToStringVector( schemaVec, p + "L                       DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, L, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double
+    appendToStringVector( schemaVec, p + "V                       INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, V, ::Candle::integer, ::CANDLE::integer, ::Candle::integer::int32, ::CANDLE::integer::int32
+    appendToStringVector( schemaVec, p + "TIME                    VARCHAR(255)    " ); // Spec lookup order: ::string, ::string::date-time, TIME, ::Candle::string, ::CANDLE::string, ::Candle::string::date-time, ::CANDLE::string::date-time
 
     return schemaVec;
 }
@@ -704,10 +704,10 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector< OperationTra
     QVector<QString> schemaVec;
     QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
 
-    appendToStringVector( schemaVec, p + "TRADE_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, TRADE_ID, OperationTrade::string
-    appendToStringVector( schemaVec, p + "DATE                    VARCHAR(255)    " ); // Spec lookup order: ::string::date-time, ::string, DATE, OperationTrade::string
-    appendToStringVector( schemaVec, p + "PRICE                   DECIMAL(18,8)   " ); // Spec lookup order: ::number::double, ::number, PRICE, OperationTrade::number
-    appendToStringVector( schemaVec, p + "QUANTITY                INTEGER         " ); // Spec lookup order: ::integer::int32, ::integer, QUANTITY, OperationTrade::integer
+    appendToStringVector( schemaVec, p + "TRADE_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, TRADE_ID, ::OperationTrade::string, ::OPERATION_TRADE::string
+    appendToStringVector( schemaVec, p + "DATE                    VARCHAR(255)    " ); // Spec lookup order: ::string, ::string::date-time, DATE, ::OperationTrade::string, ::OPERATION_TRADE::string, ::OperationTrade::string::date-time, ::OPERATION_TRADE::string::date-time
+    appendToStringVector( schemaVec, p + "PRICE                   DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, PRICE, ::OperationTrade::number, ::OPERATION_TRADE::number, ::OperationTrade::number::double, ::OPERATION_TRADE::number::double
+    appendToStringVector( schemaVec, p + "QUANTITY                INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, QUANTITY, ::OperationTrade::integer, ::OPERATION_TRADE::integer, ::OperationTrade::integer::int32, ::OPERATION_TRADE::integer::int32
 
     return schemaVec;
 }
@@ -719,14 +719,14 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector< Order >( con
     QVector<QString> schemaVec;
     QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
 
-    appendToStringVector( schemaVec, p + "ORDER_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, ORDER_ID, Order::string
-    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12)     " ); // Spec lookup order: ::string, FIGI, Order::string
+    appendToStringVector( schemaVec, p + "ORDER_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, ORDER_ID, ::Order::string, ::ORDER::string
+    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::Order::string, ::ORDER::string
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<OperationType>( p + "OPERATION_TYPE" ) ); // operation
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<OrderStatus>( p + "ORDER_STATUS" ) ); // status
-    appendToStringVector( schemaVec, p + "REQUESTED_LOTS          INTEGER         " ); // Spec lookup order: ::integer::int32, ::integer, REQUESTED_LOTS, Order::integer
-    appendToStringVector( schemaVec, p + "EXECUTED_LOTS           INTEGER         " ); // Spec lookup order: ::integer::int32, ::integer, EXECUTED_LOTS, Order::integer
+    appendToStringVector( schemaVec, p + "REQUESTED_LOTS          INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, REQUESTED_LOTS, ::Order::integer, ::ORDER::integer, ::Order::integer::int32, ::ORDER::integer::int32
+    appendToStringVector( schemaVec, p + "EXECUTED_LOTS           INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, EXECUTED_LOTS, ::Order::integer, ::ORDER::integer, ::Order::integer::int32, ::ORDER::integer::int32
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<OrderType>( p + "ORDER_TYPE" ) ); // type
-    appendToStringVector( schemaVec, p + "PRICE                   DECIMAL(18,8)   " ); // Spec lookup order: ::number::double, ::number, PRICE, Order::number
+    appendToStringVector( schemaVec, p + "PRICE                   DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, PRICE, ::Order::number, ::ORDER::number, ::Order::number::double, ::ORDER::number::double
 
     return schemaVec;
 }
@@ -738,13 +738,13 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector< PlacedLimitO
     QVector<QString> schemaVec;
     QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
 
-    appendToStringVector( schemaVec, p + "ORDER_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, ORDER_ID, PlacedLimitOrder::string
+    appendToStringVector( schemaVec, p + "ORDER_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, ORDER_ID, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<OperationType>( p + "OPERATION_TYPE" ) ); // operation
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<OrderStatus>( p + "ORDER_STATUS" ) ); // status
-    appendToStringVector( schemaVec, p + "REJECT_REASON           VARCHAR(255)    " ); // Spec lookup order: ::string, REJECT_REASON, PlacedLimitOrder::string
-    appendToStringVector( schemaVec, p + "MESSAGE                 VARCHAR(255)    " ); // Spec lookup order: ::string, MESSAGE, PlacedLimitOrder::string
-    appendToStringVector( schemaVec, p + "REQUESTED_LOTS                          " ); // Spec lookup order: ::integer, REQUESTED_LOTS, PlacedLimitOrder::integer
-    appendToStringVector( schemaVec, p + "EXECUTED_LOTS                           " ); // Spec lookup order: ::integer, EXECUTED_LOTS, PlacedLimitOrder::integer
+    appendToStringVector( schemaVec, p + "REJECT_REASON           VARCHAR(255)    " ); // Spec lookup order: ::string, REJECT_REASON, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string
+    appendToStringVector( schemaVec, p + "MESSAGE                 VARCHAR(255)    " ); // Spec lookup order: ::string, MESSAGE, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string
+    appendToStringVector( schemaVec, p + "REQUESTED_LOTS                          " ); // Spec lookup order: ::integer, REQUESTED_LOTS, ::PlacedLimitOrder::integer, ::PLACED_LIMIT_ORDER::integer
+    appendToStringVector( schemaVec, p + "EXECUTED_LOTS                           " ); // Spec lookup order: ::integer, EXECUTED_LOTS, ::PlacedLimitOrder::integer, ::PLACED_LIMIT_ORDER::integer
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT" ) ); // commission
 
     return schemaVec;
@@ -757,13 +757,13 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector< PlacedMarket
     QVector<QString> schemaVec;
     QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
 
-    appendToStringVector( schemaVec, p + "ORDER_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, ORDER_ID, PlacedMarketOrder::string
+    appendToStringVector( schemaVec, p + "ORDER_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, ORDER_ID, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<OperationType>( p + "OPERATION_TYPE" ) ); // operation
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<OrderStatus>( p + "ORDER_STATUS" ) ); // status
-    appendToStringVector( schemaVec, p + "REJECT_REASON           VARCHAR(255)    " ); // Spec lookup order: ::string, REJECT_REASON, PlacedMarketOrder::string
-    appendToStringVector( schemaVec, p + "MESSAGE                 VARCHAR(255)    " ); // Spec lookup order: ::string, MESSAGE, PlacedMarketOrder::string
-    appendToStringVector( schemaVec, p + "REQUESTED_LOTS                          " ); // Spec lookup order: ::integer, REQUESTED_LOTS, PlacedMarketOrder::integer
-    appendToStringVector( schemaVec, p + "EXECUTED_LOTS                           " ); // Spec lookup order: ::integer, EXECUTED_LOTS, PlacedMarketOrder::integer
+    appendToStringVector( schemaVec, p + "REJECT_REASON           VARCHAR(255)    " ); // Spec lookup order: ::string, REJECT_REASON, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string
+    appendToStringVector( schemaVec, p + "MESSAGE                 VARCHAR(255)    " ); // Spec lookup order: ::string, MESSAGE, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string
+    appendToStringVector( schemaVec, p + "REQUESTED_LOTS                          " ); // Spec lookup order: ::integer, REQUESTED_LOTS, ::PlacedMarketOrder::integer, ::PLACED_MARKET_ORDER::integer
+    appendToStringVector( schemaVec, p + "EXECUTED_LOTS                           " ); // Spec lookup order: ::integer, EXECUTED_LOTS, ::PlacedMarketOrder::integer, ::PLACED_MARKET_ORDER::integer
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT" ) ); // commission
 
     return schemaVec;
@@ -777,7 +777,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector< SandboxAccou
     QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
 
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE" ) ); // brokerAccountType
-    appendToStringVector( schemaVec, p + "BROKER_ACCOUNT_ID       VARCHAR(255)    " ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, SandboxAccount::string
+    appendToStringVector( schemaVec, p + "BROKER_ACCOUNT_ID       VARCHAR(255)    " ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, ::SandboxAccount::string, ::SANDBOX_ACCOUNT::string
 
     return schemaVec;
 }
@@ -789,13 +789,13 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector< SearchMarket
     QVector<QString> schemaVec;
     QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
 
-    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12)     " ); // Spec lookup order: ::string, FIGI, SearchMarketInstrument::string
-    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12)     " ); // Spec lookup order: ::string, TICKER, SearchMarketInstrument::string
-    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12)     " ); // Spec lookup order: ::string, ISIN, SearchMarketInstrument::string
-    appendToStringVector( schemaVec, p + "MIN_PRICE_INCREMENT     DECIMAL(18,8)   " ); // Spec lookup order: ::number::double, ::number, MIN_PRICE_INCREMENT, SearchMarketInstrument::number
-    appendToStringVector( schemaVec, p + "LOT                     INTEGER         " ); // Spec lookup order: ::integer::int32, ::integer, LOT, SearchMarketInstrument::integer
+    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
+    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12) UNIQUE" ); // Spec lookup order: ::string, TICKER, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
+    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, ISIN, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
+    appendToStringVector( schemaVec, p + "MIN_PRICE_INCREMENT     DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, MIN_PRICE_INCREMENT, ::SearchMarketInstrument::number, ::SEARCH_MARKET_INSTRUMENT::number, ::SearchMarketInstrument::number::double, ::SEARCH_MARKET_INSTRUMENT::number::double
+    appendToStringVector( schemaVec, p + "LOT                     INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, LOT, ::SearchMarketInstrument::integer, ::SEARCH_MARKET_INSTRUMENT::integer, ::SearchMarketInstrument::integer::int32, ::SEARCH_MARKET_INSTRUMENT::integer::int32
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<Currency>( p + "CURRENCY" ) ); // currency
-    appendToStringVector( schemaVec, p + "NAME                    VARCHAR(255)    " ); // Spec lookup order: ::string, NAME, SearchMarketInstrument::string
+    appendToStringVector( schemaVec, p + "NAME                    VARCHAR(255)    " ); // Spec lookup order: ::string, NAME, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<InstrumentType>( p + "INSTRUMENT_TYPE" ) ); // type
 
     return schemaVec;
@@ -808,14 +808,16 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector< MarketInstru
     QVector<QString> schemaVec;
     QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
 
-    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12)     " ); // Spec lookup order: ::string, FIGI, MarketInstrument::string
-    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12)     " ); // Spec lookup order: ::string, TICKER, MarketInstrument::string
-    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12)     " ); // Spec lookup order: ::string, ISIN, MarketInstrument::string
-    appendToStringVector( schemaVec, p + "MIN_PRICE_INCREMENT     DECIMAL(18,8)   " ); // Spec lookup order: ::number::double, ::number, MIN_PRICE_INCREMENT, MarketInstrument::number
-    appendToStringVector( schemaVec, p + "LOT                     INTEGER         " ); // Spec lookup order: ::integer::int32, ::integer, LOT, MarketInstrument::integer
-    appendToStringVector( schemaVec, p + "MIN_QUANTITY            INTEGER         " ); // Spec lookup order: ::integer::int32, ::integer, MIN_QUANTITY, MarketInstrument::integer
+    appendToStringVector( schemaVec, p + "ID                      INTEGER PRIMARY KEY AUTOINCREMENT" ); // ID spec
+    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
+    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12) UNIQUE" ); // Spec lookup order: ::string, TICKER, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
+    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, ISIN, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
+    appendToStringVector( schemaVec, p + "MIN_PRICE_INCREMENT     DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, MIN_PRICE_INCREMENT, ::MarketInstrument::number, ::MARKET_INSTRUMENT::number, ::MarketInstrument::number::double, ::MARKET_INSTRUMENT::number::double
+    appendToStringVector( schemaVec, p + "LOT                     INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, LOT, ::MarketInstrument::integer, ::MARKET_INSTRUMENT::integer, ::MarketInstrument::integer::int32, ::MARKET_INSTRUMENT::integer::int32
+    appendToStringVector( schemaVec, p + "LOT_MARKET              INTEGER         " ); // Spec ::schema::MarketInstrument::after::lot
+    appendToStringVector( schemaVec, p + "MIN_QUANTITY            INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, MIN_QUANTITY, ::MarketInstrument::integer, ::MARKET_INSTRUMENT::integer, ::MarketInstrument::integer::int32, ::MARKET_INSTRUMENT::integer::int32
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<Currency>( p + "CURRENCY" ) ); // currency
-    appendToStringVector( schemaVec, p + "NAME                    VARCHAR(255)    " ); // Spec lookup order: ::string, NAME, MarketInstrument::string
+    appendToStringVector( schemaVec, p + "NAME                    VARCHAR(255)    " ); // Spec lookup order: ::string, NAME, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector<InstrumentType>( p + "INSTRUMENT_TYPE" ) ); // type
 
     return schemaVec;

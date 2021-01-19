@@ -156,12 +156,21 @@ std::string getSqlSpec( const std::map<std::string, std::string> &sqlSpec
 {
     std::vector< std::string > lookupFor;
 
+    lookupFor.push_back( std::string("::") + fieldType );
+
     if (!fieldTypeFormat.empty())
         lookupFor.push_back( std::string("::") + fieldType + std::string("::") + fieldTypeFormat );
 
-    lookupFor.push_back( std::string("::") + fieldType );
-    lookupFor.push_back( fieldName );
-    lookupFor.push_back( modelTypeName + std::string("::") + fieldType );
+    lookupFor.push_back( formatName( fieldName, cpp::NameStyle::defineStyle ) );
+    lookupFor.push_back( std::string("::") + formatName( modelTypeName, cpp::NameStyle::pascalStyle ) + std::string("::") + fieldType );
+    lookupFor.push_back( std::string("::") + formatName( modelTypeName, cpp::NameStyle::defineStyle ) + std::string("::") + fieldType );
+
+    if (!fieldTypeFormat.empty())
+    {
+        lookupFor.push_back( std::string("::") + formatName( modelTypeName, cpp::NameStyle::pascalStyle ) + std::string("::") + fieldType + std::string("::") + fieldTypeFormat );
+        lookupFor.push_back( std::string("::") + formatName( modelTypeName, cpp::NameStyle::defineStyle ) + std::string("::") + fieldType + std::string("::") + fieldTypeFormat );
+    }
+
 
     if (lookupForItems)
         *lookupForItems = invest_openapi::mergeString( lookupFor, ", ");
@@ -240,6 +249,76 @@ std::string getSqlSpec( const std::map<std::string, std::string> &sqlSpec
     }
 
     return resStr;
+}
+
+//----------------------------------------------------------------------------
+std::string getSqlModelIdSpec( const std::map<std::string, std::string> &sqlSpec
+                             , const std::string &modelTypeName
+                             )
+{
+    std::vector< std::string > lookupFor;
+
+    lookupFor.push_back( std::string("::schema::") + formatName( modelTypeName, cpp::NameStyle::pascalStyle ) + std::string("::ID") );
+    lookupFor.push_back( std::string("::schema::") + formatName( modelTypeName, cpp::NameStyle::defineStyle ) + std::string("::ID"));
+
+    for (auto it = lookupFor.begin(); it!=lookupFor.end(); ++it )
+    {
+        std::string strSqlSpecName = trimHelper(*it);
+        if (strSqlSpecName.empty())
+            continue;
+
+        auto fountSpecIt = sqlSpec.find(*it);
+        if (fountSpecIt==sqlSpec.end())
+            continue;
+
+        return trimHelper(fountSpecIt->second);
+    }
+
+    return std::string();
+}
+
+//----------------------------------------------------------------------------
+std::string getSqlModelFieldExtraSpec( const std::map<std::string, std::string> &sqlSpec
+                                     , const std::string &modelTypeName
+                                     , const std::string &fieldName
+                                     , const std::string &orderKeyword // before/after
+                                     )
+{
+    std::vector< std::string > lookupFor;
+
+    lookupFor.push_back( std::string("::schema::") + formatName( modelTypeName, cpp::NameStyle::pascalStyle ) + std::string("::") + orderKeyword + std::string("::") + formatName( fieldName, cpp::NameStyle::defineStyle ) );
+    lookupFor.push_back( std::string("::schema::") + formatName( modelTypeName, cpp::NameStyle::defineStyle ) + std::string("::") + orderKeyword + std::string("::") + formatName( fieldName, cpp::NameStyle::defineStyle ) );
+
+    for (auto it = lookupFor.begin(); it!=lookupFor.end(); ++it )
+    {
+        std::string strSqlSpecName = trimHelper(*it);
+        if (strSqlSpecName.empty())
+            continue;
+
+        auto fountSpecIt = sqlSpec.find(*it);
+        if (fountSpecIt==sqlSpec.end())
+            continue;
+
+        return trimHelper(fountSpecIt->second);
+    }
+
+    return std::string();
+}
+
+//----------------------------------------------------------------------------
+bool splitSqlFieldSpec( const std::string &sqlFieldSpec, std::string &fieldName, std::string &fieldSqlSpec )
+{
+    auto spacePos = sqlFieldSpec.find_first_of(' ');
+    if (spacePos==std::string::npos)
+        return false;
+
+    fieldName    = std::string( sqlFieldSpec, 0, spacePos );
+    fieldName    = trimHelper(fieldName);
+
+    fieldSqlSpec = std::string( sqlFieldSpec, spacePos+1  );
+    fieldSqlSpec = trimHelper(fieldSqlSpec);
+
+    return true;
 }
 
 //----------------------------------------------------------------------------
@@ -872,6 +951,10 @@ INVEST_OPENAPI_MAIN()
 
         //!!! Fourth iteration - generating 'modelMakeSqlSchema' specializations
 
+        static const std::size_t sqlFieldWidth     = 23;
+        static const std::size_t sqlFieldSpecWidth = 16;
+
+
         typeIt = schemasNode.begin();
         for (; typeIt!=schemasNode.end(); ++typeIt)
         {
@@ -900,6 +983,21 @@ INVEST_OPENAPI_MAIN()
                 << endl
                 ;
 
+
+            using cpp::formatName;
+            using cpp::detectNameStyle;
+            using cpp::NameStyle;
+            using cpp::expandAtBack;
+            using cpp::expandAtFront;
+
+
+            auto idSpec = getSqlModelIdSpec( sqlSchemaMap, typeName );
+            if (!idSpec.empty())
+            {
+                fout << appendToSchemaVecStart << "p + " << q( expandAtBack("ID",sqlFieldWidth), expandAtBack(idSpec,sqlFieldSpecWidth) ) << " );" << " // ID spec" << endl;
+            }
+
+
             YAML::Node::const_iterator propIt = propertiesNode.begin();
             for (; propIt!=propertiesNode.end(); ++propIt)
             {
@@ -918,11 +1016,21 @@ INVEST_OPENAPI_MAIN()
                 if (isRefTypeName(propType))
                     propType = extractTypeNameFromRef(propType);
 
-                using cpp::formatName;
-                using cpp::detectNameStyle;
-                using cpp::NameStyle;
-                using cpp::expandAtBack;
-                using cpp::expandAtFront;
+                std::string sqlFieldSpecPropBefore = getSqlModelFieldExtraSpec( sqlSchemaMap, typeName, propName, "before" );
+                if (!sqlFieldSpecPropBefore.empty())
+                {
+                    cerr<<"!!! Found 'before' spec for "<<typeName<<"."<<propName<<endl;
+
+                    std::string fieldName, fieldSqlSpec;
+                    if (!splitSqlFieldSpec(sqlFieldSpecPropBefore, fieldName, fieldSqlSpec))
+                    {
+                        cerr<<"Failed to parse sql spec for " << typeName << "." << propName << endl;
+                    }
+                    else
+                    {
+                        fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldWidth), expandAtBack(fieldSqlSpec,sqlFieldSpecWidth) ) << " );" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
+                    }
+                }
 
                 //auto propNameUpper = cpp::toUpper(propName);
                 auto propNameSql = formatName( propName, cpp::NameStyle::defineStyle );
@@ -945,9 +1053,24 @@ INVEST_OPENAPI_MAIN()
                 }
                 else
                 {
-                    fout << appendToSchemaVecStart << "p + " << q( expandAtBack(propNameSql,23), expandAtBack(sqlSpec,16) ) << " );" << specLookupComment << endl;
+                    fout << appendToSchemaVecStart << "p + " << q( expandAtBack(propNameSql,sqlFieldWidth), expandAtBack(sqlSpec,sqlFieldSpecWidth) ) << " );" << specLookupComment << endl;
                 }
 
+                std::string sqlFieldSpecPropAfter = getSqlModelFieldExtraSpec( sqlSchemaMap, typeName, propName, "after" );
+                if (!sqlFieldSpecPropAfter.empty())
+                {
+                    cerr<<"!!! Found 'before' spec for "<<typeName<<"."<<propName<<endl;
+
+                    std::string fieldName, fieldSqlSpec;
+                    if (!splitSqlFieldSpec(sqlFieldSpecPropAfter, fieldName, fieldSqlSpec))
+                    {
+                        cerr<<"Failed to parse sql spec for " << typeName << "." << propName << endl;
+                    }
+                    else
+                    {
+                        fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldWidth), expandAtBack(fieldSqlSpec,sqlFieldSpecWidth) ) << " );" << " // Spec ::schema::" << typeName << "::after::" << propName << endl;
+                    }
+                }
                 
             }
 
