@@ -655,7 +655,7 @@ INVEST_OPENAPI_MAIN()
     using std::flush;
 
 
-    if (argc<4)
+    if (argc<5)
     {
         std::cerr<<"No input files taken";
         return -1;
@@ -666,6 +666,7 @@ INVEST_OPENAPI_MAIN()
         std::string arg1 = argv[1];
         std::string arg2 = argv[2];
         std::string arg3 = argv[3];
+        std::string arg4 = argv[4];
 
         YAML::Node rootNode = parse(argv[1]);
         std::map<std::string, std::string> sqlSchemaMap = parseSchemaIni(argv[2]);
@@ -673,7 +674,7 @@ INVEST_OPENAPI_MAIN()
         // Schema file name - argv[2]
         // Output file name - argv[3]
 
-        if (argc>4)
+        if (argc>5)
         {
             QVariant qvDepth = 1;
 
@@ -718,6 +719,7 @@ INVEST_OPENAPI_MAIN()
         }
 
 
+        const std::string DBTYPE = arg4;
         // Do main job, not test
 
         std::ofstream foutStream;
@@ -826,7 +828,7 @@ INVEST_OPENAPI_MAIN()
             }
 
 
-            fout<<"QVector<QString> modelToStrings ( const " << typeName << " &v );" << endl;
+            fout<<"QVector<QString> modelToStrings_"<<DBTYPE<<"( const " << typeName << " &v );" << endl;
             //fout<<"template <> QVector<QString> modelMakeSchema< " << typeName << " >( );" << endl;
         }
 
@@ -853,7 +855,7 @@ INVEST_OPENAPI_MAIN()
             if (skipNoTypeOrRefOrArray( typeName, typeIt->second["properties"] ))
                 continue;
 
-            fout<<"template <> QVector<QString> modelMakeSqlSchemaStringVector< " << typeName << " >( const QString &nameOrPrefix );" << endl;
+            fout<<"template <> QVector<QString> modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << typeName << " >( const QString &nameOrPrefix );" << endl;
         }
 
 
@@ -884,7 +886,7 @@ INVEST_OPENAPI_MAIN()
 
             fout << endl << "//----------------------------------------------------------------------------" << endl;
             fout << "//! Converts " << typeName << " to QVector of QString's " << endl;
-            fout<< "inline QVector<QString> modelToStrings( const " << typeName << " &v )" << endl
+            fout<< "inline QVector<QString> modelToStrings_"<<DBTYPE<<"( const " << typeName << " &v )" << endl
                 << "{" << endl
                 << "    QVector<QString> resVec;" 
                 << endl
@@ -930,7 +932,7 @@ INVEST_OPENAPI_MAIN()
                      << "    if ( !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Set() || !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Valid() ) // type: " << propType << endl
                      << "        appendToStringVector(resVec, QString());" << endl
                      << "    else" << endl
-                     << "        appendToStringVector(resVec, modelToStrings( v.get" << cpp::formatName(propName,cpp::NameStyle::pascalStyle) << "() ) );" << endl
+                     << "        appendToStringVector(resVec, modelToStrings_"<<DBTYPE<<"( v.get" << cpp::formatName(propName,cpp::NameStyle::pascalStyle) << "() ) );" << endl
                      ;
             }
 
@@ -976,7 +978,7 @@ INVEST_OPENAPI_MAIN()
 
             fout << endl << "//----------------------------------------------------------------------------" << endl;
             fout << "//! Creates SQL schema format for '" << typeName << "' model " << endl;
-            fout<<"template <> inline QVector<QString> modelMakeSqlSchemaStringVector< " << typeName << " >( const QString &nameOrPrefix )" << endl;
+            fout<<"template <> inline QVector<QString> modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << typeName << " >( const QString &nameOrPrefix )" << endl;
             fout<< "{" << endl
                 << "    QVector<QString> schemaVec;" << endl
                 << "    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString(\"_\");" << endl
@@ -1048,7 +1050,7 @@ INVEST_OPENAPI_MAIN()
                     if (propTypeSql.find(propNameSql)!=propTypeSql.npos)
                         typeSqlGenerationPrefix = propTypeSql;
 
-                    fout << appendToSchemaVecStart << "modelMakeSqlSchemaStringVector<" << propType << ">( " << "p + " << q(typeSqlGenerationPrefix) << " ) ); // " << propName << endl;
+                    fout << appendToSchemaVecStart << "modelMakeSqlSchemaStringVector_"<<DBTYPE<<"<" << propType << ">( " << "p + " << q(typeSqlGenerationPrefix) << " ) ); // " << propName << endl;
                     // nameOrPrefix
                 }
                 else
@@ -1084,7 +1086,7 @@ INVEST_OPENAPI_MAIN()
 
 
         fout << endl << endl
-             << "inline QMap<QString,QString> modelMakeAllSqlShemas()" << endl
+             << "inline QMap<QString,QString> modelMakeAllSqlShemas_"<<DBTYPE<<"()" << endl
              << "{" << endl
              << "    QMap<QString,QString> resMap;" << endl << endl
              ;
@@ -1113,7 +1115,7 @@ INVEST_OPENAPI_MAIN()
             auto expandSqlStr  = cpp::makeExpandString( tableNameSql, 24 );
             auto expandTypeStr = cpp::makeExpandString( typeName    , 22 );
 
-            fout << "    resMap[ \"" << tableNameSql << "\"" << expandSqlStr << " ] " << " = modelMakeSqlCreateTableSchema( modelMakeSqlSchemaStringVector< " << typeName << expandTypeStr << " >( QString() ) " << "); " << endl;
+            fout << "    resMap[ \"" << tableNameSql << "\"" << expandSqlStr << " ] " << " = modelMakeSqlCreateTableSchema_"<<DBTYPE<<"( modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << typeName << expandTypeStr << " >( QString() ) " << "); " << endl;
 
             //fout<<"template <> inline QVector<QString> modelMakeSqlSchemaStringVector< " << typeName << " >( const QString &nameOrPrefix )" << endl;
         }
@@ -1123,7 +1125,7 @@ INVEST_OPENAPI_MAIN()
 
 
         fout << endl << endl
-             << "inline QSet<QString> modelMakeAllSqlTablesSet()" << endl
+             << "inline QSet<QString> modelMakeAllSqlTablesSet_"<<DBTYPE<<"()" << endl
              << "{" << endl
              << "    QSet<QString> resSet;" << endl << endl
              ;

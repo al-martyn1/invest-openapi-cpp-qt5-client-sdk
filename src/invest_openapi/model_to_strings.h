@@ -21,10 +21,9 @@ using namespace OpenAPI;
 
 
 
-template <typename ModelType> QVector<QString> modelMakeSqlSchemaStringVector( const QString &nameOrPrefix );
-template <typename ModelType> QVector<QString> modelMakeSqlFieldsStringVector( const QString &nameOrPrefix );
+template <typename ModelType> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE( const QString &nameOrPrefix );
 
-inline QString modelMakeSqlCreateTableSchema( const QVector<QString> &sqlSchema )
+inline QString modelMakeSqlCreateTableSchema_SQLITE( const QVector<QString> &sqlSchema )
 {
     return mergeString( sqlSchema, "\r\n,"  );
 }
@@ -43,7 +42,7 @@ inline void appendToStringVector( QVector<QString> &vec, const QVector<QString> 
 }
 
 //----------------------------------------------------------------------------
-inline QVector<QString> modelToStrings( const QString &s )
+inline QVector<QString> modelToStrings_SQLITE( const QString &s )
 {
     QVector<QString> resVec;
     appendToStringVector( resVec, s );
@@ -51,15 +50,15 @@ inline QVector<QString> modelToStrings( const QString &s )
 }
 
 //----------------------------------------------------------------------------
-inline QVector<QString> modelToStrings( const QVector<QString> &v )
+inline QVector<QString> modelToStrings_SQLITE( const QVector<QString> &v )
 {
     return v;
 }
 
 //----------------------------------------------------------------------------
-inline QVector<QString> modelToStrings( const marty::Decimal &v )
+inline QVector<QString> modelToStrings_SQLITE( const marty::Decimal &v )
 {
-    return modelToStrings( QString::fromStdString( marty::toString(v) ) );
+    return modelToStrings_SQLITE( QString::fromStdString( marty::toString(v) ) );
 }
 
 //----------------------------------------------------------------------------
@@ -96,14 +95,14 @@ QVector<QString> modelToStringsConvertHelper( const ModelType &m )
 
 
 //----------------------------------------------------------------------------
-inline QVector<QString> modelToStrings( const QDateTime         &v ) { return modelToStrings( formatDateTimeISO8601(v) ); }
-inline QVector<QString> modelToStrings( const BrokerAccountType &v ) { return modelToStringsConvertHelper(v); }
-inline QVector<QString> modelToStrings( const Currency          &v ) { return modelToStringsConvertHelper(v); }
-inline QVector<QString> modelToStrings( const InstrumentType    &v ) { return modelToStringsConvertHelper(v); }
-inline QVector<QString> modelToStrings( const CandleResolution  &v ) { return modelToStringsConvertHelper(v); }
-inline QVector<QString> modelToStrings( const OperationType     &v ) { return modelToStringsConvertHelper(v); }
-inline QVector<QString> modelToStrings( const OrderStatus       &v ) { return modelToStringsConvertHelper(v); }
-inline QVector<QString> modelToStrings( const OrderType         &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings_SQLITE( const QDateTime         &v ) { return modelToStrings_SQLITE( formatDateTimeISO8601(v) ); }
+inline QVector<QString> modelToStrings_SQLITE( const BrokerAccountType &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings_SQLITE( const Currency          &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings_SQLITE( const InstrumentType    &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings_SQLITE( const CandleResolution  &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings_SQLITE( const OperationType     &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings_SQLITE( const OrderStatus       &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings_SQLITE( const OrderType         &v ) { return modelToStringsConvertHelper(v); }
 
 //----------------------------------------------------------------------------
 
@@ -111,43 +110,43 @@ inline QVector<QString> modelToStrings( const OrderType         &v ) { return mo
 
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector<BrokerAccountType>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>( const QString &nameOrPrefix )
 {
     return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("VARCHAR(12)",16) );
 }
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector<Currency>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<Currency>( const QString &nameOrPrefix )
 {
     return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("VARCHAR(4) NOT NULL",16) ); // UNIQUE
 }
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector<InstrumentType>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( const QString &nameOrPrefix )
 {
     return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector<CandleResolution>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<CandleResolution>( const QString &nameOrPrefix )
 {
     return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector<OperationType>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OperationType>( const QString &nameOrPrefix )
 {
     return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector<OrderStatus>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( const QString &nameOrPrefix )
 {
     return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector<OrderType>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OrderType>( const QString &nameOrPrefix )
 {
     return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
 }
@@ -162,6 +161,6 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector<OrderType>( c
 } // namespace invest_openapi
 
 
-#include "model_to_strings_generated.h"
+#include "model_to_strings_generated_SQLITE.h"
 
 

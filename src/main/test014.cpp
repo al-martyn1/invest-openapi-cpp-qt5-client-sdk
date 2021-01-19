@@ -46,8 +46,8 @@ INVEST_OPENAPI_MAIN()
     using tkf::config_helpers::lookupForConfigFile;
     using tkf::config_helpers::FileReadable;
 
-    QSet<QString>         allSqlTables  = tkf::modelMakeAllSqlTablesSet();
-    QMap<QString,QString> allSqlSchemas = tkf::modelMakeAllSqlShemas();
+    QSet<QString>         allSqlTables  = tkf::modelMakeAllSqlTablesSet_SQLITE();
+    QMap<QString,QString> allSqlSchemas = tkf::modelMakeAllSqlShemas_SQLITE();
 
     for( auto sqlTable : allSqlTables )
     {
