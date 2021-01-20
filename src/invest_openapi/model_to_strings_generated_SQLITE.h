@@ -18,18 +18,26 @@ using namespace OpenAPI;
 
 
 //----------------------------------------------------------------------------
-QVector<QString> modelToStrings_SQLITE( const UserAccount &v );
-QVector<QString> modelToStrings_SQLITE( const CurrencyPosition &v );
-QVector<QString> modelToStrings_SQLITE( const PortfolioPosition &v );
-QVector<QString> modelToStrings_SQLITE( const MoneyAmount &v );
-QVector<QString> modelToStrings_SQLITE( const Candle &v );
-QVector<QString> modelToStrings_SQLITE( const OperationTrade &v );
-QVector<QString> modelToStrings_SQLITE( const Order &v );
-QVector<QString> modelToStrings_SQLITE( const PlacedLimitOrder &v );
-QVector<QString> modelToStrings_SQLITE( const PlacedMarketOrder &v );
-QVector<QString> modelToStrings_SQLITE( const SandboxAccount &v );
-QVector<QString> modelToStrings_SQLITE( const SearchMarketInstrument &v );
-QVector<QString> modelToStrings_SQLITE( const MarketInstrument &v );
+
+
+//----------------------------------------------------------------------------
+#ifndef INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED
+#define INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED
+
+QVector<QString> modelToStrings( const UserAccount &v );
+QVector<QString> modelToStrings( const CurrencyPosition &v );
+QVector<QString> modelToStrings( const PortfolioPosition &v );
+QVector<QString> modelToStrings( const MoneyAmount &v );
+QVector<QString> modelToStrings( const Candle &v );
+QVector<QString> modelToStrings( const OperationTrade &v );
+QVector<QString> modelToStrings( const Order &v );
+QVector<QString> modelToStrings( const PlacedLimitOrder &v );
+QVector<QString> modelToStrings( const PlacedMarketOrder &v );
+QVector<QString> modelToStrings( const SandboxAccount &v );
+QVector<QString> modelToStrings( const SearchMarketInstrument &v );
+QVector<QString> modelToStrings( const MarketInstrument &v );
+
+#endif /* INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED */
 //----------------------------------------------------------------------------
 
 
@@ -51,9 +59,14 @@ template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MarketInstru
 
 
 
+
+//----------------------------------------------------------------------------
+#ifndef INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED
+#define INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED
+
 //----------------------------------------------------------------------------
 //! Converts UserAccount to QVector of QString's 
-inline QVector<QString> modelToStrings_SQLITE( const UserAccount &v )
+inline QVector<QString> modelToStrings( const UserAccount &v )
 {
     QVector<QString> resVec;
 
@@ -61,13 +74,13 @@ inline QVector<QString> modelToStrings_SQLITE( const UserAccount &v )
     if ( !v.is_broker_account_type_Set() || !v.is_broker_account_type_Valid() ) // type: BrokerAccountType
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getBrokerAccountType() ) );
+        appendToStringVector(resVec, modelToStrings( v.getBrokerAccountType() ) );
 
     //------------------------------
     if ( !v.is_broker_account_id_Set() || !v.is_broker_account_id_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getBrokerAccountId() ) );
+        appendToStringVector(resVec, modelToStrings( v.getBrokerAccountId() ) );
 
     //------------------------------
     return resVec;
@@ -75,7 +88,7 @@ inline QVector<QString> modelToStrings_SQLITE( const UserAccount &v )
 
 //----------------------------------------------------------------------------
 //! Converts CurrencyPosition to QVector of QString's 
-inline QVector<QString> modelToStrings_SQLITE( const CurrencyPosition &v )
+inline QVector<QString> modelToStrings( const CurrencyPosition &v )
 {
     QVector<QString> resVec;
 
@@ -83,19 +96,19 @@ inline QVector<QString> modelToStrings_SQLITE( const CurrencyPosition &v )
     if ( !v.is_currency_Set() || !v.is_currency_Valid() ) // type: Currency
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getCurrency() ) );
+        appendToStringVector(resVec, modelToStrings( v.getCurrency() ) );
 
     //------------------------------
     if ( !v.is_balance_Set() || !v.is_balance_Valid() ) // type: number
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getBalance() ) );
+        appendToStringVector(resVec, modelToStrings( v.getBalance() ) );
 
     //------------------------------
     if ( !v.is_blocked_Set() || !v.is_blocked_Valid() ) // type: number
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getBlocked() ) );
+        appendToStringVector(resVec, modelToStrings( v.getBlocked() ) );
 
     //------------------------------
     return resVec;
@@ -103,7 +116,7 @@ inline QVector<QString> modelToStrings_SQLITE( const CurrencyPosition &v )
 
 //----------------------------------------------------------------------------
 //! Converts PortfolioPosition to QVector of QString's 
-inline QVector<QString> modelToStrings_SQLITE( const PortfolioPosition &v )
+inline QVector<QString> modelToStrings( const PortfolioPosition &v )
 {
     QVector<QString> resVec;
 
@@ -111,67 +124,67 @@ inline QVector<QString> modelToStrings_SQLITE( const PortfolioPosition &v )
     if ( !v.is_figi_Set() || !v.is_figi_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getFigi() ) );
+        appendToStringVector(resVec, modelToStrings( v.getFigi() ) );
 
     //------------------------------
     if ( !v.is_ticker_Set() || !v.is_ticker_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getTicker() ) );
+        appendToStringVector(resVec, modelToStrings( v.getTicker() ) );
 
     //------------------------------
     if ( !v.is_isin_Set() || !v.is_isin_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getIsin() ) );
+        appendToStringVector(resVec, modelToStrings( v.getIsin() ) );
 
     //------------------------------
     if ( !v.is_instrument_type_Set() || !v.is_instrument_type_Valid() ) // type: InstrumentType
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getInstrumentType() ) );
+        appendToStringVector(resVec, modelToStrings( v.getInstrumentType() ) );
 
     //------------------------------
     if ( !v.is_balance_Set() || !v.is_balance_Valid() ) // type: number
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getBalance() ) );
+        appendToStringVector(resVec, modelToStrings( v.getBalance() ) );
 
     //------------------------------
     if ( !v.is_blocked_Set() || !v.is_blocked_Valid() ) // type: number
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getBlocked() ) );
+        appendToStringVector(resVec, modelToStrings( v.getBlocked() ) );
 
     //------------------------------
     if ( !v.is_expected_yield_Set() || !v.is_expected_yield_Valid() ) // type: MoneyAmount
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getExpectedYield() ) );
+        appendToStringVector(resVec, modelToStrings( v.getExpectedYield() ) );
 
     //------------------------------
     if ( !v.is_lots_Set() || !v.is_lots_Valid() ) // type: integer
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getLots() ) );
+        appendToStringVector(resVec, modelToStrings( v.getLots() ) );
 
     //------------------------------
     if ( !v.is_average_position_price_Set() || !v.is_average_position_price_Valid() ) // type: MoneyAmount
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getAveragePositionPrice() ) );
+        appendToStringVector(resVec, modelToStrings( v.getAveragePositionPrice() ) );
 
     //------------------------------
     if ( !v.is_average_position_price_no_nkd_Set() || !v.is_average_position_price_no_nkd_Valid() ) // type: MoneyAmount
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getAveragePositionPriceNoNkd() ) );
+        appendToStringVector(resVec, modelToStrings( v.getAveragePositionPriceNoNkd() ) );
 
     //------------------------------
     if ( !v.is_name_Set() || !v.is_name_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getName() ) );
+        appendToStringVector(resVec, modelToStrings( v.getName() ) );
 
     //------------------------------
     return resVec;
@@ -179,7 +192,7 @@ inline QVector<QString> modelToStrings_SQLITE( const PortfolioPosition &v )
 
 //----------------------------------------------------------------------------
 //! Converts MoneyAmount to QVector of QString's 
-inline QVector<QString> modelToStrings_SQLITE( const MoneyAmount &v )
+inline QVector<QString> modelToStrings( const MoneyAmount &v )
 {
     QVector<QString> resVec;
 
@@ -187,13 +200,13 @@ inline QVector<QString> modelToStrings_SQLITE( const MoneyAmount &v )
     if ( !v.is_currency_Set() || !v.is_currency_Valid() ) // type: Currency
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getCurrency() ) );
+        appendToStringVector(resVec, modelToStrings( v.getCurrency() ) );
 
     //------------------------------
     if ( !v.is_value_Set() || !v.is_value_Valid() ) // type: number
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getValue() ) );
+        appendToStringVector(resVec, modelToStrings( v.getValue() ) );
 
     //------------------------------
     return resVec;
@@ -201,7 +214,7 @@ inline QVector<QString> modelToStrings_SQLITE( const MoneyAmount &v )
 
 //----------------------------------------------------------------------------
 //! Converts Candle to QVector of QString's 
-inline QVector<QString> modelToStrings_SQLITE( const Candle &v )
+inline QVector<QString> modelToStrings( const Candle &v )
 {
     QVector<QString> resVec;
 
@@ -209,49 +222,49 @@ inline QVector<QString> modelToStrings_SQLITE( const Candle &v )
     if ( !v.is_figi_Set() || !v.is_figi_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getFigi() ) );
+        appendToStringVector(resVec, modelToStrings( v.getFigi() ) );
 
     //------------------------------
     if ( !v.is_interval_Set() || !v.is_interval_Valid() ) // type: CandleResolution
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getInterval() ) );
+        appendToStringVector(resVec, modelToStrings( v.getInterval() ) );
 
     //------------------------------
     if ( !v.is_o_Set() || !v.is_o_Valid() ) // type: number
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getO() ) );
+        appendToStringVector(resVec, modelToStrings( v.getO() ) );
 
     //------------------------------
     if ( !v.is_c_Set() || !v.is_c_Valid() ) // type: number
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getC() ) );
+        appendToStringVector(resVec, modelToStrings( v.getC() ) );
 
     //------------------------------
     if ( !v.is_h_Set() || !v.is_h_Valid() ) // type: number
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getH() ) );
+        appendToStringVector(resVec, modelToStrings( v.getH() ) );
 
     //------------------------------
     if ( !v.is_l_Set() || !v.is_l_Valid() ) // type: number
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getL() ) );
+        appendToStringVector(resVec, modelToStrings( v.getL() ) );
 
     //------------------------------
     if ( !v.is_v_Set() || !v.is_v_Valid() ) // type: integer
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getV() ) );
+        appendToStringVector(resVec, modelToStrings( v.getV() ) );
 
     //------------------------------
     if ( !v.is_time_Set() || !v.is_time_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getTime() ) );
+        appendToStringVector(resVec, modelToStrings( v.getTime() ) );
 
     //------------------------------
     return resVec;
@@ -259,7 +272,7 @@ inline QVector<QString> modelToStrings_SQLITE( const Candle &v )
 
 //----------------------------------------------------------------------------
 //! Converts OperationTrade to QVector of QString's 
-inline QVector<QString> modelToStrings_SQLITE( const OperationTrade &v )
+inline QVector<QString> modelToStrings( const OperationTrade &v )
 {
     QVector<QString> resVec;
 
@@ -267,25 +280,25 @@ inline QVector<QString> modelToStrings_SQLITE( const OperationTrade &v )
     if ( !v.is_trade_id_Set() || !v.is_trade_id_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getTradeId() ) );
+        appendToStringVector(resVec, modelToStrings( v.getTradeId() ) );
 
     //------------------------------
     if ( !v.is_date_Set() || !v.is_date_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getDate() ) );
+        appendToStringVector(resVec, modelToStrings( v.getDate() ) );
 
     //------------------------------
     if ( !v.is_price_Set() || !v.is_price_Valid() ) // type: number
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getPrice() ) );
+        appendToStringVector(resVec, modelToStrings( v.getPrice() ) );
 
     //------------------------------
     if ( !v.is_quantity_Set() || !v.is_quantity_Valid() ) // type: integer
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getQuantity() ) );
+        appendToStringVector(resVec, modelToStrings( v.getQuantity() ) );
 
     //------------------------------
     return resVec;
@@ -293,7 +306,7 @@ inline QVector<QString> modelToStrings_SQLITE( const OperationTrade &v )
 
 //----------------------------------------------------------------------------
 //! Converts Order to QVector of QString's 
-inline QVector<QString> modelToStrings_SQLITE( const Order &v )
+inline QVector<QString> modelToStrings( const Order &v )
 {
     QVector<QString> resVec;
 
@@ -301,49 +314,49 @@ inline QVector<QString> modelToStrings_SQLITE( const Order &v )
     if ( !v.is_order_id_Set() || !v.is_order_id_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getOrderId() ) );
+        appendToStringVector(resVec, modelToStrings( v.getOrderId() ) );
 
     //------------------------------
     if ( !v.is_figi_Set() || !v.is_figi_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getFigi() ) );
+        appendToStringVector(resVec, modelToStrings( v.getFigi() ) );
 
     //------------------------------
     if ( !v.is_operation_Set() || !v.is_operation_Valid() ) // type: OperationType
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getOperation() ) );
+        appendToStringVector(resVec, modelToStrings( v.getOperation() ) );
 
     //------------------------------
     if ( !v.is_status_Set() || !v.is_status_Valid() ) // type: OrderStatus
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getStatus() ) );
+        appendToStringVector(resVec, modelToStrings( v.getStatus() ) );
 
     //------------------------------
     if ( !v.is_requested_lots_Set() || !v.is_requested_lots_Valid() ) // type: integer
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getRequestedLots() ) );
+        appendToStringVector(resVec, modelToStrings( v.getRequestedLots() ) );
 
     //------------------------------
     if ( !v.is_executed_lots_Set() || !v.is_executed_lots_Valid() ) // type: integer
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getExecutedLots() ) );
+        appendToStringVector(resVec, modelToStrings( v.getExecutedLots() ) );
 
     //------------------------------
     if ( !v.is_type_Set() || !v.is_type_Valid() ) // type: OrderType
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getType() ) );
+        appendToStringVector(resVec, modelToStrings( v.getType() ) );
 
     //------------------------------
     if ( !v.is_price_Set() || !v.is_price_Valid() ) // type: number
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getPrice() ) );
+        appendToStringVector(resVec, modelToStrings( v.getPrice() ) );
 
     //------------------------------
     return resVec;
@@ -351,7 +364,7 @@ inline QVector<QString> modelToStrings_SQLITE( const Order &v )
 
 //----------------------------------------------------------------------------
 //! Converts PlacedLimitOrder to QVector of QString's 
-inline QVector<QString> modelToStrings_SQLITE( const PlacedLimitOrder &v )
+inline QVector<QString> modelToStrings( const PlacedLimitOrder &v )
 {
     QVector<QString> resVec;
 
@@ -359,49 +372,49 @@ inline QVector<QString> modelToStrings_SQLITE( const PlacedLimitOrder &v )
     if ( !v.is_order_id_Set() || !v.is_order_id_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getOrderId() ) );
+        appendToStringVector(resVec, modelToStrings( v.getOrderId() ) );
 
     //------------------------------
     if ( !v.is_operation_Set() || !v.is_operation_Valid() ) // type: OperationType
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getOperation() ) );
+        appendToStringVector(resVec, modelToStrings( v.getOperation() ) );
 
     //------------------------------
     if ( !v.is_status_Set() || !v.is_status_Valid() ) // type: OrderStatus
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getStatus() ) );
+        appendToStringVector(resVec, modelToStrings( v.getStatus() ) );
 
     //------------------------------
     if ( !v.is_reject_reason_Set() || !v.is_reject_reason_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getRejectReason() ) );
+        appendToStringVector(resVec, modelToStrings( v.getRejectReason() ) );
 
     //------------------------------
     if ( !v.is_message_Set() || !v.is_message_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getMessage() ) );
+        appendToStringVector(resVec, modelToStrings( v.getMessage() ) );
 
     //------------------------------
     if ( !v.is_requested_lots_Set() || !v.is_requested_lots_Valid() ) // type: integer
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getRequestedLots() ) );
+        appendToStringVector(resVec, modelToStrings( v.getRequestedLots() ) );
 
     //------------------------------
     if ( !v.is_executed_lots_Set() || !v.is_executed_lots_Valid() ) // type: integer
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getExecutedLots() ) );
+        appendToStringVector(resVec, modelToStrings( v.getExecutedLots() ) );
 
     //------------------------------
     if ( !v.is_commission_Set() || !v.is_commission_Valid() ) // type: MoneyAmount
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getCommission() ) );
+        appendToStringVector(resVec, modelToStrings( v.getCommission() ) );
 
     //------------------------------
     return resVec;
@@ -409,7 +422,7 @@ inline QVector<QString> modelToStrings_SQLITE( const PlacedLimitOrder &v )
 
 //----------------------------------------------------------------------------
 //! Converts PlacedMarketOrder to QVector of QString's 
-inline QVector<QString> modelToStrings_SQLITE( const PlacedMarketOrder &v )
+inline QVector<QString> modelToStrings( const PlacedMarketOrder &v )
 {
     QVector<QString> resVec;
 
@@ -417,49 +430,49 @@ inline QVector<QString> modelToStrings_SQLITE( const PlacedMarketOrder &v )
     if ( !v.is_order_id_Set() || !v.is_order_id_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getOrderId() ) );
+        appendToStringVector(resVec, modelToStrings( v.getOrderId() ) );
 
     //------------------------------
     if ( !v.is_operation_Set() || !v.is_operation_Valid() ) // type: OperationType
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getOperation() ) );
+        appendToStringVector(resVec, modelToStrings( v.getOperation() ) );
 
     //------------------------------
     if ( !v.is_status_Set() || !v.is_status_Valid() ) // type: OrderStatus
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getStatus() ) );
+        appendToStringVector(resVec, modelToStrings( v.getStatus() ) );
 
     //------------------------------
     if ( !v.is_reject_reason_Set() || !v.is_reject_reason_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getRejectReason() ) );
+        appendToStringVector(resVec, modelToStrings( v.getRejectReason() ) );
 
     //------------------------------
     if ( !v.is_message_Set() || !v.is_message_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getMessage() ) );
+        appendToStringVector(resVec, modelToStrings( v.getMessage() ) );
 
     //------------------------------
     if ( !v.is_requested_lots_Set() || !v.is_requested_lots_Valid() ) // type: integer
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getRequestedLots() ) );
+        appendToStringVector(resVec, modelToStrings( v.getRequestedLots() ) );
 
     //------------------------------
     if ( !v.is_executed_lots_Set() || !v.is_executed_lots_Valid() ) // type: integer
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getExecutedLots() ) );
+        appendToStringVector(resVec, modelToStrings( v.getExecutedLots() ) );
 
     //------------------------------
     if ( !v.is_commission_Set() || !v.is_commission_Valid() ) // type: MoneyAmount
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getCommission() ) );
+        appendToStringVector(resVec, modelToStrings( v.getCommission() ) );
 
     //------------------------------
     return resVec;
@@ -467,7 +480,7 @@ inline QVector<QString> modelToStrings_SQLITE( const PlacedMarketOrder &v )
 
 //----------------------------------------------------------------------------
 //! Converts SandboxAccount to QVector of QString's 
-inline QVector<QString> modelToStrings_SQLITE( const SandboxAccount &v )
+inline QVector<QString> modelToStrings( const SandboxAccount &v )
 {
     QVector<QString> resVec;
 
@@ -475,13 +488,13 @@ inline QVector<QString> modelToStrings_SQLITE( const SandboxAccount &v )
     if ( !v.is_broker_account_type_Set() || !v.is_broker_account_type_Valid() ) // type: BrokerAccountType
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getBrokerAccountType() ) );
+        appendToStringVector(resVec, modelToStrings( v.getBrokerAccountType() ) );
 
     //------------------------------
     if ( !v.is_broker_account_id_Set() || !v.is_broker_account_id_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getBrokerAccountId() ) );
+        appendToStringVector(resVec, modelToStrings( v.getBrokerAccountId() ) );
 
     //------------------------------
     return resVec;
@@ -489,7 +502,7 @@ inline QVector<QString> modelToStrings_SQLITE( const SandboxAccount &v )
 
 //----------------------------------------------------------------------------
 //! Converts SearchMarketInstrument to QVector of QString's 
-inline QVector<QString> modelToStrings_SQLITE( const SearchMarketInstrument &v )
+inline QVector<QString> modelToStrings( const SearchMarketInstrument &v )
 {
     QVector<QString> resVec;
 
@@ -497,49 +510,49 @@ inline QVector<QString> modelToStrings_SQLITE( const SearchMarketInstrument &v )
     if ( !v.is_figi_Set() || !v.is_figi_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getFigi() ) );
+        appendToStringVector(resVec, modelToStrings( v.getFigi() ) );
 
     //------------------------------
     if ( !v.is_ticker_Set() || !v.is_ticker_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getTicker() ) );
+        appendToStringVector(resVec, modelToStrings( v.getTicker() ) );
 
     //------------------------------
     if ( !v.is_isin_Set() || !v.is_isin_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getIsin() ) );
+        appendToStringVector(resVec, modelToStrings( v.getIsin() ) );
 
     //------------------------------
     if ( !v.is_min_price_increment_Set() || !v.is_min_price_increment_Valid() ) // type: number
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getMinPriceIncrement() ) );
+        appendToStringVector(resVec, modelToStrings( v.getMinPriceIncrement() ) );
 
     //------------------------------
     if ( !v.is_lot_Set() || !v.is_lot_Valid() ) // type: integer
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getLot() ) );
+        appendToStringVector(resVec, modelToStrings( v.getLot() ) );
 
     //------------------------------
     if ( !v.is_currency_Set() || !v.is_currency_Valid() ) // type: Currency
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getCurrency() ) );
+        appendToStringVector(resVec, modelToStrings( v.getCurrency() ) );
 
     //------------------------------
     if ( !v.is_name_Set() || !v.is_name_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getName() ) );
+        appendToStringVector(resVec, modelToStrings( v.getName() ) );
 
     //------------------------------
     if ( !v.is_type_Set() || !v.is_type_Valid() ) // type: InstrumentType
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getType() ) );
+        appendToStringVector(resVec, modelToStrings( v.getType() ) );
 
     //------------------------------
     return resVec;
@@ -547,7 +560,7 @@ inline QVector<QString> modelToStrings_SQLITE( const SearchMarketInstrument &v )
 
 //----------------------------------------------------------------------------
 //! Converts MarketInstrument to QVector of QString's 
-inline QVector<QString> modelToStrings_SQLITE( const MarketInstrument &v )
+inline QVector<QString> modelToStrings( const MarketInstrument &v )
 {
     QVector<QString> resVec;
 
@@ -555,59 +568,61 @@ inline QVector<QString> modelToStrings_SQLITE( const MarketInstrument &v )
     if ( !v.is_figi_Set() || !v.is_figi_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getFigi() ) );
+        appendToStringVector(resVec, modelToStrings( v.getFigi() ) );
 
     //------------------------------
     if ( !v.is_ticker_Set() || !v.is_ticker_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getTicker() ) );
+        appendToStringVector(resVec, modelToStrings( v.getTicker() ) );
 
     //------------------------------
     if ( !v.is_isin_Set() || !v.is_isin_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getIsin() ) );
+        appendToStringVector(resVec, modelToStrings( v.getIsin() ) );
 
     //------------------------------
     if ( !v.is_min_price_increment_Set() || !v.is_min_price_increment_Valid() ) // type: number
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getMinPriceIncrement() ) );
+        appendToStringVector(resVec, modelToStrings( v.getMinPriceIncrement() ) );
 
     //------------------------------
     if ( !v.is_lot_Set() || !v.is_lot_Valid() ) // type: integer
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getLot() ) );
+        appendToStringVector(resVec, modelToStrings( v.getLot() ) );
 
     //------------------------------
     if ( !v.is_min_quantity_Set() || !v.is_min_quantity_Valid() ) // type: integer
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getMinQuantity() ) );
+        appendToStringVector(resVec, modelToStrings( v.getMinQuantity() ) );
 
     //------------------------------
     if ( !v.is_currency_Set() || !v.is_currency_Valid() ) // type: Currency
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getCurrency() ) );
+        appendToStringVector(resVec, modelToStrings( v.getCurrency() ) );
 
     //------------------------------
     if ( !v.is_name_Set() || !v.is_name_Valid() ) // type: string
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getName() ) );
+        appendToStringVector(resVec, modelToStrings( v.getName() ) );
 
     //------------------------------
     if ( !v.is_type_Set() || !v.is_type_Valid() ) // type: InstrumentType
         appendToStringVector(resVec, QString());
     else
-        appendToStringVector(resVec, modelToStrings_SQLITE( v.getType() ) );
+        appendToStringVector(resVec, modelToStrings( v.getType() ) );
 
     //------------------------------
     return resVec;
 }
+
+#endif /* INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED */
 
 //----------------------------------------------------------------------------
 
@@ -624,7 +639,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< UserA
     QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE", true ) ); // brokerAccountType
-    appendToStringVector( schemaVec, p + "BROKER_ACCOUNT_ID       VARCHAR(255)    " ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, ::UserAccount::string, ::USER_ACCOUNT::string
+    appendToStringVector( schemaVec, p + "BROKER_ACCOUNT_ID                  VARCHAR(255)"                       ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, ::UserAccount::string, ::USER_ACCOUNT::string, ::UserAccount::BROKER_ACCOUNT_ID, ::USER_ACCOUNT::BROKER_ACCOUNT_ID
 
     return schemaVec;
 }
@@ -637,8 +652,8 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Curre
     QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY", true ) ); // currency
-    appendToStringVector( schemaVec, p + "BALANCE                 DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, BALANCE, ::CurrencyPosition::number, ::CURRENCY_POSITION::number, ::CurrencyPosition::number::double, ::CURRENCY_POSITION::number::double
-    appendToStringVector( schemaVec, p + "BLOCKED                 DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, BLOCKED, ::CurrencyPosition::number, ::CURRENCY_POSITION::number, ::CurrencyPosition::number::double, ::CURRENCY_POSITION::number::double
+    appendToStringVector( schemaVec, p + "BALANCE                            DECIMAL(18,8)"                      ); // Spec lookup order: ::number, ::number::double, BALANCE, ::CurrencyPosition::number, ::CURRENCY_POSITION::number, ::CurrencyPosition::number::double, ::CURRENCY_POSITION::number::double, ::CurrencyPosition::BALANCE, ::CURRENCY_POSITION::BALANCE
+    appendToStringVector( schemaVec, p + "BLOCKED                            DECIMAL(18,8)"                      ); // Spec lookup order: ::number, ::number::double, BLOCKED, ::CurrencyPosition::number, ::CURRENCY_POSITION::number, ::CurrencyPosition::number::double, ::CURRENCY_POSITION::number::double, ::CurrencyPosition::BLOCKED, ::CURRENCY_POSITION::BLOCKED
 
     return schemaVec;
 }
@@ -650,17 +665,17 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Portf
     QVector<QString> schemaVec;
     QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
-    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
-    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, TICKER, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
-    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12) UNIQUE" ); // Spec lookup order: ::string, ISIN, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
+    appendToStringVector( schemaVec, p + "FIGI                               VARCHAR(12)"                        ); // Spec lookup order: ::string, FIGI, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string, ::PortfolioPosition::FIGI, ::PORTFOLIO_POSITION::FIGI
+    appendToStringVector( schemaVec, p + "TICKER                             VARCHAR(12)"                        ); // Spec lookup order: ::string, TICKER, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string, ::PortfolioPosition::TICKER, ::PORTFOLIO_POSITION::TICKER
+    appendToStringVector( schemaVec, p + "ISIN                               VARCHAR(12)"                        ); // Spec lookup order: ::string, ISIN, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string, ::PortfolioPosition::ISIN, ::PORTFOLIO_POSITION::ISIN
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( p + "INSTRUMENT_TYPE", true ) ); // instrumentType
-    appendToStringVector( schemaVec, p + "BALANCE                 DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, BALANCE, ::PortfolioPosition::number, ::PORTFOLIO_POSITION::number, ::PortfolioPosition::number::double, ::PORTFOLIO_POSITION::number::double
-    appendToStringVector( schemaVec, p + "BLOCKED                 DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, BLOCKED, ::PortfolioPosition::number, ::PORTFOLIO_POSITION::number, ::PortfolioPosition::number::double, ::PORTFOLIO_POSITION::number::double
+    appendToStringVector( schemaVec, p + "BALANCE                            DECIMAL(18,8)"                      ); // Spec lookup order: ::number, ::number::double, BALANCE, ::PortfolioPosition::number, ::PORTFOLIO_POSITION::number, ::PortfolioPosition::number::double, ::PORTFOLIO_POSITION::number::double, ::PortfolioPosition::BALANCE, ::PORTFOLIO_POSITION::BALANCE
+    appendToStringVector( schemaVec, p + "BLOCKED                            DECIMAL(18,8)"                      ); // Spec lookup order: ::number, ::number::double, BLOCKED, ::PortfolioPosition::number, ::PORTFOLIO_POSITION::number, ::PortfolioPosition::number::double, ::PORTFOLIO_POSITION::number::double, ::PortfolioPosition::BLOCKED, ::PORTFOLIO_POSITION::BLOCKED
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "EXPECTED_YIELD_MONEY_AMOUNT", true ) ); // expectedYield
-    appendToStringVector( schemaVec, p + "LOTS                    INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, LOTS, ::PortfolioPosition::integer, ::PORTFOLIO_POSITION::integer, ::PortfolioPosition::integer::int32, ::PORTFOLIO_POSITION::integer::int32
+    appendToStringVector( schemaVec, p + "LOTS                               INTEGER"                            ); // Spec lookup order: ::integer, ::integer::int32, LOTS, ::PortfolioPosition::integer, ::PORTFOLIO_POSITION::integer, ::PortfolioPosition::integer::int32, ::PORTFOLIO_POSITION::integer::int32, ::PortfolioPosition::LOTS, ::PORTFOLIO_POSITION::LOTS
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_MONEY_AMOUNT", true ) ); // averagePositionPrice
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_NO_NKD_MONEY_AMOUNT", true ) ); // averagePositionPriceNoNkd
-    appendToStringVector( schemaVec, p + "NAME                    VARCHAR(255)    " ); // Spec lookup order: ::string, NAME, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
+    appendToStringVector( schemaVec, p + "NAME                               VARCHAR(255)"                       ); // Spec lookup order: ::string, NAME, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string, ::PortfolioPosition::NAME, ::PORTFOLIO_POSITION::NAME
 
     return schemaVec;
 }
@@ -673,7 +688,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Money
     QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY", true ) ); // currency
-    appendToStringVector( schemaVec, p + "VALUE                   DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, VALUE, ::MoneyAmount::number, ::MONEY_AMOUNT::number, ::MoneyAmount::number::double, ::MONEY_AMOUNT::number::double
+    appendToStringVector( schemaVec, p + "VALUE                              DECIMAL(18,8)"                      ); // Spec lookup order: ::number, ::number::double, VALUE, ::MoneyAmount::number, ::MONEY_AMOUNT::number, ::MoneyAmount::number::double, ::MONEY_AMOUNT::number::double, ::MoneyAmount::VALUE, ::MONEY_AMOUNT::VALUE
 
     return schemaVec;
 }
@@ -685,14 +700,14 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Candl
     QVector<QString> schemaVec;
     QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
-    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::Candle::string, ::CANDLE::string
+    appendToStringVector( schemaVec, p + "FIGI                               VARCHAR(12)"                        ); // Spec lookup order: ::string, FIGI, ::Candle::string, ::CANDLE::string, ::Candle::FIGI, ::CANDLE::FIGI
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<CandleResolution>( p + "INTERVAL_CANDLE_RESOLUTION", true ) ); // interval
-    appendToStringVector( schemaVec, p + "O                       DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, O, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double
-    appendToStringVector( schemaVec, p + "C                       DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, C, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double
-    appendToStringVector( schemaVec, p + "H                       DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, H, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double
-    appendToStringVector( schemaVec, p + "L                       DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, L, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double
-    appendToStringVector( schemaVec, p + "V                       INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, V, ::Candle::integer, ::CANDLE::integer, ::Candle::integer::int32, ::CANDLE::integer::int32
-    appendToStringVector( schemaVec, p + "TIME                    VARCHAR(255)    " ); // Spec lookup order: ::string, ::string::date-time, TIME, ::Candle::string, ::CANDLE::string, ::Candle::string::date-time, ::CANDLE::string::date-time
+    appendToStringVector( schemaVec, p + "O                                  DECIMAL(18,8)"                      ); // Spec lookup order: ::number, ::number::double, O, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double, ::Candle::O, ::CANDLE::O
+    appendToStringVector( schemaVec, p + "C                                  DECIMAL(18,8)"                      ); // Spec lookup order: ::number, ::number::double, C, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double, ::Candle::C, ::CANDLE::C
+    appendToStringVector( schemaVec, p + "H                                  DECIMAL(18,8)"                      ); // Spec lookup order: ::number, ::number::double, H, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double, ::Candle::H, ::CANDLE::H
+    appendToStringVector( schemaVec, p + "L                                  DECIMAL(18,8)"                      ); // Spec lookup order: ::number, ::number::double, L, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double, ::Candle::L, ::CANDLE::L
+    appendToStringVector( schemaVec, p + "V                                  INTEGER"                            ); // Spec lookup order: ::integer, ::integer::int32, V, ::Candle::integer, ::CANDLE::integer, ::Candle::integer::int32, ::CANDLE::integer::int32, ::Candle::V, ::CANDLE::V
+    appendToStringVector( schemaVec, p + "TIME                               VARCHAR(255)"                       ); // Spec lookup order: ::string, ::string::date-time, TIME, ::Candle::string, ::CANDLE::string, ::Candle::string::date-time, ::CANDLE::string::date-time, ::Candle::TIME, ::CANDLE::TIME
 
     return schemaVec;
 }
@@ -704,10 +719,10 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Opera
     QVector<QString> schemaVec;
     QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
-    appendToStringVector( schemaVec, p + "TRADE_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, TRADE_ID, ::OperationTrade::string, ::OPERATION_TRADE::string
-    appendToStringVector( schemaVec, p + "DATE                    VARCHAR(255)    " ); // Spec lookup order: ::string, ::string::date-time, DATE, ::OperationTrade::string, ::OPERATION_TRADE::string, ::OperationTrade::string::date-time, ::OPERATION_TRADE::string::date-time
-    appendToStringVector( schemaVec, p + "PRICE                   DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, PRICE, ::OperationTrade::number, ::OPERATION_TRADE::number, ::OperationTrade::number::double, ::OPERATION_TRADE::number::double
-    appendToStringVector( schemaVec, p + "QUANTITY                INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, QUANTITY, ::OperationTrade::integer, ::OPERATION_TRADE::integer, ::OperationTrade::integer::int32, ::OPERATION_TRADE::integer::int32
+    appendToStringVector( schemaVec, p + "TRADE_ID                           VARCHAR(255)"                       ); // Spec lookup order: ::string, TRADE_ID, ::OperationTrade::string, ::OPERATION_TRADE::string, ::OperationTrade::TRADE_ID, ::OPERATION_TRADE::TRADE_ID
+    appendToStringVector( schemaVec, p + "DATE                               VARCHAR(255)"                       ); // Spec lookup order: ::string, ::string::date-time, DATE, ::OperationTrade::string, ::OPERATION_TRADE::string, ::OperationTrade::string::date-time, ::OPERATION_TRADE::string::date-time, ::OperationTrade::DATE, ::OPERATION_TRADE::DATE
+    appendToStringVector( schemaVec, p + "PRICE                              DECIMAL(18,8)"                      ); // Spec lookup order: ::number, ::number::double, PRICE, ::OperationTrade::number, ::OPERATION_TRADE::number, ::OperationTrade::number::double, ::OPERATION_TRADE::number::double, ::OperationTrade::PRICE, ::OPERATION_TRADE::PRICE
+    appendToStringVector( schemaVec, p + "QUANTITY                           INTEGER"                            ); // Spec lookup order: ::integer, ::integer::int32, QUANTITY, ::OperationTrade::integer, ::OPERATION_TRADE::integer, ::OperationTrade::integer::int32, ::OPERATION_TRADE::integer::int32, ::OperationTrade::QUANTITY, ::OPERATION_TRADE::QUANTITY
 
     return schemaVec;
 }
@@ -719,14 +734,14 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Order
     QVector<QString> schemaVec;
     QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
-    appendToStringVector( schemaVec, p + "ORDER_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, ORDER_ID, ::Order::string, ::ORDER::string
-    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::Order::string, ::ORDER::string
+    appendToStringVector( schemaVec, p + "ORDER_ID                           VARCHAR(255)"                       ); // Spec lookup order: ::string, ORDER_ID, ::Order::string, ::ORDER::string, ::Order::ORDER_ID, ::ORDER::ORDER_ID
+    appendToStringVector( schemaVec, p + "FIGI                               VARCHAR(12)"                        ); // Spec lookup order: ::string, FIGI, ::Order::string, ::ORDER::string, ::Order::FIGI, ::ORDER::FIGI
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( p + "OPERATION_TYPE", true ) ); // operation
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( p + "ORDER_STATUS", true ) ); // status
-    appendToStringVector( schemaVec, p + "REQUESTED_LOTS          INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, REQUESTED_LOTS, ::Order::integer, ::ORDER::integer, ::Order::integer::int32, ::ORDER::integer::int32
-    appendToStringVector( schemaVec, p + "EXECUTED_LOTS           INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, EXECUTED_LOTS, ::Order::integer, ::ORDER::integer, ::Order::integer::int32, ::ORDER::integer::int32
+    appendToStringVector( schemaVec, p + "REQUESTED_LOTS                     INTEGER"                            ); // Spec lookup order: ::integer, ::integer::int32, REQUESTED_LOTS, ::Order::integer, ::ORDER::integer, ::Order::integer::int32, ::ORDER::integer::int32, ::Order::REQUESTED_LOTS, ::ORDER::REQUESTED_LOTS
+    appendToStringVector( schemaVec, p + "EXECUTED_LOTS                      INTEGER"                            ); // Spec lookup order: ::integer, ::integer::int32, EXECUTED_LOTS, ::Order::integer, ::ORDER::integer, ::Order::integer::int32, ::ORDER::integer::int32, ::Order::EXECUTED_LOTS, ::ORDER::EXECUTED_LOTS
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OrderType>( p + "ORDER_TYPE", true ) ); // type
-    appendToStringVector( schemaVec, p + "PRICE                   DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, PRICE, ::Order::number, ::ORDER::number, ::Order::number::double, ::ORDER::number::double
+    appendToStringVector( schemaVec, p + "PRICE                              DECIMAL(18,8)"                      ); // Spec lookup order: ::number, ::number::double, PRICE, ::Order::number, ::ORDER::number, ::Order::number::double, ::ORDER::number::double, ::Order::PRICE, ::ORDER::PRICE
 
     return schemaVec;
 }
@@ -738,13 +753,13 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Place
     QVector<QString> schemaVec;
     QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
-    appendToStringVector( schemaVec, p + "ORDER_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, ORDER_ID, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string
+    appendToStringVector( schemaVec, p + "ORDER_ID                           VARCHAR(255)"                       ); // Spec lookup order: ::string, ORDER_ID, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string, ::PlacedLimitOrder::ORDER_ID, ::PLACED_LIMIT_ORDER::ORDER_ID
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( p + "OPERATION_TYPE", true ) ); // operation
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( p + "ORDER_STATUS", true ) ); // status
-    appendToStringVector( schemaVec, p + "REJECT_REASON           VARCHAR(255)    " ); // Spec lookup order: ::string, REJECT_REASON, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string
-    appendToStringVector( schemaVec, p + "MESSAGE                 VARCHAR(255)    " ); // Spec lookup order: ::string, MESSAGE, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string
-    appendToStringVector( schemaVec, p + "REQUESTED_LOTS                          " ); // Spec lookup order: ::integer, REQUESTED_LOTS, ::PlacedLimitOrder::integer, ::PLACED_LIMIT_ORDER::integer
-    appendToStringVector( schemaVec, p + "EXECUTED_LOTS                           " ); // Spec lookup order: ::integer, EXECUTED_LOTS, ::PlacedLimitOrder::integer, ::PLACED_LIMIT_ORDER::integer
+    appendToStringVector( schemaVec, p + "REJECT_REASON                      VARCHAR(255)"                       ); // Spec lookup order: ::string, REJECT_REASON, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string, ::PlacedLimitOrder::REJECT_REASON, ::PLACED_LIMIT_ORDER::REJECT_REASON
+    appendToStringVector( schemaVec, p + "MESSAGE                            VARCHAR(255)"                       ); // Spec lookup order: ::string, MESSAGE, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string, ::PlacedLimitOrder::MESSAGE, ::PLACED_LIMIT_ORDER::MESSAGE
+    appendToStringVector( schemaVec, p + "REQUESTED_LOTS                     "                                   ); // Spec lookup order: ::integer, REQUESTED_LOTS, ::PlacedLimitOrder::integer, ::PLACED_LIMIT_ORDER::integer, ::PlacedLimitOrder::REQUESTED_LOTS, ::PLACED_LIMIT_ORDER::REQUESTED_LOTS
+    appendToStringVector( schemaVec, p + "EXECUTED_LOTS                      "                                   ); // Spec lookup order: ::integer, EXECUTED_LOTS, ::PlacedLimitOrder::integer, ::PLACED_LIMIT_ORDER::integer, ::PlacedLimitOrder::EXECUTED_LOTS, ::PLACED_LIMIT_ORDER::EXECUTED_LOTS
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT", true ) ); // commission
 
     return schemaVec;
@@ -757,13 +772,13 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Place
     QVector<QString> schemaVec;
     QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
-    appendToStringVector( schemaVec, p + "ORDER_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, ORDER_ID, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string
+    appendToStringVector( schemaVec, p + "ORDER_ID                           VARCHAR(255)"                       ); // Spec lookup order: ::string, ORDER_ID, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string, ::PlacedMarketOrder::ORDER_ID, ::PLACED_MARKET_ORDER::ORDER_ID
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( p + "OPERATION_TYPE", true ) ); // operation
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( p + "ORDER_STATUS", true ) ); // status
-    appendToStringVector( schemaVec, p + "REJECT_REASON           VARCHAR(255)    " ); // Spec lookup order: ::string, REJECT_REASON, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string
-    appendToStringVector( schemaVec, p + "MESSAGE                 VARCHAR(255)    " ); // Spec lookup order: ::string, MESSAGE, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string
-    appendToStringVector( schemaVec, p + "REQUESTED_LOTS                          " ); // Spec lookup order: ::integer, REQUESTED_LOTS, ::PlacedMarketOrder::integer, ::PLACED_MARKET_ORDER::integer
-    appendToStringVector( schemaVec, p + "EXECUTED_LOTS                           " ); // Spec lookup order: ::integer, EXECUTED_LOTS, ::PlacedMarketOrder::integer, ::PLACED_MARKET_ORDER::integer
+    appendToStringVector( schemaVec, p + "REJECT_REASON                      VARCHAR(255)"                       ); // Spec lookup order: ::string, REJECT_REASON, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string, ::PlacedMarketOrder::REJECT_REASON, ::PLACED_MARKET_ORDER::REJECT_REASON
+    appendToStringVector( schemaVec, p + "MESSAGE                            VARCHAR(255)"                       ); // Spec lookup order: ::string, MESSAGE, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string, ::PlacedMarketOrder::MESSAGE, ::PLACED_MARKET_ORDER::MESSAGE
+    appendToStringVector( schemaVec, p + "REQUESTED_LOTS                     "                                   ); // Spec lookup order: ::integer, REQUESTED_LOTS, ::PlacedMarketOrder::integer, ::PLACED_MARKET_ORDER::integer, ::PlacedMarketOrder::REQUESTED_LOTS, ::PLACED_MARKET_ORDER::REQUESTED_LOTS
+    appendToStringVector( schemaVec, p + "EXECUTED_LOTS                      "                                   ); // Spec lookup order: ::integer, EXECUTED_LOTS, ::PlacedMarketOrder::integer, ::PLACED_MARKET_ORDER::integer, ::PlacedMarketOrder::EXECUTED_LOTS, ::PLACED_MARKET_ORDER::EXECUTED_LOTS
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT", true ) ); // commission
 
     return schemaVec;
@@ -777,7 +792,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Sandb
     QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE", true ) ); // brokerAccountType
-    appendToStringVector( schemaVec, p + "BROKER_ACCOUNT_ID       VARCHAR(255)    " ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, ::SandboxAccount::string, ::SANDBOX_ACCOUNT::string
+    appendToStringVector( schemaVec, p + "BROKER_ACCOUNT_ID                  VARCHAR(255)"                       ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, ::SandboxAccount::string, ::SANDBOX_ACCOUNT::string, ::SandboxAccount::BROKER_ACCOUNT_ID, ::SANDBOX_ACCOUNT::BROKER_ACCOUNT_ID
 
     return schemaVec;
 }
@@ -789,13 +804,13 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Searc
     QVector<QString> schemaVec;
     QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
-    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
-    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, TICKER, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
-    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12) UNIQUE" ); // Spec lookup order: ::string, ISIN, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
-    appendToStringVector( schemaVec, p + "MIN_PRICE_INCREMENT     DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, MIN_PRICE_INCREMENT, ::SearchMarketInstrument::number, ::SEARCH_MARKET_INSTRUMENT::number, ::SearchMarketInstrument::number::double, ::SEARCH_MARKET_INSTRUMENT::number::double
-    appendToStringVector( schemaVec, p + "LOT                     INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, LOT, ::SearchMarketInstrument::integer, ::SEARCH_MARKET_INSTRUMENT::integer, ::SearchMarketInstrument::integer::int32, ::SEARCH_MARKET_INSTRUMENT::integer::int32
+    appendToStringVector( schemaVec, p + "FIGI                               VARCHAR(12)"                        ); // Spec lookup order: ::string, FIGI, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string, ::SearchMarketInstrument::FIGI, ::SEARCH_MARKET_INSTRUMENT::FIGI
+    appendToStringVector( schemaVec, p + "TICKER                             VARCHAR(12)"                        ); // Spec lookup order: ::string, TICKER, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string, ::SearchMarketInstrument::TICKER, ::SEARCH_MARKET_INSTRUMENT::TICKER
+    appendToStringVector( schemaVec, p + "ISIN                               VARCHAR(12)"                        ); // Spec lookup order: ::string, ISIN, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string, ::SearchMarketInstrument::ISIN, ::SEARCH_MARKET_INSTRUMENT::ISIN
+    appendToStringVector( schemaVec, p + "MIN_PRICE_INCREMENT                DECIMAL(18,8)"                      ); // Spec lookup order: ::number, ::number::double, MIN_PRICE_INCREMENT, ::SearchMarketInstrument::number, ::SEARCH_MARKET_INSTRUMENT::number, ::SearchMarketInstrument::number::double, ::SEARCH_MARKET_INSTRUMENT::number::double, ::SearchMarketInstrument::MIN_PRICE_INCREMENT, ::SEARCH_MARKET_INSTRUMENT::MIN_PRICE_INCREMENT
+    appendToStringVector( schemaVec, p + "LOT                                INTEGER"                            ); // Spec lookup order: ::integer, ::integer::int32, LOT, ::SearchMarketInstrument::integer, ::SEARCH_MARKET_INSTRUMENT::integer, ::SearchMarketInstrument::integer::int32, ::SEARCH_MARKET_INSTRUMENT::integer::int32, ::SearchMarketInstrument::LOT, ::SEARCH_MARKET_INSTRUMENT::LOT
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY", true ) ); // currency
-    appendToStringVector( schemaVec, p + "NAME                    VARCHAR(255)    " ); // Spec lookup order: ::string, NAME, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
+    appendToStringVector( schemaVec, p + "NAME                               VARCHAR(255)"                       ); // Spec lookup order: ::string, NAME, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string, ::SearchMarketInstrument::NAME, ::SEARCH_MARKET_INSTRUMENT::NAME
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( p + "INSTRUMENT_TYPE", true ) ); // type
 
     return schemaVec;
@@ -808,17 +823,16 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Marke
     QVector<QString> schemaVec;
     QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
-    appendToStringVector( schemaVec, p + "ID                      INTEGER PRIMARY KEY AUTOINCREMENT" ); // ID spec
-    appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
-    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, TICKER, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
-    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12) UNIQUE" ); // Spec lookup order: ::string, ISIN, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
-    appendToStringVector( schemaVec, p + "MIN_PRICE_INCREMENT     DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, MIN_PRICE_INCREMENT, ::MarketInstrument::number, ::MARKET_INSTRUMENT::number, ::MarketInstrument::number::double, ::MARKET_INSTRUMENT::number::double
-    appendToStringVector( schemaVec, p + "LOT                     INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, LOT, ::MarketInstrument::integer, ::MARKET_INSTRUMENT::integer, ::MarketInstrument::integer::int32, ::MARKET_INSTRUMENT::integer::int32
-    appendToStringVector( schemaVec, p + "LOT_MARKET              INTEGER         " ); // Spec ::schema::MarketInstrument::after::lot
-    appendToStringVector( schemaVec, p + "MIN_QUANTITY            INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, MIN_QUANTITY, ::MarketInstrument::integer, ::MARKET_INSTRUMENT::integer, ::MarketInstrument::integer::int32, ::MARKET_INSTRUMENT::integer::int32
+    appendToStringVector( schemaVec, p + "ID                                 INTEGER PRIMARY KEY AUTOINCREMENT"  ); // ID spec
+    appendToStringVector( schemaVec, p + "FIGI                               VARCHAR(12) NOT NULL UNIQUE"        ); // Spec lookup order: ::string, FIGI, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string, ::MarketInstrument::FIGI, ::MARKET_INSTRUMENT::FIGI
+    appendToStringVector( schemaVec, p + "TICKER                             VARCHAR(12) NOT NULL UNIQUE"        ); // Spec lookup order: ::string, TICKER, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string, ::MarketInstrument::TICKER, ::MARKET_INSTRUMENT::TICKER
+    appendToStringVector( schemaVec, p + "ISIN                               VARCHAR(12) UNIQUE"                 ); // Spec lookup order: ::string, ISIN, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string, ::MarketInstrument::ISIN, ::MARKET_INSTRUMENT::ISIN
+    appendToStringVector( schemaVec, p + "MIN_PRICE_INCREMENT                DECIMAL(18,8)"                      ); // Spec lookup order: ::number, ::number::double, MIN_PRICE_INCREMENT, ::MarketInstrument::number, ::MARKET_INSTRUMENT::number, ::MarketInstrument::number::double, ::MARKET_INSTRUMENT::number::double, ::MarketInstrument::MIN_PRICE_INCREMENT, ::MARKET_INSTRUMENT::MIN_PRICE_INCREMENT
+    appendToStringVector( schemaVec, p + "LOT                                INTEGER"                            ); // Spec lookup order: ::integer, ::integer::int32, LOT, ::MarketInstrument::integer, ::MARKET_INSTRUMENT::integer, ::MarketInstrument::integer::int32, ::MARKET_INSTRUMENT::integer::int32, ::MarketInstrument::LOT, ::MARKET_INSTRUMENT::LOT
+    appendToStringVector( schemaVec, p + "LOT_MARKET                         INTEGER"                            ); // Spec ::schema::MarketInstrument::after::lot
+    appendToStringVector( schemaVec, p + "MIN_QUANTITY                       INTEGER"                            ); // Spec lookup order: ::integer, ::integer::int32, MIN_QUANTITY, ::MarketInstrument::integer, ::MARKET_INSTRUMENT::integer, ::MarketInstrument::integer::int32, ::MARKET_INSTRUMENT::integer::int32, ::MarketInstrument::MIN_QUANTITY, ::MARKET_INSTRUMENT::MIN_QUANTITY
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY", true ) ); // currency
-    appendToStringVector( schemaVec, p + "CURRENCY_ID             INTEGER         " ); // Spec ::schema::MarketInstrument::after::currency
-    appendToStringVector( schemaVec, p + "NAME                    VARCHAR(255)    " ); // Spec lookup order: ::string, NAME, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
+    appendToStringVector( schemaVec, p + "NAME                               VARCHAR(255)"                       ); // Spec lookup order: ::string, NAME, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string, ::MarketInstrument::NAME, ::MARKET_INSTRUMENT::NAME
     appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( p + "INSTRUMENT_TYPE", true ) ); // type
 
     return schemaVec;

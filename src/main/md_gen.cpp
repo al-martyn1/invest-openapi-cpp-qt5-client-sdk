@@ -171,6 +171,8 @@ std::string getSqlSpec( const std::map<std::string, std::string> &sqlSpec
         lookupFor.push_back( std::string("::") + formatName( modelTypeName, cpp::NameStyle::defineStyle ) + std::string("::") + fieldType + std::string("::") + fieldTypeFormat );
     }
 
+    lookupFor.push_back( std::string("::") + formatName( modelTypeName, cpp::NameStyle::pascalStyle ) + std::string("::") + formatName( fieldName, cpp::NameStyle::defineStyle ) );
+    lookupFor.push_back( std::string("::") + formatName( modelTypeName, cpp::NameStyle::defineStyle ) + std::string("::") + formatName( fieldName, cpp::NameStyle::defineStyle ) );
 
     if (lookupForItems)
         *lookupForItems = invest_openapi::mergeString( lookupFor, ", ");
@@ -254,12 +256,13 @@ std::string getSqlSpec( const std::map<std::string, std::string> &sqlSpec
 //----------------------------------------------------------------------------
 std::string getSqlModelIdSpec( const std::map<std::string, std::string> &sqlSpec
                              , const std::string &modelTypeName
+                             , const std::string &specType // inline/schema
                              )
 {
     std::vector< std::string > lookupFor;
 
-    lookupFor.push_back( std::string("::schema::") + formatName( modelTypeName, cpp::NameStyle::pascalStyle ) + std::string("::ID") );
-    lookupFor.push_back( std::string("::schema::") + formatName( modelTypeName, cpp::NameStyle::defineStyle ) + std::string("::ID"));
+    lookupFor.push_back( std::string("::schema::") + formatName( modelTypeName, cpp::NameStyle::pascalStyle ) + std::string("::ID::") + specType );
+    lookupFor.push_back( std::string("::schema::") + formatName( modelTypeName, cpp::NameStyle::defineStyle ) + std::string("::ID::") + specType );
 
     for (auto it = lookupFor.begin(); it!=lookupFor.end(); ++it )
     {
@@ -281,7 +284,7 @@ std::string getSqlModelIdSpec( const std::map<std::string, std::string> &sqlSpec
 std::string getSqlModelFieldExtraSpec( const std::map<std::string, std::string> &sqlSpec
                                      , const std::string &modelTypeName
                                      , const std::string &fieldName
-                                     , const std::string &orderKeyword // before/after
+                                     , const std::string &orderKeyword // before/after/inline_break
                                      )
 {
     std::vector< std::string > lookupFor;
@@ -771,6 +774,15 @@ INVEST_OPENAPI_MAIN()
 
         //!!! First iteration - generating prototypes for 'modelToStrings'
 
+        fout << endl << endl
+             << "//----------------------------------------------------------------------------" << endl
+             << "#ifndef INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED" << endl
+             << "#define INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED" << endl
+             << endl
+             //<< "//----------------------------------------------------------------------------" << endl
+             ;
+
+
         YAML::Node::const_iterator typeIt = schemasNode.begin();
         for (; typeIt!=schemasNode.end(); ++typeIt)
         {
@@ -828,12 +840,18 @@ INVEST_OPENAPI_MAIN()
             }
 
 
-            fout<<"QVector<QString> modelToStrings_"<<DBTYPE<<"( const " << typeName << " &v );" << endl;
+            fout<<"QVector<QString> modelToStrings( const " << typeName << " &v );" << endl;
             //fout<<"template <> QVector<QString> modelMakeSchema< " << typeName << " >( );" << endl;
         }
 
+        fout << endl << "#endif /* INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED */" << endl;
+
+
         fout << "//----------------------------------------------------------------------------" << endl;
-        fout << endl << endl << endl; // << endl;
+        fout << endl 
+             << endl 
+             << endl
+             ;
         fout << "//----------------------------------------------------------------------------" << endl;
 
         typeIt = schemasNode.begin();
@@ -859,9 +877,19 @@ INVEST_OPENAPI_MAIN()
         }
 
 
-        fout << "//----------------------------------------------------------------------------" << endl << endl << endl ;
+        fout << "//----------------------------------------------------------------------------" << endl 
+             << endl 
+             << endl ;
 
         //!!! Second iteration - generating 'modelToStrings' methods
+
+        fout << endl
+             << endl
+             << "//----------------------------------------------------------------------------" << endl
+             << "#ifndef INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED" << endl
+             << "#define INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED" << endl
+             //<< "//----------------------------------------------------------------------------" << endl
+             ;
 
         std::map< std::string, std::string > usedPropTypes;
 
@@ -886,11 +914,11 @@ INVEST_OPENAPI_MAIN()
 
             fout << endl << "//----------------------------------------------------------------------------" << endl;
             fout << "//! Converts " << typeName << " to QVector of QString's " << endl;
-            fout<< "inline QVector<QString> modelToStrings_"<<DBTYPE<<"( const " << typeName << " &v )" << endl
-                << "{" << endl
-                << "    QVector<QString> resVec;" 
-                << endl
-                ;
+            fout << "inline QVector<QString> modelToStrings( const " << typeName << " &v )" << endl
+                 << "{" << endl
+                 << "    QVector<QString> resVec;" 
+                 << endl
+                 ;
 
             //!!! Third iteration - 
             YAML::Node::const_iterator propIt = propertiesNode.begin();
@@ -932,7 +960,7 @@ INVEST_OPENAPI_MAIN()
                      << "    if ( !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Set() || !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Valid() ) // type: " << propType << endl
                      << "        appendToStringVector(resVec, QString());" << endl
                      << "    else" << endl
-                     << "        appendToStringVector(resVec, modelToStrings_"<<DBTYPE<<"( v.get" << cpp::formatName(propName,cpp::NameStyle::pascalStyle) << "() ) );" << endl
+                     << "        appendToStringVector(resVec, modelToStrings( v.get" << cpp::formatName(propName,cpp::NameStyle::pascalStyle) << "() ) );" << endl
                      ;
             }
 
@@ -945,16 +973,18 @@ INVEST_OPENAPI_MAIN()
 
         }
 
+        fout << endl << "#endif /* INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED */" << endl;
+
         fout << endl << "//----------------------------------------------------------------------------" << endl;
 
         fout << endl << endl << endl << endl << endl;
 
-        const std::string appendToSchemaVecStart = "    appendToStringVector( schemaVec, ";
+        const std::string appendToSchemaVecStart = "    appendToStringVector( resVec, ";
 
         //!!! Fourth iteration - generating 'modelMakeSqlSchema' specializations
 
-        static const std::size_t sqlFieldNameWidth = 24;
-        static const std::size_t sqlFieldSpecWidth = 16;
+        static const std::size_t sqlFieldNameWidth = 34;
+        static const std::size_t sqlFieldSpecWidth = 34;
 
 
         typeIt = schemasNode.begin();
@@ -980,8 +1010,9 @@ INVEST_OPENAPI_MAIN()
             fout << "//! Creates SQL schema format for '" << typeName << "' model " << endl;
             fout<<"template <> inline QVector<QString> modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << typeName << " >( const QString &nameOrPrefix, bool forInlining )" << endl;
             fout<< "{" << endl
-                << "    QVector<QString> schemaVec;" << endl
-                << "    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString(\"_\")) : QString();" << endl
+                //<< "    QVector<QString> resVec;" << endl
+                //<< "    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString(\"_\")) : QString();" << endl
+                << "INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG()" << endl
                 << endl
                 ;
 
@@ -991,12 +1022,15 @@ INVEST_OPENAPI_MAIN()
             using cpp::NameStyle;
             using cpp::expandAtBack;
             using cpp::expandAtFront;
+            using cpp::makeExpandString;
 
 
-            auto idSpec = getSqlModelIdSpec( sqlSchemaMap, typeName );
+            auto idSpecInline = getSqlModelIdSpec( sqlSchemaMap, typeName, "inline" );
+            auto idSpecSchema = getSqlModelIdSpec( sqlSchemaMap, typeName, "schema" );
             if (!idSpec.empty())
             {
-                fout << appendToSchemaVecStart << "p + " << q( expandAtBack("ID",sqlFieldNameWidth), expandAtBack(idSpec,sqlFieldSpecWidth) ) << " );" << " // ID spec" << endl;
+                auto expandSpecStr  = makeExpandString( idSpec, sqlFieldSpecWidth );
+                fout << appendToSchemaVecStart << "p + " << q( expandAtBack("ID",sqlFieldNameWidth), idSpec ) << expandSpecStr << " );" << " // ID spec" << endl;
             }
 
 
@@ -1030,7 +1064,8 @@ INVEST_OPENAPI_MAIN()
                     }
                     else
                     {
-                        fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldNameWidth), expandAtBack(fieldSqlSpec,sqlFieldSpecWidth) ) << " );" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
+                        auto expandSpecStr  = makeExpandString( fieldSqlSpec, sqlFieldSpecWidth );
+                        fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldNameWidth), fieldSqlSpec ) << expandSpecStr << " );" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
                     }
                 }
 
@@ -1055,7 +1090,8 @@ INVEST_OPENAPI_MAIN()
                 }
                 else
                 {
-                    fout << appendToSchemaVecStart << "p + " << q( expandAtBack(propNameSql,sqlFieldNameWidth), expandAtBack(sqlSpec,sqlFieldSpecWidth) ) << " );" << specLookupComment << endl;
+                    auto expandSpecStr  = makeExpandString( sqlSpec, sqlFieldSpecWidth );
+                    fout << appendToSchemaVecStart << "p + " << q( expandAtBack(propNameSql,sqlFieldNameWidth), sqlSpec ) << expandSpecStr << " );" << specLookupComment << endl;
                 }
 
                 std::string sqlFieldSpecPropAfter = getSqlModelFieldExtraSpec( sqlSchemaMap, typeName, propName, "after" );
@@ -1070,7 +1106,8 @@ INVEST_OPENAPI_MAIN()
                     }
                     else
                     {
-                        fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldNameWidth), expandAtBack(fieldSqlSpec,sqlFieldSpecWidth) ) << " );" << " // Spec ::schema::" << typeName << "::after::" << propName << endl;
+                        auto expandSpecStr  = makeExpandString( fieldSqlSpec, sqlFieldSpecWidth );
+                        fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldNameWidth), fieldSqlSpec ) << expandSpecStr << " );" << " // Spec ::schema::" << typeName << "::after::" << propName << endl;
                     }
                 }
                 
