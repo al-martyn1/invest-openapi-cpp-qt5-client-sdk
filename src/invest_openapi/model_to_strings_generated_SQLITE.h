@@ -35,18 +35,18 @@ QVector<QString> modelToStrings_SQLITE( const MarketInstrument &v );
 
 
 //----------------------------------------------------------------------------
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< UserAccount >( const QString &nameOrPrefix );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< CurrencyPosition >( const QString &nameOrPrefix );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PortfolioPosition >( const QString &nameOrPrefix );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MoneyAmount >( const QString &nameOrPrefix );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Candle >( const QString &nameOrPrefix );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< OperationTrade >( const QString &nameOrPrefix );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Order >( const QString &nameOrPrefix );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedLimitOrder >( const QString &nameOrPrefix );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedMarketOrder >( const QString &nameOrPrefix );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SandboxAccount >( const QString &nameOrPrefix );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SearchMarketInstrument >( const QString &nameOrPrefix );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MarketInstrument >( const QString &nameOrPrefix );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< UserAccount >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< CurrencyPosition >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PortfolioPosition >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MoneyAmount >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Candle >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< OperationTrade >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Order >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedLimitOrder >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedMarketOrder >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SandboxAccount >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SearchMarketInstrument >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MarketInstrument >( const QString &nameOrPrefix, bool forInlining );
 //----------------------------------------------------------------------------
 
 
@@ -618,12 +618,12 @@ inline QVector<QString> modelToStrings_SQLITE( const MarketInstrument &v )
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'UserAccount' model 
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< UserAccount >( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< UserAccount >( const QString &nameOrPrefix, bool forInlining )
 {
     QVector<QString> schemaVec;
-    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
+    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE" ) ); // brokerAccountType
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE", true ) ); // brokerAccountType
     appendToStringVector( schemaVec, p + "BROKER_ACCOUNT_ID       VARCHAR(255)    " ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, ::UserAccount::string, ::USER_ACCOUNT::string
 
     return schemaVec;
@@ -631,12 +631,12 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< UserA
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'CurrencyPosition' model 
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< CurrencyPosition >( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< CurrencyPosition >( const QString &nameOrPrefix, bool forInlining )
 {
     QVector<QString> schemaVec;
-    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
+    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY" ) ); // currency
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY", true ) ); // currency
     appendToStringVector( schemaVec, p + "BALANCE                 DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, BALANCE, ::CurrencyPosition::number, ::CURRENCY_POSITION::number, ::CurrencyPosition::number::double, ::CURRENCY_POSITION::number::double
     appendToStringVector( schemaVec, p + "BLOCKED                 DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, BLOCKED, ::CurrencyPosition::number, ::CURRENCY_POSITION::number, ::CurrencyPosition::number::double, ::CURRENCY_POSITION::number::double
 
@@ -645,21 +645,21 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Curre
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'PortfolioPosition' model 
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PortfolioPosition >( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PortfolioPosition >( const QString &nameOrPrefix, bool forInlining )
 {
     QVector<QString> schemaVec;
-    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
+    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
     appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
-    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12) UNIQUE" ); // Spec lookup order: ::string, TICKER, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
-    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, ISIN, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( p + "INSTRUMENT_TYPE" ) ); // instrumentType
+    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, TICKER, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
+    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12) UNIQUE" ); // Spec lookup order: ::string, ISIN, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( p + "INSTRUMENT_TYPE", true ) ); // instrumentType
     appendToStringVector( schemaVec, p + "BALANCE                 DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, BALANCE, ::PortfolioPosition::number, ::PORTFOLIO_POSITION::number, ::PortfolioPosition::number::double, ::PORTFOLIO_POSITION::number::double
     appendToStringVector( schemaVec, p + "BLOCKED                 DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, BLOCKED, ::PortfolioPosition::number, ::PORTFOLIO_POSITION::number, ::PortfolioPosition::number::double, ::PORTFOLIO_POSITION::number::double
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "EXPECTED_YIELD_MONEY_AMOUNT" ) ); // expectedYield
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "EXPECTED_YIELD_MONEY_AMOUNT", true ) ); // expectedYield
     appendToStringVector( schemaVec, p + "LOTS                    INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, LOTS, ::PortfolioPosition::integer, ::PORTFOLIO_POSITION::integer, ::PortfolioPosition::integer::int32, ::PORTFOLIO_POSITION::integer::int32
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_MONEY_AMOUNT" ) ); // averagePositionPrice
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_NO_NKD_MONEY_AMOUNT" ) ); // averagePositionPriceNoNkd
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_MONEY_AMOUNT", true ) ); // averagePositionPrice
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_NO_NKD_MONEY_AMOUNT", true ) ); // averagePositionPriceNoNkd
     appendToStringVector( schemaVec, p + "NAME                    VARCHAR(255)    " ); // Spec lookup order: ::string, NAME, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string
 
     return schemaVec;
@@ -667,12 +667,12 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Portf
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'MoneyAmount' model 
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MoneyAmount >( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MoneyAmount >( const QString &nameOrPrefix, bool forInlining )
 {
     QVector<QString> schemaVec;
-    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
+    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY" ) ); // currency
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY", true ) ); // currency
     appendToStringVector( schemaVec, p + "VALUE                   DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, VALUE, ::MoneyAmount::number, ::MONEY_AMOUNT::number, ::MoneyAmount::number::double, ::MONEY_AMOUNT::number::double
 
     return schemaVec;
@@ -680,13 +680,13 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Money
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'Candle' model 
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Candle >( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Candle >( const QString &nameOrPrefix, bool forInlining )
 {
     QVector<QString> schemaVec;
-    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
+    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
     appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::Candle::string, ::CANDLE::string
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<CandleResolution>( p + "INTERVAL_CANDLE_RESOLUTION" ) ); // interval
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<CandleResolution>( p + "INTERVAL_CANDLE_RESOLUTION", true ) ); // interval
     appendToStringVector( schemaVec, p + "O                       DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, O, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double
     appendToStringVector( schemaVec, p + "C                       DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, C, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double
     appendToStringVector( schemaVec, p + "H                       DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, H, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double
@@ -699,10 +699,10 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Candl
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'OperationTrade' model 
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< OperationTrade >( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< OperationTrade >( const QString &nameOrPrefix, bool forInlining )
 {
     QVector<QString> schemaVec;
-    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
+    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
     appendToStringVector( schemaVec, p + "TRADE_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, TRADE_ID, ::OperationTrade::string, ::OPERATION_TRADE::string
     appendToStringVector( schemaVec, p + "DATE                    VARCHAR(255)    " ); // Spec lookup order: ::string, ::string::date-time, DATE, ::OperationTrade::string, ::OPERATION_TRADE::string, ::OperationTrade::string::date-time, ::OPERATION_TRADE::string::date-time
@@ -714,18 +714,18 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Opera
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'Order' model 
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Order >( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Order >( const QString &nameOrPrefix, bool forInlining )
 {
     QVector<QString> schemaVec;
-    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
+    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
     appendToStringVector( schemaVec, p + "ORDER_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, ORDER_ID, ::Order::string, ::ORDER::string
     appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::Order::string, ::ORDER::string
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( p + "OPERATION_TYPE" ) ); // operation
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( p + "ORDER_STATUS" ) ); // status
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( p + "OPERATION_TYPE", true ) ); // operation
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( p + "ORDER_STATUS", true ) ); // status
     appendToStringVector( schemaVec, p + "REQUESTED_LOTS          INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, REQUESTED_LOTS, ::Order::integer, ::ORDER::integer, ::Order::integer::int32, ::ORDER::integer::int32
     appendToStringVector( schemaVec, p + "EXECUTED_LOTS           INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, EXECUTED_LOTS, ::Order::integer, ::ORDER::integer, ::Order::integer::int32, ::ORDER::integer::int32
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OrderType>( p + "ORDER_TYPE" ) ); // type
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OrderType>( p + "ORDER_TYPE", true ) ); // type
     appendToStringVector( schemaVec, p + "PRICE                   DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, PRICE, ::Order::number, ::ORDER::number, ::Order::number::double, ::ORDER::number::double
 
     return schemaVec;
@@ -733,50 +733,50 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Order
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'PlacedLimitOrder' model 
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedLimitOrder >( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedLimitOrder >( const QString &nameOrPrefix, bool forInlining )
 {
     QVector<QString> schemaVec;
-    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
+    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
     appendToStringVector( schemaVec, p + "ORDER_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, ORDER_ID, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( p + "OPERATION_TYPE" ) ); // operation
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( p + "ORDER_STATUS" ) ); // status
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( p + "OPERATION_TYPE", true ) ); // operation
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( p + "ORDER_STATUS", true ) ); // status
     appendToStringVector( schemaVec, p + "REJECT_REASON           VARCHAR(255)    " ); // Spec lookup order: ::string, REJECT_REASON, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string
     appendToStringVector( schemaVec, p + "MESSAGE                 VARCHAR(255)    " ); // Spec lookup order: ::string, MESSAGE, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string
     appendToStringVector( schemaVec, p + "REQUESTED_LOTS                          " ); // Spec lookup order: ::integer, REQUESTED_LOTS, ::PlacedLimitOrder::integer, ::PLACED_LIMIT_ORDER::integer
     appendToStringVector( schemaVec, p + "EXECUTED_LOTS                           " ); // Spec lookup order: ::integer, EXECUTED_LOTS, ::PlacedLimitOrder::integer, ::PLACED_LIMIT_ORDER::integer
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT" ) ); // commission
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT", true ) ); // commission
 
     return schemaVec;
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'PlacedMarketOrder' model 
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedMarketOrder >( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedMarketOrder >( const QString &nameOrPrefix, bool forInlining )
 {
     QVector<QString> schemaVec;
-    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
+    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
     appendToStringVector( schemaVec, p + "ORDER_ID                VARCHAR(255)    " ); // Spec lookup order: ::string, ORDER_ID, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( p + "OPERATION_TYPE" ) ); // operation
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( p + "ORDER_STATUS" ) ); // status
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( p + "OPERATION_TYPE", true ) ); // operation
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( p + "ORDER_STATUS", true ) ); // status
     appendToStringVector( schemaVec, p + "REJECT_REASON           VARCHAR(255)    " ); // Spec lookup order: ::string, REJECT_REASON, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string
     appendToStringVector( schemaVec, p + "MESSAGE                 VARCHAR(255)    " ); // Spec lookup order: ::string, MESSAGE, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string
     appendToStringVector( schemaVec, p + "REQUESTED_LOTS                          " ); // Spec lookup order: ::integer, REQUESTED_LOTS, ::PlacedMarketOrder::integer, ::PLACED_MARKET_ORDER::integer
     appendToStringVector( schemaVec, p + "EXECUTED_LOTS                           " ); // Spec lookup order: ::integer, EXECUTED_LOTS, ::PlacedMarketOrder::integer, ::PLACED_MARKET_ORDER::integer
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT" ) ); // commission
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT", true ) ); // commission
 
     return schemaVec;
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'SandboxAccount' model 
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SandboxAccount >( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SandboxAccount >( const QString &nameOrPrefix, bool forInlining )
 {
     QVector<QString> schemaVec;
-    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
+    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE" ) ); // brokerAccountType
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE", true ) ); // brokerAccountType
     appendToStringVector( schemaVec, p + "BROKER_ACCOUNT_ID       VARCHAR(255)    " ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, ::SandboxAccount::string, ::SANDBOX_ACCOUNT::string
 
     return schemaVec;
@@ -784,41 +784,42 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Sandb
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'SearchMarketInstrument' model 
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SearchMarketInstrument >( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SearchMarketInstrument >( const QString &nameOrPrefix, bool forInlining )
 {
     QVector<QString> schemaVec;
-    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
+    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
     appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
-    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12) UNIQUE" ); // Spec lookup order: ::string, TICKER, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
-    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, ISIN, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
+    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, TICKER, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
+    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12) UNIQUE" ); // Spec lookup order: ::string, ISIN, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
     appendToStringVector( schemaVec, p + "MIN_PRICE_INCREMENT     DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, MIN_PRICE_INCREMENT, ::SearchMarketInstrument::number, ::SEARCH_MARKET_INSTRUMENT::number, ::SearchMarketInstrument::number::double, ::SEARCH_MARKET_INSTRUMENT::number::double
     appendToStringVector( schemaVec, p + "LOT                     INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, LOT, ::SearchMarketInstrument::integer, ::SEARCH_MARKET_INSTRUMENT::integer, ::SearchMarketInstrument::integer::int32, ::SEARCH_MARKET_INSTRUMENT::integer::int32
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY" ) ); // currency
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY", true ) ); // currency
     appendToStringVector( schemaVec, p + "NAME                    VARCHAR(255)    " ); // Spec lookup order: ::string, NAME, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( p + "INSTRUMENT_TYPE" ) ); // type
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( p + "INSTRUMENT_TYPE", true ) ); // type
 
     return schemaVec;
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'MarketInstrument' model 
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MarketInstrument >( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MarketInstrument >( const QString &nameOrPrefix, bool forInlining )
 {
     QVector<QString> schemaVec;
-    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_");
+    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString();
 
     appendToStringVector( schemaVec, p + "ID                      INTEGER PRIMARY KEY AUTOINCREMENT" ); // ID spec
     appendToStringVector( schemaVec, p + "FIGI                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, FIGI, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
-    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12) UNIQUE" ); // Spec lookup order: ::string, TICKER, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
-    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, ISIN, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
+    appendToStringVector( schemaVec, p + "TICKER                  VARCHAR(12) NOT NULL UNIQUE" ); // Spec lookup order: ::string, TICKER, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
+    appendToStringVector( schemaVec, p + "ISIN                    VARCHAR(12) UNIQUE" ); // Spec lookup order: ::string, ISIN, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
     appendToStringVector( schemaVec, p + "MIN_PRICE_INCREMENT     DECIMAL(18,8)   " ); // Spec lookup order: ::number, ::number::double, MIN_PRICE_INCREMENT, ::MarketInstrument::number, ::MARKET_INSTRUMENT::number, ::MarketInstrument::number::double, ::MARKET_INSTRUMENT::number::double
     appendToStringVector( schemaVec, p + "LOT                     INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, LOT, ::MarketInstrument::integer, ::MARKET_INSTRUMENT::integer, ::MarketInstrument::integer::int32, ::MARKET_INSTRUMENT::integer::int32
     appendToStringVector( schemaVec, p + "LOT_MARKET              INTEGER         " ); // Spec ::schema::MarketInstrument::after::lot
     appendToStringVector( schemaVec, p + "MIN_QUANTITY            INTEGER         " ); // Spec lookup order: ::integer, ::integer::int32, MIN_QUANTITY, ::MarketInstrument::integer, ::MARKET_INSTRUMENT::integer, ::MarketInstrument::integer::int32, ::MARKET_INSTRUMENT::integer::int32
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY" ) ); // currency
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY", true ) ); // currency
+    appendToStringVector( schemaVec, p + "CURRENCY_ID             INTEGER         " ); // Spec ::schema::MarketInstrument::after::currency
     appendToStringVector( schemaVec, p + "NAME                    VARCHAR(255)    " ); // Spec lookup order: ::string, NAME, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string
-    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( p + "INSTRUMENT_TYPE" ) ); // type
+    appendToStringVector( schemaVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( p + "INSTRUMENT_TYPE", true ) ); // type
 
     return schemaVec;
 }
@@ -828,18 +829,18 @@ inline QMap<QString,QString> modelMakeAllSqlShemas_SQLITE()
 {
     QMap<QString,QString> resMap;
 
-    resMap[ "USER_ACCOUNT"             ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< UserAccount            >( QString() ) ); 
-    resMap[ "CURRENCY_POSITION"        ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< CurrencyPosition       >( QString() ) ); 
-    resMap[ "PORTFOLIO_POSITION"       ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< PortfolioPosition      >( QString() ) ); 
-    resMap[ "MONEY_AMOUNT"             ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< MoneyAmount            >( QString() ) ); 
-    resMap[ "CANDLE"                   ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< Candle                 >( QString() ) ); 
-    resMap[ "OPERATION_TRADE"          ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< OperationTrade         >( QString() ) ); 
-    resMap[ "ORDER"                    ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< Order                  >( QString() ) ); 
-    resMap[ "PLACED_LIMIT_ORDER"       ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< PlacedLimitOrder       >( QString() ) ); 
-    resMap[ "PLACED_MARKET_ORDER"      ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< PlacedMarketOrder      >( QString() ) ); 
-    resMap[ "SANDBOX_ACCOUNT"          ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< SandboxAccount         >( QString() ) ); 
-    resMap[ "SEARCH_MARKET_INSTRUMENT" ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< SearchMarketInstrument >( QString() ) ); 
-    resMap[ "MARKET_INSTRUMENT"        ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< MarketInstrument       >( QString() ) ); 
+    resMap[ "USER_ACCOUNT"             ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< UserAccount            >( QString(), false ) ); 
+    resMap[ "CURRENCY_POSITION"        ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< CurrencyPosition       >( QString(), false ) ); 
+    resMap[ "PORTFOLIO_POSITION"       ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< PortfolioPosition      >( QString(), false ) ); 
+    resMap[ "MONEY_AMOUNT"             ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< MoneyAmount            >( QString(), false ) ); 
+    resMap[ "CANDLE"                   ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< Candle                 >( QString(), false ) ); 
+    resMap[ "OPERATION_TRADE"          ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< OperationTrade         >( QString(), false ) ); 
+    resMap[ "ORDER"                    ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< Order                  >( QString(), false ) ); 
+    resMap[ "PLACED_LIMIT_ORDER"       ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< PlacedLimitOrder       >( QString(), false ) ); 
+    resMap[ "PLACED_MARKET_ORDER"      ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< PlacedMarketOrder      >( QString(), false ) ); 
+    resMap[ "SANDBOX_ACCOUNT"          ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< SandboxAccount         >( QString(), false ) ); 
+    resMap[ "SEARCH_MARKET_INSTRUMENT" ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< SearchMarketInstrument >( QString(), false ) ); 
+    resMap[ "MARKET_INSTRUMENT"        ]  = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE< MarketInstrument       >( QString(), false ) ); 
 
     return resMap;
 }

@@ -58,10 +58,12 @@ INVEST_OPENAPI_MAIN()
         }
         else
         {
-            QString key = *it;
             cout << "Table '" << sqlTable.toStdString() << "' schema:" << endl;
-            //cout << it->second << endl << endl;
-            cout << allSqlSchemas[key].toStdString() << endl << endl;
+            cout << it->toStdString() << endl << endl;
+            // QString key = *it;
+            // cout << "Table '" << sqlTable.toStdString() << "' schema:" << endl;
+            // //cout << it->second << endl << endl;
+            // cout << allSqlSchemas[key].toStdString() << endl << endl;
         }
     }
 

@@ -855,7 +855,7 @@ INVEST_OPENAPI_MAIN()
             if (skipNoTypeOrRefOrArray( typeName, typeIt->second["properties"] ))
                 continue;
 
-            fout<<"template <> QVector<QString> modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << typeName << " >( const QString &nameOrPrefix );" << endl;
+            fout<<"template <> QVector<QString> modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << typeName << " >( const QString &nameOrPrefix, bool forInlining );" << endl;
         }
 
 
@@ -953,7 +953,7 @@ INVEST_OPENAPI_MAIN()
 
         //!!! Fourth iteration - generating 'modelMakeSqlSchema' specializations
 
-        static const std::size_t sqlFieldWidth     = 23;
+        static const std::size_t sqlFieldNameWidth = 24;
         static const std::size_t sqlFieldSpecWidth = 16;
 
 
@@ -978,10 +978,10 @@ INVEST_OPENAPI_MAIN()
 
             fout << endl << "//----------------------------------------------------------------------------" << endl;
             fout << "//! Creates SQL schema format for '" << typeName << "' model " << endl;
-            fout<<"template <> inline QVector<QString> modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << typeName << " >( const QString &nameOrPrefix )" << endl;
+            fout<<"template <> inline QVector<QString> modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << typeName << " >( const QString &nameOrPrefix, bool forInlining )" << endl;
             fout<< "{" << endl
                 << "    QVector<QString> schemaVec;" << endl
-                << "    QString p = nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString(\"_\");" << endl
+                << "    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString(\"_\")) : QString();" << endl
                 << endl
                 ;
 
@@ -996,7 +996,7 @@ INVEST_OPENAPI_MAIN()
             auto idSpec = getSqlModelIdSpec( sqlSchemaMap, typeName );
             if (!idSpec.empty())
             {
-                fout << appendToSchemaVecStart << "p + " << q( expandAtBack("ID",sqlFieldWidth), expandAtBack(idSpec,sqlFieldSpecWidth) ) << " );" << " // ID spec" << endl;
+                fout << appendToSchemaVecStart << "p + " << q( expandAtBack("ID",sqlFieldNameWidth), expandAtBack(idSpec,sqlFieldSpecWidth) ) << " );" << " // ID spec" << endl;
             }
 
 
@@ -1026,11 +1026,11 @@ INVEST_OPENAPI_MAIN()
                     std::string fieldName, fieldSqlSpec;
                     if (!splitSqlFieldSpec(sqlFieldSpecPropBefore, fieldName, fieldSqlSpec))
                     {
-                        cerr<<"Failed to parse sql spec for " << typeName << "." << propName << endl;
+                        cerr<<"Failed to parse sql spec 'before' for " << typeName << "." << propName << endl;
                     }
                     else
                     {
-                        fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldWidth), expandAtBack(fieldSqlSpec,sqlFieldSpecWidth) ) << " );" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
+                        fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldNameWidth), expandAtBack(fieldSqlSpec,sqlFieldSpecWidth) ) << " );" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
                     }
                 }
 
@@ -1050,27 +1050,27 @@ INVEST_OPENAPI_MAIN()
                     if (propTypeSql.find(propNameSql)!=propTypeSql.npos)
                         typeSqlGenerationPrefix = propTypeSql;
 
-                    fout << appendToSchemaVecStart << "modelMakeSqlSchemaStringVector_"<<DBTYPE<<"<" << propType << ">( " << "p + " << q(typeSqlGenerationPrefix) << " ) ); // " << propName << endl;
+                    fout << appendToSchemaVecStart << "modelMakeSqlSchemaStringVector_"<<DBTYPE<<"<" << propType << ">( " << "p + " << q(typeSqlGenerationPrefix) << ", true ) ); // " << propName << endl;
                     // nameOrPrefix
                 }
                 else
                 {
-                    fout << appendToSchemaVecStart << "p + " << q( expandAtBack(propNameSql,sqlFieldWidth), expandAtBack(sqlSpec,sqlFieldSpecWidth) ) << " );" << specLookupComment << endl;
+                    fout << appendToSchemaVecStart << "p + " << q( expandAtBack(propNameSql,sqlFieldNameWidth), expandAtBack(sqlSpec,sqlFieldSpecWidth) ) << " );" << specLookupComment << endl;
                 }
 
                 std::string sqlFieldSpecPropAfter = getSqlModelFieldExtraSpec( sqlSchemaMap, typeName, propName, "after" );
                 if (!sqlFieldSpecPropAfter.empty())
                 {
-                    cerr<<"!!! Found 'before' spec for "<<typeName<<"."<<propName<<endl;
+                    cerr<<"!!! Found 'after' spec for "<<typeName<<"."<<propName<<endl;
 
                     std::string fieldName, fieldSqlSpec;
                     if (!splitSqlFieldSpec(sqlFieldSpecPropAfter, fieldName, fieldSqlSpec))
                     {
-                        cerr<<"Failed to parse sql spec for " << typeName << "." << propName << endl;
+                        cerr<<"Failed to parse sql spec 'after' for " << typeName << "." << propName << endl;
                     }
                     else
                     {
-                        fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldWidth), expandAtBack(fieldSqlSpec,sqlFieldSpecWidth) ) << " );" << " // Spec ::schema::" << typeName << "::after::" << propName << endl;
+                        fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldNameWidth), expandAtBack(fieldSqlSpec,sqlFieldSpecWidth) ) << " );" << " // Spec ::schema::" << typeName << "::after::" << propName << endl;
                     }
                 }
                 
@@ -1115,7 +1115,7 @@ INVEST_OPENAPI_MAIN()
             auto expandSqlStr  = cpp::makeExpandString( tableNameSql, 24 );
             auto expandTypeStr = cpp::makeExpandString( typeName    , 22 );
 
-            fout << "    resMap[ \"" << tableNameSql << "\"" << expandSqlStr << " ] " << " = modelMakeSqlCreateTableSchema_"<<DBTYPE<<"( modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << typeName << expandTypeStr << " >( QString() ) " << "); " << endl;
+            fout << "    resMap[ \"" << tableNameSql << "\"" << expandSqlStr << " ] " << " = modelMakeSqlCreateTableSchema_"<<DBTYPE<<"( modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << typeName << expandTypeStr << " >( QString(), false ) " << "); " << endl;
 
             //fout<<"template <> inline QVector<QString> modelMakeSqlSchemaStringVector< " << typeName << " >( const QString &nameOrPrefix )" << endl;
         }

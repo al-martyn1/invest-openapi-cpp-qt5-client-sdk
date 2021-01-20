@@ -21,11 +21,11 @@ using namespace OpenAPI;
 
 
 
-template <typename ModelType> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE( const QString &nameOrPrefix );
+template <typename ModelType> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE( const QString &nameOrPrefix, bool forInlining );
 
 inline QString modelMakeSqlCreateTableSchema_SQLITE( const QVector<QString> &sqlSchema )
 {
-    return mergeString( sqlSchema, "\r\n,"  );
+    return QString("  ") + mergeString( sqlSchema, "\r\n, "  );
 }
 
 
@@ -107,48 +107,116 @@ inline QVector<QString> modelToStrings_SQLITE( const OrderType         &v ) { re
 //----------------------------------------------------------------------------
 
 
+const std::size_t sqlFieldNameWidth = 23;
+
+#define INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG()         QVector<QString> resVec;  \
+                                                                                            QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString("_")) : QString()
+
+#define INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND_IMPL( wht )         appendToStringVector( resVec, wht )
+
+#define INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND( wht )              appendToStringVector( resVec, wht )
+
+#define INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( whtName, whtSql )                               \
+               INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND_IMPL(                                      \
+                        QString::fromStdString(cpp::expandAtBack( QString(p + QString(whtName))  .toStdString(), sqlFieldNameWidth))    \
+                      + QString(" ")                                                                                                    \
+                      + QString(whtSql)                                                                                                 \
+                                                                                                 )
+
+#define INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG() return resVec
+
+#define INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN() if (forInlining) {
+#define INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()  } else {
+#define INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()   }
 
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>( const QString &nameOrPrefix, bool forInlining )
 {
-    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("VARCHAR(12)",16) );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"  , "INTEGER" );
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME", "VARCHAR(12) NOT NULL" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME", "VARCHAR(12) NOT NULL UNIQUE" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DESCRIPTION", "VARCHAR(255)" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+
+    //return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("VARCHAR(12)",16) );
 }
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<Currency>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<Currency>( const QString &nameOrPrefix, bool forInlining )
 {
-    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("VARCHAR(4) NOT NULL",16) ); // UNIQUE
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"  , "INTEGER" );
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME", "VARCHAR(12) NOT NULL" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME", "VARCHAR(12) NOT NULL UNIQUE" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DESCRIPTION", "VARCHAR(255)" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+
+    //return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("VARCHAR(4) NOT NULL",16) ); // UNIQUE
 }
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( const QString &nameOrPrefix, bool forInlining )
 {
-    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"  , "INTEGER" );
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME", "VARCHAR(12) NOT NULL" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME", "VARCHAR(12) NOT NULL UNIQUE" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DESCRIPTION", "VARCHAR(255)" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+
+    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("VARCHAR(12) NOT NULL",16) );
 }
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<CandleResolution>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<CandleResolution>( const QString &nameOrPrefix, bool forInlining )
 {
-    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"  , "INTEGER" );
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME", "VARCHAR(12) NOT NULL" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME", "VARCHAR(12) NOT NULL UNIQUE" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DESCRIPTION", "VARCHAR(255)" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    //return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OperationType>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OperationType>( const QString &nameOrPrefix, bool forInlining )
 {
-    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
+    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( const QString &nameOrPrefix, bool forInlining )
 {
-    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
+    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
-template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OrderType>( const QString &nameOrPrefix )
+template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OrderType>( const QString &nameOrPrefix, bool forInlining )
 {
-    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),23) + cpp::expandAtBack("HIJACK",16) );
+    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
