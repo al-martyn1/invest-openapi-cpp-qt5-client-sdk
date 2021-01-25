@@ -55,6 +55,30 @@ QVector<QString> toVector( const QStringList &ql )
 }
 */
 
+
+
+//----------------------------------------------------------------------------
+template <typename StringType> inline bool starts_with( const StringType &str, const StringType &prefix )
+{
+    if (str.size()<prefix.size())
+        return false;
+
+    return str.compare( 0, prefix.size(), prefix )==0;
+}
+
+//------------------------------
+template <typename StringType> inline bool ends_with( const StringType &str, const StringType &postfix )
+{
+    if (str.size()<postfix.size())
+        return false;
+
+    return str.compare( str.size()-postfix.size(), postfix.size(), postfix )==0;
+}
+//----------------------------------------------------------------------------
+
+
+
+
 //----------------------------------------------------------------------------
 template< typename T >
 inline

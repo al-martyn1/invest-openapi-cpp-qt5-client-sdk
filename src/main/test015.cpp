@@ -1,5 +1,5 @@
 /*! \file
-    \brief Generator schemas shower
+    \brief Generator schemas shower in predefined order
 
  */
 
@@ -28,7 +28,7 @@
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("test014");
+    QCoreApplication::setApplicationName("test015");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");
@@ -48,6 +48,42 @@ INVEST_OPENAPI_MAIN()
 
     QSet<QString>         allSqlTables  = tkf::modelMakeAllSqlTablesSet_SQLITE();
     QMap<QString,QString> allSqlSchemas = tkf::modelMakeAllSqlShemas_SQLITE();
+
+    QVector<QString> refBooks;
+    refBooks.append("ORDER_TYPE");
+    refBooks.append("ORDER_STATUS");
+    refBooks.append("OPERATION_TYPE");
+    refBooks.append("CANDLE_RESOLUTION");
+    refBooks.append("CURRENCY");
+    refBooks.append("INSTRUMENT_TYPE");
+    //refBooks.append("BROKER_ACCOUNT_TYPE");
+    refBooks.append("MARKET_INSTRUMENT");
+    //refBooks.append("");
+
+    /*
+        MARKET_INSTRUMENT
+        - SEARCH_MARKET_INSTRUMENT
+        - CURRENCY_POSITION
+        - SANDBOX_ACCOUNT
+        - USER_ACCOUNT
+        - MONEY_AMOUNT
+        ? CANDLE
+        ? PLACED_LIMIT_ORDER
+        - PORTFOLIO_POSITION
+        ? PLACED_MARKET_ORDER
+        ? OPERATION_TRADE
+        ? ORDER
+
+        // Non-generated
+        modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>
+        modelMakeSqlSchemaStringVector_SQLITE<Currency>
+        modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>
+        modelMakeSqlSchemaStringVector_SQLITE<CandleResolution>
+        modelMakeSqlSchemaStringVector_SQLITE<OperationType>
+        modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>
+        modelMakeSqlSchemaStringVector_SQLITE<OrderType>
+
+     */
 
     for( auto sqlTable : allSqlTables )
     {

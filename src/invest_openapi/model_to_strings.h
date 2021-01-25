@@ -21,6 +21,7 @@ using namespace OpenAPI;
 
 
 
+//----------------------------------------------------------------------------
 template <typename ModelType> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE( const QString &nameOrPrefix, bool forInlining );
 
 inline QString modelMakeSqlCreateTableSchema_SQLITE( const QVector<QString> &sqlSchema )
@@ -90,6 +91,42 @@ QVector<QString> modelToStringsConvertHelper( const ModelType &m )
 }
 
 //----------------------------------------------------------------------------
+template< class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
+inline
+std::basic_string< CharT, Traits, Allocator > generateFieldName( const std::basic_string< CharT, Traits, Allocator > &prefix, const std::basic_string< CharT, Traits, Allocator > &fieldName )
+{
+    // using namespace cpp;
+
+    if (prefix.empty())
+        return fieldName;
+
+    cpp::NameStyle nsPrefixStyle    = cpp::detectNameStyle(prefix);
+    cpp::NameStyle nsFieldNameStyle = cpp::detectNameStyle(fieldName);
+
+    // remove leading and traling underscores
+    nsPrefixStyle    = cpp::getNameStyleBuddy(nsPrefixStyle   , false /* !underlinedBuddy */ );
+    nsFieldNameStyle = cpp::getNameStyleBuddy(nsFieldNameStyle, false /* !underlinedBuddy */ );
+
+    std::basic_string< CharT, Traits, Allocator > nswFormattedPrefix         = cpp::formatName( prefix   , nsPrefixStyle    );
+    std::basic_string< CharT, Traits, Allocator > nswFormattedFieldNameStyle = cpp::formatName( fieldName, nsFieldNameStyle );
+
+    if (ends_with( nswFormattedPrefix, nswFormattedFieldNameStyle))
+        return prefix;
+
+    if (prefix[prefix.size()-1]=='_')
+        return cpp::formatName(prefix + fieldName, cpp::NameStyle::sqlUnderscoredStyle);
+    
+    return cpp::formatName(prefix + std::basic_string< CharT, Traits, Allocator >(1,(CharT)'_') + fieldName, cpp::NameStyle::sqlUnderscoredStyle);
+}
+
+//----------------------------------------------------------------------------
+inline
+QString generateFieldName( const QString &prefix, const QString &fieldName )
+{
+    return QString::fromStdWString( generateFieldName( prefix.toStdWString(), fieldName.toStdWString() ) );
+}
+
+//----------------------------------------------------------------------------
 
 
 
@@ -118,7 +155,7 @@ const std::size_t sqlFieldNameWidth = 34;
 
 #define INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( whtName, whtSql )                               \
                INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND_IMPL(                                      \
-                        QString::fromStdString(cpp::expandAtBack( QString(p + QString(whtName))  .toStdString(), sqlFieldNameWidth))    \
+                        QString::fromStdWString(cpp::expandAtBack( generateFieldName(p, whtName).toStdWString(), sqlFieldNameWidth))    \
                       + QString(" ")                                                                                                    \
                       + QString(whtSql)                                                                                                 \
                                                                                                  )
@@ -137,16 +174,16 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<Broker
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN()
         INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER REFERENCES BROKER_ACCOUNT_TYPE" );
-        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"       , "VARCHAR(12) NOT NULL" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TYPE"       , "VARCHAR(10) NOT NULL" );
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()
         INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER PRIMARY KEY" );
-        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"       , "VARCHAR(12) NOT NULL UNIQUE" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TYPE"       , "VARCHAR(10) NOT NULL UNIQUE" );
         INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DESCRIPTION", "VARCHAR(255)" );
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 
-    //return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("VARCHAR(12)",16) );
+    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("VARCHAR(12)",16) );
 }
 
 //----------------------------------------------------------------------------
@@ -156,16 +193,16 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<Curren
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN()
         INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER REFERENCES CURRENCY" );
-        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"       , "VARCHAR(12) NOT NULL" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"       , "VARCHAR(8) NOT NULL" );
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()
         INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER PRIMARY KEY" );
-        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"       , "VARCHAR(12) NOT NULL UNIQUE" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"       , "VARCHAR(8) NOT NULL UNIQUE" );
         INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DESCRIPTION", "VARCHAR(255)" );
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 
-    //return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("VARCHAR(4) NOT NULL",16) ); // UNIQUE
+    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("VARCHAR(4) NOT NULL",16) ); // UNIQUE
 }
 
 //----------------------------------------------------------------------------
@@ -175,10 +212,10 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<Instru
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN()
         INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER REFERENCES INSTRUMENT_TYPE" );
-        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"       , "VARCHAR(12) NOT NULL" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TYPE"       , "VARCHAR(8) NOT NULL" );
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()
         INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER PRIMARY KEY" );
-        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"       , "VARCHAR(12) NOT NULL UNIQUE" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TYPE"       , "VARCHAR(8) NOT NULL UNIQUE" );
         INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DESCRIPTION", "VARCHAR(255)" );
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()
 
@@ -194,33 +231,73 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<Candle
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN()
         INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER REFERENCES CANDLE_RESOLUTION" );
-        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"       , "VARCHAR(12) NOT NULL" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "RESOLUTION" , "VARCHAR(8) NOT NULL" );
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()
         INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER PRIMARY KEY" );
-        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "RESOLUTION" , "VARCHAR(12) NOT NULL UNIQUE" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "RESOLUTION" , "VARCHAR(8) NOT NULL UNIQUE" );
         INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DESCRIPTION", "VARCHAR(255)" );
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
-    //return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
+
+    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OperationType>( const QString &nameOrPrefix, bool forInlining )
 {
-    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER REFERENCES OPERATION_TYPE" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TYPE"       , "VARCHAR(8) NOT NULL" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER PRIMARY KEY" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TYPE"       , "VARCHAR(8) NOT NULL UNIQUE" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DESCRIPTION", "VARCHAR(255)" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+
+    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( const QString &nameOrPrefix, bool forInlining )
 {
-    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER REFERENCES ORDER_STATUS" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "STATUS"     , "VARCHAR(14) NOT NULL" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER PRIMARY KEY" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "STATUS"     , "VARCHAR(14) NOT NULL UNIQUE" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DESCRIPTION", "VARCHAR(255)" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+
+    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OrderType>( const QString &nameOrPrefix, bool forInlining )
 {
-    return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER REFERENCES ORDER_STATUS" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TYPE"       , "VARCHAR(8) NOT NULL" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"         , "INTEGER PRIMARY KEY" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TYPE"       , "VARCHAR(8) NOT NULL UNIQUE" );
+        INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DESCRIPTION", "VARCHAR(255)" );
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()
+
+    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+
+    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------

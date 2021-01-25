@@ -63,3 +63,9 @@
 /src/yaml-cpp
 /bat/call-vcvars64.bat
 /bat/call-vcvars32.bat
+/rust.txt
+/src/invest_openapi/_bak_database_manager.h
+/src/invest_openapi/_bak_database_manager_base.h
+/src/main/example002.cpp
+/vcxproj/example002.vcxproj
+/vcxproj/example002.vcxproj.filters

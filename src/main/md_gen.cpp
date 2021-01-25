@@ -27,6 +27,7 @@
 #include "yaml-cpp/yaml.h"  // IWYU pragma: keep
 
 #include "invest_openapi/invest_openapi.h"
+#include "invest_openapi/utility.h"
 
 #include "cpp/cpp.h"
 
@@ -47,28 +48,27 @@ std::string q( const std::string &str )
 }
 
 //------------------------------
+std::string q( const std::string &str, std::size_t expandSize )
+{
+    std::string quoted = q(str);
+    auto expandSqlStr  = cpp::makeExpandString( quoted, expandSize );
+    return quoted + expandSqlStr;
+}
+
+//----------------------------------------------------------------------------
 std::string q( const std::string &str1, const std::string &str2 )
 {
     return q( str1+std::string(" ")+str2 );
 }
 
-//----------------------------------------------------------------------------
-template <typename StringType> inline bool starts_with( const StringType &str, const StringType &prefix )
-{
-    if (str.size()<prefix.size())
-        return false;
-
-    return str.compare( 0, prefix.size(), prefix )==0;
-}
-
 //------------------------------
-template <typename StringType> inline bool ends_with( const StringType &str, const StringType &postfix )
+std::string q( const std::string &str1, const std::string &str2, std::size_t expandSize )
 {
-    if (str.size()<postfix.size())
-        return false;
-
-    return str.compare( str.size()-postfix.size(), postfix.size(), postfix )==0;
+    std::string quoted = q( str1+std::string(" ")+str2 );
+    auto expandSqlStr  = cpp::makeExpandString( quoted, expandSize );
+    return quoted + expandSqlStr;
 }
+
 
 //----------------------------------------------------------------------------
 YAML::Node parse(std::istream& input)
@@ -342,7 +342,7 @@ std::string toString( YAML::NodeType::value v )
 //----------------------------------------------------------------------------
 bool isResponseType( const std::string &str )
 {
-    if (ends_with(str, std::string("Response")))
+    if (invest_openapi::ends_with(str, std::string("Response")))
         return true;
     return false;
 }
@@ -350,7 +350,7 @@ bool isResponseType( const std::string &str )
 //----------------------------------------------------------------------------
 bool isRequestType( const std::string &str )
 {
-    if (ends_with(str, std::string("Request")))
+    if (invest_openapi::ends_with(str, std::string("Request")))
         return true;
     return false;
 }
@@ -1012,10 +1012,11 @@ INVEST_OPENAPI_MAIN()
             fout<< "{" << endl
                 //<< "    QVector<QString> resVec;" << endl
                 //<< "    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString(\"_\")) : QString();" << endl
-                << "INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG()" << endl
+                << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();" << endl
                 << endl
                 ;
 
+            // QString generateFieldName( const QString &prefix, const QString &fieldName )
 
             using cpp::formatName;
             using cpp::detectNameStyle;
@@ -1027,11 +1028,41 @@ INVEST_OPENAPI_MAIN()
 
             auto idSpecInline = getSqlModelIdSpec( sqlSchemaMap, typeName, "inline" );
             auto idSpecSchema = getSqlModelIdSpec( sqlSchemaMap, typeName, "schema" );
-            if (!idSpec.empty())
+
+            if (!idSpecInline.empty() || !idSpecSchema.empty())
             {
-                auto expandSpecStr  = makeExpandString( idSpec, sqlFieldSpecWidth );
-                fout << appendToSchemaVecStart << "p + " << q( expandAtBack("ID",sqlFieldNameWidth), idSpec ) << expandSpecStr << " );" << " // ID spec" << endl;
+                fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN() /* if (forInlining) */" << endl
+                     // << "    {"
+                     ;
+
+                //auto expandSpecStr  = makeExpandString( idSpecInline, sqlFieldSpecWidth );
+                // fout << "    " << appendToSchemaVecStart << "p + " << q( expandAtBack("ID",sqlFieldNameWidth), idSpecInline ) << expandSpecStr << " );" << " // ID spec" << endl;
+                fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q("ID", sqlFieldNameWidth) << " , " << q(idSpecInline,sqlFieldSpecWidth) << " );" << " // ID spec inline" << endl;
+
+                if (!idSpecInline.empty())
+                {
+                    fout //<< "    }" << endl
+                         //<< "    else" << endl
+                         //<< "    {"
+                         << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()" << endl
+                         ;
+                }
+
+                // expandSpecStr  = makeExpandString( idSpecSchema, sqlFieldSpecWidth );
+                // fout << appendToSchemaVecStart << "p + " << q( expandAtBack("ID",sqlFieldNameWidth), idSpecSchema ) << expandSpecStr << " );" << " // ID spec" << endl;
+
+                // fout << "    }" << endl;
+
+                if (!idSpecSchema.empty())
+                {
+                    fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q("ID", sqlFieldNameWidth) << " , " << q(idSpecSchema,sqlFieldSpecWidth) << " );" << " // ID spec schema" << endl;
+                }
+
+                fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()" << endl;
             }
+
+            // sqlFieldNameWidth  sqlFieldSpecWidth
+
 
 
             YAML::Node::const_iterator propIt = propertiesNode.begin();
@@ -1064,8 +1095,10 @@ INVEST_OPENAPI_MAIN()
                     }
                     else
                     {
-                        auto expandSpecStr  = makeExpandString( fieldSqlSpec, sqlFieldSpecWidth );
-                        fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldNameWidth), fieldSqlSpec ) << expandSpecStr << " );" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
+                        // auto expandSpecStr  = makeExpandString( fieldSqlSpec, sqlFieldSpecWidth );
+                        // fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldNameWidth), fieldSqlSpec ) << expandSpecStr << " );" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
+                        // fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( " << fieldName << " , " << fieldSqlSpec << " )" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
+                        fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q(fieldName, sqlFieldNameWidth) << " , " << q(idSpecSchema,fieldSqlSpec) << " );" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
                     }
                 }
 
@@ -1091,7 +1124,9 @@ INVEST_OPENAPI_MAIN()
                 else
                 {
                     auto expandSpecStr  = makeExpandString( sqlSpec, sqlFieldSpecWidth );
-                    fout << appendToSchemaVecStart << "p + " << q( expandAtBack(propNameSql,sqlFieldNameWidth), sqlSpec ) << expandSpecStr << " );" << specLookupComment << endl;
+                    // fout << appendToSchemaVecStart << "p + " << q( expandAtBack(propNameSql,sqlFieldNameWidth), sqlSpec ) << expandSpecStr << " );" << specLookupComment << endl;
+                    // fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2(" << propNameSql << ", " << sqlSpec << " )" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
+                    fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q(propNameSql, sqlFieldNameWidth) << " , " << q(sqlSpec,sqlFieldSpecWidth) << " );" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
                 }
 
                 std::string sqlFieldSpecPropAfter = getSqlModelFieldExtraSpec( sqlSchemaMap, typeName, propName, "after" );
@@ -1114,7 +1149,7 @@ INVEST_OPENAPI_MAIN()
             }
 
             fout << endl
-                 << "    return schemaVec;" << endl
+                 << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();" << endl
                  ;
 
             fout<< "}" << endl ;
