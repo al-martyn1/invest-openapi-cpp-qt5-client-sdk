@@ -1,5 +1,5 @@
 /*! \file
-    \brief Generator schemas shower in predefined order
+    \brief Generator schemas shower first refBooks
 
  */
 
@@ -49,14 +49,18 @@ INVEST_OPENAPI_MAIN()
     QSet<QString>         allSqlTables  = tkf::modelMakeAllSqlTablesSet_SQLITE();
     QMap<QString,QString> allSqlSchemas = tkf::modelMakeAllSqlShemas_SQLITE();
 
+    QSet<QString>         usedTables;
+    QSet<QString>         unusedTables;
+
     QVector<QString> refBooks;
-    refBooks.append("ORDER_TYPE");
-    refBooks.append("ORDER_STATUS");
-    refBooks.append("OPERATION_TYPE");
-    refBooks.append("CANDLE_RESOLUTION");
+    
+    refBooks.append("BROKER_ACCOUNT_TYPE");
     refBooks.append("CURRENCY");
     refBooks.append("INSTRUMENT_TYPE");
-    //refBooks.append("BROKER_ACCOUNT_TYPE");
+    refBooks.append("CANDLE_RESOLUTION");
+    refBooks.append("OPERATION_TYPE");
+    refBooks.append("ORDER_STATUS");
+    refBooks.append("ORDER_TYPE");
     refBooks.append("MARKET_INSTRUMENT");
     //refBooks.append("");
 
@@ -85,7 +89,16 @@ INVEST_OPENAPI_MAIN()
 
      */
 
-    for( auto sqlTable : allSqlTables )
+    allSqlSchemas[QString("BROKER_ACCOUNT_TYPE")] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::BrokerAccountType>(QString(), false ) );
+    allSqlSchemas[QString("CURRENCY"           )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::Currency         >(QString(), false ) );
+    allSqlSchemas[QString("INSTRUMENT_TYPE"    )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::InstrumentType   >(QString(), false ) );
+    allSqlSchemas[QString("CANDLE_RESOLUTION"  )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::CandleResolution >(QString(), false ) );
+    allSqlSchemas[QString("OPERATION_TYPE"     )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::OperationType    >(QString(), false ) );
+    allSqlSchemas[QString("ORDER_STATUS"       )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::OrderStatus      >(QString(), false ) );
+    allSqlSchemas[QString("ORDER_TYPE"         )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::OrderType        >(QString(), false ) );
+    // allSqlSchemas[""] = tkf::modelMakeSqlSchemaStringVector_SQLITE<>(QString(), false );
+
+    for( auto sqlTable : refBooks )
     {
         auto it = allSqlSchemas.find(sqlTable);
         if (it==allSqlSchemas.end())
@@ -96,17 +109,37 @@ INVEST_OPENAPI_MAIN()
         {
             cout << "Table '" << sqlTable.toStdString() << "' schema:" << endl;
             cout << it->toStdString() << endl << endl;
-            // QString key = *it;
-            // cout << "Table '" << sqlTable.toStdString() << "' schema:" << endl;
-            // //cout << it->second << endl << endl;
-            // cout << allSqlSchemas[key].toStdString() << endl << endl;
+
+            usedTables.insert(sqlTable);
         }
     }
 
+    for( auto sqlTable : allSqlTables )
+    {
+        auto it = usedTables.find(sqlTable);
+        if (it==usedTables.end())
+        {
+            // Not used
+            unusedTables.insert(sqlTable);
+        }
+    }
 
-    
+    cout<<endl<<endl<<"!!! Unused tables"<<endl<<endl;
 
-    
+    for( auto sqlTable : unusedTables )
+    {
+        auto it = allSqlSchemas.find(sqlTable);
+        if (it==allSqlSchemas.end())
+        {
+            cout << "Table '" << sqlTable.toStdString() << "' not found in schemes" << endl << endl;
+        }
+        else
+        {
+            cout << "Table '" << sqlTable.toStdString() << "' schema:" << endl;
+            cout << it->toStdString() << endl << endl;
+        }
+    }
+
     return 0;
 }
 

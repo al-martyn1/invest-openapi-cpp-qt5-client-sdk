@@ -24,6 +24,7 @@ using namespace OpenAPI;
 //----------------------------------------------------------------------------
 template <typename ModelType> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE( const QString &nameOrPrefix, bool forInlining );
 
+
 inline QString modelMakeSqlCreateTableSchema_SQLITE( const QVector<QString> &sqlSchema )
 {
     return QString("  ") + mergeString( sqlSchema, "\r\n, "  );
@@ -63,6 +64,21 @@ inline QVector<QString> modelToStrings( const marty::Decimal &v )
 }
 
 //----------------------------------------------------------------------------
+inline QVector<QString> modelToStrings( const Object &v )
+{
+    if ( v.isValid() && v.isSet() )
+       return modelToStrings( v.asJson() );
+    else
+       return modelToStrings( QString() );
+}
+
+/*
+inline QVector<QString> modelToStrings( const Empty &v )
+{
+    return modelToStrings( QString::fromStdString( marty::toString(v) ) );
+}
+*/
+//----------------------------------------------------------------------------
 
 
 
@@ -93,9 +109,11 @@ QVector<QString> modelToStringsConvertHelper( const ModelType &m )
 //----------------------------------------------------------------------------
 template< class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
 inline
-std::basic_string< CharT, Traits, Allocator > generateFieldName( const std::basic_string< CharT, Traits, Allocator > &prefix, const std::basic_string< CharT, Traits, Allocator > &fieldName )
+std::basic_string< CharT, Traits, Allocator > generateFieldName( std::basic_string< CharT, Traits, Allocator > prefix, const std::basic_string< CharT, Traits, Allocator > &fieldName )
 {
     // using namespace cpp;
+
+    prefix = cpp::trimUnderscoresTrailing( prefix );
 
     if (prefix.empty())
         return fieldName;
@@ -113,8 +131,8 @@ std::basic_string< CharT, Traits, Allocator > generateFieldName( const std::basi
     if (ends_with( nswFormattedPrefix, nswFormattedFieldNameStyle))
         return prefix;
 
-    if (prefix[prefix.size()-1]=='_')
-        return cpp::formatName(prefix + fieldName, cpp::NameStyle::sqlUnderscoredStyle);
+    //if (prefix[prefix.size()-1]=='_')
+    //    return cpp::formatName(prefix + fieldName, cpp::NameStyle::sqlUnderscoredStyle);
     
     return cpp::formatName(prefix + std::basic_string< CharT, Traits, Allocator >(1,(CharT)'_') + fieldName, cpp::NameStyle::sqlUnderscoredStyle);
 }

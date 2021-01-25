@@ -28,6 +28,7 @@
 
 #include "invest_openapi/invest_openapi.h"
 #include "invest_openapi/utility.h"
+#include "invest_openapi/yaml_helpers.h"
 
 #include "cpp/cpp.h"
 
@@ -477,58 +478,8 @@ bool isTagMeanfull( const std::string &tagName )
 }
 
 //----------------------------------------------------------------------------
-bool hasPayloadPropery( const std::string &typeName, const YAML::Node &typeInfoNode )
-{
-    using std::cout;
-    using std::cerr;
-    using std::endl;
 
-    try
-    {
-        cerr << typeName << ".hasPayloadPropery (1)" << endl;
-        const YAML::Node &propsNode   = typeInfoNode["properties"];
-        if (propsNode.Type()!=YAML::NodeType::Map)
-        {
-            cerr << typeName << " - 'properties' is not a map" << endl;
-            //cerr << typeName << " - no 'properties'" << endl;
-            cerr << typeName << ".hasPayloadPropery - false" << endl << endl;
-            return false;
-        }
 
-        cerr << typeName << ".hasPayloadPropery (2)" << endl;
-        const YAML::Node &payloadNode = propsNode["payload"];
-
-        YAML::NodeType::value typeInfoNodeType = typeInfoNode.Type();
-        cerr << typeName << ", typeInfoNode - type: " << toString(typeInfoNodeType) << endl;
-
-        YAML::NodeType::value payloadNodeType = payloadNode.Type();
-        cerr << typeName << ", payloadNode - type: " << toString(payloadNodeType) << endl;
-
-        if (propsNode.Type()!=YAML::NodeType::Map)
-        {
-            cerr << typeName << " - no 'payload'" << endl;
-            cerr << typeName << ".hasPayloadPropery - false" << endl << endl;
-            return false;
-        }
-
-        cerr << typeName << ".hasPayloadPropery - true" << endl << endl;
-        return true;
-    }
-    catch (const YAML::Exception& e)
-    {
-        cerr << "YAML parsing exception: " << e.what() << endl;
-        cerr << typeName << ".hasPayloadPropery - false" << endl << endl;
-        return false;
-    }
-    catch(...)
-    {
-        cerr << "YAML parsing unknown exception" << endl;
-        cerr << typeName << ".hasPayloadPropery - false" << endl << endl;
-        return false;
-    }
-}
-
-//----------------------------------------------------------------------------
 
 
 
@@ -803,13 +754,16 @@ INVEST_OPENAPI_MAIN()
                 continue;
             }
 
-
-            if (hasPayloadPropery(typeName, typeIt->second))
+            /*
+            if (hasPayloadProperty(typeName, typeIt->second))
             {
                 cerr<<"Skipping type with payload: " << typeName << endl << endl << endl;
                 skippingSet.insert(typeName);
                 continue;
             }
+            */
+
+            //getPayloadOrPropertiesItself
 
             if (skipNoTypeOrRefOrArray( typeName, typeIt->second["properties"] ))
             {
@@ -955,11 +909,16 @@ INVEST_OPENAPI_MAIN()
 
                 //------------------------------
 
+                auto cppPropName = cpp::formatName(propName,cpp::NameStyle::cppStyle);
+
                 fout << endl
                      << "    //------------------------------" << endl
-                     << "    if ( !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Set() || !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Valid() ) // type: " << propType << endl
+                     << "    if ( !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Set() || !v.is_" << cppPropName << "_Valid() ) // type: " << propType << endl
                      << "        appendToStringVector(resVec, QString());" << endl
                      << "    else" << endl
+                     ;
+                
+                fout
                      << "        appendToStringVector(resVec, modelToStrings( v.get" << cpp::formatName(propName,cpp::NameStyle::pascalStyle) << "() ) );" << endl
                      ;
             }
@@ -1126,7 +1085,7 @@ INVEST_OPENAPI_MAIN()
                     auto expandSpecStr  = makeExpandString( sqlSpec, sqlFieldSpecWidth );
                     // fout << appendToSchemaVecStart << "p + " << q( expandAtBack(propNameSql,sqlFieldNameWidth), sqlSpec ) << expandSpecStr << " );" << specLookupComment << endl;
                     // fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2(" << propNameSql << ", " << sqlSpec << " )" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
-                    fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q(propNameSql, sqlFieldNameWidth) << " , " << q(sqlSpec,sqlFieldSpecWidth) << " );" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
+                    fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q(propNameSql, sqlFieldNameWidth) << " , " << q(sqlSpec,sqlFieldSpecWidth) << " );" << specLookupComment << endl;
                 }
 
                 std::string sqlFieldSpecPropAfter = getSqlModelFieldExtraSpec( sqlSchemaMap, typeName, propName, "after" );
