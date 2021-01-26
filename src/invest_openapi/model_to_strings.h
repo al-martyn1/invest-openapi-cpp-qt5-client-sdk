@@ -93,17 +93,24 @@ QVector<QString> stringToVector( const QString &s )
 }
 
 inline
-QVector<QString> stringToVector( const std::string &s )
+QVector<QString> stringToVector( const QString &s1, const QString &s2 )
 {
-    return stringToVector( QString::fromStdString(s));
+    QVector<QString> resVec;
+    appendToStringVector( resVec, s1 );
+    appendToStringVector( resVec, s2 );
+    return resVec;
 }
 
-//----------------------------------------------------------------------------
-template <typename ModelType> 
-inline 
-QVector<QString> modelToStringsConvertHelper( const ModelType &m )
+inline
+QVector<QString> stringToVector( const std::string &s )
 {
-    return stringToVector( m.asJson() );
+    return stringToVector( QString::fromStdString(s) );
+}
+
+inline
+QVector<QString> stringToVector( const std::string &s1, const std::string &s2 )
+{
+    return stringToVector( QString::fromStdString(s1), QString::fromStdString(s2) );
 }
 
 //----------------------------------------------------------------------------
@@ -150,14 +157,37 @@ QString generateFieldName( const QString &prefix, const QString &fieldName )
 
 
 //----------------------------------------------------------------------------
+template <typename ModelType> 
+inline 
+QVector<QString> modelToStringsConvertHelper( const ModelType &m )
+{
+    return stringToVector( m.asJson() );
+}
+
+//------------------------------
+template <typename ModelType> 
+inline 
+QVector<QString> modelToStringsConvertHelper2( const ModelType &m )
+{
+    return stringToVector( QString("%1").arg( (unsigned)m.getValue() )
+                         , m.asJson() 
+                         );
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
 inline QVector<QString> modelToStrings( const QDateTime         &v ) { return modelToStrings( formatDateTimeISO8601(v) ); }
-inline QVector<QString> modelToStrings( const BrokerAccountType &v ) { return modelToStringsConvertHelper(v); }
-inline QVector<QString> modelToStrings( const Currency          &v ) { return modelToStringsConvertHelper(v); }
-inline QVector<QString> modelToStrings( const InstrumentType    &v ) { return modelToStringsConvertHelper(v); }
-inline QVector<QString> modelToStrings( const CandleResolution  &v ) { return modelToStringsConvertHelper(v); }
-inline QVector<QString> modelToStrings( const OperationType     &v ) { return modelToStringsConvertHelper(v); }
-inline QVector<QString> modelToStrings( const OrderStatus       &v ) { return modelToStringsConvertHelper(v); }
-inline QVector<QString> modelToStrings( const OrderType         &v ) { return modelToStringsConvertHelper(v); }
+inline QVector<QString> modelToStrings( const BrokerAccountType &v ) { return modelToStringsConvertHelper2(v); }
+inline QVector<QString> modelToStrings( const Currency          &v ) { return modelToStringsConvertHelper2(v); }
+inline QVector<QString> modelToStrings( const InstrumentType    &v ) { return modelToStringsConvertHelper2(v); }
+inline QVector<QString> modelToStrings( const CandleResolution  &v ) { return modelToStringsConvertHelper2(v); }
+inline QVector<QString> modelToStrings( const OperationType     &v ) { return modelToStringsConvertHelper2(v); }
+inline QVector<QString> modelToStrings( const OrderStatus       &v ) { return modelToStringsConvertHelper2(v); }
+inline QVector<QString> modelToStrings( const OrderType         &v ) { return modelToStringsConvertHelper2(v); }
 
 //----------------------------------------------------------------------------
 

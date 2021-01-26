@@ -5,6 +5,7 @@
 #include <QString>
 #include <QVector>
 #include <QSet>
+#include <QMap>
 #include <QSqlDatabase>
 #include <QSqlDriver>
 #include <QSqlField>
@@ -59,6 +60,8 @@ struct IDatabaseManager
     virtual QVector<QString> sqlQuote( const QVector<QVariant> &strs ) const = 0;
 
     // Core functions
+
+    virtual QSet<QString> tableGetTableNamesForCreation( int creationLevel ) const = 0;
 
     virtual QString     tableMapName     ( const QString &tableName                   ) const = 0; // to internal name mapping
     virtual QString     tableGetShema    ( const QString &tableName                   ) const = 0;

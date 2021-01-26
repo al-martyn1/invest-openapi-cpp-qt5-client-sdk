@@ -7,6 +7,8 @@
 #include <QSqlDriver>
 #include <QSqlField>
 #include <QSqlQuery>
+#include <QMap>
+#include <QSet>
 #include <QSharedPointer>
 
 #include <exception>
@@ -153,6 +155,37 @@ protected:
     }
 
     //------------------------------
+    virtual QSet<QString> tableGetTableNamesForCreation( int creationLevel ) const override
+    {
+        static bool levelsInitialized = false;
+
+        static QSet<QString> tablesLevel_0;
+        static QSet<QString> tablesLevel_1;
+
+        if (!levelsInitialized)
+        {
+            // Basic ref books
+            tablesLevel_0.insert("BROKER_ACCOUNT_TYPE");
+            tablesLevel_0.insert("CURRENCY");
+            tablesLevel_0.insert("INSTRUMENT_TYPE");
+            tablesLevel_0.insert("CANDLE_RESOLUTION");
+            tablesLevel_0.insert("OPERATION_TYPE");
+            tablesLevel_0.insert("ORDER_STATUS");
+            tablesLevel_0.insert("ORDER_TYPE");
+
+            tablesLevel_1.insert("MARKET_INSTRUMENT");
+        }
+
+        switch(creationLevel)
+        {
+            case 0 : return tablesLevel_0;
+            case 1 : return tablesLevel_1;
+            default: return QSet<QString>();
+        }
+
+    }
+
+
     virtual QString tableGetShema      ( const QString &tableName  ) const override
     {
         // tableName = tableMapName(tableName)
@@ -162,6 +195,34 @@ protected:
         // https://sqlite.org/datatype3.html
         // https://www.programmersought.com/article/1613993309/
 
+        static bool schemasInitialized = false;
+        
+        static QMap<QString,QString> tableSchemas = modelMakeAllSqlShemas_SQLITE();
+
+        if (!schemasInitialized)
+        {
+            schemasInitialized = true;
+
+            tableSchemas[QString("BROKER_ACCOUNT_TYPE")] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::BrokerAccountType>(QString(), false ) );
+            tableSchemas[QString("CURRENCY"           )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::Currency         >(QString(), false ) );
+            tableSchemas[QString("INSTRUMENT_TYPE"    )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::InstrumentType   >(QString(), false ) );
+            tableSchemas[QString("CANDLE_RESOLUTION"  )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::CandleResolution >(QString(), false ) );
+            tableSchemas[QString("OPERATION_TYPE"     )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::OperationType    >(QString(), false ) );
+            tableSchemas[QString("ORDER_STATUS"       )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::OrderStatus      >(QString(), false ) );
+            tableSchemas[QString("ORDER_TYPE"         )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::OrderType        >(QString(), false ) );
+
+        }
+
+        auto it = tableSchemas.find(tableName);
+
+        if (it==tableSchemas.end())
+            return QString();
+
+        return *it;
+
+
+
+        /*
         if (tableName.toUpper()=="INSTRUMENTS")
         {
             return lf()    + QString("ID")                  + tab() + QString("INTEGER NOT NULL UNIQUE") 
@@ -228,6 +289,7 @@ protected:
         }
 
         return QString();
+        */
 
         /*
         CREATE TABLE "TEST01" (
