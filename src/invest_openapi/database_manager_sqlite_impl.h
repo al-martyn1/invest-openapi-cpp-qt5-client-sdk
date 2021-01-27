@@ -161,6 +161,7 @@ protected:
 
         static QSet<QString> tablesLevel_0;
         static QSet<QString> tablesLevel_1;
+        static QSet<QString> tablesLevel_2;
 
         if (!levelsInitialized)
         {
@@ -174,12 +175,17 @@ protected:
             tablesLevel_0.insert("ORDER_TYPE");
 
             tablesLevel_1.insert("MARKET_INSTRUMENT");
+
+            tablesLevel_2.insert("_META_TABLES");
+            tablesLevel_2.insert("_META_COLUMNS");
+
         }
 
         switch(creationLevel)
         {
             case 0 : return tablesLevel_0;
             case 1 : return tablesLevel_1;
+            case 2 : return tablesLevel_2;
             default: return QSet<QString>();
         }
 
@@ -203,13 +209,27 @@ protected:
         {
             schemasInitialized = true;
 
-            tableSchemas[QString("BROKER_ACCOUNT_TYPE")] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::BrokerAccountType>(QString(), false ) );
-            tableSchemas[QString("CURRENCY"           )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::Currency         >(QString(), false ) );
-            tableSchemas[QString("INSTRUMENT_TYPE"    )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::InstrumentType   >(QString(), false ) );
-            tableSchemas[QString("CANDLE_RESOLUTION"  )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::CandleResolution >(QString(), false ) );
-            tableSchemas[QString("OPERATION_TYPE"     )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::OperationType    >(QString(), false ) );
-            tableSchemas[QString("ORDER_STATUS"       )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::OrderStatus      >(QString(), false ) );
-            tableSchemas[QString("ORDER_TYPE"         )] = tkf::modelMakeSqlCreateTableSchema_SQLITE( tkf::modelMakeSqlSchemaStringVector_SQLITE<tkf::OrderType        >(QString(), false ) );
+            tableSchemas[QString("BROKER_ACCOUNT_TYPE")] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>(QString(), false ) );
+            tableSchemas[QString("CURRENCY"           )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<Currency         >(QString(), false ) );
+            tableSchemas[QString("INSTRUMENT_TYPE"    )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<InstrumentType   >(QString(), false ) );
+            tableSchemas[QString("CANDLE_RESOLUTION"  )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<CandleResolution >(QString(), false ) );
+            tableSchemas[QString("OPERATION_TYPE"     )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationType    >(QString(), false ) );
+            tableSchemas[QString("ORDER_STATUS"       )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderStatus      >(QString(), false ) );
+            tableSchemas[QString("ORDER_TYPE"         )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderType        >(QString(), false ) );
+
+
+            tableSchemas[QString("_META_TABLES"       )] = lf()    + QString("TABLE_NAME")            + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
+                                                         + lf(',') + QString("DISPLAY_NAME")          + tab() + QString("TEXT")
+                                                         + lf(',') + QString("DESCRIPTION")           + tab() + QString("TEXT")
+                                                         ;
+
+            tableSchemas[QString("_META_COLUMNS"      )] = lf()    + QString("TABLE_NAME")            + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
+                                                         + lf(',') + QString("COLUMN_NAME")           + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
+                                                         + lf(',') + QString("DISPLAY_NAME")          + tab() + QString("TEXT")
+                                                         + lf(',') + QString("DESCRIPTION")           + tab() + QString("TEXT")
+                                                         ;
+
+            //tableSchemas[QString("")] = 
 
         }
 

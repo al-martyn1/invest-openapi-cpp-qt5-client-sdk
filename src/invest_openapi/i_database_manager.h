@@ -48,6 +48,8 @@ struct IDatabaseManager
 
     // Common helpers
     virtual void      setDefDecimal      ( unsigned total, unsigned frac )       = 0;
+    virtual void      applyDefDecimalFromConfig( const DatabaseConfig & cfg )    = 0;
+
     virtual QString   defDecimal         ( ) const = 0;
     virtual QString   defDecimal         ( unsigned total, unsigned frac ) const = 0;
 

@@ -1,4 +1,5 @@
 database = database.sqlite
 database.reopen = true
+database.defaults.decimal.format = 18.8
 
 database.schema.table.name.instruments = INSTRUMENTS

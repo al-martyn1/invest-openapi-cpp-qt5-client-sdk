@@ -15,6 +15,7 @@
 #include <iterator>
 
 #include "database_manager_impl_base.h"
+#include "model_to_strings.h"
 
 //----------------------------------------------------------------------------
 

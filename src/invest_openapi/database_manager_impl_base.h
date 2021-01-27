@@ -151,6 +151,13 @@ protected:
         m_defDecimalFrac  = frac;
     }
 
+    virtual void   applyDefDecimalFromConfig( const DatabaseConfig & cfg ) override
+    {
+        setDefDecimal( cfg.defaultDecimalFormatTotalSize
+                     , cfg.defaultDecimalFormatFractionalSize
+                     );
+    }
+
     //------------------------------
     virtual QString tableMapName       ( const QString &tableName  ) const override // to internal name mapping
     {

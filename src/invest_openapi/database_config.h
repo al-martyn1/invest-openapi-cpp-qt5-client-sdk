@@ -46,6 +46,9 @@ struct DatabaseConfig
     QString   dbFilename;
     bool      reopenMode; // reopen for each query or not
 
+    unsigned  defaultDecimalFormatTotalSize      = 18;
+    unsigned  defaultDecimalFormatFractionalSize =  8;
+
     QString   tableNameInstruments;
 
 
@@ -63,6 +66,17 @@ struct DatabaseConfig
         reopenMode = settings.value("database.reopen", QVariant(false)).toBool();
 
         tableNameInstruments = settings.value("database.schema.table.name.instruments").toString();
+
+        QString decimalFormatStr = settings.value("database.defaults.decimal.format", QVariant("18.8")).toString();
+        // https://doc.qt.io/qt-5/qstring.html#split-5
+        QStringList decimalSizeStrList = decimalFormatStr.split( '.', Qt::SkipEmptyParts , Qt::CaseSensitive);
+        if (decimalSizeStrList.size()==2)
+        {
+            defaultDecimalFormatTotalSize       = decimalSizeStrList[0].toUInt();
+            defaultDecimalFormatFractionalSize  = decimalSizeStrList[1].toUInt();
+        }
+
+
     }
 
     template<typename DatabasePlacementStrategyType>

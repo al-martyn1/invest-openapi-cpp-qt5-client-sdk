@@ -18,7 +18,7 @@
 #include "invest_openapi/api_config.h"
 #include "invest_openapi/auth_config.h"
 #include "invest_openapi/currencies_config.h"
-#include "invest_openapi/positions_config.h"
+#include "invest_openapi/sandbox_positions_config.h"
 
 #include "invest_openapi/invest_openapi.h"
 
