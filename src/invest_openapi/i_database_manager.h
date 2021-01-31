@@ -79,22 +79,44 @@ struct IDatabaseManager
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx                                                   ) const = 0;
 
 
+    virtual bool insertToImpl( const QString &tableName, const QVector< QVector<QString> > &valsVecVec, const QVector<QString> &tableColumnNames ) const = 0;
 
-    #define INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE( valType )                                                         \
-    virtual bool insertToImpl( const QString &tableName, const valType &vals, const QVector<QString> &tableColumns ) const = 0; \
-    virtual bool insertTo( const QString &tableName, const valType     &vals, const QVector<QString> &tableColumns ) const = 0; \
-    virtual bool insertTo( const QString &tableName, const valType     &vals, const QStringList      &tableColumns ) const = 0; \
-    virtual bool insertTo( const QString &tableName, const valType     &vals,       QString           tableColumns ) const = 0
+    /*
+    virtual bool insertTo( const QString &tableName, const QVector<QString> &valsVec, const QVector<QString> &tableColumnNames ) const
+    {
+        QVector< QVector<QString> > valsVecVec;
+        valsVecVec.push_back( valsVec );
+        return insertToImpl( tableName, valsVecVec, tableColumnNames );
+    }
+    */
 
-    typedef QVector<QVector<QVariant> >  QVector_QVector_QVariant;
-    typedef QVector<QVector<QString>  >  QVector_QVector_QString ;
-    typedef QVector<QVariant>            QVector_QVariant        ;
-    typedef QVector<QString>             QVector_QString         ;
+    #define INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( valsListType, tableColumnNamesListType )                   \
+    virtual bool insertTo( const QString &tableName, const valsListType &valsList, const tableColumnNamesListType &tableColumnNamesList) const   \
+    {                                                                                                                                            \
+        return insertToImpl( tableName, convertToQVectorOfQVectorOfQStrings(valsList), convertToQVectorOfQStrings(tableColumnNamesList) );           \
+    }
 
-    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE( QVector_QVector_QVariant );
-    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE( QVector_QVector_QString  );
-    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE( QVector_QVariant         );
-    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE( QVector_QString          );
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QVector<QVariant > >, QVector<QString> )
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QVector<QString  > >, QVector<QString> )
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QStringList        >, QVector<QString> )
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QString            >, QVector<QString> )
+
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QVector<QVariant > >, QStringList )
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QVector<QString  > >, QStringList )
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QStringList        >, QStringList )
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QString            >, QStringList )
+
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QVector<QVariant > >, QString )
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QVector<QString  > >, QString )
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QStringList        >, QString )
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QString            >, QString )
+
+
+    virtual bool insertToBulkFromString( const QString &tableName, const QString &vals, const QVector<QString> &tableColumnNames ) const
+    {
+         return insertTo( tableName, listStringSplit(vals.split( ';', Qt::SkipEmptyParts )), tableColumnNames );
+         
+    }
 
     // Meta helpers
 

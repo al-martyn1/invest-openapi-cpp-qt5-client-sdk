@@ -129,28 +129,127 @@ void checkAbort( const QSharedPointer< OpenApiCompletableFuture< T > > &val )
 }
 
 //----------------------------------------------------------------------------
-inline
-QString listStringNormalize( QString s )
+inline QString listStringNormalize( QString s )
 {
     s.replace(':', ";"); // replace *nix style list separator to windows style separator
     s.replace(',', ";"); // replace commas to ';' (windows style separator)
     return s;
 }
 
+//------------------------------
+inline QStringList listStringNormalize( const QStringList s )
+{
+    QStringList resList;
+    for( auto str : s ) resList.push_back(listStringNormalize(str));
+}
+
+//------------------------------
+inline QVector<QStringList> listStringNormalize( const QVector<QStringList> &s )
+{
+    QVector<QStringList> resList;
+    for( auto str : s ) resList.push_back(listStringNormalize(str));
+}
+
 //----------------------------------------------------------------------------
-inline
-QStringList listStringSplit( QString s )
+inline QStringList listStringSplit( QString s )
 {
     s = listStringNormalize(s);
     return s.split( ';', Qt::SkipEmptyParts );
 }
 
+//------------------------------
+inline QVector<QStringList> listStringSplit( const QStringList &s )
+{
+    QVector<QStringList> resList;
+    for( auto str : s ) resList.push_back(listStringSplit(str));
+    return resList;
+}
+
+//------------------------------
+inline QVector<QStringList> listStringSplit( const QVector<QString> &s )
+{
+    QVector<QStringList> resList;
+    for( auto str : s ) resList.push_back(listStringSplit(str));
+    return resList;
+}
+
 //----------------------------------------------------------------------------
-inline
-QStringList pathListSplit( QString pathList )
+inline QStringList pathListSplit( QString pathList )
 {
     pathList.replace(':', ";"); // replace *nix style list separator to windows style separator
     return pathList.split( ';', Qt::SkipEmptyParts );
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+
+//----------------------------------------------------------------------------
+inline QVector<QString> convertToQVectorOfQStrings( const QVector<QString> &stringList )
+{
+    return stringList;
+}
+
+//------------------------------
+inline QVector<QString> convertToQVectorOfQStrings( const QVector<QVariant> &variantList )
+{
+    QVector<QString> strVec;
+    for( auto v : variantList ) strVec.push_back(v.toString());
+    return strVec;
+}
+
+//------------------------------
+inline QVector<QString> convertToQVectorOfQStrings( const QStringList strList )
+{
+    QVector<QString> strVec;
+    for( auto str : strList ) strVec.push_back(str);
+    return strVec;
+}
+
+//------------------------------
+inline QVector<QString> convertToQVectorOfQStrings( const QString &listStr )
+{
+    QString     normalizedListStr = listStringNormalize(listStr);
+    QStringList strList = listStringSplit(normalizedListStr);
+    return convertToQVectorOfQStrings(strList);
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+
+//----------------------------------------------------------------------------
+inline QVector< QVector<QString> > convertToQVectorOfQVectorOfQStrings( const QVector< QVector<QString> > &lst )
+{
+    return lst;
+}
+
+//------------------------------
+inline QVector< QVector<QString> > convertToQVectorOfQVectorOfQStrings( const QVector< QVector<QVariant> > &lst )
+{
+    QVector< QVector<QString> > resVec;
+    for( auto v : lst ) resVec.push_back(convertToQVectorOfQStrings(v));
+    return resVec;
+}
+
+//------------------------------
+inline QVector< QVector<QString> > convertToQVectorOfQVectorOfQStrings( const QVector< QStringList > &lst )
+{
+    QVector< QVector<QString> > resVec;
+    for( auto sl : lst ) resVec.push_back(convertToQVectorOfQStrings(sl));
+    return resVec;
+}
+
+//------------------------------
+inline QVector< QVector<QString> > convertToQVectorOfQVectorOfQStrings( const QVector< QString > &lst )
+{
+    QVector< QVector<QString> > resVec;
+    for( auto s : lst ) resVec.push_back(convertToQVectorOfQStrings(s));
+    return resVec;
 }
 
 //----------------------------------------------------------------------------

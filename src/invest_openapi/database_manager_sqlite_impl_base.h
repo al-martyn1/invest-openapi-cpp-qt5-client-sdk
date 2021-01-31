@@ -166,6 +166,7 @@ protected:
         RETURN_IOA_SQL_EXEC_QUERY( query, queryText );
     }
 
+    /*
     virtual bool insertToImpl( const QString &tableName, const QVector<QString>   &vals, const QVector<QString> &tableColumns ) const override
     {
         QVector<QVector<QString> > tmp; tmp.push_back(vals);
@@ -181,7 +182,7 @@ protected:
     {
         return insertToImpl( tableName, toStringVector(vals), tableColumns );
     }
-
+    */
 
     //------------------------------
     virtual bool      metaInsertForTablesBulk ( const QString &bulkText ) const override

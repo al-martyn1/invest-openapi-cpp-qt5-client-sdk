@@ -85,7 +85,7 @@ inline QVector<QString> modelToStrings( const Empty &v )
 
 //----------------------------------------------------------------------------
 inline
-QVector<QString> stringToVector( const QString &s )
+QVector<QString> modelsHelperStringToVector( const QString &s )
 {
     QVector<QString> resVec;
     appendToStringVector( resVec, s );
@@ -93,7 +93,7 @@ QVector<QString> stringToVector( const QString &s )
 }
 
 inline
-QVector<QString> stringToVector( const QString &s1, const QString &s2 )
+QVector<QString> modelsHelperStringToVector( const QString &s1, const QString &s2 )
 {
     QVector<QString> resVec;
     appendToStringVector( resVec, s1 );
@@ -102,16 +102,74 @@ QVector<QString> stringToVector( const QString &s1, const QString &s2 )
 }
 
 inline
-QVector<QString> stringToVector( const std::string &s )
+QVector<QString> modelsHelperStringToVector( const QString &s1, const QString &s2, const QString &s3 )
 {
-    return stringToVector( QString::fromStdString(s) );
+    QVector<QString> resVec;
+    appendToStringVector( resVec, s1 );
+    appendToStringVector( resVec, s2 );
+    appendToStringVector( resVec, s3 );
+    return resVec;
 }
 
 inline
-QVector<QString> stringToVector( const std::string &s1, const std::string &s2 )
+QVector<QString> modelsHelperStringToVector( const QString &s1, const QString &s2, const QString &s3, const QString &s4 )
 {
-    return stringToVector( QString::fromStdString(s1), QString::fromStdString(s2) );
+    QVector<QString> resVec;
+    appendToStringVector( resVec, s1 );
+    appendToStringVector( resVec, s2 );
+    appendToStringVector( resVec, s3 );
+    appendToStringVector( resVec, s4 );
+    return resVec;
 }
+
+inline
+QVector<QString> modelsHelperStringToVector( const QString &s1, const QString &s2, const QString &s3, const QString &s4, const QString &s5 )
+{
+    QVector<QString> resVec;
+    appendToStringVector( resVec, s1 );
+    appendToStringVector( resVec, s2 );
+    appendToStringVector( resVec, s3 );
+    appendToStringVector( resVec, s4 );
+    appendToStringVector( resVec, s5 );
+    return resVec;
+}
+
+
+inline QVector<QString> modelsHelperStringToVector( const std::string &s ) 
+{ return modelsHelperStringToVector( QString::fromStdString(s) ); }
+
+inline QVector<QString> modelsHelperStringToVector( const std::string &s1, const std::string &s2 )
+{ return modelsHelperStringToVector( QString::fromStdString(s1), QString::fromStdString(s2) ); }
+
+inline QVector<QString> modelsHelperStringToVector( const std::string &s1, const std::string &s2, const std::string &s3 )
+{ return modelsHelperStringToVector( QString::fromStdString(s1), QString::fromStdString(s2), QString::fromStdString(s3) ); }
+
+inline QVector<QString> modelsHelperStringToVector( const std::string &s1, const std::string &s2, const std::string &s3, const std::string &s4 )
+{ return modelsHelperStringToVector( QString::fromStdString(s1), QString::fromStdString(s2), QString::fromStdString(s3), QString::fromStdString(s4) ); }
+
+inline QVector<QString> modelsHelperStringToVector( const std::string &s1, const std::string &s2, const std::string &s3, const std::string &s4, const std::string &s5 )
+{ return modelsHelperStringToVector( QString::fromStdString(s1), QString::fromStdString(s2), QString::fromStdString(s3), QString::fromStdString(s4), QString::fromStdString(s5) ); }
+
+//----------------------------------------------------------------------------
+inline QVector<QString> modelsHelperStringToVector( const char* s ) 
+{ return modelsHelperStringToVector( QString::fromLocal8Bit(s) ); }
+
+inline QVector<QString> modelsHelperStringToVector( const char* s1, const char* s2 )
+{ return modelsHelperStringToVector( QString::fromLocal8Bit(s1), QString::fromLocal8Bit(s2) ); }
+
+inline QVector<QString> modelsHelperStringToVector( const char* s1, const char* s2, const char* s3 )
+{ return modelsHelperStringToVector( QString::fromLocal8Bit(s1), QString::fromLocal8Bit(s2), QString::fromLocal8Bit(s3) ); }
+
+inline QVector<QString> modelsHelperStringToVector( const char* s1, const char* s2, const char* s3, const char* s4 )
+{ return modelsHelperStringToVector( QString::fromLocal8Bit(s1), QString::fromLocal8Bit(s2), QString::fromLocal8Bit(s3), QString::fromLocal8Bit(s4) ); }
+
+inline QVector<QString> modelsHelperStringToVector( const char* s1, const char* s2, const char* s3, const char* s4, const char* s5 )
+{ return modelsHelperStringToVector( QString::fromLocal8Bit(s1), QString::fromLocal8Bit(s2), QString::fromLocal8Bit(s3), QString::fromLocal8Bit(s4), QString::fromLocal8Bit(s5) ); }
+
+//----------------------------------------------------------------------------
+
+
+
 
 //----------------------------------------------------------------------------
 template< class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
@@ -161,7 +219,7 @@ template <typename ModelType>
 inline 
 QVector<QString> modelToStringsConvertHelper( const ModelType &m )
 {
-    return stringToVector( m.asJson() );
+    return modelsHelperStringToVector( m.asJson() );
 }
 
 //------------------------------
@@ -169,7 +227,7 @@ template <typename ModelType>
 inline 
 QVector<QString> modelToStringsConvertHelper2( const ModelType &m )
 {
-    return stringToVector( QString("%1").arg( (unsigned)m.getValue() )
+    return modelsHelperStringToVector( QString("%1").arg( (unsigned)m.getValue() )
                          , m.asJson() 
                          );
 }
@@ -190,8 +248,26 @@ inline QVector<QString> modelToStrings( const OrderStatus       &v ) { return mo
 inline QVector<QString> modelToStrings( const OrderType         &v ) { return modelToStringsConvertHelper2(v); }
 
 //----------------------------------------------------------------------------
+template< typename ModelType > inline 
+QVector<QString> modelTableGetColumnNames()
+{
+    return modelsHelperStringToVector( QString() );
+}
+
+template< > inline QVector<QString> modelTableGetColumnNames< BrokerAccountType >()   { return modelsHelperStringToVector( "ID", "TYPE"       , "DESCRIPTION" ); }
+template< > inline QVector<QString> modelTableGetColumnNames< Currency          >()   { return modelsHelperStringToVector( "ID", "NAME"       , "DESCRIPTION" ); }
+template< > inline QVector<QString> modelTableGetColumnNames< InstrumentType    >()   { return modelsHelperStringToVector( "ID", "TYPE"       , "DESCRIPTION" ); }
+template< > inline QVector<QString> modelTableGetColumnNames< CandleResolution  >()   { return modelsHelperStringToVector( "ID", "RESOLUTION" , "DESCRIPTION" ); }
+template< > inline QVector<QString> modelTableGetColumnNames< OperationType     >()   { return modelsHelperStringToVector( "ID", "TYPE"       , "DESCRIPTION" ); }
+template< > inline QVector<QString> modelTableGetColumnNames< OrderStatus       >()   { return modelsHelperStringToVector( "ID", "STATUS"     , "DESCRIPTION" ); }
+template< > inline QVector<QString> modelTableGetColumnNames< OrderType         >()   { return modelsHelperStringToVector( "ID", "TYPE"       , "DESCRIPTION" ); }
+
+//----------------------------------------------------------------------------
 
 
+
+
+//----------------------------------------------------------------------------
 const std::size_t sqlFieldNameWidth = 34;
 
 #define INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG()         QVector<QString> resVec;  \
@@ -231,7 +307,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<Broker
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 
-    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("VARCHAR(12)",16) );
+    // return modelsHelperStringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("VARCHAR(12)",16) );
 }
 
 //----------------------------------------------------------------------------
@@ -250,7 +326,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<Curren
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 
-    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("VARCHAR(4) NOT NULL",16) ); // UNIQUE
+    // return modelsHelperStringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("VARCHAR(4) NOT NULL",16) ); // UNIQUE
 }
 
 //----------------------------------------------------------------------------
@@ -269,7 +345,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<Instru
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 
-    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("VARCHAR(12) NOT NULL",16) );
+    // return modelsHelperStringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("VARCHAR(12) NOT NULL",16) );
 }
 
 //----------------------------------------------------------------------------
@@ -288,7 +364,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<Candle
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 
-    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
+    // return modelsHelperStringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
@@ -307,7 +383,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<Operat
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 
-    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
+    // return modelsHelperStringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
@@ -326,7 +402,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OrderS
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 
-    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
+    // return modelsHelperStringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------
@@ -345,7 +421,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE<OrderT
 
     INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 
-    // return stringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
+    // return modelsHelperStringToVector( cpp::expandAtBack(nameOrPrefix.toStdString(),24) + cpp::expandAtBack("HIJACK",16) );
 }
 
 //----------------------------------------------------------------------------

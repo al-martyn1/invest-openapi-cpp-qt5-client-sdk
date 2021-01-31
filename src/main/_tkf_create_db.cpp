@@ -97,6 +97,92 @@ INVEST_OPENAPI_MAIN()
         }
     }
 
+    // Fill ref books here
+
+    qDebug().nospace().noquote() << "Fill 'BROKER_ACCOUNT_TYPE' table: " 
+                                 << pDbMan->insertToBulkFromString( "BROKER_ACCOUNT_TYPE"
+                                                                  , "0,INVALID,Invalid BrokerAccountType value;"
+                                                                    "1,TINKOFF,Tinkoff broker account;"
+                                                                    "2,TINKOFFIIS,Tinkoff IIS account"
+                                                                    ""
+                                                                  , tkf::modelTableGetColumnNames<tkf::BrokerAccountType>()
+                                                                  );
+
+    qDebug().nospace().noquote() << "Fill 'CURRENCY' table: " 
+                                 << pDbMan->insertToBulkFromString( "CURRENCY"
+                                                                  , "0,INVALID,Invalid Currency value;"
+                                                                    "1,RUB,Russian Ruble;"
+                                                                    "2,USD:US Dollar;"
+                                                                    "3,EUR:European Euro;"
+                                                                    "4,GBP:Great Britain Pound Sterling;"
+                                                                    "5,HKD:Hong Kong Dollar;"
+                                                                    "6,CHF:Swiss Franc;"
+                                                                    "7,JPY:Japanese Yen;"
+                                                                    "8,CNY:Chinese Yuan;"
+                                                                    "9,TRY:Turkish Lira"
+                                                                  , tkf::modelTableGetColumnNames<tkf::Currency>()
+                                                                  );
+
+    qDebug().nospace().noquote() << "Fill 'INSTRUMENT_TYPE' table: " 
+                                 << pDbMan->insertToBulkFromString( "INSTRUMENT_TYPE"
+                                                                  , "0,INVALID,Invalid InstrumentType value;"
+                                                                    "1,STOCK,Stocks;"
+                                                                    "2,CURRENCY,Currencies;"
+                                                                    "3,BOND,Bonds;"
+                                                                    "4,ETF,Etfs"
+                                                                  , tkf::modelTableGetColumnNames<tkf::InstrumentType>()
+                                                                  );
+
+    qDebug().nospace().noquote() << "Fill 'CANDLE_RESOLUTION' table: " 
+                                 << pDbMan->insertToBulkFromString( "CANDLE_RESOLUTION"
+                                                                  , "0,INVALID,Invalid CandleResolution value;"
+                                                                    "1,_1MIN,1 min;"
+                                                                    "2,_2MIN,2 min;"
+                                                                    "3,_3MIN,3 min;"
+                                                                    "4,_5MIN,5 min;"
+                                                                    "5,_10MIN,10 min;"
+                                                                    "6,_15MIN,15 min;"
+                                                                    "7,_30MIN,30 min;"
+                                                                    "8,HOUR,Hour (60 min);"
+                                                                    "9,DAY,Day (1440 min);"
+                                                                    "10,WEEK,Week (10080 min);"
+                                                                    "11,MONTH,(Avg 43200 min)"
+                                                                  , tkf::modelTableGetColumnNames<tkf::CandleResolution>()
+                                                                  );
+
+    qDebug().nospace().noquote() << "Fill 'OPERATION_TYPE' table: " 
+                                 << pDbMan->insertToBulkFromString( "OPERATION_TYPE"
+                                                                  , "0,INVALID,Invalid OperationType value;"
+                                                                    "1,BUY,Purchaise;"
+                                                                    "2,SELL,Sell"
+                                                                  , tkf::modelTableGetColumnNames<tkf::OperationType>()
+                                                                  );
+
+    qDebug().nospace().noquote() << "Fill 'ORDER_STATUS' table: " 
+                                 << pDbMan->insertToBulkFromString( "ORDER_STATUS"
+                                                                  , "0,INVALID,Invalid OrderStatus value;"
+                                                                    "1,NEW,New order;"
+                                                                    "2,PARTIALLYFILL,Partially fill;"
+                                                                    "3,FILL,Fill;"
+                                                                    "4,CANCELLED,Cancelled;"
+                                                                    "5,REPLACED,Replaced;"
+                                                                    "6,PENDINGCANCEL,Pending cancel;"
+                                                                    "7,REJECTED,Rejected;"
+                                                                    "8,PENDINGREPLACE,Pending replace;"
+                                                                    "9,PENDINGNEW,Pending new"
+                                                                  , tkf::modelTableGetColumnNames<tkf::OrderStatus>()
+                                                                  );
+
+    qDebug().nospace().noquote() << "Fill 'ORDER_TYPE' table: " 
+                                 << pDbMan->insertToBulkFromString( "ORDER_TYPE"
+                                                                  , "0,INVALID,Invalid OrderType value;"
+                                                                    "1,LIMIT,Limit;"
+                                                                    "2,MARKET,Market"
+                                                                  , tkf::modelTableGetColumnNames<tkf::OrderType>()
+                                                                  );
+
+
+
 
 
     //cout<<"Found config file: " << lookupForConfigFile( "config.properties", "conf;config", FileReadable() ).toStdString() << endl;

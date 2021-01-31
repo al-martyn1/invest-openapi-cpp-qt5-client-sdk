@@ -229,7 +229,7 @@ protected:
     }
 
 
-
+    /*
     //------------------------------
     virtual bool insertTo( const QString &tableName, const QVector<QVariant> &vals, const QVector<QString> &tableColumns ) const override
     {
@@ -298,7 +298,7 @@ protected:
     {
         return insertTo( tableName, vals, splitString( tableColumns, ".,:;" ) );
     }
-
+    */
     
     
     
