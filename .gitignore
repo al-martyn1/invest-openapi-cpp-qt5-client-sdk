@@ -69,3 +69,5 @@
 /src/main/example002.cpp
 /vcxproj/example002.vcxproj
 /vcxproj/example002.vcxproj.filters
+/bat/call-vcvars-x64.bat
+/bat/call-vcvars-x86.bat

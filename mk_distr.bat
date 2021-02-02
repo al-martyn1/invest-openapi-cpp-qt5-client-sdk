@@ -1,24 +1,16 @@
 @call bat\setup-qt.bat
-@if exist _deploy rmdir /Q /S _deploy
-@mkdir _deploy
+@call bat\setup_output_root.bat
+@call bat\setup_deploy_root.bat create
 
-@mkdir _deploy\x64
-@mkdir _deploy\x64\Debug
-@mkdir _deploy\x64\Release
-@mkdir _deploy\x86
-@mkdir _deploy\x86\Debug
-@mkdir _deploy\x86\Release
+@echo Deploing msvc2017 x86 Debug
+@call mk_distr_single_conf.bat   msvc2017 x86 Debug
 
-@call cp_exe.bat
+@echo Deploing msvc2017 x86 Release
+@call mk_distr_single_conf.bat   msvc2017 x86 Release
 
-%QTDIR_X64%\bin\windeployqt.exe --help-all >windeployqt.txt
+@echo Deploing msvc2017 x64 Debug
+@call mk_distr_single_conf.bat   msvc2017 x64 Debug
 
-@call bat\call-vcvars64.bat
-@if exist _deploy\x64\Debug\*.exe     %QTDIR_X64%\bin\windeployqt.exe --debug   --compiler-runtime --network --sql _deploy\x64\Debug    > deploy.log
-@if exist _deploy\x64\Release\*.exe   %QTDIR_X64%\bin\windeployqt.exe --release --compiler-runtime --network --sql _deploy\x64\Release  >>deploy.log
-
-call bat\call-vcvars32.bat
-@if exist _deploy\x86\Debug\*.exe     %QTDIR_X86%\bin\windeployqt.exe --debug   --compiler-runtime --network --sql _deploy\x86\Debug    >>deploy.log
-@if exist _deploy\x86\Release\*.exe   %QTDIR_X86%\bin\windeployqt.exe --release --compiler-runtime --network --sql _deploy\x86\Release  >>deploy.log
-
+@echo Deploing msvc2017 x64 Release
+@call mk_distr_single_conf.bat   msvc2017 x64 Release
 

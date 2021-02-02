@@ -1,0 +1,6 @@
+@set DEPLOY_PATH=%DEPLOY_ROOT%\%TOOLSET%\%PLATFORM%\%CONFIGURATION%
+
+@if not exist "%DEPLOY_ROOT%" @mkdir "%DEPLOY_ROOT%"
+@if not exist "%DEPLOY_ROOT%\%TOOLSET%" @mkdir "%DEPLOY_ROOT%\%TOOLSET%"
+@if not exist "%DEPLOY_ROOT%\%TOOLSET%\%PLATFORM%" @mkdir "%DEPLOY_ROOT%\%TOOLSET%\%PLATFORM%"
+@if not exist "%DEPLOY_PATH%" @mkdir "%DEPLOY_PATH%"

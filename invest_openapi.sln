@@ -71,8 +71,14 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test015", "vcxproj\test015.vcxproj", "{B20197BE-16A6-4A0E-A410-47BA649DBFB9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_create_db", "vcxproj\_tkf_create_db.vcxproj", "{4EDA4FE9-A97D-4E2D-B06E-B5BFBAB7E2DC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_update_instruments", "vcxproj\_tkf_update_instruments.vcxproj", "{6B0A9F80-DEEE-45A2-8431-15C7361F5A8B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,16 @@
-@if exist _out\x64\Debug\*.exe    copy _out\x64\Debug\*.exe    _deploy\x64\Debug\
-@if exist _out\x64\Release\*.exe  copy _out\x64\Release\*.exe  _deploy\x64\Release\
-@if exist _out\x86\Debug\*.exe    copy _out\x86\Debug\*.exe    _deploy\x86\Debug\
-@if exist _out\x86\Release\*.exe  copy _out\x86\Release\*.exe  _deploy\x86\Release\
+@call bat\setup-qt.bat
+@call bat\setup_output_root.bat
+@call bat\setup_deploy_root.bat create
+
+@call bat\setup_toolset_platform_config.bat msvc2017 x86 Debug
+@call copy_exe_single_config.bat
+
+@call bat\setup_toolset_platform_config.bat msvc2017 x86 Release
+@call copy_exe_single_config.bat
+
+@call bat\setup_toolset_platform_config.bat msvc2017 x64 Debug
+@call copy_exe_single_config.bat
+
+@call bat\setup_toolset_platform_config.bat msvc2017 x64 Release
+@call copy_exe_single_config.bat
+

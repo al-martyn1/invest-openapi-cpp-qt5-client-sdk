@@ -38,7 +38,7 @@ struct AuthConfig
     void load( const QSettings &settings )
     {
         token        = settings.value("token")       .toString();
-        sanboxToken  = settings.value("sanboxtoken") .toString();
+        sanboxToken  = settings.value("sanbox-token") .toString();
         sandboxMode  = settings.value("sandbox-mode").toBool();
     }
 

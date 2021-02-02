@@ -45,23 +45,23 @@
     <QtMsBuild>$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)\_out\$(PlatformShortName)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)\_out\$(PlatformShortName)\$(Configuration)\_$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\_$(ProjectName)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\xlibs\sfmt\inc;$(ProjectDir)\..\..;$(ProjectDir)\./src;$(ProjectDir)\./xlibs;$(ProjectDir)\.\xlibs\sfmt\inc</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)\_out\$(PlatformShortName)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)\_out\$(PlatformShortName)\$(Configuration)\_$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\_$(ProjectName)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\xlibs\sfmt\inc;$(ProjectDir)\..\..;$(ProjectDir)\./src;$(ProjectDir)\./xlibs;$(ProjectDir)\.\xlibs\sfmt\inc</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)\_out\$(PlatformShortName)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)\_out\$(PlatformShortName)\$(Configuration)\_$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\_$(ProjectName)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\xlibs\sfmt\inc;$(ProjectDir)\..\..;$(ProjectDir)\./src;$(ProjectDir)\./xlibs;$(ProjectDir)\.\xlibs\sfmt\inc</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)\_out\$(PlatformShortName)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)\_out\$(PlatformShortName)\$(Configuration)\_$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\_$(ProjectName)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\xlibs\sfmt\inc;$(ProjectDir)\..\..;$(ProjectDir)\./src;$(ProjectDir)\./xlibs;$(ProjectDir)\.\xlibs\sfmt\inc</IncludePath>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -92,7 +92,7 @@
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(BOOST);$(SolutionDir)\src\yaml-cpp\include;.;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST);$(SolutionDir)\src\yaml-cpp\include;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
@@ -105,7 +105,7 @@
     </Link>
     <QtMoc>
       <Define>UMBA_USE_QT;USE_LOUT;UNICODE;_UNICODE;WIN32;WIN64;QT_CORE_LIB;QT_SERIALPORT_LIB;QT_TESTLIB_LIB;QT_SERIALBUS_LIB;QT_WEBSOCKETS_LIB;QT_NETWORK_LIB;QT_NETWORKAUTH_LIB;QT_UITOOLS_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</Define>
-      <IncludePath>$(BOOST);.;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</IncludePath>
+      <IncludePath>$(BOOST);$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</IncludePath>
       <OutputFile>$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
     </QtMoc>
@@ -113,11 +113,11 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>UMBA_USE_QT;USE_LOUT;UNICODE;_UNICODE;WIN32;WIN64;QT_CORE_LIB;QT_SERIALPORT_LIB;QT_TESTLIB_LIB;QT_SERIALBUS_LIB;QT_WEBSOCKETS_LIB;QT_NETWORK_LIB;QT_NETWORKAUTH_LIB;QT_UITOOLS_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UMBA_USE_QT;USE_LOUT;UNICODE;_UNICODE;WIN32;QT_CORE_LIB;QT_SERIALPORT_LIB;QT_TESTLIB_LIB;QT_SERIALBUS_LIB;QT_WEBSOCKETS_LIB;QT_NETWORK_LIB;QT_NETWORKAUTH_LIB;QT_UITOOLS_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(BOOST);$(SolutionDir)\src\yaml-cpp\include;.;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST);$(SolutionDir)\src\yaml-cpp\include;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
@@ -129,8 +129,8 @@
       <GenerateMapFile>true</GenerateMapFile>
     </Link>
     <QtMoc>
-      <Define>UMBA_USE_QT;USE_LOUT;UNICODE;_UNICODE;WIN32;WIN64;QT_CORE_LIB;QT_SERIALPORT_LIB;QT_TESTLIB_LIB;QT_SERIALBUS_LIB;QT_WEBSOCKETS_LIB;QT_NETWORK_LIB;QT_NETWORKAUTH_LIB;QT_UITOOLS_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</Define>
-      <IncludePath>$(BOOST);.;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</IncludePath>
+      <Define>UMBA_USE_QT;USE_LOUT;UNICODE;_UNICODE;WIN32;QT_CORE_LIB;QT_SERIALPORT_LIB;QT_TESTLIB_LIB;QT_SERIALBUS_LIB;QT_WEBSOCKETS_LIB;QT_NETWORK_LIB;QT_NETWORKAUTH_LIB;QT_UITOOLS_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</Define>
+      <IncludePath>$(BOOST);$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</IncludePath>
       <OutputFile>$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
     </QtMoc>
@@ -141,7 +141,7 @@
       <PreprocessorDefinitions>UMBA_USE_QT;USE_LOUT;UNICODE;_UNICODE;WIN32;WIN64;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_SERIALPORT_LIB;QT_TESTLIB_LIB;QT_SERIALBUS_LIB;QT_WEBSOCKETS_LIB;QT_NETWORK_LIB;QT_NETWORKAUTH_LIB;QT_UITOOLS_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(BOOST);$(SolutionDir)\src\yaml-cpp\include;.;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST);$(SolutionDir)\src\yaml-cpp\include;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
@@ -154,7 +154,7 @@
     </Link>
     <QtMoc>
       <Define>UMBA_USE_QT;USE_LOUT;UNICODE;_UNICODE;WIN32;WIN64;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_SERIALPORT_LIB;QT_TESTLIB_LIB;QT_SERIALBUS_LIB;QT_WEBSOCKETS_LIB;QT_NETWORK_LIB;QT_NETWORKAUTH_LIB;QT_UITOOLS_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</Define>
-      <IncludePath>$(BOOST);.;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</IncludePath>
+      <IncludePath>$(BOOST);$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</IncludePath>
       <OutputFile>$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
     </QtMoc>
@@ -162,11 +162,11 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>UMBA_USE_QT;USE_LOUT;UNICODE;_UNICODE;WIN32;WIN64;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_SERIALPORT_LIB;QT_TESTLIB_LIB;QT_SERIALBUS_LIB;QT_WEBSOCKETS_LIB;QT_NETWORK_LIB;QT_NETWORKAUTH_LIB;QT_UITOOLS_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UMBA_USE_QT;USE_LOUT;UNICODE;_UNICODE;WIN32;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_SERIALPORT_LIB;QT_TESTLIB_LIB;QT_SERIALBUS_LIB;QT_WEBSOCKETS_LIB;QT_NETWORK_LIB;QT_NETWORKAUTH_LIB;QT_UITOOLS_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(BOOST);$(SolutionDir)\src\yaml-cpp\include;.;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOST);$(SolutionDir)\src\yaml-cpp\include;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
@@ -178,8 +178,8 @@
       <GenerateMapFile>true</GenerateMapFile>
     </Link>
     <QtMoc>
-      <Define>UMBA_USE_QT;USE_LOUT;UNICODE;_UNICODE;WIN32;WIN64;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_SERIALPORT_LIB;QT_TESTLIB_LIB;QT_SERIALBUS_LIB;QT_WEBSOCKETS_LIB;QT_NETWORK_LIB;QT_NETWORKAUTH_LIB;QT_UITOOLS_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</Define>
-      <IncludePath>$(BOOST);.;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</IncludePath>
+      <Define>UMBA_USE_QT;USE_LOUT;UNICODE;_UNICODE;WIN32;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_SERIALPORT_LIB;QT_TESTLIB_LIB;QT_SERIALBUS_LIB;QT_WEBSOCKETS_LIB;QT_NETWORK_LIB;QT_NETWORKAUTH_LIB;QT_UITOOLS_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</Define>
+      <IncludePath>$(BOOST);$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</IncludePath>
       <OutputFile>$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
     </QtMoc>
