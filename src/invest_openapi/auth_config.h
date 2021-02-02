@@ -27,19 +27,25 @@ namespace invest_openapi
 struct AuthConfig
 {
     QString  token;
+    QString  sanboxToken;
     bool     sandboxMode = false;
 
+    QString getToken() const
+    {
+        return sandboxMode ? sanboxToken : token;
+    }
 
     void load( const QSettings &settings )
     {
-        token        = settings.value("token").toString();
+        token        = settings.value("token")       .toString();
+        sanboxToken  = settings.value("sanboxtoken") .toString();
         sandboxMode  = settings.value("sandbox-mode").toBool();
     }
 
     void checkValid() const
     {
-        if (token.isEmpty())
-            throw std::runtime_error("Token is empty ('token')");
+        // if (token.isEmpty())
+        //     throw std::runtime_error("Token is empty ('token')");
     }
 
     AuthConfig( const QSettings &settings )
@@ -55,9 +61,10 @@ struct AuthConfig
         checkValid();
     }
 
-    AuthConfig( const QString &tk, bool sm )
+    AuthConfig( const QString &tk, const QString &smbxtk, bool sm )
     {
         token       = tk;
+        sanboxToken = smbxtk;
         sandboxMode = sm;
     }
 

@@ -30,9 +30,9 @@ class OpenApiFactory
 public:
 
 
-    OpenApiFactory( const ApiConfig &apiConfig, const QString &token, bool sandboxMode )
+    OpenApiFactory( const ApiConfig &apiConfig, const QString &token, const QString &sandboxToken, bool sandboxMode )
     : m_apiConfig(apiConfig)
-    , m_authConfig( token, sandboxMode )
+    , m_authConfig( token, sandboxToken, sandboxMode )
     {
         m_apiConfig.checkValid();
         m_authConfig.checkValid();
@@ -72,7 +72,7 @@ protected:
             return QSharedPointer<ApiType>(pApi);
         }
 
-        pApi->addHeaders( "Authorization", QString("Bearer ") + m_authConfig.token );
+        pApi->addHeaders( "Authorization", QString("Bearer ") + m_authConfig.getToken() );
         pApi->addHeaders( "Accept", "application/json" );
 
         return QSharedPointer<ApiType>(pApi);
@@ -96,7 +96,7 @@ protected:
         if (!pApi)
             return pApi;
 
-        pApi->addHeaders( "Authorization", QString("Bearer ") + m_authConfig.token );
+        pApi->addHeaders( "Authorization", QString("Bearer ") + m_authConfig.getToken() );
         pApi->addHeaders( "Accept", "application/json" );
 
         return pApi;
@@ -111,7 +111,7 @@ protected:
         if (!pApi)
             return pApi;
 
-        pApi->addHeaders( "Authorization", QString("Bearer ") + m_authConfig.token );
+        pApi->addHeaders( "Authorization", QString("Bearer ") + m_authConfig.getToken() );
         pApi->addHeaders( "Accept", "application/json" );
         
         return pApi;

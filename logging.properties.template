@@ -1,2 +1,3 @@
 logging.debug.dump.requests  = true
-logging.debug.dump.responses = true
+logging.debug.dump.responses = false
+logging.debug.dump.sql       = false
