@@ -73,7 +73,7 @@ INVEST_OPENAPI_MAIN()
                                                                , lookupForConfigFile( "logging.properties" , "conf;config", FileReadable() )
                                                                );
 
-    auto instrumentList = tkf::toInstrumentList<double>( tkf::joinAndGetPayload(pOpenApi->marketInstruments()).getInstruments() );
+    auto instrumentList = tkf::toInstrumentList<double>( tkf::joinAndGetPayload(pOpenApi->marketInstruments(tkf::InstrumentType("STOCK"))).getInstruments() );
 
     auto isinFigiMap   = tkf::makeIsinFigiMap(instrumentList);
     auto tickerFigiMap = tkf::makeTickerFigiMap(instrumentList);

@@ -4,6 +4,12 @@
 
 #pragma once
 
+
+// Public Morozoff
+// there is no legal way to access *_isValid field
+//#define private public
+
+
 #include "models/client/BrokerAccountType.h"
 #include "models/client/Candle.h"
 #include "models/client/CandleResolution.h"
@@ -69,6 +75,8 @@
 #include "models/client/UserAccountsResponse.h"
 #include "models/client/UserApi.h"
 
+
+// #undef private
 
 
 namespace invest_openapi

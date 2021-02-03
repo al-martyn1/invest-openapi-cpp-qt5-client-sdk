@@ -106,10 +106,15 @@ struct IOpenApi
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketCurrencies() );
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketEtfs() );
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketStocks() );
+
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketInstruments( const InstrumentType &instrumentType ) );
+
+    /*
+    // Не работает без Паблика Морозова, поэтому лучше по отдельности будем дергать
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketInstruments( InstrumentType::eInstrumentType instrumentType ) );
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketInstruments( const QString &instrumentType ) );
     TKF_IOA_ABSTRACT_METHOD( MarketInstrumentListResponse, marketInstruments( ) ); // All instruments
+    */
 
     // Границы интервала дат для получения данных по свечам см. doc/candle_intervals.png
     /*
@@ -347,6 +352,7 @@ public:
         return marketStocks();
     }
 
+    /*
     //------------------------------
     TKF_IOA_METHOD_IMPL( MarketInstrumentListResponse, marketInstruments( InstrumentType::eInstrumentType instrumentType ) )
     {
@@ -383,6 +389,7 @@ public:
 
         return resStocks;
     }
+    */
 
     //------------------------------
     TKF_IOA_METHOD_IMPL( CandlesResponse, marketCandles( const QString &figi, const QDateTime &from, const QDateTime &to, const CandleResolution &interval ) )
@@ -589,7 +596,10 @@ protected:
     {
         QList<MarketInstrument> listTo = mergeTo.getPayload().getInstruments();
         listTo.append(mergeFrom.getPayload().getInstruments());
-        MarketInstrumentList tmp; tmp.setInstruments(listTo);
+        MarketInstrumentList tmp;
+        tmp.setInstruments(listTo);
+        tmp.setTotal(listTo.size());
+        //tmp.m_total_isValid = true;   // use Public Morozoff in models.h
         mergeTo.setPayload(tmp);
     }
 

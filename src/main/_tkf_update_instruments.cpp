@@ -70,10 +70,41 @@ INVEST_OPENAPI_MAIN()
         pSandboxOpenApi->setBrokerAccountId( sandboxRegisterRes->value.getPayload().getBrokerAccountId() );
     }
 
-    auto instrumentList = tkf::toInstrumentList<double>( tkf::joinAndGetPayload(pOpenApi->marketInstruments()).getInstruments() );
+    //auto instrumentList = tkf::toInstrumentList<double>( tkf::joinAndGetPayload(pOpenApi->marketInstruments()).getInstruments() );
 
-    auto isinFigiMap   = tkf::makeIsinFigiMap(instrumentList);
-    auto tickerFigiMap = tkf::makeTickerFigiMap(instrumentList);
+    //auto isinFigiMap   = tkf::makeIsinFigiMap(instrumentList);
+    //auto tickerFigiMap = tkf::makeTickerFigiMap(instrumentList);
+
+    /*
+    auto stocks     = pOpenApi->marketInstruments( tkf::InstrumentType("STOCK"   ) );
+    auto currencies = pOpenApi->marketInstruments( tkf::InstrumentType("CURRENCY") );
+    auto bonds      = pOpenApi->marketInstruments( tkf::InstrumentType("BOND"    ) );
+    auto etfs       = pOpenApi->marketInstruments( tkf::InstrumentType("ETF"     ) );
+
+    //response->join();
+    //checkAbort(response);
+    //return response->value.getPayload();
+
+    */
+
+    QVector< QSharedPointer< tkf::OpenApiCompletableFuture< tkf::MarketInstrumentListResponse > > > instrumentResults;
+    instrumentResults.push_back( pOpenApi->marketInstruments( tkf::InstrumentType("STOCK"   ) ) );
+    instrumentResults.push_back( pOpenApi->marketInstruments( tkf::InstrumentType("CURRENCY") ) );
+    instrumentResults.push_back( pOpenApi->marketInstruments( tkf::InstrumentType("BOND"    ) ) );
+    instrumentResults.push_back( pOpenApi->marketInstruments( tkf::InstrumentType("ETF"     ) ) );
+
+    tkf::joinOpenApiCompletableFutures(instrumentResults);
+
+    for( auto response : instrumentResults )
+    {
+        auto marketInstrumentList = response->value.getPayload();
+        auto instrumentsList = marketInstrumentList.getInstruments();
+
+        for(const auto &instrument : instrumentsList)
+        {
+        
+        }
+    }
 
     /*
     for(const auto &instrument : list)

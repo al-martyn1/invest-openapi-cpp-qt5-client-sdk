@@ -73,7 +73,7 @@ INVEST_OPENAPI_MAIN()
                                                                , lookupForConfigFile( "logging.properties" , "conf;config", FileReadable() )
                                                                );
 
-    auto marketInstruments = pOpenApi->marketInstruments();
+    auto marketInstruments = pOpenApi->marketInstruments( tkf::InstrumentType("STOCK"   ) );
     marketInstruments->join();
     auto marketInstrumentList = marketInstruments->value.getPayload().getInstruments();
     auto instrumentList = tkf::toInstrumentList<double>(marketInstrumentList);
