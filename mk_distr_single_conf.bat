@@ -7,14 +7,15 @@
 @call "%~dp0\bat\setup_deploy_path.bat"
 @call "%~dp0\copy_exe_single_config.bat"
 
-@echo call VC bat confuguration file
-@call "%~dp0\bat\setup-toolset-vars-%TOOLSET%-%PLATFORM%.bat"
+echo call VC bat confuguration file
+call "%~dp0\bat\setup-toolset-vars-%TOOLSET%-%PLATFORM%.bat"
 
 @set WINDEPLOYQT_MODULES=--compiler-runtime --network --sql
 
-@echo Executing %WINDEPLOYQT% %WINDEPLOYQT_MODULES% "%~dp0\%DEPLOY_PATH%\"
+@echo Executing %WINDEPLOYQT% %WINDEPLOYQT_MODULES% "%DEPLOY_PATH%"
 @rem if exist "%DEPLOY_PATH%\*.exe" 
-"%WINDEPLOYQT%" --verbose 2 %WINDEPLOYQT_MODULES% "%~dp0\%DEPLOY_PATH%\"
+@rem --verbose 2
+%WINDEPLOYQT% %WINDEPLOYQT_MODULES% "%DEPLOY_PATH%"
 @echo Deploing done with result %ERRORLEVEL%
 @exit /B
 
