@@ -15,13 +15,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <QTDIR>D:\Qt\Qt5.14.0\5.14.0\msvc2017_64\</QTDIR>
+    <QTDIR>D:\Qt\Qt5.14.0\5.14.0\msvc2017_64</QTDIR>
     <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b$(PATH)</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)</LocalDebuggerWorkingDirectory>
-    <QTDIR>D:\Qt\Qt5.14.0\5.14.0\msvc2017_64\</QTDIR>
+    <QTDIR>D:\Qt\Qt5.14.0\5.14.0\msvc2017_64</QTDIR>
     <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b$(PATH)</LocalDebuggerEnvironment>
   </PropertyGroup>
 </Project>

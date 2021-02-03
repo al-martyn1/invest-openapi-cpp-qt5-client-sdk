@@ -8,7 +8,7 @@
 @call copy_exe_single_config.bat
 
 @echo call VC bat confuguration file
-@call "bat\call-vcvars-%PLATFORM%.bat"
+@call "bat\setup-toolset-vars-%TOOLSET%-%PLATFORM%.bat"
 
 @set WINDEPLOYQT_MODULES=--compiler-runtime --network --sql
 

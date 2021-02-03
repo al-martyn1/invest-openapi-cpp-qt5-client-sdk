@@ -1,19 +1,42 @@
-if "%1" == "" goto test_name_not_taken
+@if "%1" == "" goto NAME_NOT_TAKEN
 
-set ARCH=x64
-if "%2" NEQ "" @set ARCH="%2"
+@set INPUT_MASK=*
+@if "%1" NEQ "" set INPUT_MASK=%1
 
-set RELEASE_TYPE=Debug
-if "%3" NEQ "" @set RELEASE_TYPE="%3"
+@set INPUT_EXT=%~x1
+
+@set MASK=%INPUT_MASK%
+@if "%INPUT_EXT%"=="" set MASK=%INPUT_MASK%.exe
+
+@echo MASK - %MASK%
+
+@set TSET=msvc2017
+@if "%2" NEQ "" @set TSET="%2"
+
+@set ARCH=x64
+@if "%2" NEQ "" @set ARCH="%2"
+
+@set REL_TYPE=Debug
+@if "%3" NEQ "" @set RELEASE_TYPE="%3"
+
+@call bat\setup_deploy_root.bat
+@call bat\setup_deploy_path.bat
+@call bat\setup_output_root.bat
+@call bat\setup_toolset_platform_config.bat %TSET% %ARCH% %REL_TYPE%
 
 @set RUN_LOGS=_run_logs
 @if not exist %RUN_LOGS% mkdir %RUN_LOGS%
 
-_deploy\%ARCH%\%RELEASE_TYPE%\%1.exe  > %RUN_LOGS%\%1.log  2>&1
-@goto done
+@for %%i in ("%DEPLOY_PATH%\%MASK%") do "%%i" > "%RUN_LOGS%\%%~ni.log"
+@rem (
+@rem     @echo Test  name - %%i
+@rem     @echo Short name - %%~si
+@rem     @echo Name only  - %%~ni
+@rem     @echo ---
+@rem )
 
-:test_name_not_taken
-@call bat\run_tests.bat x64 Debug
+exit /B
 
-:done
-@echo Test done
+
+:NAME_NOT_TAKEN
+@echo Test name not taken
