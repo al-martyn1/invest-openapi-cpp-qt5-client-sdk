@@ -10,4 +10,4 @@
 :src_assigned
 @set EXT=vcxproj.user
 
-@if not exist vcxproj\%DST%.%EXT% copy /Y vcxproj\%SRC% vcxproj\%DST%.%EXT%
+@if not exist "%~dp0\vcxproj\%DST%.%EXT%" copy /Y "%~dp0\vcxproj\%SRC%" "%~dp0\vcxproj\%DST%.%EXT%"

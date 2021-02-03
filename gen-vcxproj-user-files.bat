@@ -1,1 +1,1 @@
-call bat\gen-vcxproj-user-files.bat
+call "%~dp0\bat\gen-vcxproj-user-files.bat"

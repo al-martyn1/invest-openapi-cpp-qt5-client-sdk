@@ -6,19 +6,19 @@
 @if "%1"=="" goto arg_not_taken
 
 @set TEST=%1
-@if exist vcxproj\%TEST%.vcxproj goto already_exist
+@if exist "%~dp0\vcxproj\%TEST%.vcxproj" goto already_exist
 
-@rem umba-mm-tpl -i vcxproj\_filters.template -o vcxproj\%TEST%.vcxproj.filters TEST_NAME=%TEST%
-@rem umba-mm-tpl -i vcxproj\_user.template    -o vcxproj\%TEST%.vcxproj.user    TEST_NAME=%TEST%
+@rem umba-mm-tpl -i "%~dp0\vcxproj\_filters.template" -o "%~dp0\vcxproj\%TEST%.vcxproj.filters" TEST_NAME=%TEST%
+@rem umba-mm-tpl -i "%~dp0\vcxproj\_user.template"    -o "%~dp0\vcxproj\%TEST%.vcxproj.user"    TEST_NAME=%TEST%
 
-@copy /Y vcxproj\_filters.template vcxproj\%TEST%.vcxproj.filters
-@copy /Y vcxproj\_user.template    vcxproj\%TEST%.vcxproj.user
-@copy /Y vcxproj\_vcxproj.template vcxproj\%TEST%.vcxproj
-@copy /Y src\main\_cpp.template    src\main\%TEST%.cpp
+@copy /Y "%~dp0\vcxproj\_filters.template" "%~dp0\vcxproj\%TEST%.vcxproj.filters"
+@copy /Y "%~dp0\vcxproj\_user.template"    "%~dp0\vcxproj\%TEST%.vcxproj.user"
+@copy /Y "%~dp0\vcxproj\_vcxproj.template" "%~dp0\vcxproj\%TEST%.vcxproj"
+@copy /Y "%~dp0\src\main\_cpp.template"    "%~dp0\src\main\%TEST%.cpp"
 
-git add vcxproj\%TEST%.vcxproj.filters
-git add vcxproj\%TEST%.vcxproj
-git add src\main\%TEST%.cpp
+git add "%~dp0\vcxproj\%TEST%.vcxproj.filters"
+git add "%~dp0\vcxproj\%TEST%.vcxproj"
+git add "%~dp0\src\main\%TEST%.cpp"
 
 @echo Replace %%(TEST_NAME)%% to your test name in files
 

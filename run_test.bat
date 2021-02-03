@@ -19,13 +19,13 @@
 @set REL_TYPE=Debug
 @if "%3" NEQ "" @set RELEASE_TYPE="%3"
 
-@call bat\setup_deploy_root.bat
-@call bat\setup_deploy_path.bat
-@call bat\setup_output_root.bat
-@call bat\setup_toolset_platform_config.bat %TSET% %ARCH% %REL_TYPE%
+@call "%~dp0\bat\setup_deploy_root.bat"
+@call "%~dp0\bat\setup_deploy_path.bat"
+@call "%~dp0\bat\setup_output_root.bat"
+@call "%~dp0\bat\setup_toolset_platform_config.bat" %TSET% %ARCH% %REL_TYPE%
 
-@set RUN_LOGS=_run_logs
-@if not exist %RUN_LOGS% mkdir %RUN_LOGS%
+@set RUN_LOGS=%~dp0\_run_logs
+@if not exist "%RUN_LOGS%" mkdir "%RUN_LOGS%"
 
 @for %%i in ("%DEPLOY_PATH%\%MASK%") do "%%i" > "%RUN_LOGS%\%%~ni.log"
 @rem (

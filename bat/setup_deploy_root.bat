@@ -1,4 +1,4 @@
-@set DEPLOY_ROOT=_deploy
+@set DEPLOY_ROOT=%~dp0\_deploy
 
 @if "%1" NEQ "create" goto END
 
