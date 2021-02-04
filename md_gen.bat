@@ -2,7 +2,7 @@
 
 @call "%~dp0\cp_exe.bat"
 
-@set GEN=%~dp0\_deploy\x64\Debug\md_gen.exe
+@set GEN=%~dp0\_deploy\msvc2017\x64\Debug\md_gen.exe
 @set YAML=%~dp0\..\pptrade\_invest-openapi\invest-openapi\src\docs\swagger-ui\swagger.yaml
 @set TARGET=-
 @set TARGET_PATH=%~dp0\src\invest_openapi

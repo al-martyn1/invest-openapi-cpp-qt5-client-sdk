@@ -20,53 +20,81 @@ using namespace OpenAPI;
 //----------------------------------------------------------------------------
 
 
+
+
 //----------------------------------------------------------------------------
 #ifndef INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED
 #define INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED
 
-QVector<QString> modelToStrings( const Empty &v );
-QVector<QString> modelToStrings( const Error &v );
-QVector<QString> modelToStrings( const UserAccount &v );
-QVector<QString> modelToStrings( const CurrencyPosition &v );
-QVector<QString> modelToStrings( const PortfolioPosition &v );
-QVector<QString> modelToStrings( const MoneyAmount &v );
-QVector<QString> modelToStrings( const Candle &v );
-QVector<QString> modelToStrings( const OperationTrade &v );
-QVector<QString> modelToStrings( const Order &v );
-QVector<QString> modelToStrings( const PlacedLimitOrder &v );
-QVector<QString> modelToStrings( const PlacedMarketOrder &v );
-QVector<QString> modelToStrings( const SandboxAccount &v );
-QVector<QString> modelToStrings( const SearchMarketInstrument &v );
-QVector<QString> modelToStrings( const MarketInstrument &v );
+QVector<QString> modelToStrings( const Empty                    &v );
+QVector<QString> modelToStrings( const Error                    &v );
+QVector<QString> modelToStrings( const UserAccount              &v );
+QVector<QString> modelToStrings( const CurrencyPosition         &v );
+QVector<QString> modelToStrings( const PortfolioPosition        &v );
+QVector<QString> modelToStrings( const MoneyAmount              &v );
+QVector<QString> modelToStrings( const Candle                   &v );
+QVector<QString> modelToStrings( const OperationTrade           &v );
+QVector<QString> modelToStrings( const Order                    &v );
+QVector<QString> modelToStrings( const PlacedLimitOrder         &v );
+QVector<QString> modelToStrings( const PlacedMarketOrder        &v );
+QVector<QString> modelToStrings( const SandboxAccount           &v );
+QVector<QString> modelToStrings( const SearchMarketInstrument   &v );
+QVector<QString> modelToStrings( const MarketInstrument         &v );
 
 #endif /* INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED */
 //----------------------------------------------------------------------------
 
 
 
+
 //----------------------------------------------------------------------------
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Empty >( const QString &nameOrPrefix, bool forInlining );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Error >( const QString &nameOrPrefix, bool forInlining );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< UserAccount >( const QString &nameOrPrefix, bool forInlining );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< CurrencyPosition >( const QString &nameOrPrefix, bool forInlining );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PortfolioPosition >( const QString &nameOrPrefix, bool forInlining );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MoneyAmount >( const QString &nameOrPrefix, bool forInlining );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Candle >( const QString &nameOrPrefix, bool forInlining );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< OperationTrade >( const QString &nameOrPrefix, bool forInlining );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Order >( const QString &nameOrPrefix, bool forInlining );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedLimitOrder >( const QString &nameOrPrefix, bool forInlining );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedMarketOrder >( const QString &nameOrPrefix, bool forInlining );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SandboxAccount >( const QString &nameOrPrefix, bool forInlining );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SearchMarketInstrument >( const QString &nameOrPrefix, bool forInlining );
-template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MarketInstrument >( const QString &nameOrPrefix, bool forInlining );
+#ifndef INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_DECLARED
+#define INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_DECLARED
+
+template< > inline QVector<QString> modelTableGetColumnNames< Empty                    >( const QString &prefix );
+template< > inline QVector<QString> modelTableGetColumnNames< Error                    >( const QString &prefix );
+template< > inline QVector<QString> modelTableGetColumnNames< UserAccount              >( const QString &prefix );
+template< > inline QVector<QString> modelTableGetColumnNames< CurrencyPosition         >( const QString &prefix );
+template< > inline QVector<QString> modelTableGetColumnNames< PortfolioPosition        >( const QString &prefix );
+template< > inline QVector<QString> modelTableGetColumnNames< MoneyAmount              >( const QString &prefix );
+template< > inline QVector<QString> modelTableGetColumnNames< Candle                   >( const QString &prefix );
+template< > inline QVector<QString> modelTableGetColumnNames< OperationTrade           >( const QString &prefix );
+template< > inline QVector<QString> modelTableGetColumnNames< Order                    >( const QString &prefix );
+template< > inline QVector<QString> modelTableGetColumnNames< PlacedLimitOrder         >( const QString &prefix );
+template< > inline QVector<QString> modelTableGetColumnNames< PlacedMarketOrder        >( const QString &prefix );
+template< > inline QVector<QString> modelTableGetColumnNames< SandboxAccount           >( const QString &prefix );
+template< > inline QVector<QString> modelTableGetColumnNames< SearchMarketInstrument   >( const QString &prefix );
+template< > inline QVector<QString> modelTableGetColumnNames< MarketInstrument         >( const QString &prefix );
+
+#endif /* INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_DECLARED */
 //----------------------------------------------------------------------------
 
+
+
+//----------------------------------------------------------------------------
+
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Empty                    >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Error                    >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< UserAccount              >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< CurrencyPosition         >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PortfolioPosition        >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MoneyAmount              >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Candle                   >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< OperationTrade           >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Order                    >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedLimitOrder         >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedMarketOrder        >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SandboxAccount           >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SearchMarketInstrument   >( const QString &nameOrPrefix, bool forInlining );
+template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MarketInstrument         >( const QString &nameOrPrefix, bool forInlining );
+//----------------------------------------------------------------------------
 
 
 
 //----------------------------------------------------------------------------
 #ifndef INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED
 #define INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED
+
 
 //----------------------------------------------------------------------------
 //! Converts Empty to QVector of QString's 
@@ -683,8 +711,242 @@ inline QVector<QString> modelToStrings( const MarketInstrument &v )
 }
 
 #endif /* INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED */
+//----------------------------------------------------------------------------
+
+
+
 
 //----------------------------------------------------------------------------
+#ifndef INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_IMPLEMENTED
+#define INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_IMPLEMENTED
+
+
+//----------------------------------------------------------------------------
+//! Get column names for Empty
+template< > inline QVector<QString> modelTableGetColumnNames< Empty >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector(resVec, "TRACKING_ID");
+    appendToStringVector(resVec, "PAYLOAD");
+    appendToStringVector(resVec, "STATUS");
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+//! Get column names for Error
+template< > inline QVector<QString> modelTableGetColumnNames< Error >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector(resVec, "TRACKING_ID");
+    appendToStringVector(resVec, "STATUS");
+    appendToStringVector(resVec, "PAYLOAD");
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+//! Get column names for UserAccount
+template< > inline QVector<QString> modelTableGetColumnNames< UserAccount >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector( resVec, modelTableGetColumnNames<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE" ) ); // brokerAccountType
+    appendToStringVector(resVec, "BROKER_ACCOUNT_ID");
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+//! Get column names for CurrencyPosition
+template< > inline QVector<QString> modelTableGetColumnNames< CurrencyPosition >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector( resVec, modelTableGetColumnNames<Currency>( p + "CURRENCY" ) ); // currency
+    appendToStringVector(resVec, "BALANCE");
+    appendToStringVector(resVec, "BLOCKED");
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+//! Get column names for PortfolioPosition
+template< > inline QVector<QString> modelTableGetColumnNames< PortfolioPosition >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector(resVec, "FIGI");
+    appendToStringVector(resVec, "TICKER");
+    appendToStringVector(resVec, "ISIN");
+    appendToStringVector( resVec, modelTableGetColumnNames<InstrumentType>( p + "INSTRUMENT_TYPE" ) ); // instrumentType
+    appendToStringVector(resVec, "BALANCE");
+    appendToStringVector(resVec, "BLOCKED");
+    appendToStringVector( resVec, modelTableGetColumnNames<MoneyAmount>( p + "EXPECTED_YIELD_MONEY_AMOUNT" ) ); // expectedYield
+    appendToStringVector(resVec, "LOTS");
+    appendToStringVector( resVec, modelTableGetColumnNames<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_MONEY_AMOUNT" ) ); // averagePositionPrice
+    appendToStringVector( resVec, modelTableGetColumnNames<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_NO_NKD_MONEY_AMOUNT" ) ); // averagePositionPriceNoNkd
+    appendToStringVector(resVec, "NAME");
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+//! Get column names for MoneyAmount
+template< > inline QVector<QString> modelTableGetColumnNames< MoneyAmount >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector( resVec, modelTableGetColumnNames<Currency>( p + "CURRENCY" ) ); // currency
+    appendToStringVector(resVec, "VALUE");
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+//! Get column names for Candle
+template< > inline QVector<QString> modelTableGetColumnNames< Candle >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector(resVec, "FIGI");
+    appendToStringVector( resVec, modelTableGetColumnNames<CandleResolution>( p + "INTERVAL_CANDLE_RESOLUTION" ) ); // interval
+    appendToStringVector(resVec, "O");
+    appendToStringVector(resVec, "C");
+    appendToStringVector(resVec, "H");
+    appendToStringVector(resVec, "L");
+    appendToStringVector(resVec, "V");
+    appendToStringVector(resVec, "TIME");
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+//! Get column names for OperationTrade
+template< > inline QVector<QString> modelTableGetColumnNames< OperationTrade >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector(resVec, "TRADE_ID");
+    appendToStringVector(resVec, "DATE");
+    appendToStringVector(resVec, "PRICE");
+    appendToStringVector(resVec, "QUANTITY");
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+//! Get column names for Order
+template< > inline QVector<QString> modelTableGetColumnNames< Order >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector(resVec, "ORDER_ID");
+    appendToStringVector(resVec, "FIGI");
+    appendToStringVector( resVec, modelTableGetColumnNames<OperationType>( p + "OPERATION_TYPE" ) ); // operation
+    appendToStringVector( resVec, modelTableGetColumnNames<OrderStatus>( p + "ORDER_STATUS" ) ); // status
+    appendToStringVector(resVec, "REQUESTED_LOTS");
+    appendToStringVector(resVec, "EXECUTED_LOTS");
+    appendToStringVector( resVec, modelTableGetColumnNames<OrderType>( p + "ORDER_TYPE" ) ); // type
+    appendToStringVector(resVec, "PRICE");
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+//! Get column names for PlacedLimitOrder
+template< > inline QVector<QString> modelTableGetColumnNames< PlacedLimitOrder >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector(resVec, "ORDER_ID");
+    appendToStringVector( resVec, modelTableGetColumnNames<OperationType>( p + "OPERATION_TYPE" ) ); // operation
+    appendToStringVector( resVec, modelTableGetColumnNames<OrderStatus>( p + "ORDER_STATUS" ) ); // status
+    appendToStringVector(resVec, "REJECT_REASON");
+    appendToStringVector(resVec, "MESSAGE");
+    appendToStringVector(resVec, "REQUESTED_LOTS");
+    appendToStringVector(resVec, "EXECUTED_LOTS");
+    appendToStringVector( resVec, modelTableGetColumnNames<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT" ) ); // commission
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+//! Get column names for PlacedMarketOrder
+template< > inline QVector<QString> modelTableGetColumnNames< PlacedMarketOrder >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector(resVec, "ORDER_ID");
+    appendToStringVector( resVec, modelTableGetColumnNames<OperationType>( p + "OPERATION_TYPE" ) ); // operation
+    appendToStringVector( resVec, modelTableGetColumnNames<OrderStatus>( p + "ORDER_STATUS" ) ); // status
+    appendToStringVector(resVec, "REJECT_REASON");
+    appendToStringVector(resVec, "MESSAGE");
+    appendToStringVector(resVec, "REQUESTED_LOTS");
+    appendToStringVector(resVec, "EXECUTED_LOTS");
+    appendToStringVector( resVec, modelTableGetColumnNames<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT" ) ); // commission
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+//! Get column names for SandboxAccount
+template< > inline QVector<QString> modelTableGetColumnNames< SandboxAccount >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector( resVec, modelTableGetColumnNames<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE" ) ); // brokerAccountType
+    appendToStringVector(resVec, "BROKER_ACCOUNT_ID");
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+//! Get column names for SearchMarketInstrument
+template< > inline QVector<QString> modelTableGetColumnNames< SearchMarketInstrument >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector(resVec, "FIGI");
+    appendToStringVector(resVec, "TICKER");
+    appendToStringVector(resVec, "ISIN");
+    appendToStringVector(resVec, "MIN_PRICE_INCREMENT");
+    appendToStringVector(resVec, "LOT");
+    appendToStringVector( resVec, modelTableGetColumnNames<Currency>( p + "CURRENCY" ) ); // currency
+    appendToStringVector(resVec, "NAME");
+    appendToStringVector( resVec, modelTableGetColumnNames<InstrumentType>( p + "INSTRUMENT_TYPE" ) ); // type
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+//! Get column names for MarketInstrument
+template< > inline QVector<QString> modelTableGetColumnNames< MarketInstrument >( const QString &prefix )
+{
+    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
+    QVector<QString> resVec;
+    appendToStringVector(resVec, generateFieldName(p, "ID") );
+    appendToStringVector(resVec, "FIGI");
+    appendToStringVector(resVec, "TICKER");
+    appendToStringVector(resVec, "ISIN");
+    appendToStringVector(resVec, "MIN_PRICE_INCREMENT");
+    appendToStringVector(resVec, "LOT");
+    appendToStringVector(resVec, "MIN_QUANTITY");
+    appendToStringVector( resVec, modelTableGetColumnNames<Currency>( p + "CURRENCY" ) ); // currency
+    appendToStringVector(resVec, "NAME");
+    appendToStringVector( resVec, modelTableGetColumnNames<InstrumentType>( p + "INSTRUMENT_TYPE" ) ); // type
+
+    return resVec;
+}
+
+#endif /* INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_IMPLEMENTED */
+//----------------------------------------------------------------------------
+
+
+
+
 
 
 

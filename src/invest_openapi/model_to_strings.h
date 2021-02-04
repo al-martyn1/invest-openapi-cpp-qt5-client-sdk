@@ -249,18 +249,18 @@ inline QVector<QString> modelToStrings( const OrderType         &v ) { return mo
 
 //----------------------------------------------------------------------------
 template< typename ModelType > inline 
-QVector<QString> modelTableGetColumnNames()
+QVector<QString> modelTableGetColumnNames( const QString &prefix )
 {
     return modelsHelperStringToVector( QString() );
 }
 
-template< > inline QVector<QString> modelTableGetColumnNames< BrokerAccountType >()   { return modelsHelperStringToVector( "ID", "TYPE"       , "DESCRIPTION" ); }
-template< > inline QVector<QString> modelTableGetColumnNames< Currency          >()   { return modelsHelperStringToVector( "ID", "NAME"       , "DESCRIPTION" ); }
-template< > inline QVector<QString> modelTableGetColumnNames< InstrumentType    >()   { return modelsHelperStringToVector( "ID", "TYPE"       , "DESCRIPTION" ); }
-template< > inline QVector<QString> modelTableGetColumnNames< CandleResolution  >()   { return modelsHelperStringToVector( "ID", "RESOLUTION" , "DESCRIPTION" ); }
-template< > inline QVector<QString> modelTableGetColumnNames< OperationType     >()   { return modelsHelperStringToVector( "ID", "TYPE"       , "DESCRIPTION" ); }
-template< > inline QVector<QString> modelTableGetColumnNames< OrderStatus       >()   { return modelsHelperStringToVector( "ID", "STATUS"     , "DESCRIPTION" ); }
-template< > inline QVector<QString> modelTableGetColumnNames< OrderType         >()   { return modelsHelperStringToVector( "ID", "TYPE"       , "DESCRIPTION" ); }
+template< > inline QVector<QString> modelTableGetColumnNames< BrokerAccountType >( const QString &prefix )   { return modelsHelperStringToVector( generateFieldName(prefix,"ID"), generateFieldName(prefix,"TYPE"      ) , generateFieldName(prefix,"DESCRIPTION") ); }
+template< > inline QVector<QString> modelTableGetColumnNames< Currency          >( const QString &prefix )   { return modelsHelperStringToVector( generateFieldName(prefix,"ID"), generateFieldName(prefix,"NAME"      ) , generateFieldName(prefix,"DESCRIPTION") ); }
+template< > inline QVector<QString> modelTableGetColumnNames< InstrumentType    >( const QString &prefix )   { return modelsHelperStringToVector( generateFieldName(prefix,"ID"), generateFieldName(prefix,"TYPE"      ) , generateFieldName(prefix,"DESCRIPTION") ); }
+template< > inline QVector<QString> modelTableGetColumnNames< CandleResolution  >( const QString &prefix )   { return modelsHelperStringToVector( generateFieldName(prefix,"ID"), generateFieldName(prefix,"RESOLUTION") , generateFieldName(prefix,"DESCRIPTION") ); }
+template< > inline QVector<QString> modelTableGetColumnNames< OperationType     >( const QString &prefix )   { return modelsHelperStringToVector( generateFieldName(prefix,"ID"), generateFieldName(prefix,"TYPE"      ) , generateFieldName(prefix,"DESCRIPTION") ); }
+template< > inline QVector<QString> modelTableGetColumnNames< OrderStatus       >( const QString &prefix )   { return modelsHelperStringToVector( generateFieldName(prefix,"ID"), generateFieldName(prefix,"STATUS"    ) , generateFieldName(prefix,"DESCRIPTION") ); }
+template< > inline QVector<QString> modelTableGetColumnNames< OrderType         >( const QString &prefix )   { return modelsHelperStringToVector( generateFieldName(prefix,"ID"), generateFieldName(prefix,"TYPE"      ) , generateFieldName(prefix,"DESCRIPTION") ); }
 
 //----------------------------------------------------------------------------
 

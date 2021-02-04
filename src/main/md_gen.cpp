@@ -590,6 +590,104 @@ void printNode( const YAML::Node &node, int recurseCounter = maxRecurseLevel, co
 }
 
 //----------------------------------------------------------------------------
+std::ostream& printListDelimiterComma( std::ostream &fout, bool &firstProp )
+{
+    if (!firstProp)
+        fout<<",";
+    firstProp = false;
+    return fout;
+}
+
+
+//----------------------------------------------------------------------------
+// prologHanler( fout, DBTYPE, typeName );
+// epilogHanler( fout, DBTYPE, typeName );
+// fieldHanler( firstProp, fout, DBTYPE, typeName, propName, propType, propTypeFormat );
+template< typename PrologHanler
+        , typename EpilogHanler
+        , typename FieldHanler
+        >
+bool iterateYamlTypes( const YAML::Node             &schemasNode
+                     , const std::set<std::string>  &skippingSet
+                     , std::ostream                 &fout
+                     , const std::string            &DBTYPE
+                     , const PrologHanler           &prologHanler
+                     , const EpilogHanler           &epilogHanler
+                     , const FieldHanler            &fieldHanler
+                     )
+{
+    YAML::Node::const_iterator typeIt = schemasNode.begin();
+    for (; typeIt!=schemasNode.end(); ++typeIt)
+    {
+        //fout << "Type: " << it->first << endl;
+        std::string typeName = typeIt->first.as<std::string>();
+
+        if (skippingSet.find(typeName)!=skippingSet.end())
+            continue;
+
+        const YAML::Node &propertiesNode = typeIt->second["properties"];
+
+        if (!propertiesNode.IsDefined() || propertiesNode.IsNull() || propertiesNode.begin()==propertiesNode.end())
+            continue;
+
+        if (skipNoTypeOrRefOrArray( typeName, typeIt->second["properties"] ))
+            continue;
+
+
+        prologHanler( fout, DBTYPE, typeName );
+
+        bool firstProp = true;
+
+        YAML::Node::const_iterator propIt = propertiesNode.begin();
+        for (; propIt!=propertiesNode.end(); ++propIt)
+        {
+            std::string propName = propIt->first.as<std::string>();
+
+            std::cerr<<"Processing property: " << propName << " of " << typeName << std::endl << flush;
+
+
+            const YAML::Node &propProperties = propIt->second;
+
+            std::string propType;
+            if (!getProperyType( propProperties, propType ))
+            {
+                std::cerr<<"Property: " << propName << "has no 'type' or '$ref' attribute" << std::endl << flush;
+                return false;
+            }
+
+            std::string propTypeFormat;
+            getProperyTypeFormat( propProperties, propTypeFormat );
+            //usedPropTypes[propType] = propTypeFormat;
+
+            std::cerr << "  Type: " << cpp::expandAtBack(propType, 20);
+            if (!propTypeFormat.empty())
+                std::cerr << " : " << propTypeFormat << std::endl;
+            else
+                std::cerr << std::endl;
+
+            if (isRefTypeName(propType))
+            {
+                propType = extractTypeNameFromRef(propType);
+            }
+
+            fieldHanler( fout, DBTYPE, typeName, firstProp, propName, propType, propTypeFormat );
+
+            firstProp = false;
+
+        }
+
+        epilogHanler( fout, DBTYPE, typeName );
+
+        //fout<<"template <> QVector<QString> modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << typeName << " >( const QString &nameOrPrefix, bool forInlining );" << endl;
+    }
+
+
+    return true;
+
+}
+
+
+
 
 
 
@@ -705,7 +803,7 @@ INVEST_OPENAPI_MAIN()
             <<"using namespace OpenAPI;"                <<endl
                                                         <<endl
                                                         <<endl
-            <<"//----------------------------------------------------------------------------" << endl;
+            <<"//----------------------------------------------------------------------------" << endl << endl << endl << endl << endl;
             ;
 
 
@@ -719,20 +817,6 @@ INVEST_OPENAPI_MAIN()
         }
 
         std::set<std::string>  skippingSet;
-
-        // fout<<"template <typename ModelType> QString modelMakeSqlSchemaStringVector( );" << endl << endl;
-        // fout<<"//----------------------------------------------------------------------------" << endl;
-
-        //!!! First iteration - generating prototypes for 'modelToStrings'
-
-        fout << endl << endl
-             << "//----------------------------------------------------------------------------" << endl
-             << "#ifndef INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED" << endl
-             << "#define INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED" << endl
-             << endl
-             //<< "//----------------------------------------------------------------------------" << endl
-             ;
-
 
         YAML::Node::const_iterator typeIt = schemasNode.begin();
         for (; typeIt!=schemasNode.end(); ++typeIt)
@@ -793,148 +877,308 @@ INVEST_OPENAPI_MAIN()
                 continue;
             }
 
-
-            fout<<"QVector<QString> modelToStrings( const " << typeName << " &v );" << endl;
-            //fout<<"template <> QVector<QString> modelMakeSchema< " << typeName << " >( );" << endl;
         }
+
+
+
+
+
+        fout 
+             << "//----------------------------------------------------------------------------" << endl
+             << "#ifndef INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED" << endl
+             << "#define INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED" << endl
+             << endl
+             //<< "//----------------------------------------------------------------------------" << endl
+             ;
+
+        iterateYamlTypes( schemasNode, skippingSet, fout, DBTYPE
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName )
+                          {
+                              using std::endl;
+                              using std::flush;
+                              fout<<"QVector<QString> modelToStrings( const " << cpp::expandAtBack(typeName, 24) << " &v );" << endl;
+                          }
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName )
+                          {}
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName, bool firstProp, const std::string &propName, const std::string &propType, const std::string &propTypeFormat )
+                          {}
+                        );
 
         fout << endl << "#endif /* INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_DECLARED */" << endl;
 
+        fout << "//----------------------------------------------------------------------------" << endl;
+        fout << endl 
+             << endl 
+             << endl
+             << endl
+             ;
+
+
+
+
+
+        fout << "//----------------------------------------------------------------------------" << endl
+             << "#ifndef INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_DECLARED" << endl
+             << "#define INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_DECLARED" << endl
+             << endl
+             //<< "//----------------------------------------------------------------------------" << endl
+             ;
+
+        iterateYamlTypes( schemasNode, skippingSet, fout, DBTYPE
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName )
+                          {
+                              using std::endl;
+                              using std::flush;
+                              fout<<"template< > inline QVector<QString> modelTableGetColumnNames< " << cpp::expandAtBack(typeName, 24) << " >( const QString &prefix );" << endl;
+                          }
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName )
+                          {}
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName, bool firstProp, const std::string &propName, const std::string &propType, const std::string &propTypeFormat )
+                          {}
+                        );
+
+        fout << endl << "#endif /* INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_DECLARED */" << endl;
 
         fout << "//----------------------------------------------------------------------------" << endl;
         fout << endl 
              << endl 
              << endl
              ;
-        fout << "//----------------------------------------------------------------------------" << endl;
-
-        typeIt = schemasNode.begin();
-        for (; typeIt!=schemasNode.end(); ++typeIt)
-        {
-            //fout << "Type: " << it->first << endl;
-            std::string typeName = typeIt->first.as<std::string>();
-
-            if (skippingSet.find(typeName)!=skippingSet.end())
-                continue;
 
 
-            const YAML::Node &propertiesNode = typeIt->second["properties"];
-
-            if (!propertiesNode.IsDefined() || propertiesNode.IsNull() || propertiesNode.begin()==propertiesNode.end())
-                continue;
 
 
-            if (skipNoTypeOrRefOrArray( typeName, typeIt->second["properties"] ))
-                continue;
 
-            fout<<"template <> QVector<QString> modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << typeName << " >( const QString &nameOrPrefix, bool forInlining );" << endl;
-        }
-
-
-        fout << "//----------------------------------------------------------------------------" << endl 
-             << endl 
-             << endl ;
-
-        //!!! Second iteration - generating 'modelToStrings' methods
-
-        fout << endl
+        fout << "//----------------------------------------------------------------------------" << endl
              << endl
-             << "//----------------------------------------------------------------------------" << endl
-             << "#ifndef INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED" << endl
-             << "#define INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED" << endl
              //<< "//----------------------------------------------------------------------------" << endl
              ;
 
-        std::map< std::string, std::string > usedPropTypes;
+        iterateYamlTypes( schemasNode, skippingSet, fout, DBTYPE
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName )
+                          {
+                              using std::endl;
+                              using std::flush;
+                              fout<<"template <> QVector<QString> modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << cpp::expandAtBack(typeName, 24) << " >( const QString &nameOrPrefix, bool forInlining );" << endl;
+                          }
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName )
+                          {}
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName, bool firstProp, const std::string &propName, const std::string &propType, const std::string &propTypeFormat )
+                          {}
+                        );
 
-        typeIt = schemasNode.begin();
-        for (; typeIt!=schemasNode.end(); ++typeIt)
-        {
-            //fout << "Type: " << it->first << endl;
-            std::string typeName = typeIt->first.as<std::string>();
-
-            if (skippingSet.find(typeName)!=skippingSet.end())
-                continue;
-
-
-            const YAML::Node &propertiesNode = typeIt->second["properties"];
-
-            if (!propertiesNode.IsDefined() || propertiesNode.IsNull() || propertiesNode.begin()==propertiesNode.end())
-                continue;
-
-
-            if (skipNoTypeOrRefOrArray( typeName, typeIt->second["properties"] ))
-                continue;
-
-            fout << endl << "//----------------------------------------------------------------------------" << endl;
-            fout << "//! Converts " << typeName << " to QVector of QString's " << endl;
-            fout << "inline QVector<QString> modelToStrings( const " << typeName << " &v )" << endl
-                 << "{" << endl
-                 << "    QVector<QString> resVec;" 
-                 << endl
-                 ;
-
-            //!!! Third iteration - 
-            YAML::Node::const_iterator propIt = propertiesNode.begin();
-            for (; propIt!=propertiesNode.end(); ++propIt)
-            {
-                std::string propName = propIt->first.as<std::string>();
-
-                cerr<<"Processing property: " << propName << endl << flush;
-
-                const YAML::Node &propProperties = propIt->second;
+        fout << "//----------------------------------------------------------------------------" << endl;
+        fout << endl 
+             << endl 
+             << endl
+             ;
 
 
-                std::string propType;
-                if (!getProperyType( propProperties, propType ))
-                {
-                    cerr<<"Property: " << propName << "has no 'type' or '$ref' attribute" << endl << flush;
-                    return false;
-                }
 
-                std::string propTypeFormat;
-                getProperyTypeFormat( propProperties, propTypeFormat );
-                usedPropTypes[propType] = propTypeFormat;
 
-                cerr << "  Type: " << cpp::expandAtBack(propType, 20);
-                if (!propTypeFormat.empty())
-                    cerr << " : " << propTypeFormat << endl;
-                else
-                    cerr << endl;
 
-                if (isRefTypeName(propType))
-                {
-                    propType = extractTypeNameFromRef(propType);
-                }
+        fout 
+             << "//----------------------------------------------------------------------------" << endl
+             << "#ifndef INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED" << endl
+             << "#define INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED" << endl
+             << endl
+             //<< "//----------------------------------------------------------------------------" << endl
+             ;
 
-                //------------------------------
+        iterateYamlTypes( schemasNode, skippingSet, fout, DBTYPE
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName )
+                          {
+                              using std::endl;
+                              using std::flush;
+                              //fout<<"QVector<QString> modelToStrings( const " << cpp::expandAtBack(typeName, 24) << " &v )" << endl;
+                              fout << endl << "//----------------------------------------------------------------------------" << endl;
+                              fout << "//! Converts " << typeName << " to QVector of QString's " << endl;
+                              fout << "inline QVector<QString> modelToStrings( const " << typeName << " &v )" << endl
+                                   << "{" << endl
+                                   << "    QVector<QString> resVec;" 
+                                   << endl
+                                   ;
 
-                auto cppPropName = cpp::formatName(propName,cpp::NameStyle::cppStyle);
+                          }
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName )
+                          {
+                              using std::endl;
+                              using std::flush;
 
-                fout << endl
-                     << "    //------------------------------" << endl
-                     << "    if ( !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Set() || !v.is_" << cppPropName << "_Valid() ) // type: " << propType << endl
-                     << "        appendToStringVector(resVec, QString());" << endl
-                     << "    else" << endl
-                     ;
-                
-                fout
-                     << "        appendToStringVector(resVec, modelToStrings( v.get" << cpp::formatName(propName,cpp::NameStyle::pascalStyle) << "() ) );" << endl
-                     ;
-            }
+                              fout << endl
+                                   << "    //------------------------------" << endl
+                                   << "    return resVec;" << endl
+                                   ;
+                             
+                              fout<< "}" << endl ;
+                          }
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName, bool firstProp, const std::string &propName, const std::string &propType, const std::string &propTypeFormat )
+                          {
+                              using std::endl;
+                              using std::flush;
 
-            fout << endl
-                 << "    //------------------------------" << endl
-                 << "    return resVec;" << endl
-                 ;
-
-            fout<< "}" << endl ;
-
-        }
+                              auto cppPropName = cpp::formatName(propName,cpp::NameStyle::cppStyle);
+                             
+                              fout << endl
+                                   << "    //------------------------------" << endl
+                                   << "    if ( !v.is_" << cpp::formatName(propName,cpp::NameStyle::cppStyle) << "_Set() || !v.is_" << cppPropName << "_Valid() ) // type: " << propType << endl
+                                   << "        appendToStringVector(resVec, QString());" << endl
+                                   << "    else" << endl
+                                   ;
+                              fout
+                                   << "        appendToStringVector(resVec, modelToStrings( v.get" << cpp::formatName(propName,cpp::NameStyle::pascalStyle) << "() ) );" << endl
+                                   ;
+                          }
+                        );
 
         fout << endl << "#endif /* INVEST_OPENAPI_GENERATED_MODEL_TO_STRINGS_IMPLEMENTED */" << endl;
 
-        fout << endl << "//----------------------------------------------------------------------------" << endl;
+        fout << "//----------------------------------------------------------------------------" << endl;
+        fout << endl 
+             << endl 
+             << endl
+             << endl
+             ;
+
+
+
+
+
+        fout 
+             << "//----------------------------------------------------------------------------" << endl
+             << "#ifndef INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_IMPLEMENTED" << endl
+             << "#define INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_IMPLEMENTED" << endl
+             << endl
+             //<< "//----------------------------------------------------------------------------" << endl
+             ;
+
+        iterateYamlTypes( schemasNode, skippingSet, fout, DBTYPE
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName )
+                          {
+                              using std::endl;
+                              using std::flush;
+                              //fout<<"QVector<QString> modelToStrings( const " << cpp::expandAtBack(typeName, 24) << " &v )" << endl;
+                              fout << endl << "//----------------------------------------------------------------------------" << endl;
+                              fout << "//! Get column names for " << typeName << endl;
+                              fout << "template< > inline QVector<QString> modelTableGetColumnNames< " << typeName << " >( const QString &prefix )" << endl
+                                   << "{" << endl
+                                   << "    QString p = prefix.isEmpty() ? QString() : prefix + QString(\"_\");" << endl
+                                   << "    QVector<QString> resVec;" << endl;
+                                   //<< endl
+                                   ;
+
+                          }
+                        , []( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName )
+                          {
+                              using std::endl;
+                              using std::flush;
+
+                              fout << endl
+                                   << "    return resVec;" << endl
+                                   ;
+                              fout<< "}" << endl ;
+                          }
+                        , [sqlSchemaMap]( std::ostream& fout, const std::string &DBTYPE, const std::string &typeName, bool firstProp, const std::string &propName, const std::string &propType, const std::string &propTypeFormat )
+                          {
+                              using std::endl;
+                              using std::flush;
+
+                              static const std::size_t sqlFieldNameWidth = 34;
+                              static const std::size_t sqlFieldSpecWidth = 34;
+
+                              if (firstProp)
+                              {
+                                  auto idSpecInline = getSqlModelIdSpec( sqlSchemaMap, typeName, "inline" );
+                                  auto idSpecSchema = getSqlModelIdSpec( sqlSchemaMap, typeName, "schema" );
+                                 
+                                  if (!idSpecInline.empty() || !idSpecSchema.empty())
+                                  {
+                                      fout<<"    appendToStringVector(resVec, generateFieldName(p, "<<q("ID")<<") );"
+                                          <<endl;
+                                      firstProp = false;
+                                  }
+                              }
+
+                              std::string sqlFieldSpecPropBefore = getSqlModelFieldExtraSpec( sqlSchemaMap, typeName, propName, "before" );
+                              if (!sqlFieldSpecPropBefore.empty())
+                              {
+                                  cerr<<"!!! Found 'before' spec for "<<typeName<<"."<<propName<<endl;
+                             
+                                  std::string fieldName, fieldSqlSpec;
+                                  if (!splitSqlFieldSpec(sqlFieldSpecPropBefore, fieldName, fieldSqlSpec))
+                                  {
+                                      cerr<<"Failed to parse sql spec 'before' for " << typeName << "." << propName << endl;
+                                  }
+                                  else
+                                  {
+                                      fout<<"    appendToStringVector(resVec, generateFieldName(p, "<<q(fieldName)<<") );"
+                                          <<endl;
+                                      firstProp = false;
+                                  }
+                              }
+
+                              auto propNameSql = cpp::formatName( propName, cpp::NameStyle::defineStyle );
+                              auto propTypeSql = cpp::formatName( propType, cpp::NameStyle::defineStyle );
+
+                              //std::string lookupFor;
+                              //auto sqlSpec = getSqlSpec( sqlSchemaMap, typeName, propNameSql , propType, propTypeFormat, &lookupFor );
+                              //std::string specLookupComment = std::string(" // Spec lookup order: ") + lookupFor ;
+
+                              auto propTypeStyle = cpp::detectNameStyle(propType);
+
+                              if (propTypeStyle == cpp::NameStyle::pascalStyle)
+                              {
+                                  std::string typeSqlGenerationPrefix = propNameSql + "_" + propTypeSql;
+                                  if (propTypeSql.find(propNameSql)!=propTypeSql.npos)
+                                      typeSqlGenerationPrefix = propTypeSql;
+                             
+                                  fout << "    "
+                                       << "appendToStringVector( resVec, "
+                                       << "modelTableGetColumnNames<" << propType << ">( " << "p + " << q(typeSqlGenerationPrefix) << " ) ); // " << propName << endl;
+                                  // nameOrPrefix
+                              }
+                              else
+                              {
+                                  //auto expandSpecStr  = cpp::makeExpandString( sqlSpec, sqlFieldSpecWidth );
+                                  fout<<"    appendToStringVector(resVec, "<<q(cpp::formatName(propName,cpp::NameStyle::sqlStyle))<<");"
+                                      <<endl;
+                              }
+
+                              std::string sqlFieldSpecPropAfter = getSqlModelFieldExtraSpec( sqlSchemaMap, typeName, propName, "after" );
+                              if (!sqlFieldSpecPropAfter.empty())
+                              {
+                                  cerr<<"!!! Found 'after' spec for "<<typeName<<"."<<propName<<endl;
+                             
+                                  std::string fieldName, fieldSqlSpec;
+                                  if (!splitSqlFieldSpec(sqlFieldSpecPropAfter, fieldName, fieldSqlSpec))
+                                  {
+                                      cerr<<"Failed to parse sql spec 'after' for " << typeName << "." << propName << endl;
+                                  }
+                                  else
+                                  {
+                                      //auto expandSpecStr  = makeExpandString( fieldSqlSpec, sqlFieldSpecWidth );
+                                      //fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldNameWidth), fieldSqlSpec ) << expandSpecStr << " );" << " // Spec ::schema::" << typeName << "::after::" << propName << endl;
+                                  }
+                              }
+
+
+
+                              //auto cppPropName = cpp::formatName(propName,cpp::NameStyle::cppStyle);
+                             
+                          }
+                        );
+
+        fout << endl << "#endif /* INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_IMPLEMENTED */" << endl;
+
+        fout << "//----------------------------------------------------------------------------" << endl;
+        fout << endl 
+             << endl 
+             << endl
+             << endl
+             ;
+
+
+
 
         fout << endl << endl << endl << endl << endl;
 
@@ -994,23 +1238,13 @@ INVEST_OPENAPI_MAIN()
                      // << "    {"
                      ;
 
-                //auto expandSpecStr  = makeExpandString( idSpecInline, sqlFieldSpecWidth );
-                // fout << "    " << appendToSchemaVecStart << "p + " << q( expandAtBack("ID",sqlFieldNameWidth), idSpecInline ) << expandSpecStr << " );" << " // ID spec" << endl;
                 fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q("ID", sqlFieldNameWidth) << " , " << q(idSpecInline,sqlFieldSpecWidth) << " );" << " // ID spec inline" << endl;
 
                 if (!idSpecInline.empty())
                 {
-                    fout //<< "    }" << endl
-                         //<< "    else" << endl
-                         //<< "    {"
-                         << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()" << endl
+                    fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()" << endl
                          ;
                 }
-
-                // expandSpecStr  = makeExpandString( idSpecSchema, sqlFieldSpecWidth );
-                // fout << appendToSchemaVecStart << "p + " << q( expandAtBack("ID",sqlFieldNameWidth), idSpecSchema ) << expandSpecStr << " );" << " // ID spec" << endl;
-
-                // fout << "    }" << endl;
 
                 if (!idSpecSchema.empty())
                 {
@@ -1020,7 +1254,6 @@ INVEST_OPENAPI_MAIN()
                 fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()" << endl;
             }
 
-            // sqlFieldNameWidth  sqlFieldSpecWidth
 
 
 
@@ -1196,7 +1429,7 @@ INVEST_OPENAPI_MAIN()
 
         fout<<"} // namespace invest_openapi"           << endl << endl << endl;
 
-
+        /*
         cerr << endl;
         cerr << "Used types:" << endl;
 
@@ -1212,7 +1445,7 @@ INVEST_OPENAPI_MAIN()
             else
                 cerr << cpp::expandAtBack(typeName, 20) << ": " << usedIt->second << endl;
         }
-
+        */
         // std::cout << "Root node type: " << toString( rootNode.Type() ) << endl;
 
         //printNode( rootNode );
