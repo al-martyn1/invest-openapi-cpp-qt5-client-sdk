@@ -127,14 +127,14 @@ INVEST_OPENAPI_MAIN()
     qDebug().nospace().noquote() << "Database tables: ";
     
 
-    QVector<QString> dbTableNames = pDbMan->tableGetNames();
+    QVector<QString> dbTableNames = pDbMan->tableGetNamesFromDb();
 
     for( QVector<QString>::const_iterator tableNameIt = dbTableNames.begin(); tableNameIt!=dbTableNames.end(); ++tableNameIt)
     {
         qDebug() << "";
     
         qDebug().nospace().noquote() << "Table: " << *tableNameIt;
-        QVector<QString> cols = pDbMan->tableGetColumnsInternal(*tableNameIt);
+        QVector<QString> cols = pDbMan->tableGetColumnsFromDbInternal(*tableNameIt);
         for( QVector<QString>::const_iterator colIt = cols.begin(); colIt!=cols.end(); ++colIt)
         {
             qDebug().nospace().noquote() << "    " << *colIt;

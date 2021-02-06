@@ -21,6 +21,8 @@
 #include "models.h"
 #include "utility.h"
 
+#include "model_to_strings.h"
+
 //----------------------------------------------------------------------------
 
 
@@ -149,9 +151,9 @@ protected:
 
 
     //------------------------------
-    virtual QVector<QString> tableGetColumns  ( const QString &tableName ) const override
+    virtual QVector<QString> tableGetColumnsFromDb( const QString &tableName ) const override
     {
-        return tableGetColumnsInternal( tableMapName(tableName) );
+        return tableGetColumnsFromDbInternal( tableMapName(tableName) );
     }
 
     //------------------------------
@@ -165,6 +167,8 @@ protected:
 
         if (!levelsInitialized)
         {
+            levelsInitialized = true;
+
             // Basic ref books
             tablesLevel_0.insert("BROKER_ACCOUNT_TYPE");
             tablesLevel_0.insert("CURRENCY");
@@ -176,9 +180,10 @@ protected:
 
             tablesLevel_1.insert("MARKET_INSTRUMENT");
 
+            /*
             tablesLevel_2.insert("_META_TABLES");
             tablesLevel_2.insert("_META_COLUMNS");
-
+            */
         }
 
         switch(creationLevel)
@@ -192,15 +197,8 @@ protected:
     }
 
 
-    virtual QString tableGetShema      ( const QString &tableName  ) const override
+    const QMap<QString,QString>& getTableSchemas() const
     {
-        // tableName = tableMapName(tableName)
-
-        // https://sqlite.org/lang_createtable.html
-        // https://www.tutorialspoint.com/sqlite/sqlite_data_types.htm
-        // https://sqlite.org/datatype3.html
-        // https://www.programmersought.com/article/1613993309/
-
         static bool schemasInitialized = false;
         
         static QMap<QString,QString> tableSchemas = modelMakeAllSqlShemas_SQLITE();
@@ -217,7 +215,7 @@ protected:
             tableSchemas[QString("ORDER_STATUS"       )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderStatus      >(QString(), false ) );
             tableSchemas[QString("ORDER_TYPE"         )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderType        >(QString(), false ) );
 
-
+            /*
             tableSchemas[QString("_META_TABLES"       )] = lf()    + QString("TABLE_NAME")            + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
                                                          + lf(',') + QString("DISPLAY_NAME")          + tab() + QString("TEXT")
                                                          + lf(',') + QString("DESCRIPTION")           + tab() + QString("TEXT")
@@ -228,10 +226,51 @@ protected:
                                                          + lf(',') + QString("DISPLAY_NAME")          + tab() + QString("TEXT")
                                                          + lf(',') + QString("DESCRIPTION")           + tab() + QString("TEXT")
                                                          ;
-
+            */
             //tableSchemas[QString("")] = 
 
         }
+
+        return tableSchemas;
+    
+    }
+
+    virtual QVector<QString> tableGetColumnsFromSchema  ( const QString &tableName ) const override
+    {
+        static QMap<QString, QVector<QString> > tableColumns;
+
+        if (tableColumns.empty())
+        {
+            const QMap<QString,QString>& tableSchemas = getTableSchemas();
+            QList<QString> keys = tableSchemas.keys();
+
+            for( const auto &k : keys)
+            {
+                tableColumns[k] = getColumnNamesFromTableSqlSchema(tableSchemas[k]);
+            } // for
+
+        } // if
+
+        auto it = tableColumns.find(tableName);
+
+        if (it==tableColumns.end())
+            return QVector<QString>();
+
+        return *it;
+
+    }
+    
+
+    virtual QString tableGetSchema      ( const QString &tableName  ) const override
+    {
+        // tableName = tableMapName(tableName)
+
+        // https://sqlite.org/lang_createtable.html
+        // https://www.tutorialspoint.com/sqlite/sqlite_data_types.htm
+        // https://sqlite.org/datatype3.html
+        // https://www.programmersought.com/article/1613993309/
+
+        const QMap<QString,QString>& tableSchemas = getTableSchemas();
 
         auto it = tableSchemas.find(tableName);
 
@@ -239,8 +278,6 @@ protected:
             return QString();
 
         return *it;
-
-
 
         /*
         if (tableName.toUpper()=="INSTRUMENTS")

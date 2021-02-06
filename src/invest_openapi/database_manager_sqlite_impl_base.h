@@ -107,14 +107,14 @@ protected:
     }
 
     //------------------------------
-    virtual QVector<QString> tableGetNames    () const override
+    virtual QVector<QString> tableGetNamesFromDb() const override
     {
         QSqlQuery query = selectExecHelper("SELECT NAME FROM sqlite_master where type=\'table\';");
         return queryToSingleStringVector( query, 0, "sqlite_sequence", false );
     }
     
     //------------------------------
-    virtual QVector<QString> tableGetColumnsInternal ( const QString &internalTableName ) const override
+    virtual QVector<QString> tableGetColumnsFromDbInternal( const QString &internalTableName ) const override
     {
         QSqlQuery query = selectExecHelper(QString("PRAGMA table_info(%1);").arg(sqlQuote(internalTableName)));
         return queryToSingleStringVector( query, 1 );
@@ -134,7 +134,7 @@ protected:
     virtual bool    tableCreate        ( const QString &tableName, IfExists existence ) const override
     {
         QSqlQuery query(*m_pDb);
-        QString queryText = QString("CREATE TABLE %1 %2 (%3)").arg(exists(existence)).arg(tableMapName(tableName)).arg(tableGetShema(tableName));
+        QString queryText = QString("CREATE TABLE %1 %2 (%3)").arg(exists(existence)).arg(tableMapName(tableName)).arg(tableGetSchema(tableName));
         RETURN_IOA_SQL_EXEC_QUERY( query, queryText );
         // return query.exec( queryText );
     }
@@ -189,14 +189,14 @@ protected:
     {
         //QStringList = toStringVector(splitString(bulkText, ";"));
         auto vec = splitString(bulkText, ";", ",.:;");
-        return insertTo( "_META_TABLES", splitString(bulkText, ";", ",.:;"), tableGetColumns("_META_TABLES") /* "TABLE_NAME;DISPLAY_NAME;DESCRIPTION" */  );
+        return insertTo( "_META_TABLES", splitString(bulkText, ";", ",.:;"), tableGetColumnsFromDb("_META_TABLES") /* "TABLE_NAME;DISPLAY_NAME;DESCRIPTION" */  );
     }
 
     //------------------------------
     virtual bool      metaInsertForColumnBulk ( QString tableName, const QString &bulkText ) const override
     {
         auto vec = splitString(bulkText, ";", ",.:;");
-        return insertTo( "_META_COLUMNS", splitString(bulkText, ";", ",.:;"), tableGetColumns("_META_COLUMNS") /* "TABLE_NAME;DISPLAY_NAME;DESCRIPTION" */  );
+        return insertTo( "_META_COLUMNS", splitString(bulkText, ";", ",.:;"), tableGetColumnsFromDb("_META_COLUMNS") /* "TABLE_NAME;DISPLAY_NAME;DESCRIPTION" */  );
     }
 
 

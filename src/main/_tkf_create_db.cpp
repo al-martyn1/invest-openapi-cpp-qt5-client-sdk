@@ -42,9 +42,8 @@ INVEST_OPENAPI_MAIN()
     using std::endl;
 
 
-    cout<<"Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
-
-    cout << endl;
+    qDebug().nospace().noquote() << "Path to exe   : "<<QCoreApplication::applicationDirPath() /* .toStdString() */; // <<endl;
+    //cout << endl;
 
     namespace tkf=invest_openapi;
     using tkf::config_helpers::lookupForConfigFile;
@@ -55,10 +54,12 @@ INVEST_OPENAPI_MAIN()
     auto dbConfigFullName  = lookupForConfigFile( "database.properties", lookupConfSubfolders, FileReadable() );
     auto logConfigFullName = lookupForConfigFile( "logging.properties" , lookupConfSubfolders, FileReadable() );
 
+    qDebug().nospace().noquote() << "DB  Config : "<< dbConfigFullName ;
+    qDebug().nospace().noquote() << "Log Config : "<< logConfigFullName ;
+
+
     QSharedPointer<tkf::DatabaseConfig> pDatabaseConfig = QSharedPointer<tkf::DatabaseConfig>( new tkf::DatabaseConfig(dbConfigFullName, tkf::DatabasePlacementStrategyDefault()) );
     QSharedPointer<tkf::LoggingConfig>  pLoggingConfig  = QSharedPointer<tkf::LoggingConfig> ( new tkf::LoggingConfig(logConfigFullName) );
-
-
 
     qDebug().nospace().noquote() << "DB name: " << pDatabaseConfig->dbFilename;
 
@@ -81,8 +82,10 @@ INVEST_OPENAPI_MAIN()
     QSet<QString> tablesForCreation = pDbMan->tableGetTableNamesForCreation( curLevel );
     for(; !tablesForCreation.empty(); ++curLevel, tablesForCreation = pDbMan->tableGetTableNamesForCreation( curLevel ) )
     {
-        cout<<endl<<"Level "<<curLevel<<endl<<endl;
-
+        qDebug().nospace().noquote() << "Level "<<curLevel;
+        //cout<<endl<<
+        //<<endl<<endl;
+        
         for( auto tableName : tablesForCreation )
         {
             //cout<<"    "<<tableName.toStdString()<<endl;
@@ -92,8 +95,8 @@ INVEST_OPENAPI_MAIN()
 
             qDebug().nospace().noquote() << "Drop   table '" << tableName << "'" << qexp << ": " << pDbMan->tableDrop(tableName);
             qDebug().nospace().noquote() << "Create table '" << tableName << "'" << qexp << ": " << pDbMan->tableCreate(tableName);
-            qDebug().nospace().noquote() <<"\n";
-
+            //qDebug().nospace().noquote() <<"\n";
+            //qDebug().nospace().noquote() <<"";
         }
     }
 
@@ -104,8 +107,6 @@ INVEST_OPENAPI_MAIN()
                                                                   , "0,INVALID,Invalid BrokerAccountType value;"
                                                                     "1,TINKOFF,Tinkoff broker account;"
                                                                     "2,TINKOFFIIS,Tinkoff IIS account"
-                                                                    ""
-                                                                  , tkf::modelTableGetColumnNames<tkf::BrokerAccountType>()
                                                                   );
 
     qDebug().nospace().noquote() << "Fill 'CURRENCY' table: " 
@@ -120,7 +121,6 @@ INVEST_OPENAPI_MAIN()
                                                                     "7,JPY:Japanese Yen;"
                                                                     "8,CNY:Chinese Yuan;"
                                                                     "9,TRY:Turkish Lira"
-                                                                  , tkf::modelTableGetColumnNames<tkf::Currency>()
                                                                   );
 
     qDebug().nospace().noquote() << "Fill 'INSTRUMENT_TYPE' table: " 
@@ -130,7 +130,6 @@ INVEST_OPENAPI_MAIN()
                                                                     "2,CURRENCY,Currencies;"
                                                                     "3,BOND,Bonds;"
                                                                     "4,ETF,Etfs"
-                                                                  , tkf::modelTableGetColumnNames<tkf::InstrumentType>()
                                                                   );
 
     qDebug().nospace().noquote() << "Fill 'CANDLE_RESOLUTION' table: " 
@@ -147,7 +146,6 @@ INVEST_OPENAPI_MAIN()
                                                                     "9,DAY,Day (1440 min);"
                                                                     "10,WEEK,Week (10080 min);"
                                                                     "11,MONTH,(Avg 43200 min)"
-                                                                  , tkf::modelTableGetColumnNames<tkf::CandleResolution>()
                                                                   );
 
     qDebug().nospace().noquote() << "Fill 'OPERATION_TYPE' table: " 
@@ -155,7 +153,6 @@ INVEST_OPENAPI_MAIN()
                                                                   , "0,INVALID,Invalid OperationType value;"
                                                                     "1,BUY,Purchaise;"
                                                                     "2,SELL,Sell"
-                                                                  , tkf::modelTableGetColumnNames<tkf::OperationType>()
                                                                   );
 
     qDebug().nospace().noquote() << "Fill 'ORDER_STATUS' table: " 
@@ -170,7 +167,6 @@ INVEST_OPENAPI_MAIN()
                                                                     "7,REJECTED,Rejected;"
                                                                     "8,PENDINGREPLACE,Pending replace;"
                                                                     "9,PENDINGNEW,Pending new"
-                                                                  , tkf::modelTableGetColumnNames<tkf::OrderStatus>()
                                                                   );
 
     qDebug().nospace().noquote() << "Fill 'ORDER_TYPE' table: " 
@@ -178,7 +174,6 @@ INVEST_OPENAPI_MAIN()
                                                                   , "0,INVALID,Invalid OrderType value;"
                                                                     "1,LIMIT,Limit;"
                                                                     "2,MARKET,Market"
-                                                                  , tkf::modelTableGetColumnNames<tkf::OrderType>()
                                                                   );
 
 

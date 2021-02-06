@@ -678,7 +678,6 @@ bool iterateYamlTypes( const YAML::Node             &schemasNode
 
         epilogHanler( fout, DBTYPE, typeName );
 
-        //fout<<"template <> QVector<QString> modelMakeSqlSchemaStringVector_"<<DBTYPE<<"< " << typeName << " >( const QString &nameOrPrefix, bool forInlining );" << endl;
     }
 
 
@@ -916,7 +915,7 @@ INVEST_OPENAPI_MAIN()
 
 
 
-
+        #if 0
         fout << "//----------------------------------------------------------------------------" << endl
              << "#ifndef INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_DECLARED" << endl
              << "#define INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_DECLARED" << endl
@@ -944,7 +943,7 @@ INVEST_OPENAPI_MAIN()
              << endl 
              << endl
              ;
-
+        #endif
 
 
 
@@ -1043,7 +1042,7 @@ INVEST_OPENAPI_MAIN()
 
 
 
-
+        #if 0
         fout 
              << "//----------------------------------------------------------------------------" << endl
              << "#ifndef INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_IMPLEMENTED" << endl
@@ -1062,7 +1061,7 @@ INVEST_OPENAPI_MAIN()
                               fout << "//! Get column names for " << typeName << endl;
                               fout << "template< > inline QVector<QString> modelTableGetColumnNames< " << typeName << " >( const QString &prefix )" << endl
                                    << "{" << endl
-                                   << "    QString p = prefix.isEmpty() ? QString() : prefix + QString(\"_\");" << endl
+                                   << "    QString p = prefix; // prefix.isEmpty() ? QString() : prefix + QString(\"_\");" << endl
                                    << "    QVector<QString> resVec;" << endl;
                                    //<< endl
                                    ;
@@ -1073,7 +1072,7 @@ INVEST_OPENAPI_MAIN()
                               using std::endl;
                               using std::flush;
 
-                              fout << endl
+                              fout // << endl
                                    << "    return resVec;" << endl
                                    ;
                               fout<< "}" << endl ;
@@ -1093,7 +1092,7 @@ INVEST_OPENAPI_MAIN()
                                  
                                   if (!idSpecInline.empty() || !idSpecSchema.empty())
                                   {
-                                      fout<<"    appendToStringVector(resVec, generateFieldName(p, "<<q("ID")<<") );"
+                                      fout<<"    appendToStringVector( resVec, generateFieldNameFromPrefixAndName(p, "<<q("ID")<<") );"
                                           <<endl;
                                       firstProp = false;
                                   }
@@ -1111,7 +1110,7 @@ INVEST_OPENAPI_MAIN()
                                   }
                                   else
                                   {
-                                      fout<<"    appendToStringVector(resVec, generateFieldName(p, "<<q(fieldName)<<") );"
+                                      fout<<"    appendToStringVector( resVec, generateFieldNameFromPrefixAndName(p, "<<q(fieldName)<<") );"
                                           <<endl;
                                       firstProp = false;
                                   }
@@ -1134,13 +1133,13 @@ INVEST_OPENAPI_MAIN()
                              
                                   fout << "    "
                                        << "appendToStringVector( resVec, "
-                                       << "modelTableGetColumnNames<" << propType << ">( " << "p + " << q(typeSqlGenerationPrefix) << " ) ); // " << propName << endl;
+                                       << "modelTableGetColumnNames<" << propType << ">( " << "generateFieldNameFromPrefixAndName( p, " << q(typeSqlGenerationPrefix) << " ) ) ); // " << propName << endl;
                                   // nameOrPrefix
                               }
                               else
                               {
                                   //auto expandSpecStr  = cpp::makeExpandString( sqlSpec, sqlFieldSpecWidth );
-                                  fout<<"    appendToStringVector(resVec, "<<q(cpp::formatName(propName,cpp::NameStyle::sqlStyle))<<");"
+                                  fout<<"    appendToStringVector( resVec, generateFieldNameFromPrefixAndName( p, "<<q(cpp::formatName(propName,cpp::NameStyle::sqlStyle))<<" ) );"
                                       <<endl;
                               }
 
@@ -1156,6 +1155,8 @@ INVEST_OPENAPI_MAIN()
                                   }
                                   else
                                   {
+                                      fout<<"    appendToStringVector( resVec, generateFieldNameFromPrefixAndName(p, "<<q(fieldName)<<") );"
+                                          <<endl;
                                       //auto expandSpecStr  = makeExpandString( fieldSqlSpec, sqlFieldSpecWidth );
                                       //fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldNameWidth), fieldSqlSpec ) << expandSpecStr << " );" << " // Spec ::schema::" << typeName << "::after::" << propName << endl;
                                   }
@@ -1176,7 +1177,7 @@ INVEST_OPENAPI_MAIN()
              << endl
              << endl
              ;
-
+        #endif
 
 
 
@@ -1215,11 +1216,11 @@ INVEST_OPENAPI_MAIN()
             fout<< "{" << endl
                 //<< "    QVector<QString> resVec;" << endl
                 //<< "    QString p = forInlining ? (nameOrPrefix.isEmpty() ? QString() : nameOrPrefix + QString(\"_\")) : QString();" << endl
-                << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();" << endl
+                << "    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();" << endl
                 << endl
                 ;
 
-            // QString generateFieldName( const QString &prefix, const QString &fieldName )
+            // QString generateFieldNameFromPrefixAndName( const QString &prefix, const QString &fieldName )
 
             using cpp::formatName;
             using cpp::detectNameStyle;
@@ -1234,24 +1235,24 @@ INVEST_OPENAPI_MAIN()
 
             if (!idSpecInline.empty() || !idSpecSchema.empty())
             {
-                fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN() /* if (forInlining) */" << endl
+                fout << "    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN() /* if (forInlining) */" << endl
                      // << "    {"
                      ;
 
-                fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q("ID", sqlFieldNameWidth) << " , " << q(idSpecInline,sqlFieldSpecWidth) << " );" << " // ID spec inline" << endl;
+                fout << "    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q("ID", sqlFieldNameWidth) << " , " << q(idSpecInline,sqlFieldSpecWidth) << " );" << " // ID spec inline" << endl;
 
                 if (!idSpecInline.empty())
                 {
-                    fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()" << endl
+                    fout << "    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()" << endl
                          ;
                 }
 
                 if (!idSpecSchema.empty())
                 {
-                    fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q("ID", sqlFieldNameWidth) << " , " << q(idSpecSchema,sqlFieldSpecWidth) << " );" << " // ID spec schema" << endl;
+                    fout << "    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q("ID", sqlFieldNameWidth) << " , " << q(idSpecSchema,sqlFieldSpecWidth) << " );" << " // ID spec schema" << endl;
                 }
 
-                fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()" << endl;
+                fout << "    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()" << endl;
             }
 
 
@@ -1289,8 +1290,8 @@ INVEST_OPENAPI_MAIN()
                     {
                         // auto expandSpecStr  = makeExpandString( fieldSqlSpec, sqlFieldSpecWidth );
                         // fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldNameWidth), fieldSqlSpec ) << expandSpecStr << " );" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
-                        // fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( " << fieldName << " , " << fieldSqlSpec << " )" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
-                        fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q(fieldName, sqlFieldNameWidth) << " , " << q(idSpecSchema,fieldSqlSpec) << " );" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
+                        // fout << "    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( " << fieldName << " , " << fieldSqlSpec << " )" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
+                        fout << "    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q(fieldName, sqlFieldNameWidth) << " , " << q(idSpecSchema,fieldSqlSpec) << " );" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
                     }
                 }
 
@@ -1310,15 +1311,15 @@ INVEST_OPENAPI_MAIN()
                     if (propTypeSql.find(propNameSql)!=propTypeSql.npos)
                         typeSqlGenerationPrefix = propTypeSql;
 
-                    fout << appendToSchemaVecStart << "modelMakeSqlSchemaStringVector_"<<DBTYPE<<"<" << propType << ">( " << "p + " << q(typeSqlGenerationPrefix) << ", true ) ); // " << propName << endl;
+                    fout << appendToSchemaVecStart << "modelMakeSqlSchemaStringVector_"<<DBTYPE<<"<" << propType << ">( " << "generateFieldNameFromPrefixAndName( p , " << q(typeSqlGenerationPrefix) << " ), true ) ); // " << propName << endl;
                     // nameOrPrefix
                 }
                 else
                 {
                     auto expandSpecStr  = makeExpandString( sqlSpec, sqlFieldSpecWidth );
                     // fout << appendToSchemaVecStart << "p + " << q( expandAtBack(propNameSql,sqlFieldNameWidth), sqlSpec ) << expandSpecStr << " );" << specLookupComment << endl;
-                    // fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2(" << propNameSql << ", " << sqlSpec << " )" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
-                    fout << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q(propNameSql, sqlFieldNameWidth) << " , " << q(sqlSpec,sqlFieldSpecWidth) << " );" << specLookupComment << endl;
+                    // fout << "    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2(" << propNameSql << ", " << sqlSpec << " )" << " // Spec ::schema::" << typeName << "::before::" << propName << endl;
+                    fout << "    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "<< q(propNameSql, sqlFieldNameWidth) << " , " << q(sqlSpec,sqlFieldSpecWidth) << " );" << specLookupComment << endl;
                 }
 
                 std::string sqlFieldSpecPropAfter = getSqlModelFieldExtraSpec( sqlSchemaMap, typeName, propName, "after" );
@@ -1334,14 +1335,14 @@ INVEST_OPENAPI_MAIN()
                     else
                     {
                         auto expandSpecStr  = makeExpandString( fieldSqlSpec, sqlFieldSpecWidth );
-                        fout << appendToSchemaVecStart << "p + " << q( expandAtBack(fieldName,sqlFieldNameWidth), fieldSqlSpec ) << expandSpecStr << " );" << " // Spec ::schema::" << typeName << "::after::" << propName << endl;
+                        fout << appendToSchemaVecStart << "generateFieldNameFromPrefixAndName( p , " << q( expandAtBack(fieldName,sqlFieldNameWidth), fieldSqlSpec ) << expandSpecStr << " ) );" << " // Spec ::schema::" << typeName << "::after::" << propName << endl;
                     }
                 }
                 
             }
 
             fout << endl
-                 << "    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();" << endl
+                 << "    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();" << endl
                  ;
 
             fout<< "}" << endl ;
@@ -1350,7 +1351,7 @@ INVEST_OPENAPI_MAIN()
 
 
         fout << endl << endl
-             << "inline QMap<QString,QString> modelMakeAllSqlShemas_"<<DBTYPE<<"()" << endl
+             << "inline QMap<QString,QString> modelMakeAllSqlSchemas_"<<DBTYPE<<"()" << endl
              << "{" << endl
              << "    QMap<QString,QString> resMap;" << endl << endl
              ;

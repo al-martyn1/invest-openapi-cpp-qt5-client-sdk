@@ -74,9 +74,63 @@ template <typename StringType> inline bool ends_with( const StringType &str, con
 
     return str.compare( str.size()-postfix.size(), postfix.size(), postfix )==0;
 }
+
+//----------------------------------------------------------------------------
+inline QString makeQStringFromStdString( const std::string &str, std::string::size_type pos = 0, std::string::size_type cnt = std::string::npos )
+{
+    return QString::fromStdString( std::string( str, pos, cnt ) );
+}
+
+inline QString makeQStringFromStdString( const std::wstring &str, std::wstring::size_type pos = 0, std::wstring::size_type cnt = std::wstring::npos )
+{
+    return QString::fromStdWString( std::wstring( str, pos, cnt ) );
+}
+
 //----------------------------------------------------------------------------
 
 
+template <typename StringType> inline 
+QVector<QString> splitByCharWithBraces( const StringType &str, typename StringType::value_type sepCh )
+{
+    typedef typename StringType::value_type CharType;
+    typedef typename StringType::size_type  SizeType;
+
+    QVector<QString> resVec;
+
+    int bracesLevel = 0;
+
+    SizeType segmentStartPos = 0;
+
+    for( SizeType i=0; i!=str.size(); ++i)
+    {
+        if (str[i]==(CharType)'(')
+        {
+            ++bracesLevel;
+        }
+        else if (str[i]==(CharType)')')
+        {
+            --bracesLevel;
+        }
+        else if (str[i]==sepCh)
+        {
+            if (!bracesLevel)
+            {
+                // found separator
+                auto len = i - segmentStartPos;
+                resVec.push_back( makeQStringFromStdString( str, segmentStartPos, len ) );
+                segmentStartPos = i+1;
+            }
+        }
+        else
+        {
+            // do nothing on regular symbol
+        }
+    } // for
+
+    resVec.push_back( makeQStringFromStdString( str, segmentStartPos ) );
+
+    return resVec;
+}
 
 
 //----------------------------------------------------------------------------

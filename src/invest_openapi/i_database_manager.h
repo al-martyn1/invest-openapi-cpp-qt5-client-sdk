@@ -66,12 +66,14 @@ struct IDatabaseManager
     virtual QSet<QString> tableGetTableNamesForCreation( int creationLevel ) const = 0;
 
     virtual QString     tableMapName     ( const QString &tableName                   ) const = 0; // to internal name mapping
-    virtual QString     tableGetShema    ( const QString &tableName                   ) const = 0;
+    virtual QString     tableGetSchema   ( const QString &tableName                   ) const = 0;
+    virtual QVector<QString> tableGetColumnsFromSchema  ( const QString &tableName ) const = 0;
+
     virtual QSqlQuery   selectExecHelper ( const QString &queryText                   ) const = 0;
 
-    virtual QVector<QString> tableGetNames    () const = 0;
-    virtual QVector<QString> tableGetColumnsInternal ( const QString &internalTableName ) const = 0;
-    virtual QVector<QString> tableGetColumns  ( const QString &tableName ) const = 0;
+    virtual QVector<QString> tableGetNamesFromDb    () const = 0;
+    virtual QVector<QString> tableGetColumnsFromDbInternal ( const QString &internalTableName ) const = 0;
+    virtual QVector<QString> tableGetColumnsFromDb  ( const QString &tableName ) const = 0;
 
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx, const QVector<QString> &except, bool caseCompare ) const = 0;
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx, const QStringList      &except, bool caseCompare ) const = 0;
@@ -112,10 +114,16 @@ struct IDatabaseManager
     INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QString            >, QString )
 
 
-    virtual bool insertToBulkFromString( const QString &tableName, const QString &vals, const QVector<QString> &tableColumnNames ) const
+    virtual bool insertToBulkFromString( const QString &tableName, const QString &vals, const QVector<QString> &tableColumnNames = QVector<QString>() ) const
     {
-         return insertTo( tableName, listStringSplit(vals.split( ';', Qt::SkipEmptyParts )), tableColumnNames );
-         
+         if (tableColumnNames.empty())
+         {
+             return insertTo( tableName, listStringSplit(vals.split( ';', Qt::SkipEmptyParts )), tableGetColumnsFromSchema(tableName) );
+         }
+         else
+         {
+             return insertTo( tableName, listStringSplit(vals.split( ';', Qt::SkipEmptyParts )), tableColumnNames );
+         }
     }
 
     // Meta helpers

@@ -48,30 +48,6 @@ QVector<QString> modelToStrings( const MarketInstrument         &v );
 
 
 //----------------------------------------------------------------------------
-#ifndef INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_DECLARED
-#define INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_DECLARED
-
-template< > inline QVector<QString> modelTableGetColumnNames< Empty                    >( const QString &prefix );
-template< > inline QVector<QString> modelTableGetColumnNames< Error                    >( const QString &prefix );
-template< > inline QVector<QString> modelTableGetColumnNames< UserAccount              >( const QString &prefix );
-template< > inline QVector<QString> modelTableGetColumnNames< CurrencyPosition         >( const QString &prefix );
-template< > inline QVector<QString> modelTableGetColumnNames< PortfolioPosition        >( const QString &prefix );
-template< > inline QVector<QString> modelTableGetColumnNames< MoneyAmount              >( const QString &prefix );
-template< > inline QVector<QString> modelTableGetColumnNames< Candle                   >( const QString &prefix );
-template< > inline QVector<QString> modelTableGetColumnNames< OperationTrade           >( const QString &prefix );
-template< > inline QVector<QString> modelTableGetColumnNames< Order                    >( const QString &prefix );
-template< > inline QVector<QString> modelTableGetColumnNames< PlacedLimitOrder         >( const QString &prefix );
-template< > inline QVector<QString> modelTableGetColumnNames< PlacedMarketOrder        >( const QString &prefix );
-template< > inline QVector<QString> modelTableGetColumnNames< SandboxAccount           >( const QString &prefix );
-template< > inline QVector<QString> modelTableGetColumnNames< SearchMarketInstrument   >( const QString &prefix );
-template< > inline QVector<QString> modelTableGetColumnNames< MarketInstrument         >( const QString &prefix );
-
-#endif /* INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_DECLARED */
-//----------------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------------
 
 template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Empty                    >( const QString &nameOrPrefix, bool forInlining );
 template <> QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Error                    >( const QString &nameOrPrefix, bool forInlining );
@@ -716,237 +692,6 @@ inline QVector<QString> modelToStrings( const MarketInstrument &v )
 
 
 
-//----------------------------------------------------------------------------
-#ifndef INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_IMPLEMENTED
-#define INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_IMPLEMENTED
-
-
-//----------------------------------------------------------------------------
-//! Get column names for Empty
-template< > inline QVector<QString> modelTableGetColumnNames< Empty >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector(resVec, "TRACKING_ID");
-    appendToStringVector(resVec, "PAYLOAD");
-    appendToStringVector(resVec, "STATUS");
-
-    return resVec;
-}
-
-//----------------------------------------------------------------------------
-//! Get column names for Error
-template< > inline QVector<QString> modelTableGetColumnNames< Error >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector(resVec, "TRACKING_ID");
-    appendToStringVector(resVec, "STATUS");
-    appendToStringVector(resVec, "PAYLOAD");
-
-    return resVec;
-}
-
-//----------------------------------------------------------------------------
-//! Get column names for UserAccount
-template< > inline QVector<QString> modelTableGetColumnNames< UserAccount >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector( resVec, modelTableGetColumnNames<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE" ) ); // brokerAccountType
-    appendToStringVector(resVec, "BROKER_ACCOUNT_ID");
-
-    return resVec;
-}
-
-//----------------------------------------------------------------------------
-//! Get column names for CurrencyPosition
-template< > inline QVector<QString> modelTableGetColumnNames< CurrencyPosition >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector( resVec, modelTableGetColumnNames<Currency>( p + "CURRENCY" ) ); // currency
-    appendToStringVector(resVec, "BALANCE");
-    appendToStringVector(resVec, "BLOCKED");
-
-    return resVec;
-}
-
-//----------------------------------------------------------------------------
-//! Get column names for PortfolioPosition
-template< > inline QVector<QString> modelTableGetColumnNames< PortfolioPosition >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector(resVec, "FIGI");
-    appendToStringVector(resVec, "TICKER");
-    appendToStringVector(resVec, "ISIN");
-    appendToStringVector( resVec, modelTableGetColumnNames<InstrumentType>( p + "INSTRUMENT_TYPE" ) ); // instrumentType
-    appendToStringVector(resVec, "BALANCE");
-    appendToStringVector(resVec, "BLOCKED");
-    appendToStringVector( resVec, modelTableGetColumnNames<MoneyAmount>( p + "EXPECTED_YIELD_MONEY_AMOUNT" ) ); // expectedYield
-    appendToStringVector(resVec, "LOTS");
-    appendToStringVector( resVec, modelTableGetColumnNames<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_MONEY_AMOUNT" ) ); // averagePositionPrice
-    appendToStringVector( resVec, modelTableGetColumnNames<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_NO_NKD_MONEY_AMOUNT" ) ); // averagePositionPriceNoNkd
-    appendToStringVector(resVec, "NAME");
-
-    return resVec;
-}
-
-//----------------------------------------------------------------------------
-//! Get column names for MoneyAmount
-template< > inline QVector<QString> modelTableGetColumnNames< MoneyAmount >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector( resVec, modelTableGetColumnNames<Currency>( p + "CURRENCY" ) ); // currency
-    appendToStringVector(resVec, "VALUE");
-
-    return resVec;
-}
-
-//----------------------------------------------------------------------------
-//! Get column names for Candle
-template< > inline QVector<QString> modelTableGetColumnNames< Candle >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector(resVec, "FIGI");
-    appendToStringVector( resVec, modelTableGetColumnNames<CandleResolution>( p + "INTERVAL_CANDLE_RESOLUTION" ) ); // interval
-    appendToStringVector(resVec, "O");
-    appendToStringVector(resVec, "C");
-    appendToStringVector(resVec, "H");
-    appendToStringVector(resVec, "L");
-    appendToStringVector(resVec, "V");
-    appendToStringVector(resVec, "TIME");
-
-    return resVec;
-}
-
-//----------------------------------------------------------------------------
-//! Get column names for OperationTrade
-template< > inline QVector<QString> modelTableGetColumnNames< OperationTrade >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector(resVec, "TRADE_ID");
-    appendToStringVector(resVec, "DATE");
-    appendToStringVector(resVec, "PRICE");
-    appendToStringVector(resVec, "QUANTITY");
-
-    return resVec;
-}
-
-//----------------------------------------------------------------------------
-//! Get column names for Order
-template< > inline QVector<QString> modelTableGetColumnNames< Order >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector(resVec, "ORDER_ID");
-    appendToStringVector(resVec, "FIGI");
-    appendToStringVector( resVec, modelTableGetColumnNames<OperationType>( p + "OPERATION_TYPE" ) ); // operation
-    appendToStringVector( resVec, modelTableGetColumnNames<OrderStatus>( p + "ORDER_STATUS" ) ); // status
-    appendToStringVector(resVec, "REQUESTED_LOTS");
-    appendToStringVector(resVec, "EXECUTED_LOTS");
-    appendToStringVector( resVec, modelTableGetColumnNames<OrderType>( p + "ORDER_TYPE" ) ); // type
-    appendToStringVector(resVec, "PRICE");
-
-    return resVec;
-}
-
-//----------------------------------------------------------------------------
-//! Get column names for PlacedLimitOrder
-template< > inline QVector<QString> modelTableGetColumnNames< PlacedLimitOrder >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector(resVec, "ORDER_ID");
-    appendToStringVector( resVec, modelTableGetColumnNames<OperationType>( p + "OPERATION_TYPE" ) ); // operation
-    appendToStringVector( resVec, modelTableGetColumnNames<OrderStatus>( p + "ORDER_STATUS" ) ); // status
-    appendToStringVector(resVec, "REJECT_REASON");
-    appendToStringVector(resVec, "MESSAGE");
-    appendToStringVector(resVec, "REQUESTED_LOTS");
-    appendToStringVector(resVec, "EXECUTED_LOTS");
-    appendToStringVector( resVec, modelTableGetColumnNames<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT" ) ); // commission
-
-    return resVec;
-}
-
-//----------------------------------------------------------------------------
-//! Get column names for PlacedMarketOrder
-template< > inline QVector<QString> modelTableGetColumnNames< PlacedMarketOrder >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector(resVec, "ORDER_ID");
-    appendToStringVector( resVec, modelTableGetColumnNames<OperationType>( p + "OPERATION_TYPE" ) ); // operation
-    appendToStringVector( resVec, modelTableGetColumnNames<OrderStatus>( p + "ORDER_STATUS" ) ); // status
-    appendToStringVector(resVec, "REJECT_REASON");
-    appendToStringVector(resVec, "MESSAGE");
-    appendToStringVector(resVec, "REQUESTED_LOTS");
-    appendToStringVector(resVec, "EXECUTED_LOTS");
-    appendToStringVector( resVec, modelTableGetColumnNames<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT" ) ); // commission
-
-    return resVec;
-}
-
-//----------------------------------------------------------------------------
-//! Get column names for SandboxAccount
-template< > inline QVector<QString> modelTableGetColumnNames< SandboxAccount >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector( resVec, modelTableGetColumnNames<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE" ) ); // brokerAccountType
-    appendToStringVector(resVec, "BROKER_ACCOUNT_ID");
-
-    return resVec;
-}
-
-//----------------------------------------------------------------------------
-//! Get column names for SearchMarketInstrument
-template< > inline QVector<QString> modelTableGetColumnNames< SearchMarketInstrument >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector(resVec, "FIGI");
-    appendToStringVector(resVec, "TICKER");
-    appendToStringVector(resVec, "ISIN");
-    appendToStringVector(resVec, "MIN_PRICE_INCREMENT");
-    appendToStringVector(resVec, "LOT");
-    appendToStringVector( resVec, modelTableGetColumnNames<Currency>( p + "CURRENCY" ) ); // currency
-    appendToStringVector(resVec, "NAME");
-    appendToStringVector( resVec, modelTableGetColumnNames<InstrumentType>( p + "INSTRUMENT_TYPE" ) ); // type
-
-    return resVec;
-}
-
-//----------------------------------------------------------------------------
-//! Get column names for MarketInstrument
-template< > inline QVector<QString> modelTableGetColumnNames< MarketInstrument >( const QString &prefix )
-{
-    QString p = prefix.isEmpty() ? QString() : prefix + QString("_");
-    QVector<QString> resVec;
-    appendToStringVector(resVec, generateFieldName(p, "ID") );
-    appendToStringVector(resVec, "FIGI");
-    appendToStringVector(resVec, "TICKER");
-    appendToStringVector(resVec, "ISIN");
-    appendToStringVector(resVec, "MIN_PRICE_INCREMENT");
-    appendToStringVector(resVec, "LOT");
-    appendToStringVector(resVec, "MIN_QUANTITY");
-    appendToStringVector( resVec, modelTableGetColumnNames<Currency>( p + "CURRENCY" ) ); // currency
-    appendToStringVector(resVec, "NAME");
-    appendToStringVector( resVec, modelTableGetColumnNames<InstrumentType>( p + "INSTRUMENT_TYPE" ) ); // type
-
-    return resVec;
-}
-
-#endif /* INVEST_OPENAPI_GENERATED_MODEL_TABLE_GET_COLUMN_NAMES_IMPLEMENTED */
-//----------------------------------------------------------------------------
-
-
-
-
 
 
 
@@ -957,225 +702,225 @@ template< > inline QVector<QString> modelTableGetColumnNames< MarketInstrument >
 //! Creates SQL schema format for 'Empty' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Empty >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TRACKING_ID"                      , "VARCHAR(255)"                     ); // Spec lookup order: ::string, TRACKING_ID, ::Empty::string, ::EMPTY::string, ::Empty::TRACKING_ID, ::EMPTY::TRACKING_ID
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "PAYLOAD"                          , ""                                 ); // Spec lookup order: ::object, PAYLOAD, ::Empty::object, ::EMPTY::object, ::Empty::PAYLOAD, ::EMPTY::PAYLOAD
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "STATUS"                           , "VARCHAR(255)"                     ); // Spec lookup order: ::string, STATUS, ::Empty::string, ::EMPTY::string, ::Empty::STATUS, ::EMPTY::STATUS
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TRACKING_ID"                      , "VARCHAR(255)"                     ); // Spec lookup order: ::string, TRACKING_ID, ::Empty::string, ::EMPTY::string, ::Empty::TRACKING_ID, ::EMPTY::TRACKING_ID
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "PAYLOAD"                          , ""                                 ); // Spec lookup order: ::object, PAYLOAD, ::Empty::object, ::EMPTY::object, ::Empty::PAYLOAD, ::EMPTY::PAYLOAD
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "STATUS"                           , "VARCHAR(255)"                     ); // Spec lookup order: ::string, STATUS, ::Empty::string, ::EMPTY::string, ::Empty::STATUS, ::EMPTY::STATUS
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'Error' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Error >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TRACKING_ID"                      , "VARCHAR(255)"                     ); // Spec lookup order: ::string, TRACKING_ID, ::Error::string, ::ERROR::string, ::Error::TRACKING_ID, ::ERROR::TRACKING_ID
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "STATUS"                           , "VARCHAR(255)"                     ); // Spec lookup order: ::string, STATUS, ::Error::string, ::ERROR::string, ::Error::STATUS, ::ERROR::STATUS
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "PAYLOAD"                          , ""                                 ); // Spec lookup order: ::object, PAYLOAD, ::Error::object, ::ERROR::object, ::Error::PAYLOAD, ::ERROR::PAYLOAD
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TRACKING_ID"                      , "VARCHAR(255)"                     ); // Spec lookup order: ::string, TRACKING_ID, ::Error::string, ::ERROR::string, ::Error::TRACKING_ID, ::ERROR::TRACKING_ID
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "STATUS"                           , "VARCHAR(255)"                     ); // Spec lookup order: ::string, STATUS, ::Error::string, ::ERROR::string, ::Error::STATUS, ::ERROR::STATUS
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "PAYLOAD"                          , ""                                 ); // Spec lookup order: ::object, PAYLOAD, ::Error::object, ::ERROR::object, ::Error::PAYLOAD, ::ERROR::PAYLOAD
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'UserAccount' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< UserAccount >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE", true ) ); // brokerAccountType
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "BROKER_ACCOUNT_ID"                , "VARCHAR(255)"                     ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, ::UserAccount::string, ::USER_ACCOUNT::string, ::UserAccount::BROKER_ACCOUNT_ID, ::USER_ACCOUNT::BROKER_ACCOUNT_ID
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>( generateFieldNameFromPrefixAndName( p , "BROKER_ACCOUNT_TYPE" ), true ) ); // brokerAccountType
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "BROKER_ACCOUNT_ID"                , "VARCHAR(255)"                     ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, ::UserAccount::string, ::USER_ACCOUNT::string, ::UserAccount::BROKER_ACCOUNT_ID, ::USER_ACCOUNT::BROKER_ACCOUNT_ID
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'CurrencyPosition' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< CurrencyPosition >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY", true ) ); // currency
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "BALANCE"                          , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, BALANCE, ::CurrencyPosition::number, ::CURRENCY_POSITION::number, ::CurrencyPosition::number::double, ::CURRENCY_POSITION::number::double, ::CurrencyPosition::BALANCE, ::CURRENCY_POSITION::BALANCE
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "BLOCKED"                          , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, BLOCKED, ::CurrencyPosition::number, ::CURRENCY_POSITION::number, ::CurrencyPosition::number::double, ::CURRENCY_POSITION::number::double, ::CurrencyPosition::BLOCKED, ::CURRENCY_POSITION::BLOCKED
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( generateFieldNameFromPrefixAndName( p , "CURRENCY" ), true ) ); // currency
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "BALANCE"                          , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, BALANCE, ::CurrencyPosition::number, ::CURRENCY_POSITION::number, ::CurrencyPosition::number::double, ::CURRENCY_POSITION::number::double, ::CurrencyPosition::BALANCE, ::CURRENCY_POSITION::BALANCE
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "BLOCKED"                          , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, BLOCKED, ::CurrencyPosition::number, ::CURRENCY_POSITION::number, ::CurrencyPosition::number::double, ::CURRENCY_POSITION::number::double, ::CurrencyPosition::BLOCKED, ::CURRENCY_POSITION::BLOCKED
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'PortfolioPosition' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PortfolioPosition >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "FIGI"                             , "VARCHAR(12)"                      ); // Spec lookup order: ::string, FIGI, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string, ::PortfolioPosition::FIGI, ::PORTFOLIO_POSITION::FIGI
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TICKER"                           , "VARCHAR(12)"                      ); // Spec lookup order: ::string, TICKER, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string, ::PortfolioPosition::TICKER, ::PORTFOLIO_POSITION::TICKER
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ISIN"                             , "VARCHAR(12)"                      ); // Spec lookup order: ::string, ISIN, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string, ::PortfolioPosition::ISIN, ::PORTFOLIO_POSITION::ISIN
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( p + "INSTRUMENT_TYPE", true ) ); // instrumentType
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "BALANCE"                          , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, BALANCE, ::PortfolioPosition::number, ::PORTFOLIO_POSITION::number, ::PortfolioPosition::number::double, ::PORTFOLIO_POSITION::number::double, ::PortfolioPosition::BALANCE, ::PORTFOLIO_POSITION::BALANCE
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "BLOCKED"                          , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, BLOCKED, ::PortfolioPosition::number, ::PORTFOLIO_POSITION::number, ::PortfolioPosition::number::double, ::PORTFOLIO_POSITION::number::double, ::PortfolioPosition::BLOCKED, ::PORTFOLIO_POSITION::BLOCKED
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "EXPECTED_YIELD_MONEY_AMOUNT", true ) ); // expectedYield
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "LOTS"                             , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, LOTS, ::PortfolioPosition::integer, ::PORTFOLIO_POSITION::integer, ::PortfolioPosition::integer::int32, ::PORTFOLIO_POSITION::integer::int32, ::PortfolioPosition::LOTS, ::PORTFOLIO_POSITION::LOTS
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_MONEY_AMOUNT", true ) ); // averagePositionPrice
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "AVERAGE_POSITION_PRICE_NO_NKD_MONEY_AMOUNT", true ) ); // averagePositionPriceNoNkd
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"                             , "VARCHAR(255)"                     ); // Spec lookup order: ::string, NAME, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string, ::PortfolioPosition::NAME, ::PORTFOLIO_POSITION::NAME
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "FIGI"                             , "VARCHAR(12)"                      ); // Spec lookup order: ::string, FIGI, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string, ::PortfolioPosition::FIGI, ::PORTFOLIO_POSITION::FIGI
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TICKER"                           , "VARCHAR(12)"                      ); // Spec lookup order: ::string, TICKER, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string, ::PortfolioPosition::TICKER, ::PORTFOLIO_POSITION::TICKER
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ISIN"                             , "VARCHAR(12)"                      ); // Spec lookup order: ::string, ISIN, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string, ::PortfolioPosition::ISIN, ::PORTFOLIO_POSITION::ISIN
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( generateFieldNameFromPrefixAndName( p , "INSTRUMENT_TYPE" ), true ) ); // instrumentType
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "BALANCE"                          , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, BALANCE, ::PortfolioPosition::number, ::PORTFOLIO_POSITION::number, ::PortfolioPosition::number::double, ::PORTFOLIO_POSITION::number::double, ::PortfolioPosition::BALANCE, ::PORTFOLIO_POSITION::BALANCE
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "BLOCKED"                          , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, BLOCKED, ::PortfolioPosition::number, ::PORTFOLIO_POSITION::number, ::PortfolioPosition::number::double, ::PORTFOLIO_POSITION::number::double, ::PortfolioPosition::BLOCKED, ::PORTFOLIO_POSITION::BLOCKED
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( generateFieldNameFromPrefixAndName( p , "EXPECTED_YIELD_MONEY_AMOUNT" ), true ) ); // expectedYield
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "LOTS"                             , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, LOTS, ::PortfolioPosition::integer, ::PORTFOLIO_POSITION::integer, ::PortfolioPosition::integer::int32, ::PORTFOLIO_POSITION::integer::int32, ::PortfolioPosition::LOTS, ::PORTFOLIO_POSITION::LOTS
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( generateFieldNameFromPrefixAndName( p , "AVERAGE_POSITION_PRICE_MONEY_AMOUNT" ), true ) ); // averagePositionPrice
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( generateFieldNameFromPrefixAndName( p , "AVERAGE_POSITION_PRICE_NO_NKD_MONEY_AMOUNT" ), true ) ); // averagePositionPriceNoNkd
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"                             , "VARCHAR(255)"                     ); // Spec lookup order: ::string, NAME, ::PortfolioPosition::string, ::PORTFOLIO_POSITION::string, ::PortfolioPosition::NAME, ::PORTFOLIO_POSITION::NAME
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'MoneyAmount' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MoneyAmount >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY", true ) ); // currency
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "VALUE"                            , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, VALUE, ::MoneyAmount::number, ::MONEY_AMOUNT::number, ::MoneyAmount::number::double, ::MONEY_AMOUNT::number::double, ::MoneyAmount::VALUE, ::MONEY_AMOUNT::VALUE
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( generateFieldNameFromPrefixAndName( p , "CURRENCY" ), true ) ); // currency
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "VALUE"                            , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, VALUE, ::MoneyAmount::number, ::MONEY_AMOUNT::number, ::MoneyAmount::number::double, ::MONEY_AMOUNT::number::double, ::MoneyAmount::VALUE, ::MONEY_AMOUNT::VALUE
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'Candle' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Candle >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "FIGI"                             , "VARCHAR(12)"                      ); // Spec lookup order: ::string, FIGI, ::Candle::string, ::CANDLE::string, ::Candle::FIGI, ::CANDLE::FIGI
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<CandleResolution>( p + "INTERVAL_CANDLE_RESOLUTION", true ) ); // interval
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "O"                                , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, O, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double, ::Candle::O, ::CANDLE::O
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "C"                                , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, C, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double, ::Candle::C, ::CANDLE::C
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "H"                                , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, H, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double, ::Candle::H, ::CANDLE::H
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "L"                                , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, L, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double, ::Candle::L, ::CANDLE::L
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "V"                                , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, V, ::Candle::integer, ::CANDLE::integer, ::Candle::integer::int32, ::CANDLE::integer::int32, ::Candle::V, ::CANDLE::V
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TIME"                             , "VARCHAR(255)"                     ); // Spec lookup order: ::string, ::string::date-time, TIME, ::Candle::string, ::CANDLE::string, ::Candle::string::date-time, ::CANDLE::string::date-time, ::Candle::TIME, ::CANDLE::TIME
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "FIGI"                             , "VARCHAR(12)"                      ); // Spec lookup order: ::string, FIGI, ::Candle::string, ::CANDLE::string, ::Candle::FIGI, ::CANDLE::FIGI
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<CandleResolution>( generateFieldNameFromPrefixAndName( p , "INTERVAL_CANDLE_RESOLUTION" ), true ) ); // interval
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "O"                                , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, O, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double, ::Candle::O, ::CANDLE::O
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "C"                                , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, C, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double, ::Candle::C, ::CANDLE::C
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "H"                                , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, H, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double, ::Candle::H, ::CANDLE::H
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "L"                                , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, L, ::Candle::number, ::CANDLE::number, ::Candle::number::double, ::CANDLE::number::double, ::Candle::L, ::CANDLE::L
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "V"                                , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, V, ::Candle::integer, ::CANDLE::integer, ::Candle::integer::int32, ::CANDLE::integer::int32, ::Candle::V, ::CANDLE::V
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TIME"                             , "VARCHAR(255)"                     ); // Spec lookup order: ::string, ::string::date-time, TIME, ::Candle::string, ::CANDLE::string, ::Candle::string::date-time, ::CANDLE::string::date-time, ::Candle::TIME, ::CANDLE::TIME
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'OperationTrade' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< OperationTrade >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TRADE_ID"                         , "VARCHAR(255)"                     ); // Spec lookup order: ::string, TRADE_ID, ::OperationTrade::string, ::OPERATION_TRADE::string, ::OperationTrade::TRADE_ID, ::OPERATION_TRADE::TRADE_ID
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DATE"                             , "VARCHAR(255)"                     ); // Spec lookup order: ::string, ::string::date-time, DATE, ::OperationTrade::string, ::OPERATION_TRADE::string, ::OperationTrade::string::date-time, ::OPERATION_TRADE::string::date-time, ::OperationTrade::DATE, ::OPERATION_TRADE::DATE
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "PRICE"                            , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, PRICE, ::OperationTrade::number, ::OPERATION_TRADE::number, ::OperationTrade::number::double, ::OPERATION_TRADE::number::double, ::OperationTrade::PRICE, ::OPERATION_TRADE::PRICE
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "QUANTITY"                         , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, QUANTITY, ::OperationTrade::integer, ::OPERATION_TRADE::integer, ::OperationTrade::integer::int32, ::OPERATION_TRADE::integer::int32, ::OperationTrade::QUANTITY, ::OPERATION_TRADE::QUANTITY
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TRADE_ID"                         , "VARCHAR(255)"                     ); // Spec lookup order: ::string, TRADE_ID, ::OperationTrade::string, ::OPERATION_TRADE::string, ::OperationTrade::TRADE_ID, ::OPERATION_TRADE::TRADE_ID
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DATE"                             , "VARCHAR(255)"                     ); // Spec lookup order: ::string, ::string::date-time, DATE, ::OperationTrade::string, ::OPERATION_TRADE::string, ::OperationTrade::string::date-time, ::OPERATION_TRADE::string::date-time, ::OperationTrade::DATE, ::OPERATION_TRADE::DATE
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "PRICE"                            , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, PRICE, ::OperationTrade::number, ::OPERATION_TRADE::number, ::OperationTrade::number::double, ::OPERATION_TRADE::number::double, ::OperationTrade::PRICE, ::OPERATION_TRADE::PRICE
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "QUANTITY"                         , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, QUANTITY, ::OperationTrade::integer, ::OPERATION_TRADE::integer, ::OperationTrade::integer::int32, ::OPERATION_TRADE::integer::int32, ::OperationTrade::QUANTITY, ::OPERATION_TRADE::QUANTITY
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'Order' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Order >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ORDER_ID"                         , "VARCHAR(32) NOT NULL UNIQUE"      ); // Spec lookup order: ::string, ORDER_ID, ::Order::string, ::ORDER::string, ::Order::ORDER_ID, ::ORDER::ORDER_ID
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "FIGI"                             , "VARCHAR(12)"                      ); // Spec lookup order: ::string, FIGI, ::Order::string, ::ORDER::string, ::Order::FIGI, ::ORDER::FIGI
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( p + "OPERATION_TYPE", true ) ); // operation
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( p + "ORDER_STATUS", true ) ); // status
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "REQUESTED_LOTS"                   , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, REQUESTED_LOTS, ::Order::integer, ::ORDER::integer, ::Order::integer::int32, ::ORDER::integer::int32, ::Order::REQUESTED_LOTS, ::ORDER::REQUESTED_LOTS
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "EXECUTED_LOTS"                    , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, EXECUTED_LOTS, ::Order::integer, ::ORDER::integer, ::Order::integer::int32, ::ORDER::integer::int32, ::Order::EXECUTED_LOTS, ::ORDER::EXECUTED_LOTS
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OrderType>( p + "ORDER_TYPE", true ) ); // type
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "PRICE"                            , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, PRICE, ::Order::number, ::ORDER::number, ::Order::number::double, ::ORDER::number::double, ::Order::PRICE, ::ORDER::PRICE
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ORDER_ID"                         , "VARCHAR(32) NOT NULL UNIQUE"      ); // Spec lookup order: ::string, ORDER_ID, ::Order::string, ::ORDER::string, ::Order::ORDER_ID, ::ORDER::ORDER_ID
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "FIGI"                             , "VARCHAR(12)"                      ); // Spec lookup order: ::string, FIGI, ::Order::string, ::ORDER::string, ::Order::FIGI, ::ORDER::FIGI
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( generateFieldNameFromPrefixAndName( p , "OPERATION_TYPE" ), true ) ); // operation
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( generateFieldNameFromPrefixAndName( p , "ORDER_STATUS" ), true ) ); // status
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "REQUESTED_LOTS"                   , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, REQUESTED_LOTS, ::Order::integer, ::ORDER::integer, ::Order::integer::int32, ::ORDER::integer::int32, ::Order::REQUESTED_LOTS, ::ORDER::REQUESTED_LOTS
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "EXECUTED_LOTS"                    , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, EXECUTED_LOTS, ::Order::integer, ::ORDER::integer, ::Order::integer::int32, ::ORDER::integer::int32, ::Order::EXECUTED_LOTS, ::ORDER::EXECUTED_LOTS
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OrderType>( generateFieldNameFromPrefixAndName( p , "ORDER_TYPE" ), true ) ); // type
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "PRICE"                            , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, PRICE, ::Order::number, ::ORDER::number, ::Order::number::double, ::ORDER::number::double, ::Order::PRICE, ::ORDER::PRICE
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'PlacedLimitOrder' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedLimitOrder >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ORDER_ID"                         , "VARCHAR(255)"                     ); // Spec lookup order: ::string, ORDER_ID, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string, ::PlacedLimitOrder::ORDER_ID, ::PLACED_LIMIT_ORDER::ORDER_ID
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( p + "OPERATION_TYPE", true ) ); // operation
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( p + "ORDER_STATUS", true ) ); // status
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "REJECT_REASON"                    , "VARCHAR(255)"                     ); // Spec lookup order: ::string, REJECT_REASON, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string, ::PlacedLimitOrder::REJECT_REASON, ::PLACED_LIMIT_ORDER::REJECT_REASON
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "MESSAGE"                          , "VARCHAR(255)"                     ); // Spec lookup order: ::string, MESSAGE, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string, ::PlacedLimitOrder::MESSAGE, ::PLACED_LIMIT_ORDER::MESSAGE
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "REQUESTED_LOTS"                   , "INTEGER"                          ); // Spec lookup order: ::integer, REQUESTED_LOTS, ::PlacedLimitOrder::integer, ::PLACED_LIMIT_ORDER::integer, ::PlacedLimitOrder::REQUESTED_LOTS, ::PLACED_LIMIT_ORDER::REQUESTED_LOTS
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "EXECUTED_LOTS"                    , "INTEGER"                          ); // Spec lookup order: ::integer, EXECUTED_LOTS, ::PlacedLimitOrder::integer, ::PLACED_LIMIT_ORDER::integer, ::PlacedLimitOrder::EXECUTED_LOTS, ::PLACED_LIMIT_ORDER::EXECUTED_LOTS
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT", true ) ); // commission
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ORDER_ID"                         , "VARCHAR(255)"                     ); // Spec lookup order: ::string, ORDER_ID, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string, ::PlacedLimitOrder::ORDER_ID, ::PLACED_LIMIT_ORDER::ORDER_ID
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( generateFieldNameFromPrefixAndName( p , "OPERATION_TYPE" ), true ) ); // operation
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( generateFieldNameFromPrefixAndName( p , "ORDER_STATUS" ), true ) ); // status
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "REJECT_REASON"                    , "VARCHAR(255)"                     ); // Spec lookup order: ::string, REJECT_REASON, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string, ::PlacedLimitOrder::REJECT_REASON, ::PLACED_LIMIT_ORDER::REJECT_REASON
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "MESSAGE"                          , "VARCHAR(255)"                     ); // Spec lookup order: ::string, MESSAGE, ::PlacedLimitOrder::string, ::PLACED_LIMIT_ORDER::string, ::PlacedLimitOrder::MESSAGE, ::PLACED_LIMIT_ORDER::MESSAGE
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "REQUESTED_LOTS"                   , "INTEGER"                          ); // Spec lookup order: ::integer, REQUESTED_LOTS, ::PlacedLimitOrder::integer, ::PLACED_LIMIT_ORDER::integer, ::PlacedLimitOrder::REQUESTED_LOTS, ::PLACED_LIMIT_ORDER::REQUESTED_LOTS
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "EXECUTED_LOTS"                    , "INTEGER"                          ); // Spec lookup order: ::integer, EXECUTED_LOTS, ::PlacedLimitOrder::integer, ::PLACED_LIMIT_ORDER::integer, ::PlacedLimitOrder::EXECUTED_LOTS, ::PLACED_LIMIT_ORDER::EXECUTED_LOTS
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( generateFieldNameFromPrefixAndName( p , "COMMISSION_MONEY_AMOUNT" ), true ) ); // commission
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'PlacedMarketOrder' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< PlacedMarketOrder >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ORDER_ID"                         , "VARCHAR(255)"                     ); // Spec lookup order: ::string, ORDER_ID, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string, ::PlacedMarketOrder::ORDER_ID, ::PLACED_MARKET_ORDER::ORDER_ID
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( p + "OPERATION_TYPE", true ) ); // operation
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( p + "ORDER_STATUS", true ) ); // status
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "REJECT_REASON"                    , "VARCHAR(255)"                     ); // Spec lookup order: ::string, REJECT_REASON, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string, ::PlacedMarketOrder::REJECT_REASON, ::PLACED_MARKET_ORDER::REJECT_REASON
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "MESSAGE"                          , "VARCHAR(255)"                     ); // Spec lookup order: ::string, MESSAGE, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string, ::PlacedMarketOrder::MESSAGE, ::PLACED_MARKET_ORDER::MESSAGE
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "REQUESTED_LOTS"                   , "INTEGER"                          ); // Spec lookup order: ::integer, REQUESTED_LOTS, ::PlacedMarketOrder::integer, ::PLACED_MARKET_ORDER::integer, ::PlacedMarketOrder::REQUESTED_LOTS, ::PLACED_MARKET_ORDER::REQUESTED_LOTS
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "EXECUTED_LOTS"                    , "INTEGER"                          ); // Spec lookup order: ::integer, EXECUTED_LOTS, ::PlacedMarketOrder::integer, ::PLACED_MARKET_ORDER::integer, ::PlacedMarketOrder::EXECUTED_LOTS, ::PLACED_MARKET_ORDER::EXECUTED_LOTS
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( p + "COMMISSION_MONEY_AMOUNT", true ) ); // commission
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ORDER_ID"                         , "VARCHAR(255)"                     ); // Spec lookup order: ::string, ORDER_ID, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string, ::PlacedMarketOrder::ORDER_ID, ::PLACED_MARKET_ORDER::ORDER_ID
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OperationType>( generateFieldNameFromPrefixAndName( p , "OPERATION_TYPE" ), true ) ); // operation
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<OrderStatus>( generateFieldNameFromPrefixAndName( p , "ORDER_STATUS" ), true ) ); // status
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "REJECT_REASON"                    , "VARCHAR(255)"                     ); // Spec lookup order: ::string, REJECT_REASON, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string, ::PlacedMarketOrder::REJECT_REASON, ::PLACED_MARKET_ORDER::REJECT_REASON
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "MESSAGE"                          , "VARCHAR(255)"                     ); // Spec lookup order: ::string, MESSAGE, ::PlacedMarketOrder::string, ::PLACED_MARKET_ORDER::string, ::PlacedMarketOrder::MESSAGE, ::PLACED_MARKET_ORDER::MESSAGE
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "REQUESTED_LOTS"                   , "INTEGER"                          ); // Spec lookup order: ::integer, REQUESTED_LOTS, ::PlacedMarketOrder::integer, ::PLACED_MARKET_ORDER::integer, ::PlacedMarketOrder::REQUESTED_LOTS, ::PLACED_MARKET_ORDER::REQUESTED_LOTS
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "EXECUTED_LOTS"                    , "INTEGER"                          ); // Spec lookup order: ::integer, EXECUTED_LOTS, ::PlacedMarketOrder::integer, ::PLACED_MARKET_ORDER::integer, ::PlacedMarketOrder::EXECUTED_LOTS, ::PLACED_MARKET_ORDER::EXECUTED_LOTS
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<MoneyAmount>( generateFieldNameFromPrefixAndName( p , "COMMISSION_MONEY_AMOUNT" ), true ) ); // commission
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'SandboxAccount' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SandboxAccount >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>( p + "BROKER_ACCOUNT_TYPE", true ) ); // brokerAccountType
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "BROKER_ACCOUNT_ID"                , "VARCHAR(255)"                     ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, ::SandboxAccount::string, ::SANDBOX_ACCOUNT::string, ::SandboxAccount::BROKER_ACCOUNT_ID, ::SANDBOX_ACCOUNT::BROKER_ACCOUNT_ID
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>( generateFieldNameFromPrefixAndName( p , "BROKER_ACCOUNT_TYPE" ), true ) ); // brokerAccountType
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "BROKER_ACCOUNT_ID"                , "VARCHAR(255)"                     ); // Spec lookup order: ::string, BROKER_ACCOUNT_ID, ::SandboxAccount::string, ::SANDBOX_ACCOUNT::string, ::SandboxAccount::BROKER_ACCOUNT_ID, ::SANDBOX_ACCOUNT::BROKER_ACCOUNT_ID
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'SearchMarketInstrument' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< SearchMarketInstrument >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "FIGI"                             , "VARCHAR(12)"                      ); // Spec lookup order: ::string, FIGI, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string, ::SearchMarketInstrument::FIGI, ::SEARCH_MARKET_INSTRUMENT::FIGI
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TICKER"                           , "VARCHAR(12)"                      ); // Spec lookup order: ::string, TICKER, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string, ::SearchMarketInstrument::TICKER, ::SEARCH_MARKET_INSTRUMENT::TICKER
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ISIN"                             , "VARCHAR(12)"                      ); // Spec lookup order: ::string, ISIN, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string, ::SearchMarketInstrument::ISIN, ::SEARCH_MARKET_INSTRUMENT::ISIN
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "MIN_PRICE_INCREMENT"              , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, MIN_PRICE_INCREMENT, ::SearchMarketInstrument::number, ::SEARCH_MARKET_INSTRUMENT::number, ::SearchMarketInstrument::number::double, ::SEARCH_MARKET_INSTRUMENT::number::double, ::SearchMarketInstrument::MIN_PRICE_INCREMENT, ::SEARCH_MARKET_INSTRUMENT::MIN_PRICE_INCREMENT
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "LOT"                              , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, LOT, ::SearchMarketInstrument::integer, ::SEARCH_MARKET_INSTRUMENT::integer, ::SearchMarketInstrument::integer::int32, ::SEARCH_MARKET_INSTRUMENT::integer::int32, ::SearchMarketInstrument::LOT, ::SEARCH_MARKET_INSTRUMENT::LOT
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY", true ) ); // currency
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"                             , "VARCHAR(255)"                     ); // Spec lookup order: ::string, NAME, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string, ::SearchMarketInstrument::NAME, ::SEARCH_MARKET_INSTRUMENT::NAME
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( p + "INSTRUMENT_TYPE", true ) ); // type
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "FIGI"                             , "VARCHAR(12)"                      ); // Spec lookup order: ::string, FIGI, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string, ::SearchMarketInstrument::FIGI, ::SEARCH_MARKET_INSTRUMENT::FIGI
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TICKER"                           , "VARCHAR(12)"                      ); // Spec lookup order: ::string, TICKER, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string, ::SearchMarketInstrument::TICKER, ::SEARCH_MARKET_INSTRUMENT::TICKER
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ISIN"                             , "VARCHAR(12)"                      ); // Spec lookup order: ::string, ISIN, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string, ::SearchMarketInstrument::ISIN, ::SEARCH_MARKET_INSTRUMENT::ISIN
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "MIN_PRICE_INCREMENT"              , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, MIN_PRICE_INCREMENT, ::SearchMarketInstrument::number, ::SEARCH_MARKET_INSTRUMENT::number, ::SearchMarketInstrument::number::double, ::SEARCH_MARKET_INSTRUMENT::number::double, ::SearchMarketInstrument::MIN_PRICE_INCREMENT, ::SEARCH_MARKET_INSTRUMENT::MIN_PRICE_INCREMENT
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "LOT"                              , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, LOT, ::SearchMarketInstrument::integer, ::SEARCH_MARKET_INSTRUMENT::integer, ::SearchMarketInstrument::integer::int32, ::SEARCH_MARKET_INSTRUMENT::integer::int32, ::SearchMarketInstrument::LOT, ::SEARCH_MARKET_INSTRUMENT::LOT
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( generateFieldNameFromPrefixAndName( p , "CURRENCY" ), true ) ); // currency
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"                             , "VARCHAR(255)"                     ); // Spec lookup order: ::string, NAME, ::SearchMarketInstrument::string, ::SEARCH_MARKET_INSTRUMENT::string, ::SearchMarketInstrument::NAME, ::SEARCH_MARKET_INSTRUMENT::NAME
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( generateFieldNameFromPrefixAndName( p , "INSTRUMENT_TYPE" ), true ) ); // type
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 //----------------------------------------------------------------------------
 //! Creates SQL schema format for 'MarketInstrument' model 
 template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< MarketInstrument >( const QString &nameOrPrefix, bool forInlining )
 {
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN() /* if (forInlining) */
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"                               , "INTEGER REFERENCES MARKET_INSTRUMENT" ); // ID spec inline
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"                               , "INTEGER PRIMARY KEY AUTOINCREMENT" ); // ID spec schema
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "FIGI"                             , "VARCHAR(12) NOT NULL UNIQUE"      ); // Spec lookup order: ::string, FIGI, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string, ::MarketInstrument::FIGI, ::MARKET_INSTRUMENT::FIGI
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TICKER"                           , "VARCHAR(12) NOT NULL UNIQUE"      ); // Spec lookup order: ::string, TICKER, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string, ::MarketInstrument::TICKER, ::MARKET_INSTRUMENT::TICKER
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ISIN"                             , "VARCHAR(12) UNIQUE"               ); // Spec lookup order: ::string, ISIN, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string, ::MarketInstrument::ISIN, ::MARKET_INSTRUMENT::ISIN
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "MIN_PRICE_INCREMENT"              , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, MIN_PRICE_INCREMENT, ::MarketInstrument::number, ::MARKET_INSTRUMENT::number, ::MarketInstrument::number::double, ::MARKET_INSTRUMENT::number::double, ::MarketInstrument::MIN_PRICE_INCREMENT, ::MARKET_INSTRUMENT::MIN_PRICE_INCREMENT
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "LOT"                              , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, LOT, ::MarketInstrument::integer, ::MARKET_INSTRUMENT::integer, ::MarketInstrument::integer::int32, ::MARKET_INSTRUMENT::integer::int32, ::MarketInstrument::LOT, ::MARKET_INSTRUMENT::LOT
-    appendToStringVector( resVec, p + "LOT_MARKET                         INTEGER"                            ); // Spec ::schema::MarketInstrument::after::lot
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "MIN_QUANTITY"                     , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, MIN_QUANTITY, ::MarketInstrument::integer, ::MARKET_INSTRUMENT::integer, ::MarketInstrument::integer::int32, ::MARKET_INSTRUMENT::integer::int32, ::MarketInstrument::MIN_QUANTITY, ::MARKET_INSTRUMENT::MIN_QUANTITY
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( p + "CURRENCY", true ) ); // currency
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"                             , "VARCHAR(255)"                     ); // Spec lookup order: ::string, NAME, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string, ::MarketInstrument::NAME, ::MARKET_INSTRUMENT::NAME
-    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( p + "INSTRUMENT_TYPE", true ) ); // type
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_BEGIN() /* if (forInlining) */
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"                               , "INTEGER REFERENCES MARKET_INSTRUMENT" ); // ID spec inline
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_ELSE()
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ID"                               , "INTEGER PRIMARY KEY AUTOINCREMENT" ); // ID spec schema
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_INLINING_END()
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "FIGI"                             , "VARCHAR(12) NOT NULL UNIQUE"      ); // Spec lookup order: ::string, FIGI, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string, ::MarketInstrument::FIGI, ::MARKET_INSTRUMENT::FIGI
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TICKER"                           , "VARCHAR(12) NOT NULL UNIQUE"      ); // Spec lookup order: ::string, TICKER, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string, ::MarketInstrument::TICKER, ::MARKET_INSTRUMENT::TICKER
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "ISIN"                             , "VARCHAR(12) UNIQUE"               ); // Spec lookup order: ::string, ISIN, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string, ::MarketInstrument::ISIN, ::MARKET_INSTRUMENT::ISIN
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "MIN_PRICE_INCREMENT"              , "DECIMAL(18,8)"                    ); // Spec lookup order: ::number, ::number::double, MIN_PRICE_INCREMENT, ::MarketInstrument::number, ::MARKET_INSTRUMENT::number, ::MarketInstrument::number::double, ::MARKET_INSTRUMENT::number::double, ::MarketInstrument::MIN_PRICE_INCREMENT, ::MARKET_INSTRUMENT::MIN_PRICE_INCREMENT
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "LOT"                              , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, LOT, ::MarketInstrument::integer, ::MARKET_INSTRUMENT::integer, ::MarketInstrument::integer::int32, ::MARKET_INSTRUMENT::integer::int32, ::MarketInstrument::LOT, ::MARKET_INSTRUMENT::LOT
+    appendToStringVector( resVec, generateFieldNameFromPrefixAndName( p , "LOT_MARKET                         INTEGER"                            ) ); // Spec ::schema::MarketInstrument::after::lot
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "MIN_QUANTITY"                     , "INTEGER"                          ); // Spec lookup order: ::integer, ::integer::int32, MIN_QUANTITY, ::MarketInstrument::integer, ::MARKET_INSTRUMENT::integer, ::MarketInstrument::integer::int32, ::MARKET_INSTRUMENT::integer::int32, ::MarketInstrument::MIN_QUANTITY, ::MARKET_INSTRUMENT::MIN_QUANTITY
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<Currency>( generateFieldNameFromPrefixAndName( p , "CURRENCY" ), true ) ); // currency
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "NAME"                             , "VARCHAR(255)"                     ); // Spec lookup order: ::string, NAME, ::MarketInstrument::string, ::MARKET_INSTRUMENT::string, ::MarketInstrument::NAME, ::MARKET_INSTRUMENT::NAME
+    appendToStringVector( resVec, modelMakeSqlSchemaStringVector_SQLITE<InstrumentType>( generateFieldNameFromPrefixAndName( p , "INSTRUMENT_TYPE" ), true ) ); // type
 
-    INVEST_OPEAPI_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
+    IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
 
 

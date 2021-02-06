@@ -18,6 +18,8 @@
 #include <QElapsedTimer>
 
 #include "invest_openapi/invest_openapi.h"
+#include "invest_openapi/utility.h"
+#include "invest_openapi/model_to_strings.h"
 #include "cpp/cpp.h"
 
 
@@ -40,6 +42,15 @@ INVEST_OPENAPI_MAIN()
     cout<<"Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
 
     cout << endl;
+
+    std::string q1 = "A B(1,2), C D E,";
+    std::string q2 = "A B(1,2), C D E" ;
+
+    QVector<QString> qs1 = invest_openapi::splitByCharWithBraces( q1, ',' );
+    QVector<QString> qs2 = invest_openapi::splitByCharWithBraces( q2, ',' );
+
+    QVector<QString> qn1 = invest_openapi::getColumnNamesFromTableSqlSchema( q1 );
+    QVector<QString> qn2 = invest_openapi::getColumnNamesFromTableSqlSchema( q2 );
 
 
     std::set<cpp::NameStyle> allNameStyles = cpp::makeAllNameStyles();
