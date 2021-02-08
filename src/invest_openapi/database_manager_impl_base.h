@@ -172,13 +172,13 @@ protected:
     }
 
     //------------------------------
-    virtual QSqlQuery   selectExecHelper ( const QString &queryText ) const override
+    virtual QSqlQuery   execHelper ( const QString &queryText ) const override
     {
         QSqlQuery query(*m_pDb);
         if (!query.exec(queryText))
             return query;
 
-        query.first();
+        //query.first();
         return query;
     }
 
@@ -189,23 +189,26 @@ protected:
 
         QVector<QString> resVec;
 
-        if (!query.isValid())
-            return resVec;
+        //if (!query.isValid())
+        //    return resVec;
 
-        do
+        //do
+        while (query.next())
         {
             //int sz = query.record().count();// query.size();
             QString str = query.value(valIdx).toString();
 
+            QString strCmp = str;
             if (!caseCompare)
-                str = str.toUpper();
+                strCmp = str.toUpper();
 
-            if (exceptsSet.find(str)!=exceptsSet.end())
+            if (exceptsSet.find(strCmp)!=exceptsSet.end())
                 continue;
 
             resVec.push_back(str);
-            
-        } while(query.next());
+
+        }    
+        //} while(query.next());
 
         return resVec;
     }

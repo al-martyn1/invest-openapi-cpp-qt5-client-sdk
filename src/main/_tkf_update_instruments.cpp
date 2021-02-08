@@ -113,10 +113,20 @@ INVEST_OPENAPI_MAIN()
 
     tkf::joinOpenApiCompletableFutures(instrumentResults);
 
+    QVector<QString> instrumentColsWithLotMarket = tkf::removeItemsByName( pDbMan->tableGetColumnsFromSchema("MARKET_INSTRUMENT"), "ID" );
+    QVector<QString> instrumentColsNoLotMarket   = tkf::removeItemsByName(instrumentColsWithLotMarket, "LOT_MARKET");
+    int lotFieldIdx                              = tkf::findItemByName(instrumentColsWithLotMarket, "LOT");
+
+
+    QVector<QString> instrumentTypes = { "STOCK", "CURRENCY", "BOND", "ETF" };
+    int instrumentTypeIdx = -1;
+
     QList<tkf::MarketInstrument> allInstruments;
 
     for( auto rsp : instrumentResults )
     {
+        ++instrumentTypeIdx;
+
         auto marketInstrumentList = rsp->value.getPayload();
         auto instrumentsList      = marketInstrumentList.getInstruments();
 
@@ -129,7 +139,7 @@ INVEST_OPENAPI_MAIN()
                  Пробуем найти инструмент
                  Если его не существует в базе - добавляем
                  Если он существует в базе - только обновляем
-                 Если что-то ошло не так - пропускаем инструмент
+                 Если что-то пошло не так - пропускаем инструмент
 
                Есть два вида заявок (обычно; вообще есть много вариантов, но у нас только так)
                Лимитная и рыночная заявки:
@@ -141,7 +151,7 @@ INVEST_OPENAPI_MAIN()
                Но тут есть нюанс.
 
                Если взять инструмент "доллары" (USD), то они торгуются по лимитным заявкам лотами по $1000
-               По рыночным заявкам они торгуются по одному $1
+               По рыночным заявкам они торгуются по одному ($1)
 
                В основном размеры лотов (как минимум по акциям/STOCK) одни и те же для лимитных и для рыночных заявок.
                Но вот для USD обнаружилась разница.
@@ -151,6 +161,8 @@ INVEST_OPENAPI_MAIN()
                При создании (первичном добавлении инструмента в базу) LOT_MARKET копируется из LOT.
 
                Потом можно ручками (или SQL-запросом) задать для LOT_MARKET другое значение
+
+               При обновлении инструмента LOT_MARKET не изменяется
             
              */
 
@@ -159,12 +171,49 @@ INVEST_OPENAPI_MAIN()
             //inline QVector<QString> removeFirstItems(QVector<QString> v, int numItemsToRemove )
             //inline QVector<QString> removeItemsByName( const QVector<QString> &v, const QString &name )
 
-            qDebug().nospace().noquote() << tkf::modelToStrings( instrumentInfo );
+            QVector<QString> values = tkf::modelToStrings( instrumentInfo );
+            qDebug().nospace().noquote() << values;
 
+            QString selectQuery = pDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), instrumentColsNoLotMarket );
+            QString updateQuery = pDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), values, instrumentColsNoLotMarket );
+
+            qDebug().nospace().noquote() << "Select query: " << selectQuery;
+            qDebug().nospace().noquote() << "Update query: " << updateQuery;
+            
+            std::size_t selectResSize = pDbMan->getQueryResultSize( pDbMan->execHelper(selectQuery) );
+            if (selectResSize>0)
+            {
+                qDebug().nospace().noquote() << "Updating instrument, FIGI = " << instrumentInfo.getFigi();
+                pDbMan->execHelper( updateQuery );
+            }
+            else
+            {
+                //QString lotFieldIdx; = values[lotFieldIdx];
+                QString lotValue;
+                if (lotFieldIdx<values.size())
+                    lotValue = values[lotFieldIdx];
+                values.insert(lotFieldIdx+1, lotValue); // diplicate LOT to LOT_MARKET
+
+                qDebug().nospace().noquote() << "Creating instrument, FIGI = " << instrumentInfo.getFigi();
+
+                pDbMan->insertTo( "MARKET_INSTRUMENT", values, instrumentColsWithLotMarket );
+            }
 
         }
 
     }
+
+    pDbMan->execHelper( pDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "TICKER", "USD000UTSTOM"
+                                                         , QVector<QString>{ "1" }, QVector<QString>{ "LOT_MARKET" }
+                                                         )
+                      );
+
+    pDbMan->execHelper( pDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "TICKER", "EUR_RUB__TOM"
+                                                         , QVector<QString>{ "1" }, QVector<QString>{ "LOT_MARKET" }
+                                                         )
+                      );
+
+
 
     //getInstruments()
     //QVector<tkf::MarketInstrumentList>

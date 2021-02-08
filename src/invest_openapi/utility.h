@@ -302,7 +302,16 @@ inline QVector< QVector<QString> > convertToQVectorOfQVectorOfQStrings( const QV
 inline QVector< QVector<QString> > convertToQVectorOfQVectorOfQStrings( const QVector< QString > &lst )
 {
     QVector< QVector<QString> > resVec;
-    for( auto s : lst ) resVec.push_back(convertToQVectorOfQStrings(s));
+    //for( auto s : lst ) resVec.push_back(convertToQVectorOfQStrings(s));
+    resVec.push_back(lst);
+    return resVec;
+}
+
+//------------------------------
+inline QVector< QVector<QString> > convertToQVectorOfQVectorOfQStrings( const QVector< QString > &lst, const QString &splitBy )
+{
+    QVector< QVector<QString> > resVec;
+    for( auto s : lst ) resVec.push_back(convertToQVectorOfQStrings( s.split(splitBy) ));
     return resVec;
 }
 
@@ -915,6 +924,18 @@ inline QVector<QString> removeFirstItems(QVector<QString> v, int numItemsToRemov
     v.erase(eraseBegin, eraseEnd);
 
     return v;
+}
+
+//----------------------------------------------------------------------------
+inline int findItemByName( const QVector<QString> &v, const QString &str, int startIndex = 0 )
+{
+    for( int idx=startIndex; idx<v.size(); ++idx)
+    {
+        if (v[idx]==str)
+            return idx;
+    }
+
+    return -1;
 }
 
 //----------------------------------------------------------------------------

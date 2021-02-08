@@ -109,14 +109,14 @@ protected:
     //------------------------------
     virtual QVector<QString> tableGetNamesFromDb() const override
     {
-        QSqlQuery query = selectExecHelper("SELECT NAME FROM sqlite_master where type=\'table\';");
+        QSqlQuery query = execHelper("SELECT NAME FROM sqlite_master where type=\'table\';");
         return queryToSingleStringVector( query, 0, "sqlite_sequence", false );
     }
     
     //------------------------------
     virtual QVector<QString> tableGetColumnsFromDbInternal( const QString &internalTableName ) const override
     {
-        QSqlQuery query = selectExecHelper(QString("PRAGMA table_info(%1);").arg(sqlQuote(internalTableName)));
+        QSqlQuery query = execHelper(QString("PRAGMA table_info(%1);").arg(sqlQuote(internalTableName)));
         return queryToSingleStringVector( query, 1 );
     }
 
@@ -138,6 +138,43 @@ protected:
         RETURN_IOA_SQL_EXEC_QUERY( query, queryText );
         // return query.exec( queryText );
     }
+
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &fields = QVector<QString >() ) const override
+    {
+        QString queryText;
+
+        if (!fields.empty())
+            queryText = QString("SELECT %1 FROM %2").arg( mergeString(fields, ", ") ).arg(tableName);
+        else
+            queryText = QString("SELECT %1 FROM %2").arg( mergeString(tableGetColumnsFromSchema(tableName), ", ") ).arg(tableName);
+
+        if (whereName.isEmpty() || whereVal.isEmpty())
+            return queryText;
+
+        return queryText + QString(" WHERE %1 = %2").arg(whereName).arg(sqlQuote(whereVal));
+    }
+
+    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &values, QVector<QString > fields = QVector<QString >() ) const override
+    {
+        if (fields.empty())
+            fields = tableGetColumnsFromSchema(tableName);
+
+        QVector< QString > setPairs;
+
+        int idx = 0;
+
+        for(; idx<fields.size() && idx<values.size(); ++idx )
+        {
+            setPairs.push_back( QString("%1 = %2").arg(fields[idx]).arg(values[idx]) );
+        }
+
+        QString queryText = QString("UPDATE %1 SET %2").arg(tableName).arg(mergeString(setPairs, ", "));
+        if (whereName.isEmpty() || whereVal.isEmpty())
+            return queryText;
+
+        return queryText + QString(" WHERE %1 = %2").arg(whereName).arg(sqlQuote(whereVal));
+    }
+
 
     virtual bool insertToImpl( const QString &tableName, const QVector<QVector<QString> >  &vals, const QVector<QString> &tableColumns ) const override
     {

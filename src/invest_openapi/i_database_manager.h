@@ -69,7 +69,10 @@ struct IDatabaseManager
     virtual QString     tableGetSchema   ( const QString &tableName                   ) const = 0;
     virtual QVector<QString> tableGetColumnsFromSchema  ( const QString &tableName ) const = 0;
 
-    virtual QSqlQuery   selectExecHelper ( const QString &queryText                   ) const = 0;
+    virtual QSqlQuery   execHelper ( const QString &queryText                   ) const = 0;
+
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &fields = QVector<QString >() ) const = 0;
+    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &values, QVector<QString > fields = QVector<QString >() ) const = 0;
 
     virtual QVector<QString> tableGetNamesFromDb    () const = 0;
     virtual QVector<QString> tableGetColumnsFromDbInternal ( const QString &internalTableName ) const = 0;
