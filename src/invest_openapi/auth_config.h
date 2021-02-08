@@ -30,9 +30,17 @@ struct AuthConfig
     QString  sanboxToken;
     bool     sandboxMode = false;
 
+    QString  brokerAccountId       ;
+    QString  sandboxBrokerAccountId;
+
     QString getToken() const
     {
         return sandboxMode ? sanboxToken : token;
+    }
+
+    QString getBrokerAccountId() const
+    {
+        return sandboxMode ? sandboxBrokerAccountId : brokerAccountId;
     }
 
     void load( const QSettings &settings )
@@ -40,6 +48,10 @@ struct AuthConfig
         token        = settings.value("token"        ).toString();
         sanboxToken  = settings.value("sandbox-token").toString();
         sandboxMode  = settings.value("sandbox-mode" ).toBool();
+
+        brokerAccountId        = settings.value("broker-account-id").toString();
+        sandboxBrokerAccountId = settings.value("sandbox-broker-account-id" ).toBool();  
+
     }
 
     void checkValid() const

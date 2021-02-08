@@ -14,10 +14,10 @@
 @if "%2" NEQ "" set TSET=%2
 
 @set ARCH=x64
-@if "%2" NEQ "" set ARCH=%2
+@if "%2" NEQ "" set ARCH=%3
 
 @set REL_TYPE=Debug
-@if "%3" NEQ "" set REL_TYPE=%3
+@if "%3" NEQ "" set REL_TYPE=%4
 
 @call "%~dp0\bat\setup_deploy_root.bat"
 @call "%~dp0\bat\setup_deploy_path.bat"
