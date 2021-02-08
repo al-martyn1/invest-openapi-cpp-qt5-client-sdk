@@ -505,6 +505,23 @@ std::map<QString,QString> makeTickerFigiMap( const QList< Instrument<MonetaryTyp
 }
 
 //----------------------------------------------------------------------------
+inline
+std::map<QString,QString> makeTickerFigiMap( const QList<MarketInstrument> &list )
+{
+    std::map<QString,QString> resMap;
+
+    for(const auto &instrument : list)
+    {
+        auto key = instrument.getTicker().toUpper();
+        if (key.isEmpty())
+            continue;
+        resMap[key] = instrument.getFigi();
+    }
+
+    return resMap;
+}
+
+//----------------------------------------------------------------------------
 template<typename MonetaryType>
 inline
 std::map<QString,QString> makeTickerIsinMap( const QList< Instrument<MonetaryType> > &list )
@@ -577,6 +594,26 @@ std::map<QString,QString> makeIsinTickerMap( const QList< Instrument<MonetaryTyp
 }
 
 //----------------------------------------------------------------------------
+inline
+std::map<QString,QString> makeIsinTickerMap( const QList<MarketInstrument> &list )
+{
+    std::map<QString,QString> resMap;
+
+    for(const auto &instrument : list)
+    {
+        // getIsin()
+        // getFigi()
+        // getTicker()
+        auto key = instrument.getIsin().toUpper();
+        if (key.isEmpty())
+            continue;
+        resMap[key] = instrument.getTicker();
+    }
+
+    return resMap;
+}
+
+//----------------------------------------------------------------------------
 template<typename MonetaryType>
 inline
 std::map<QString,QString> makeIsinFigiMap( const QList< Instrument<MonetaryType> > &list )
@@ -589,6 +626,26 @@ std::map<QString,QString> makeIsinFigiMap( const QList< Instrument<MonetaryType>
         if (key.isEmpty())
             continue;
         resMap[key] = instrument.figi;
+    }
+
+    return resMap;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::map<QString,QString> makeIsinFigiMap( const QList<MarketInstrument> &list )
+{
+    std::map<QString,QString> resMap;
+
+    for(const auto &instrument : list)
+    {
+        // getIsin()
+        // getFigi()
+        // getTicker()
+        auto key = instrument.getIsin().toUpper();
+        if (key.isEmpty())
+            continue;
+        resMap[key] = instrument.getFigi();
     }
 
     return resMap;
