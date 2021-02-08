@@ -309,7 +309,8 @@ void swap( DecimalDenumerator &d1, DecimalDenumerator &d2 )
 
 //----------------------------------------------------------------------------
 std::string toString  ( const Decimal     &d );
-Decimal     fromString( const std::string &d );
+//Decimal     fromString( const std::string &d );
+Decimal     decimalFromString( const std::string &numberStr_ );
 void swap( Decimal &d1, Decimal &d2 );
 
 //----------------------------------------------------------------------------
@@ -322,7 +323,8 @@ class Decimal
 {
 
     friend std::string toString  ( const Decimal     &d );
-    friend Decimal     fromString( const std::string &d );
+    //friend Decimal     fromString( const std::string &d );
+    friend Decimal     decimalFromString( const std::string &d );
     friend void swap( Decimal &d1, Decimal &d2 );
 
 
@@ -334,6 +336,11 @@ public:
     typedef DecimalDenumerator::precision_t   precision_t;
 
     typedef DecimalDenumerator                DenumeratorType;
+
+    static Decimal fromString( const std::string &s )
+    {
+        return decimalFromString(s);
+    }
 
     Decimal()                   : m_num(0)      , m_denum(DecimalPrecision(0))   {}
     Decimal( const Decimal &d ) : m_num(d.m_num), m_denum(d.m_denum)             {}
@@ -577,7 +584,7 @@ protected:
     void fromFloat( FloatType f, precision_t p )
     {
         bool precAuto = (p==0);
-        *this = fromString(rtrimZeros(std::to_string(f)));
+        *this = decimalFromString(rtrimZeros(std::to_string(f)));
         if (!precAuto)
             fitTo(p);
     }
@@ -814,7 +821,7 @@ std::string decimalStringPrepareForConvert( const std::string &numberStr )
 
 //----------------------------------------------------------------------------
 inline
-Decimal     fromString( const std::string &numberStr_ )
+Decimal     decimalFromString( const std::string &numberStr_ )
 {
     std::string numberStr = decimalStringPrepareForConvert(numberStr_); // change ',' to '.' and skip thousands separator
 
@@ -884,6 +891,15 @@ Decimal     fromString( const std::string &numberStr_ )
     return Decimal::fromRawNumPrec( num, prec );
 
 }
+
+//----------------------------------------------------------------------------
+// For compatibility with old code
+inline
+Decimal     fromString( const std::string &numberStr_ )
+{
+    return decimalFromString(numberStr_);
+}
+
 
 //----------------------------------------------------------------------------
 inline

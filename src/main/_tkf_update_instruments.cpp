@@ -94,12 +94,11 @@ INVEST_OPENAPI_MAIN()
 
     if (pSandboxOpenApi)
     {
-        //------------------------------
-        auto sandboxRegisterRes = pSandboxOpenApi->sandboxRegister(tkf::BrokerAccountType::eBrokerAccountType::TINKOFF); // TINKOFFIIS
-        sandboxRegisterRes->join();
-        tkf::checkAbort(sandboxRegisterRes);
-
-        pSandboxOpenApi->setBrokerAccountId( sandboxRegisterRes->value.getPayload().getBrokerAccountId() );
+        pSandboxOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
+    }
+    else
+    {
+        pOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
     }
 
 
@@ -128,7 +127,9 @@ INVEST_OPENAPI_MAIN()
     QVector<QString> instrumentTypes = { "STOCK", "CURRENCY", "BOND", "ETF" };
     int instrumentTypeIdx = -1;
 
-    QList<tkf::MarketInstrument> allInstruments;
+    //QList<tkf::MarketInstrument> allInstruments;
+
+    unsigned instrumentCount = 0;
 
     for( auto rsp : instrumentResults )
     {
@@ -210,6 +211,8 @@ INVEST_OPENAPI_MAIN()
                 pDbMan->insertTo( "MARKET_INSTRUMENT", values, instrumentColsWithLotMarket );
             }
 
+            ++instrumentCount;
+
             qDebug().nospace().noquote() << "Create/update single instrument timeout: "<<singleInstrumentTimer.restart();
 
         }
@@ -227,21 +230,7 @@ INVEST_OPENAPI_MAIN()
                       );
 
     qDebug().nospace().noquote() << "TIMER: Update instruments job full time elapsed: " << mainTimer.restart();
-
-
-    if (pSandboxOpenApi)
-    {
-        auto 
-        res = pSandboxOpenApi->sandboxClear();
-        res->join();
-        tkf::checkAbort(res);
-
-        res = pSandboxOpenApi->sandboxRemove();
-        res->join();
-        tkf::checkAbort(res);
-    }
-
-
+    qDebug().nospace().noquote() << "Total instruments processed: " << instrumentCount;
 
     return 0;
 }

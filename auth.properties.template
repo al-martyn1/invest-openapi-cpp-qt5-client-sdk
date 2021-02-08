@@ -1,6 +1,6 @@
-;broker-account-id         = 
 ;token = TOKEN
+;broker-account-id         = 
 
-sanbox-token = TOKEN
 sandbox-mode=true
+sandbox-token = TOKEN
 sandbox-broker-account-id =

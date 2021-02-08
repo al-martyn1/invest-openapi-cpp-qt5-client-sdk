@@ -39,6 +39,14 @@ struct ApiConfig
         urlSandbox   = settings.value("ru.tinkoff.invest.openapi.host-sandbox").toString();
         urlStreaming = settings.value("ru.tinkoff.invest.openapi.streaming").toString();
 
+        // Remove trailing '/' from URLs, if exists
+
+        if (!url.isEmpty() && url.back()=='/')
+            url.chop(1);
+
+        if (!urlSandbox.isEmpty() && urlSandbox.back()=='/')
+            urlSandbox.chop(1);
+
         debugRequests  = settings.value("app.debug.dump.requests" , QVariant(false)).toBool();
         debugResponses = settings.value("app.debug.dump.responses", QVariant(false)).toBool();
 

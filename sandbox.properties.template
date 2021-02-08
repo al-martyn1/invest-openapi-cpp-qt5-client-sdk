@@ -1,6 +1,8 @@
+sandbox.currencies = RUB,USD
 sandbox.currency.RUB = 100000.0
 sandbox.currency.USD = 1000.0
 #sandbox.currency.EUR
+
 #sandbox.currency.GBP
 #sandbox.currency.HKD
 #sandbox.currency.CHF
@@ -8,5 +10,10 @@ sandbox.currency.USD = 1000.0
 #sandbox.currency.CNY
 #sandbox.currency.TRY
 
-sandbox.positions = ROSN
-sandbox.positions.ROSN = 100
+sandbox.positions = ROSN,OZON,YNDX,FIVE
+sandbox.position.ROSN = 100
+sandbox.position.OZON = 20
+sandbox.position.OZON = 20
+sandbox.position.YNDX = 20
+sandbox.position.FIVE = 20
+

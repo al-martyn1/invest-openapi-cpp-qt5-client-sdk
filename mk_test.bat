@@ -18,6 +18,7 @@
 
 git add "%~dp0\vcxproj\%TEST%.vcxproj.filters"
 git add "%~dp0\vcxproj\%TEST%.vcxproj"
+git add "%~dp0\vcxproj\%TEST%.vcxproj.user"
 git add "%~dp0\src\main\%TEST%.cpp"
 
 @echo Replace %%(TEST_NAME)%% to your test name in files

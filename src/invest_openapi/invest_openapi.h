@@ -197,9 +197,11 @@ struct ISanboxOpenApi // : public IOpenApi
     TKF_IOA_ABSTRACT_METHOD( Empty, sandboxClear(QString broker_account_id = QString() ) );
 
     TKF_IOA_ABSTRACT_METHOD( Empty, sandboxCurrenciesBalanceSet(const SandboxCurrency::eSandboxCurrency currency, Decimal balance, QString broker_account_id = QString() ) );
-    TKF_IOA_ABSTRACT_METHOD( Empty, sandboxCurrenciesBalanceSet(const QVector<CurrencyConfig> currencies, QString broker_account_id = QString() ) );
+    TKF_IOA_ABSTRACT_METHOD( Empty, sandboxCurrenciesBalanceSet(const SandboxCurrency                  &currency, Decimal balance, QString broker_account_id = QString() ) );
+    TKF_IOA_ABSTRACT_METHOD( Empty, sandboxCurrenciesBalanceSet(const QVector<CurrencyConfig>           currencies, QString broker_account_id = QString() ) );
 
     TKF_IOA_ABSTRACT_METHOD( Empty, sandboxPositionsBalanceSet(const SandboxSetPositionBalanceRequest          &positionBalance , QString broker_account_id = QString() ) );
+    TKF_IOA_ABSTRACT_METHOD( Empty, sandboxPositionsBalanceSet(const QString &positionFigi, const marty::Decimal &positionBalance, QString broker_account_id = QString() ) );
     TKF_IOA_ABSTRACT_METHOD( Empty, sandboxPositionsBalanceSet(const QVector<SandboxSetPositionBalanceRequest> &positionBalances, QString broker_account_id = QString() ) );
     
     TKF_IOA_ABSTRACT_METHOD( Empty, sandboxRemove(QString broker_account_id = QString()) );
@@ -704,6 +706,26 @@ public:
     }
 
     //------------------------------
+    TKF_IOA_METHOD_IMPL( Empty, sandboxCurrenciesBalanceSet(const SandboxCurrency &currency, Decimal balance, QString broker_account_id = QString() ) )
+    {
+        checkBrokerAccountIdParam(broker_account_id);
+
+        SandboxSetCurrencyBalanceRequest request;
+
+        //SandboxCurrency sandboxCurrency;
+        //sandboxCurrency.setValue(currency);
+
+        request.setCurrency(currency);
+        request.setBalance(balance);
+
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( Empty, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pSandboxApi.get(), sandboxCurrenciesBalance, Post );
+        m_pSandboxApi->sandboxCurrenciesBalancePost(request, broker_account_id);
+        
+        return response;
+    }
+
+    //------------------------------
     TKF_IOA_METHOD_IMPL( Empty, sandboxCurrenciesBalanceSet(const SandboxCurrency::eSandboxCurrency currency, Decimal balance, QString broker_account_id = QString() ) )
     {
         checkBrokerAccountIdParam(broker_account_id);
@@ -759,6 +781,15 @@ public:
         m_pSandboxApi->sandboxPositionsBalancePost(positionBalance, broker_account_id);
 
         return response;
+    }
+
+    //------------------------------
+    TKF_IOA_METHOD_IMPL( Empty, sandboxPositionsBalanceSet(const QString &positionFigi, const marty::Decimal &positionBalance, QString broker_account_id = QString() ) )
+    {
+        SandboxSetPositionBalanceRequest request;
+        request.setFigi(positionFigi);
+        request.setBalance(positionBalance);
+        return sandboxPositionsBalanceSet(request,broker_account_id);
     }
 
     //------------------------------

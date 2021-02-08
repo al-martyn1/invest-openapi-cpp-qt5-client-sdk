@@ -45,13 +45,13 @@ struct AuthConfig
 
     void load( const QSettings &settings )
     {
-        token        = settings.value("token"        ).toString();
-        sanboxToken  = settings.value("sandbox-token").toString();
-        sandboxMode  = settings.value("sandbox-mode" ).toBool();
-
+        token                  = settings.value("token"        ).toString();
         brokerAccountId        = settings.value("broker-account-id").toString();
-        sandboxBrokerAccountId = settings.value("sandbox-broker-account-id" ).toBool();  
 
+        sanboxToken            = settings.value("sandbox-token").toString();
+        sandboxBrokerAccountId = settings.value("sandbox-broker-account-id" ).toString();  
+
+        sandboxMode            = settings.value("sandbox-mode" ).toBool();
     }
 
     void checkValid() const
