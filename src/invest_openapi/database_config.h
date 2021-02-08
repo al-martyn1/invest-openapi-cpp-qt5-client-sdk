@@ -8,7 +8,7 @@
 #include <QSqlField>
 #include <QSqlQuery>
 
-
+#include "logging_config.h"
 
 
 namespace invest_openapi
@@ -36,7 +36,11 @@ struct DatabasePlacementStrategyDefault
 
 class DatabaseConfig;
 class IDatabaseManager;
-QSharedPointer<IDatabaseManager> createDatabaseManager( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig );
+QSharedPointer<IDatabaseManager> 
+createDatabaseManager( QSharedPointer<QSqlDatabase> pDb
+                     , QSharedPointer<DatabaseConfig> pDatabaseConfig
+                     , QSharedPointer<LoggingConfig> pLoggingConfig 
+                     );
 
 
 

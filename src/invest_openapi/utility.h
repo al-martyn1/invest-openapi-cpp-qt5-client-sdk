@@ -918,6 +918,19 @@ inline QVector<QString> removeFirstItems(QVector<QString> v, int numItemsToRemov
 }
 
 //----------------------------------------------------------------------------
+inline QVector<QString> removeItemsByName( const QVector<QString> &v, const QString &name )
+{
+    QVector<QString> resVec;
+    for( const auto &item : v )
+    {
+        if ( item!=name )
+            resVec.push_back(item);
+    }
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
 inline QString mergeString(const QVector<QString> &v, const QString &sep )
 {
     if (v.empty())

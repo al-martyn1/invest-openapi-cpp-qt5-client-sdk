@@ -18,10 +18,16 @@
 #include "invest_openapi/api_config.h"
 #include "invest_openapi/auth_config.h"
 #include "invest_openapi/currencies_config.h"
+#include "invest_openapi/database_config.h"
+
 
 #include "invest_openapi/invest_openapi.h"
 #include "invest_openapi/factory.h"
 #include "invest_openapi/openapi_completable_future.h"
+#include "invest_openapi/i_database_manager.h"
+#include "invest_openapi/database_manager.h"
+
+#include "invest_openapi/model_to_strings.h"
 
 
 
@@ -46,15 +52,41 @@ INVEST_OPENAPI_MAIN()
     using tkf::config_helpers::lookupForConfigFile;
     using tkf::config_helpers::FileReadable;
 
-    QStringList configSubfolders = QString("conf;config").split( ';', Qt::SkipEmptyParts );
+    QStringList lookupConfSubfolders = QString("conf;config").split( ';', Qt::SkipEmptyParts );
 
-    // QSettings configProperties ( tkf::config_helpers::lookupForConfigFile( "config.properties" , configSubfolders, FileReadable() ), QSettings::IniFormat);
-    // QSettings authProperties   ( tkf::config_helpers::lookupForConfigFile( "auth.properties"   , configSubfolders, FileReadable() ), QSettings::IniFormat);
-    // QSettings sandboxProperties( tkf::config_helpers::lookupForConfigFile( "sandbox.properties", configSubfolders, FileReadable() ), QSettings::IniFormat);
 
-    auto apiConfig     = tkf::ApiConfig    ( tkf::config_helpers::lookupForConfigFile( "config.properties" , configSubfolders, FileReadable() ) );
-    auto authConfig    = tkf::AuthConfig   ( tkf::config_helpers::lookupForConfigFile( "auth.properties"   , configSubfolders, FileReadable() ) );
-    auto loggingConfig = tkf::LoggingConfig( tkf::config_helpers::lookupForConfigFile( "logging.properties", configSubfolders, FileReadable() ) );
+    auto dbConfigFullFileName    = lookupForConfigFile( "database.properties", lookupConfSubfolders, FileReadable() );
+    auto logConfigFullFileName   = lookupForConfigFile( "logging.properties" , lookupConfSubfolders, FileReadable() );
+    auto apiConfigFullFileName   = lookupForConfigFile( "config.properties"  , lookupConfSubfolders, FileReadable() );
+    auto authConfigFullFileName  = lookupForConfigFile( "auth.properties"    , lookupConfSubfolders, FileReadable() );
+
+    qDebug().nospace().noquote() << "DB   Config File: "<< dbConfigFullFileName   ;
+    qDebug().nospace().noquote() << "Log  Config File: "<< logConfigFullFileName  ;
+    qDebug().nospace().noquote() << "API  Config File: "<< apiConfigFullFileName  ;
+    qDebug().nospace().noquote() << "Auth Config File: "<< authConfigFullFileName ;
+
+
+    QSharedPointer<tkf::DatabaseConfig> pDatabaseConfig = QSharedPointer<tkf::DatabaseConfig>( new tkf::DatabaseConfig(dbConfigFullFileName, tkf::DatabasePlacementStrategyDefault()) );
+    QSharedPointer<tkf::LoggingConfig>  pLoggingConfig  = QSharedPointer<tkf::LoggingConfig> ( new tkf::LoggingConfig(logConfigFullFileName) );
+
+    qDebug().nospace().noquote() << "DB name: " << pDatabaseConfig->dbFilename;
+
+    QSharedPointer<QSqlDatabase> pSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
+    pSqlDb->setDatabaseName( pDatabaseConfig->dbFilename );
+
+    if (!pSqlDb->open())
+    {
+        qDebug() << pSqlDb->lastError().text();
+        return 0;
+    }
+
+    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
+    pDbMan->applyDefDecimalFromConfig( *pDatabaseConfig );
+
+
+    auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
+    auto authConfig    = tkf::AuthConfig   ( authConfigFullFileName );
+    auto loggingConfig = tkf::LoggingConfig( logConfigFullFileName  );
 
     QSharedPointer<tkf::IOpenApi> pOpenApi = tkf::createOpenApi( apiConfig, authConfig, loggingConfig );
 
@@ -70,22 +102,8 @@ INVEST_OPENAPI_MAIN()
         pSandboxOpenApi->setBrokerAccountId( sandboxRegisterRes->value.getPayload().getBrokerAccountId() );
     }
 
-    //auto instrumentList = tkf::toInstrumentList<double>( tkf::joinAndGetPayload(pOpenApi->marketInstruments()).getInstruments() );
 
-    //auto isinFigiMap   = tkf::makeIsinFigiMap(instrumentList);
-    //auto tickerFigiMap = tkf::makeTickerFigiMap(instrumentList);
-
-    /*
-    auto stocks     = pOpenApi->marketInstruments( tkf::InstrumentType("STOCK"   ) );
-    auto currencies = pOpenApi->marketInstruments( tkf::InstrumentType("CURRENCY") );
-    auto bonds      = pOpenApi->marketInstruments( tkf::InstrumentType("BOND"    ) );
-    auto etfs       = pOpenApi->marketInstruments( tkf::InstrumentType("ETF"     ) );
-
-    //response->join();
-    //checkAbort(response);
-    //return response->value.getPayload();
-
-    */
+    //----------------------------------------------------------------------------
 
     QVector< QSharedPointer< tkf::OpenApiCompletableFuture< tkf::MarketInstrumentListResponse > > > instrumentResults;
     instrumentResults.push_back( pOpenApi->marketInstruments( tkf::InstrumentType("STOCK"   ) ) );
@@ -95,6 +113,65 @@ INVEST_OPENAPI_MAIN()
 
     tkf::joinOpenApiCompletableFutures(instrumentResults);
 
+    QList<tkf::MarketInstrument> allInstruments;
+
+    for( auto rsp : instrumentResults )
+    {
+        auto marketInstrumentList = rsp->value.getPayload();
+        auto instrumentsList      = marketInstrumentList.getInstruments();
+
+        for( auto instrumentInfo : instrumentsList )
+        {
+            /* 
+               !!!
+
+               Чего делаем:
+                 Пробуем найти инструмент
+                 Если его не существует в базе - добавляем
+                 Если он существует в базе - только обновляем
+                 Если что-то ошло не так - пропускаем инструмент
+
+               Есть два вида заявок (обычно; вообще есть много вариантов, но у нас только так)
+               Лимитная и рыночная заявки:
+                 Лимитная - продать/купить по цене не ниже/выше заданной
+                 Рыночная - купить что продают, по той цене, какую просят; ну или продать по той цене, какую дают
+               Рыночные заявки исполняются обычно сразу
+
+               В таблице инструментов поле LOT - это размер лота, который отдаёт тиньков API.
+               Но тут есть нюанс.
+
+               Если взять инструмент "доллары" (USD), то они торгуются по лимитным заявкам лотами по $1000
+               По рыночным заявкам они торгуются по одному $1
+
+               В основном размеры лотов (как минимум по акциям/STOCK) одни и те же для лимитных и для рыночных заявок.
+               Но вот для USD обнаружилась разница.
+
+               Поэтому было инжектировано поле LOT_MARKET, которое задаёт размер лота для рыночной заявки.
+
+               При создании (первичном добавлении инструмента в базу) LOT_MARKET копируется из LOT.
+
+               Потом можно ручками (или SQL-запросом) задать для LOT_MARKET другое значение
+            
+             */
+
+            // LOT_MARKET
+
+            //inline QVector<QString> removeFirstItems(QVector<QString> v, int numItemsToRemove )
+            //inline QVector<QString> removeItemsByName( const QVector<QString> &v, const QString &name )
+
+            qDebug().nospace().noquote() << tkf::modelToStrings( instrumentInfo );
+
+
+        }
+
+    }
+
+    //getInstruments()
+    //QVector<tkf::MarketInstrumentList>
+
+
+
+    /*
     for( auto response : instrumentResults )
     {
         auto marketInstrumentList = response->value.getPayload();
@@ -105,7 +182,7 @@ INVEST_OPENAPI_MAIN()
         
         }
     }
-
+    */
     /*
     for(const auto &instrument : list)
     {
