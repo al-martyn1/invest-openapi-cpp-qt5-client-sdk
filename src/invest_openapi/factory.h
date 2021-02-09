@@ -66,7 +66,7 @@ protected:
 
         ApiType *pApi = new ApiType( apiUrl.scheme(), apiUrl.host(), apiUrl.port(0), apiUrl.path(), timeOut );
 
-        if (!pApi)
+        if (!pApi) //-V668
         {
             throw std::runtime_error("Something goes wrong");
             return QSharedPointer<ApiType>(pApi);
@@ -93,7 +93,7 @@ protected:
         QUrl apiUrl = getApiUrl();
 
         SandboxApi *pApi = new SandboxApi( apiUrl.scheme(), apiUrl.host(), apiUrl.port(0), apiUrl.path(), timeOut );
-        if (!pApi)
+        if (!pApi) //-V668
             return pApi;
 
         pApi->addHeaders( "Authorization", QString("Bearer ") + m_authConfig.getToken() );
@@ -108,7 +108,7 @@ protected:
 
         MarketApi *pApi = new MarketApi( apiUrl.scheme(), apiUrl.host(), apiUrl.port(0), apiUrl.path(), timeOut );
 
-        if (!pApi)
+        if (!pApi) //-V668
             return pApi;
 
         pApi->addHeaders( "Authorization", QString("Bearer ") + m_authConfig.getToken() );

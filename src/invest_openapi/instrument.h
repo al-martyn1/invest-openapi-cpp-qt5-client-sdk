@@ -79,6 +79,8 @@ struct Instrument
         i.setCurrency(toCurrency(currency));
         i.setName(name);
         i.setType(toInstrumentType(instrumentType));
+
+        return i;
     }
 
 protected:

@@ -81,12 +81,14 @@ bool setDateTimeFormat(const QString& dateTimeFormat){
 
 QString toStringValue(const marty::Decimal &value)
 {
-    return QString::fromStdString( marty::toString(value) );
+    //return QString::fromStdString( marty::toString(value) );
+    return QString::fromStdString( value.toString() );
 }
 
 QJsonValue toJsonValue(const marty::Decimal &value)
 {
-    return QJsonValue( toStringValue(value) );
+    //return QJsonValue( toStringValue(value) );
+    return QJsonValue( value.toDouble() );
 }
 
 bool fromStringValue(const QString &inStr, marty::Decimal &value)
@@ -99,7 +101,7 @@ bool fromStringValue(const QString &inStr, marty::Decimal &value)
     {
         try
         {
-            value = marty::fromString( inStr.toStdString() );
+            value = marty::Decimal::fromString( inStr.toStdString() );
         }
         catch(...)
         {
@@ -112,12 +114,35 @@ bool fromStringValue(const QString &inStr, marty::Decimal &value)
 
 bool fromJsonValue(marty::Decimal &value, const QJsonValue &jval)
 {
+    if (jval.isNull()) 
+        return false;
+
+    if (jval.isObject())
+        return false;
+
+    if (jval.isString()  /* || jval.isDouble() */ ) // use this or next
+    {
+        value = marty::Decimal::fromString(jval.toString().toStdString());
+        return true;
+    }
+
+    if (jval.isDouble())
+    {
+        value = marty::Decimal(jval.toDouble());
+        return true;
+    }
+
+    value = marty::Decimal( jval.toInt() );
+    return true;
+
+    /*
     QString inStr;
 
     if (!fromJsonValue( inStr, jval ))
         return false;
 
     return fromStringValue(inStr, value);
+    */
 }
 
 

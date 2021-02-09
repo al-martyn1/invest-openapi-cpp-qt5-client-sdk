@@ -195,6 +195,7 @@ inline QStringList listStringNormalize( const QStringList s )
 {
     QStringList resList;
     for( auto str : s ) resList.push_back(listStringNormalize(str));
+    return resList;
 }
 
 //------------------------------
@@ -202,6 +203,7 @@ inline QVector<QStringList> listStringNormalize( const QVector<QStringList> &s )
 {
     QVector<QStringList> resList;
     for( auto str : s ) resList.push_back(listStringNormalize(str));
+    return resList;
 }
 
 //----------------------------------------------------------------------------

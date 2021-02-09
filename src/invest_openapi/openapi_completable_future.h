@@ -10,6 +10,7 @@
 #include <type_traits>
 #include "openapi_completable_future_base.h"
 #include "func.h"
+#include "lib_config.h"
 
 
 /*
@@ -89,8 +90,10 @@ protected:
     {
         value = v;
 
-        qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - v    : " << v.asJson();
-        qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - value: " << value.asJson();
+        #if defined(INVEST_OPENAPI_DEBUG_DUMP_COMPLETABLE_FUTURE_HANDLER_VALUES)
+            qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - v    : " << v.asJson();
+            qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - value: " << value.asJson();
+        #endif
 
         m_complete.store(true, std::memory_order_relaxed);
     }
@@ -99,8 +102,10 @@ protected:
     {
         value = v;
 
-        qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - v    : " << v.asJson();
-        qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - value: " << value.asJson();
+        #if defined(INVEST_OPENAPI_DEBUG_DUMP_COMPLETABLE_FUTURE_HANDLER_VALUES)
+            qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - v    : " << v.asJson();
+            qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - value: " << value.asJson();
+        #endif
 
         errorComplete(et, es);
     }

@@ -422,10 +422,10 @@ NameStyle detectNameStyleImpl( const std::basic_string< CharT, Traits, Allocator
         case FlagHasLower|FlagHasUpper|FlagHasUnderscore :
              return NameStyle::cppCamelMixedStyle        ;
 
-        case FlagFirstUpper|FlagHasLower|FlagHasUpper|FlagFirstUpper    :
+        case FlagFirstUpper|FlagHasLower|FlagHasUpper /* |FlagFirstUpper */     :
              return NameStyle::pascalStyle                              ;
 
-        case FlagFirstUpper|FlagHasLower|FlagHasUpper|FlagHasUnderscore|FlagFirstUpper :
+        case FlagFirstUpper|FlagHasLower|FlagHasUpper|FlagHasUnderscore /* |FlagFirstUpper */  :
              return NameStyle::cppPascalMixedStyle                                     ;
 
         default: return NameStyle::unknownStyle;

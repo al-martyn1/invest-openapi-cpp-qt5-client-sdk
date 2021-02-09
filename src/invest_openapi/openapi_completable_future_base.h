@@ -13,6 +13,8 @@
 
 #include "models.h"
 #include "func.h"
+#include "lib_config.h"
+
 
 
 namespace invest_openapi
@@ -63,7 +65,9 @@ protected:
                  )
     {
 
-        qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ ;
+        #if defined(INVEST_OPENAPI_DEBUG_DUMP_COMPLETABLE_FUTURE_HANDLER_VALUES)
+            qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ ;
+        #endif
 
         m_errorType     = errorType   ;
         m_errorMessage  = errorMessage;

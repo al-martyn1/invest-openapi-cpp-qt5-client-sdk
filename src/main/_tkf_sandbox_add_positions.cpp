@@ -116,6 +116,12 @@ INVEST_OPENAPI_MAIN()
     auto tickerFigiMap = tkf::makeTickerFigiMap(allInstrumentsList);
     auto figiTickerMap = tkf::makeFigiTickerMap(allInstrumentsList);
 
+    // QJsonValue test
+
+    double dbl = 1000.05;
+    QJsonValue jv = QJsonValue(dbl);
+    auto jvAsString = jv.toString();
+
 
     QSettings sandboxSettings(sboxConfigFullFileName, QSettings::IniFormat);
 
@@ -123,7 +129,7 @@ INVEST_OPENAPI_MAIN()
     //QStringList	sandboxSettingsAllKeys = sandboxSettings.allKeys();
     //qDebug().nospace().noquote() << "All keys in Sandbox Settings: " << sandboxSettingsAllKeys;
 
-    #if 0
+    qDebug().nospace().noquote() << "";
 
     QStringList currenciesList = sandboxSettings.value("sandbox.currencies").toStringList();
     qDebug().nospace().noquote() << "Set Sandbox Currencies: "<<currenciesList;
@@ -131,8 +137,10 @@ INVEST_OPENAPI_MAIN()
     for( auto currencyId : currenciesList )
     {
         qDebug().nospace().noquote() << "Set Sandbox currency balance for '"<< currencyId << "'";
+
+        QString currencyPositionValueStr = sandboxSettings.value(QString("sandbox.currency.")+currencyId).toString();
         auto res = pSandboxOpenApi->sandboxCurrenciesBalanceSet( tkf::SandboxCurrency(currencyId)
-                                                               , marty::Decimal::fromString( sandboxSettings.value(QString("sandbox.currency.")+currencyId).toString().toStdString() )
+                                                               , marty::Decimal::fromString( currencyPositionValueStr.toStdString() )
                                                                );
 
         res->join();
@@ -140,7 +148,7 @@ INVEST_OPENAPI_MAIN()
         qDebug().nospace().noquote() << "Set Sandbox currency balance for "<< currencyId << " - Done";
     }
 
-    #endif
+
 
     QStringList positionsList = sandboxSettings.value("sandbox.positions").toStringList();
 
@@ -176,10 +184,14 @@ INVEST_OPENAPI_MAIN()
 
         ticker = it->second;
 
+        qDebug().nospace().noquote() << "";
+
         qDebug().nospace().noquote() << "Set Sandbox position balance for position - FIGI: '"<<figi<<"', TICKER: '"<<ticker<<"'";
 
+        //qDebug().nospace().noquote() << "positionValue: " << sandboxSettings.value(QString("sandbox.position.") + position);
+        QString positionValueStr = sandboxSettings.value(QString("sandbox.position.") + position).toString();
         auto res = pSandboxOpenApi->sandboxPositionsBalanceSet( figi
-                                                              , marty::Decimal::fromString( sandboxSettings.value(QString("sandbox.position.") + position).toString().toStdString() )
+                                                              , marty::Decimal::fromString( positionValueStr.toStdString() )
                                                               );
         res->join();
         tkf::checkAbort(res);

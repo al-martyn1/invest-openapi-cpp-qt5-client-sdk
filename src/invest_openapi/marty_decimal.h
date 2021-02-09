@@ -308,7 +308,8 @@ void swap( DecimalDenumerator &d1, DecimalDenumerator &d2 )
 
 
 //----------------------------------------------------------------------------
-std::string toString  ( const Decimal     &d );
+//std::string toString  ( const Decimal     &d );
+std::string decimalToString  ( Decimal d );
 //Decimal     fromString( const std::string &d );
 Decimal     decimalFromString( const std::string &numberStr_ );
 void swap( Decimal &d1, Decimal &d2 );
@@ -322,7 +323,8 @@ void swap( Decimal &d1, Decimal &d2 );
 class Decimal
 {
 
-    friend std::string toString  ( const Decimal     &d );
+    //friend std::string toString  ( const Decimal     &d );
+    friend std::string decimalToString  ( Decimal d );
     //friend Decimal     fromString( const std::string &d );
     friend Decimal     decimalFromString( const std::string &d );
     friend void swap( Decimal &d1, Decimal &d2 );
@@ -341,6 +343,42 @@ public:
     {
         return decimalFromString(s);
     }
+
+    std::string toString() const
+    {
+        return decimalToString( *this );
+    }
+
+    int toInt() const
+    {
+        return (int)(m_num/m_denum.denum());
+    }
+
+    unsigned toUnsigned() const
+    {
+        return (unsigned)(m_num/m_denum.denum());
+    }
+
+    std::int64_t toInt64() const
+    {
+        return (m_num/m_denum.denum());
+    }
+
+    std::uint64_t toUnsigned64() const
+    {
+        return (std::uint64_t)(m_num/m_denum.denum());
+    }
+
+    float toFloat() const
+    {
+        return (float)((double)m_num/(double)m_denum.denum());
+    }
+
+    double toDouble() const
+    {
+        return ((double)m_num/(double)m_denum.denum());
+    }
+
 
     Decimal()                   : m_num(0)      , m_denum(DecimalPrecision(0))   {}
     Decimal( const Decimal &d ) : m_num(d.m_num), m_denum(d.m_denum)             {}
@@ -376,36 +414,12 @@ public:
     }
 
     // операторы преобразования типа 
-
-    explicit operator int() const
-    {
-        return (int)(m_num/m_denum.denum());
-    }
-
-    explicit operator unsigned() const
-    {
-        return (unsigned)(m_num/m_denum.denum());
-    }
-
-    explicit operator std::int64_t() const
-    {
-        return (m_num/m_denum.denum());
-    }
-
-    explicit operator std::uint64_t() const
-    {
-        return (std::uint64_t)(m_num/m_denum.denum());
-    }
-
-    explicit operator float() const
-    {
-        return (float)((double)m_num/(double)m_denum.denum());
-    }
-
-    explicit operator double() const
-    {
-        return ((double)m_num/(double)m_denum.denum());
-    }
+    explicit operator int() const           { return toInt(); }
+    explicit operator unsigned() const      { return toUnsigned(); }
+    explicit operator std::int64_t() const  { return toInt64(); }
+    explicit operator std::uint64_t() const { return toUnsigned64(); }
+    explicit operator float() const         { return toFloat(); }
+    explicit operator double() const        { return toDouble(); }
 
 
     Decimal operator + ( Decimal d2 ) const
@@ -694,7 +708,7 @@ void swap( Decimal &d1, Decimal &d2 )
 
 //----------------------------------------------------------------------------
 inline
-std::string toString  ( const Decimal     &d )
+std::string decimalToString  ( Decimal d )
 {
     Decimal::num_t p1 = d.m_num / d.m_denum.denum();
     Decimal::num_t p2 = d.m_num % d.m_denum.denum();
@@ -716,6 +730,14 @@ std::string toString  ( const Decimal     &d )
         leadingZerosNum = prec - strP2.size();
 
     return res + std::string(1, '.') + std::string(leadingZerosNum, '0') + strP2;
+}
+
+//----------------------------------------------------------------------------
+// For compatibility with old code
+inline
+std::string toString  ( const Decimal     &d )
+{
+    return decimalToString(d);
 }
 
 //----------------------------------------------------------------------------
