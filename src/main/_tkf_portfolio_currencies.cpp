@@ -74,34 +74,27 @@ INVEST_OPENAPI_MAIN()
     }
 
     auto // PortfolioResponse
-    portolioRes = pOpenApi->portfolio();
+    portolioRes = pOpenApi->portfolioCurrencies();
 
     portolioRes->join();
     tkf::checkAbort(portolioRes);
 
-    auto portfolio = portolioRes->value.getPayload();
-    auto /* QList<PortfolioPosition> */ portfolioPositions = portfolio.getPositions();
+    auto portfolioCurrencies = portolioRes->value.getPayload();
+    QList<tkf::CurrencyPosition> currencyList = portfolioCurrencies.getCurrencies();
 
-    for( auto pos : portfolioPositions )
+    for( auto currencyPos : currencyList )
     {
         qDebug().nospace().noquote() << "";
 
-        marty::Decimal balance = pos.getBalance();
-        marty::Decimal blocked = pos.getBlocked();
+        marty::Decimal balance = currencyPos.getBalance();
+        marty::Decimal blocked = currencyPos.getBlocked();
         std::string balanceStr = balance.toString();
         if (blocked!=0)
         {
             balanceStr += std::string(" ( ") + blocked.toString() + std::string(" blocked)");
         }
 
-        // QString getIsin()
-        // MoneyAmount getExpectedYield() const; ???
-        // MoneyAmount getAveragePositionPrice() const;
-        // MoneyAmount getAveragePositionPriceNoNkd() const;
-
-        qDebug().nospace().noquote() << pos.getTicker() << " (" << pos.getFigi() << ") - " 
-                                     << pos.getInstrumentType().asJson() << ": " << QString::fromStdString(balanceStr)
-                                     << " - " << pos.getName();
+        qDebug().nospace().noquote() << currencyPos.getCurrency().asJson() << " : " << QString::fromStdString(balanceStr);
     }
 
 

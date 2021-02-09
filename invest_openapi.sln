@@ -90,6 +90,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_sandbox_clear_position
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_portfolio", "vcxproj\_tkf_portfolio.vcxproj", "{EED0D55E-39BF-49E3-8F4B-A2EDE12C0DC2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_portfolio_currencies", "vcxproj\_tkf_portfolio_currencies.vcxproj", "{10C03F8D-9AD0-423A-9B82-4DA04FF8ED28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -290,6 +292,14 @@ Global
 		{EED0D55E-39BF-49E3-8F4B-A2EDE12C0DC2}.Release|x64.Build.0 = Release|x64
 		{EED0D55E-39BF-49E3-8F4B-A2EDE12C0DC2}.Release|x86.ActiveCfg = Release|Win32
 		{EED0D55E-39BF-49E3-8F4B-A2EDE12C0DC2}.Release|x86.Build.0 = Release|Win32
+		{10C03F8D-9AD0-423A-9B82-4DA04FF8ED28}.Debug|x64.ActiveCfg = Debug|x64
+		{10C03F8D-9AD0-423A-9B82-4DA04FF8ED28}.Debug|x64.Build.0 = Debug|x64
+		{10C03F8D-9AD0-423A-9B82-4DA04FF8ED28}.Debug|x86.ActiveCfg = Debug|Win32
+		{10C03F8D-9AD0-423A-9B82-4DA04FF8ED28}.Debug|x86.Build.0 = Debug|Win32
+		{10C03F8D-9AD0-423A-9B82-4DA04FF8ED28}.Release|x64.ActiveCfg = Release|x64
+		{10C03F8D-9AD0-423A-9B82-4DA04FF8ED28}.Release|x64.Build.0 = Release|x64
+		{10C03F8D-9AD0-423A-9B82-4DA04FF8ED28}.Release|x86.ActiveCfg = Release|Win32
+		{10C03F8D-9AD0-423A-9B82-4DA04FF8ED28}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
