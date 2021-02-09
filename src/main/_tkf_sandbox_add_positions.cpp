@@ -37,7 +37,7 @@
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("_tkf_update_instruments");
+    QCoreApplication::setApplicationName("_tkf_sandbox_add_positions");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");

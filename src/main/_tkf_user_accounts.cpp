@@ -37,9 +37,6 @@ INVEST_OPENAPI_MAIN()
     using std::cout;
     using std::endl;
 
-
-    cout<<"Launched from : "<<QDir::currentPath().toStdString()<<endl;
-    cout<<"Launched exe  : "<<QCoreApplication::applicationFilePath().toStdString()<<endl;
     cout<<"Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
 
     cout << endl;
@@ -48,10 +45,57 @@ INVEST_OPENAPI_MAIN()
     using tkf::config_helpers::lookupForConfigFile;
     using tkf::config_helpers::FileReadable;
 
-    cout<<"Found config file: " << lookupForConfigFile( "config.properties", "conf;config", FileReadable() ).toStdString() << endl;
-    cout<<"Found config file: " << lookupForConfigFile( "auth.properties", "conf;config"  , FileReadable() ).toStdString() << endl;
-    
+    QStringList lookupConfSubfolders = QString("conf;config").split( ';', Qt::SkipEmptyParts );
+
+
+    auto logConfigFullFileName   = lookupForConfigFile( "logging.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
+    auto apiConfigFullFileName   = lookupForConfigFile( "config.properties"  , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
+    auto authConfigFullFileName  = lookupForConfigFile( "auth.properties"    , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
+
+    qDebug().nospace().noquote() << "Log  Config File: "<< logConfigFullFileName  ;
+    qDebug().nospace().noquote() << "API  Config File: "<< apiConfigFullFileName  ;
+    qDebug().nospace().noquote() << "Auth Config File: "<< authConfigFullFileName ;
+
+    auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
+    auto authConfig    = tkf::AuthConfig   ( authConfigFullFileName );
+    auto loggingConfig = tkf::LoggingConfig( logConfigFullFileName  );
+
+    QSharedPointer<tkf::IOpenApi> pOpenApi = tkf::createOpenApi( apiConfig, authConfig, loggingConfig );
+
+    tkf::ISanboxOpenApi* pSandboxOpenApi = tkf::getSandboxApi(pOpenApi);
+
+    // No need to set the default BrokerAccountId
+    #if 0
+    if (pSandboxOpenApi)
+    {
+        pSandboxOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
+    }
+    else
+    {
+        pOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
+    }
+    #endif
+
+    auto // UserAccountsResponse
+    userAccountsResponse = pOpenApi->userAccounts();
+
+    userAccountsResponse->join();
+    tkf::checkAbort(userAccountsResponse);
+
+    auto userAccounts = userAccountsResponse->value.getPayload();
+    QList<tkf::UserAccount> userAccountList = userAccounts.getAccounts();
+
+    for( auto userAccount : userAccountList )
+    {
+        qDebug().nospace().noquote() << "";
+
+        qDebug().nospace().noquote() << userAccount.getBrokerAccountType().asJson() << ", ID: " << userAccount.getBrokerAccountId();
+
+    }
+
     return 0;
+
+
 }
 
 

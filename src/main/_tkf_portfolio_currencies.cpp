@@ -28,7 +28,7 @@
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("_tkf_portfolio");
+    QCoreApplication::setApplicationName("_tkf_portfolio_currencies");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");
