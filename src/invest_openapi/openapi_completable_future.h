@@ -9,6 +9,7 @@
 
 #include <type_traits>
 #include "openapi_completable_future_base.h"
+#include "func.h"
 
 
 /*
@@ -87,12 +88,20 @@ protected:
     virtual void onComplete(value_type v) override
     {
         value = v;
+
+        qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - v    : " << v.asJson();
+        qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - value: " << value.asJson();
+
         m_complete.store(true, std::memory_order_relaxed);
     }
 
     virtual void onError( value_type v, QNetworkReply::NetworkError et, QString es ) override
     {
         value = v;
+
+        qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - v    : " << v.asJson();
+        qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - value: " << value.asJson();
+
         errorComplete(et, es);
     }
 

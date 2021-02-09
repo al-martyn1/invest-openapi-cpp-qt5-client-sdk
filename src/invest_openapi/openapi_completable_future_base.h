@@ -7,10 +7,12 @@
 #include <QObject>
 #include <QNetworkReply>
 #include <QTest>
+#include <QDebug>
 
 #include <atomic>
 
 #include "models.h"
+#include "func.h"
 
 
 namespace invest_openapi
@@ -60,6 +62,9 @@ protected:
                  , QString                     errorMessage = QString()
                  )
     {
+
+        qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ ;
+
         m_errorType     = errorType   ;
         m_errorMessage  = errorMessage;
         m_complete.store(true, std::memory_order_relaxed);
