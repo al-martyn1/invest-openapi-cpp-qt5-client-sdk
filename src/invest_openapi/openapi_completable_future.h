@@ -71,8 +71,8 @@ public:
                   , SignalErrorType    errorSignal
                   )
     {
-        connect( pSource, completeSignal, this, qOverload<const value_type &>(&OpenApiCompletableFutureBase::onComplete), Qt::QueuedConnection );
-        connect( pSource, errorSignal   , this, qOverload<const value_type &, QNetworkReply::NetworkError, QString>(&OpenApiCompletableFutureBase::onError), Qt::QueuedConnection );
+        connect( pSource, completeSignal, this, qOverload<value_type>(&OpenApiCompletableFutureBase::onComplete), Qt::QueuedConnection );
+        connect( pSource, errorSignal   , this, qOverload<value_type, QNetworkReply::NetworkError, QString>(&OpenApiCompletableFutureBase::onError), Qt::QueuedConnection );
     }
 
 
@@ -86,7 +86,7 @@ protected:
     }
 */
 
-    virtual void onComplete( const value_type &v) override
+    virtual void onComplete( value_type v) override
     {
         value = v;
 
@@ -98,7 +98,7 @@ protected:
         m_complete.store(true, std::memory_order_relaxed);
     }
 
-    virtual void onError( const value_type &v, QNetworkReply::NetworkError et, QString es ) override
+    virtual void onError( value_type v, QNetworkReply::NetworkError et, QString es ) override
     {
         value = v;
 

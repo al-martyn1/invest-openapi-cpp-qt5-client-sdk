@@ -92,49 +92,49 @@ protected:
     
 protected slots:
 
-    virtual void onComplete( const Empty                          &v ) {}
+    virtual void onComplete( Empty                          v ) {}
 
-    virtual void onComplete( const SandboxRegisterResponse        &v ) {}
+    virtual void onComplete( SandboxRegisterResponse        v ) {}
 
-    virtual void onComplete( const MarketInstrumentListResponse   &v ) {}
+    virtual void onComplete( MarketInstrumentListResponse   v ) {}
 
-    virtual void onComplete( const CandlesResponse                &v ) {}
-    virtual void onComplete( const OrderbookResponse              &v ) {}
-    virtual void onComplete( const SearchMarketInstrumentResponse &v ) {}
+    virtual void onComplete( CandlesResponse                v ) {}
+    virtual void onComplete( OrderbookResponse              v ) {}
+    virtual void onComplete( SearchMarketInstrumentResponse v ) {}
 
-    virtual void onComplete( const UserAccountsResponse           &v ) {}
+    virtual void onComplete( UserAccountsResponse           v ) {}
 
-    virtual void onComplete( const OperationsResponse             &v ) {}
+    virtual void onComplete( OperationsResponse             v ) {}
 
-    virtual void onComplete( const OrdersResponse                 &v ) {}
-    virtual void onComplete( const LimitOrderResponse             &v ) {}
-    virtual void onComplete( const MarketOrderResponse            &v ) {}
+    virtual void onComplete( OrdersResponse                 v ) {}
+    virtual void onComplete( LimitOrderResponse             v ) {}
+    virtual void onComplete( MarketOrderResponse            v ) {}
 
-    virtual void onComplete( const PortfolioCurrenciesResponse    &v ) {}
-    virtual void onComplete( const PortfolioResponse              &v ) {}
+    virtual void onComplete( PortfolioCurrenciesResponse    v ) {}
+    virtual void onComplete( PortfolioResponse              v ) {}
 
     
 
-    virtual void onError   ( const Empty                          &v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError   ( Empty                          v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
 
-    virtual void onError   ( const SandboxRegisterResponse        &v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError   ( SandboxRegisterResponse        v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
 
-    virtual void onError   ( const MarketInstrumentListResponse   &v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError   ( MarketInstrumentListResponse   v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
 
-    virtual void onError   ( const CandlesResponse                &v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
-    virtual void onError   ( const OrderbookResponse              &v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
-    virtual void onError   ( const SearchMarketInstrumentResponse &v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError   ( CandlesResponse                v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError   ( OrderbookResponse              v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError   ( SearchMarketInstrumentResponse v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
 
-    virtual void onError   ( const UserAccountsResponse           &v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError   ( UserAccountsResponse           v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
 
-    virtual void onError   ( const OperationsResponse             &v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError   ( OperationsResponse             v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
 
-    virtual void onError   ( const OrdersResponse                 &v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
-    virtual void onError   ( const LimitOrderResponse             &v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
-    virtual void onError   ( const MarketOrderResponse            &v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError   ( OrdersResponse                 v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError   ( LimitOrderResponse             v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError   ( MarketOrderResponse            v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
 
-    virtual void onError   ( const PortfolioCurrenciesResponse    &v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
-    virtual void onError   ( const PortfolioResponse              &v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError   ( PortfolioCurrenciesResponse    v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
+    virtual void onError   ( PortfolioResponse              v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
     
 
 
