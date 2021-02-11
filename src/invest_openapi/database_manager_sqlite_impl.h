@@ -33,15 +33,6 @@ namespace invest_openapi
 {
 
 
-/*
-struct IOaDatabaseManager
-{
-    virtual bool   insertNewCurrencyType     ( Currency       c, const QString & description ) const = 0;
-    virtual bool   insertNewInstrumentType   ( InstrumentType t, const QString & description ) const = 0;
-
-}; // struct IOaDatabaseManager
-
-*/
 
 //----------------------------------------------------------------------------
 class DatabaseManagerSQLiteImpl : public DatabaseManagerSQLiteImplBase

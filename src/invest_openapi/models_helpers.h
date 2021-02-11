@@ -198,7 +198,7 @@ void dumpHttpResponse( const QNetworkReply &reply )
     QIODevice * pQIODevice = const_cast<QNetworkReply*>(&reply);
 
     qDebug().nospace().noquote() << "----- RESPONSE -----";
-    qDebug().nospace().noquote() << "Status: " << toString(reply.error()) << ", look https://doc.qt.io/qt-5/qnetworkreply.html#NetworkError-enum for details";
+    qDebug().nospace().noquote() << "# QNetworkReply Status: " << toString(reply.error()) << ", look https://doc.qt.io/qt-5/qnetworkreply.html#NetworkError-enum for details";
     // https://doc.qt.io/qt-5/qnetworkrequest.html#Attribute-enum
     qDebug().nospace().noquote() << "HTTP Status: " << reply.attribute( QNetworkRequest::HttpStatusCodeAttribute ).toUInt();
 
@@ -209,8 +209,8 @@ void dumpHttpResponse( const QNetworkReply &reply )
     }
 
     qDebug().nospace().noquote() << "--- BODY";
-    qDebug().nospace().noquote() << pQIODevice->readAll();
-    //qDebug() << pQIODevice->readAll();
+    //qDebug().nospace().noquote() << pQIODevice->readAll();
+    qDebug().nospace().noquote() << pQIODevice->peek(4*1024*1024); // peek 4 Mb data max
     qDebug().nospace().noquote() << "--- RESPONSE END";
     
 }

@@ -232,7 +232,7 @@ template <typename ModelType>
 inline 
 QVector<QString> modelToStringsConvertHelper( const ModelType &m )
 {
-    return modelsHelperStringToVector( m.asJson() );
+    return modelsHelperStringToVector( m.asJson().toUpper() );
 }
 
 //------------------------------
@@ -241,7 +241,7 @@ inline
 QVector<QString> modelToStringsConvertHelper2( const ModelType &m )
 {
     return modelsHelperStringToVector( QString("%1").arg( (unsigned)m.getValue() )
-                         , m.asJson() 
+                         , m.asJson().toUpper()
                          );
 }
 
