@@ -22,7 +22,32 @@
 #include "invest_openapi/invest_openapi.h"
 #include "invest_openapi/factory.h"
 #include "invest_openapi/openapi_completable_future.h"
+#include "invest_openapi/qt_time_helpers.h"
 
+
+
+
+inline
+std::ostream& printTimeZoneInfo( const QByteArray &tzId )
+{
+    QTimeZone timeZone = QTimeZone(tzId);
+    QDateTime dtNow    = QDateTime::currentDateTime();
+
+    std::cout // << "TZ ID: " << tzId.toStdString()
+              // << " - "
+              // << timeZone.abbreviation(dtNow).toStdString()
+              // << " - "
+              // << timeZone.displayName( QTimeZone::GenericTime ).toStdString()
+              // << " - "
+              << timeZone.comment().toStdString()
+              // << " - "
+              // << " Has DST: " << ( timeZone.hasDaylightTime() ? "Yes" : "No" )
+              //<< endl
+              ;
+
+    return std::cout;
+
+}
 
 
 INVEST_OPENAPI_MAIN()
@@ -37,17 +62,37 @@ INVEST_OPENAPI_MAIN()
     using std::cout;
     using std::endl;
 
+    cout << "Timezones well-known alias list:" << endl;
+    // Timezones well-known alias list
+    // Well-known timezones alias list
 
-    cout<<"Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
+    std::vector<std::string> tzWlknList = qt_helpers::getTimezonesAliasList<std::string>();
+
+    for( const auto &tzWlkn : tzWlknList )
+    {
+        cout << "  " << tzWlkn;
+        QByteArray qbaTzBa = qt_helpers::getTimezoneIanaIdFromAlias( tzWlkn );
+        cout << " - " << qbaTzBa.toStdString();
+        cout << " - ";
+        printTimeZoneInfo(qbaTzBa);
+        cout << endl;
+    }
 
     cout << endl;
+    cout << "Timezones:" << endl;
 
-    namespace tkf=invest_openapi;
-    using tkf::config_helpers::lookupForConfigFile;
-    using tkf::config_helpers::FileReadable;
+    QList<QByteArray> allTzIdList = QTimeZone::availableTimeZoneIds();
+    for( auto tzId : allTzIdList )
+    {
+        cout << "  ";
+        cout << tzId.toStdString();
+        cout << " - ";
+        printTimeZoneInfo( tzId );
+        cout<<endl;
+    }
 
-    cout<<"Found config file: " << lookupForConfigFile( "config.properties", "conf;config", FileReadable() ).toStdString() << endl;
-    cout<<"Found config file: " << lookupForConfigFile( "auth.properties", "conf;config"  , FileReadable() ).toStdString() << endl;
+    // timeZone.comment().toStdString()
+
     
     return 0;
 }
