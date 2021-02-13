@@ -94,6 +94,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_portfolio_currencies",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_user_accounts", "vcxproj\_tkf_user_accounts.vcxproj", "{54CE331F-5FD4-4A3B-8A0F-EDEBDA1DCF8B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test016", "vcxproj\test016.vcxproj", "{FB6D5FD7-66B9-4E71-AD40-281BCCB466A5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -310,6 +312,14 @@ Global
 		{54CE331F-5FD4-4A3B-8A0F-EDEBDA1DCF8B}.Release|x64.Build.0 = Release|x64
 		{54CE331F-5FD4-4A3B-8A0F-EDEBDA1DCF8B}.Release|x86.ActiveCfg = Release|Win32
 		{54CE331F-5FD4-4A3B-8A0F-EDEBDA1DCF8B}.Release|x86.Build.0 = Release|Win32
+		{FB6D5FD7-66B9-4E71-AD40-281BCCB466A5}.Debug|x64.ActiveCfg = Debug|x64
+		{FB6D5FD7-66B9-4E71-AD40-281BCCB466A5}.Debug|x64.Build.0 = Debug|x64
+		{FB6D5FD7-66B9-4E71-AD40-281BCCB466A5}.Debug|x86.ActiveCfg = Debug|Win32
+		{FB6D5FD7-66B9-4E71-AD40-281BCCB466A5}.Debug|x86.Build.0 = Debug|Win32
+		{FB6D5FD7-66B9-4E71-AD40-281BCCB466A5}.Release|x64.ActiveCfg = Release|x64
+		{FB6D5FD7-66B9-4E71-AD40-281BCCB466A5}.Release|x64.Build.0 = Release|x64
+		{FB6D5FD7-66B9-4E71-AD40-281BCCB466A5}.Release|x86.ActiveCfg = Release|Win32
+		{FB6D5FD7-66B9-4E71-AD40-281BCCB466A5}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
