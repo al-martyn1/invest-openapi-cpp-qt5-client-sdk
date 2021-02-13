@@ -1,4 +1,4 @@
-database = database.sqlite
+database = tkf_invest_db.sqlite
 database.reopen = true
 database.defaults.decimal.format = 18.8
 
