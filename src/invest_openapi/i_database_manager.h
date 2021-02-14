@@ -121,11 +121,11 @@ struct IDatabaseManager
     {
          if (tableColumnNames.empty())
          {
-             return insertTo( tableName, listStringSplit(vals.split( ';', Qt::SkipEmptyParts )), tableGetColumnsFromSchema(tableName) );
+             return insertTo( tableName, listStringSplit(vals.split( ';', Qt::KeepEmptyParts )), tableGetColumnsFromSchema(tableName) );
          }
          else
          {
-             return insertTo( tableName, listStringSplit(vals.split( ';', Qt::SkipEmptyParts )), tableColumnNames );
+             return insertTo( tableName, listStringSplit(vals.split( ';', Qt::KeepEmptyParts )), tableColumnNames );
          }
     }
 

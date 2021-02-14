@@ -23,9 +23,7 @@ namespace qt_helpers
 
 
 //----------------------------------------------------------------------------
-inline
-const std::map<QString, QByteArray>&
-getIanaTimezoneAliases()
+inline const std::map<QString, QByteArray>& getIanaTimezoneAliases()
 {
     static std::map<QString, QByteArray> shortcuts;
 
@@ -77,7 +75,6 @@ getIanaTimezoneAliases()
     shortcuts["CET"  ] = QByteArray::fromStdString("Europe/Berlin"     ); // Западная Европа - (UTC+01:00) Амстердам, Берлин, Берн, Вена, Рим, Стокгольм
     shortcuts["WET"  ] = QByteArray::fromStdString("Europe/Lisbon"); // Same as GMT, Western European Summer Time (WEST, UTC+01:00) is a summer daylight saving time scheme
     shortcuts["EET"  ] = QByteArray::fromStdString("Europe/Chisinau"); // Eastern European Time - Восточная Европа - (UTC+02:00) Кишинев
-    //shortcuts["EET"  ] = QByteArray::fromStdString("Europe/Athens"); // EET Eastern European Time, Греция, Турция - (UTC+02:00) Афины, Бухарест - (UTC+02:00)
 
     // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
     // Можно будет попробовать таймзону по коду страны определять
@@ -89,12 +86,12 @@ getIanaTimezoneAliases()
     shortcuts["MST"  ] = QByteArray::fromStdString("MST7MDT"); // Горное время США
     shortcuts["CST"  ] = QByteArray::fromStdString("CST6CDT"); // Центральное время США
     shortcuts["EST"  ] = QByteArray::fromStdString("EST5EDT"); // Восточное время США
+    shortcuts["AST"  ] = QByteArray::fromStdString("America/Puerto_Rico"); // Puerto Rico, the U.S. Virgin Islands, Ю-Ам. западное время - (UTC-04:00) Джорджтаун, Ла-Пас, Манаус, Сан-Хуан
 
     shortcuts["PT"   ] = QByteArray::fromStdString("PST8PDT"); // Pacific Time zone: the Pacific coast states and most of Nevada
     shortcuts["MT"   ] = QByteArray::fromStdString("MST7MDT"); // Mountain Time zone: the Mountain states plus western parts of some adjacent states
     shortcuts["CT"   ] = QByteArray::fromStdString("CST6CDT"); // Central Time zone: a large area spanning from the Gulf Coast to the Great Lakes
     shortcuts["ET"   ] = QByteArray::fromStdString("EST5EDT"); // Eastern Time zone: roughly a triangle covering all the states from the Great Lakes down to Florida and east to the Atlantic coast
-    shortcuts["AST"  ] = QByteArray::fromStdString("America/Puerto_Rico"); // Puerto Rico, the U.S. Virgin Islands, Ю-Ам. западное время - (UTC-04:00) Джорджтаун, Ла-Пас, Манаус, Сан-Хуан
 
     shortcuts["AT"   ] = QByteArray::fromStdString("America/Goose_Bay"); // (UTC-04:00) Атлантическое время (Канада), Labrador (all but southeastern tip), New Brunswick, Nova Scotia, Prince Edward Island, eastern part of Quebec
     shortcuts["NT"   ] = QByteArray::fromStdString("America/St_Johns"); // (UTC-03:30) Ньюфаундленд, Labrador (southeastern), Newfoundland
@@ -102,7 +99,7 @@ getIanaTimezoneAliases()
     //shortcuts[""  ] = QByteArray::fromStdString(""); // 
 
 
-    shortcuts["AST"  ] = QByteArray::fromStdString("America/Guadeloupe"); // Guadeloupe, Martinique, Saint Barthélemy, Saint Martin, (UTC-04:00) Джорджтаун, Ла-Пас, Манаус, Сан-Хуан
+    //shortcuts["AST"  ] = QByteArray::fromStdString("America/Guadeloupe"); // Guadeloupe, Martinique, Saint Barthélemy, Saint Martin, (UTC-04:00) Джорджтаун, Ла-Пас, Манаус, Сан-Хуан
     shortcuts["PMST" ] = QByteArray::fromStdString("America/Miquelon"  ); // French Guiana, Saint Pierre and Miquelon, (UTC-03:00) Сен-Пьер и Микелон
     shortcuts["ST"   ] = QByteArray::fromStdString("Pacific/Midway"    ); // American Samoa, Jarvis Island, Kingman Reef, Midway Atoll and Palmyra Atoll
     shortcuts["HT"   ] = QByteArray::fromStdString("Pacific/Johnston"  ); // Hawaii, most of the Aleutian Islands, and Johnston Atoll, Гавайское время - (UTC-10:00)
@@ -124,7 +121,7 @@ getIanaTimezoneAliases()
     shortcuts["NFT"  ] = QByteArray::fromStdString("Pacific/Norfolk"); // Norfolk Island, Норфолк - (UTC+11:00) Остров Норфолк
 
     // Шутка. Бг-г-г ;)
-    // В бытность студентом, был возле ВУЗа кабак "Бугенвилия". Бывало, прогуливал там лекции. Иногда даже в ВУЗане заходил, сразу туда шел :)
+    // В бытность студентом, был возле ВУЗа кабак "Бугенвилия". Бывало, прогуливал там лекции. Иногда даже в ВУЗ не заходил, сразу туда шел :)
     shortcuts["BG"   ] = QByteArray::fromStdString("Pacific/Bougainville"); // Бугенвиль - (UTC+11:00) Остров Бугенвиль
     shortcuts["BGG"  ] = QByteArray::fromStdString("Pacific/Bougainville"); // Бугенвиль - (UTC+11:00) Остров Бугенвиль
     shortcuts["BGGG" ] = QByteArray::fromStdString("Pacific/Bougainville");
@@ -151,7 +148,8 @@ getIanaTimezoneAliases()
     shortcuts["Asia/Kolkata"  ] = QByteArray::fromStdString("Asia/Calcutta"); // 
 
     shortcuts["SLST" ] = QByteArray::fromStdString("Asia/Colombo"); // Шри-Ланка - (UTC+05:30) Шри-Джаявардене-пура-Котте. Sri Lanka Standard Time (SLST) is the time zone for Sri Lanka. It is 5 hours and 30 minutes ahead of GMT/UTC (UTC+05:30).[1]
-    shortcuts["CST"  ] = QByteArray::fromStdString("Asia/Shanghai"); // Китайское время - (UTC+08:00) Гонконг, Пекин, Урумчи, Чунцин. The time in China follows a single standard time offset of UTC+08:00 (eight hours ahead of Coordinated Universal Time), despite China spanning five geographical time zones. The official national standard time is called Beijing Time (Chinese: 北京时间) domestically[1] and China Standard Time (CST) internationally.[2] Daylight saving time has not been observed since 1991
+    // CST is ambiguos, use own abbreviation CHaina Time
+    shortcuts["CHT"  ] = QByteArray::fromStdString("Asia/Shanghai"); // Китайское время - (UTC+08:00) Гонконг, Пекин, Урумчи, Чунцин. The time in China follows a single standard time offset of UTC+08:00 (eight hours ahead of Coordinated Universal Time), despite China spanning five geographical time zones. The official national standard time is called Beijing Time (Chinese: 北京时间) domestically[1] and China Standard Time (CST) internationally.[2] Daylight saving time has not been observed since 1991
     shortcuts["HKT"  ] = QByteArray::fromStdString("Asia/Hong_Kong"); // Китайское время - (UTC+08:00) Гонконг, Пекин, Урумчи, Чунцин. Hong Kong Time (abbreviation: HKT; Chinese: 香港時間; Jyutping: hoeng1 gong2 si4 gaan3) is the time in Hong Kong, observed at UTC+08:00 all year round.[1] The Hong Kong Observatory is the official timekeeper of the Hong Kong Time.
     shortcuts["KST"  ] = QByteArray::fromStdString("Asia/Seoul"); // Корейское время - (UTC+09:00) Сеул. South Korea has one time zone, Korea Standard Time (UTC+09:00), which is abbreviated KST
     shortcuts["PYT"  ] = QByteArray::fromStdString("Asia/Pyongyang"); // Северокорейское время - (UTC+09:00) Пхеньян. Time in North Korea, called Pyongyang Time[1] (PYT) or Standard Time of the Democratic People's Republic of Korea 
@@ -164,6 +162,142 @@ getIanaTimezoneAliases()
     // shortcuts[""  ] = QByteArray::fromStdString(""); // 
 
     return shortcuts;
+
+}
+
+//----------------------------------------------------------------------------
+inline const std::map<QString, QString>& getIanaTimezoneAliasDescriptions()
+{
+    static std::map<QString, QString> descriptions;
+
+    if (!descriptions.empty())
+       return descriptions;
+
+    // . Actually is bla-bla
+
+    // https://en.wikipedia.org/wiki/Time_in_Russia
+    descriptions["RTZ1" ] = "Russian Timezone 1 - Kaliningrad";
+    descriptions["RTZ2" ] = "Russian Timezone 2 - Moscow";
+    descriptions["RTZ3" ] = "Russian Timezone 3 - Samara";
+    descriptions["RTZ4" ] = "Russian Timezone 4 - Yekaterinburg";
+    descriptions["RTZ5" ] = "Russian Timezone 5 - Omsk";
+    descriptions["RTZ6" ] = "Russian Timezone 6 - Krasnoyarsk";
+    descriptions["RTZ7" ] = "Russian Timezone 7 - Irkutsk";
+    descriptions["RTZ8" ] = "Russian Timezone 8 - Yakutsk";
+    descriptions["RTZ9" ] = "Russian Timezone 9 - Vladivostok";
+    descriptions["RTZ10"] = "Russian Timezone 10 - Magadan/Srednekolymsk";
+    descriptions["RTZ11"] = "Russian Timezone 11 - Kamchatka, Chukotka and Kamchatka Krai";
+
+    descriptions["KALT" ] = "Alias for RTZ1";
+    descriptions["MSK"  ] = "Alias for RTZ2";
+    descriptions["SAMT" ] = "Alias for RTZ3";
+    descriptions["YEKT" ] = "Alias for RTZ4";
+    descriptions["OMST" ] = "Alias for RTZ5";
+    descriptions["KRAT" ] = "Alias for RTZ6";
+    descriptions["IRKT" ] = "Alias for RTZ7";
+    descriptions["YAKT" ] = "Alias for RTZ8";
+    descriptions["VLAT" ] = "Alias for RTZ9";
+    descriptions["MAGT" ] = "Alias for RTZ10";
+    descriptions["PETT" ] = "Alias for RTZ11";
+
+    descriptions["MSK-1"] = "MSK-based alias for RTZ1";
+    descriptions["MSK+0"] = "MSK-based alias for RTZ2";
+    descriptions["MSK+1"] = "MSK-based alias for RTZ3";
+    descriptions["MSK+2"] = "MSK-based alias for RTZ4";
+    descriptions["MSK+3"] = "MSK-based alias for RTZ5";
+    descriptions["MSK+4"] = "MSK-based alias for RTZ6";
+    descriptions["MSK+5"] = "MSK-based alias for RTZ7";
+    descriptions["MSK+6"] = "MSK-based alias for RTZ8";
+    descriptions["MSK+7"] = "MSK-based alias for RTZ9";
+    descriptions["MSK+8"] = "MSK-based alias for RTZ10";
+    descriptions["MSK+9"] = "MSK-based alias for RTZ11";
+
+
+    // List of time zones by country
+    // https://en.wikipedia.org/wiki/List_of_time_zones_by_country
+
+    descriptions["GMT"  ] = "Greenwich Mean Time";
+    descriptions["CET"  ] = "Central European Time";
+    descriptions["WET"  ] = "Western European Time";
+    descriptions["EET"  ] = "Eastern European Time";
+
+    descriptions["PST"  ] = "US Pacific time zone";
+    descriptions["MST"  ] = "US Mountain time zone";
+    descriptions["CST"  ] = "US Central time zone";
+    descriptions["EST"  ] = "Eastern time zone";
+    descriptions["AST"  ] = "Atlantic time zone";
+
+    descriptions["PT"   ] = "Same as PST, US Pacific time zone";
+    descriptions["MT"   ] = "Same as MST, US Mountain time zone";
+    descriptions["CT"   ] = "Same as CST, US Central time zone";
+    descriptions["ET"   ] = "Same as EST, Eastern time zone";
+
+    descriptions["AT"   ] = "Atlantic time zone";
+    descriptions["NT"   ] = "Labrador (southeastern), Newfoundland";
+    descriptions["AKT"  ] = "Alaska";
+    //descriptions[""  ] = QByteArray::fromStdString(""); // 
+
+    //descriptions["AST"  ] = "Guadeloupe, Martinique, Saint Barthélemy, Saint Martin";
+    descriptions["PMST" ] = "French Guiana, Saint Pierre and Miquelon";
+    descriptions["ST"   ] = "American Samoa, Jarvis Island, Kingman Reef, Midway Atoll and Palmyra Atoll";
+    descriptions["HT"   ] = "Hawaii, most of the Aleutian Islands, and Johnston Atoll";
+
+    descriptions["GALT" ] = "Galápagos Province";
+
+    descriptions["ART"  ] = "Argentina";
+
+    descriptions["PET"  ] = "Peru Time";
+
+    descriptions["ART"  ] = "Argentina/Antarctica";
+
+    descriptions["CXT"  ] = "India/Christmas Island";
+
+    descriptions["AWST" ] = "Australian Western Standard Time";
+    descriptions["CWT"  ] = "Central Western Australian Time";
+    descriptions["ACST" ] = "Australian Central Standard Time";
+    descriptions["AEST" ] = "Australian Eastern Standard Time";
+    descriptions["NFT"  ] = "Norfolk Island";
+
+    descriptions["BG"   ] = "Joke timezone alias. Non-standard";
+    descriptions["BGG"  ] = "Joke timezone alias. Non-standard";
+    descriptions["BGGG" ] = "Joke timezone alias. Non-standard";
+
+    descriptions["WAT"  ] = "West Africa Time";
+    descriptions["CAT"  ] = "Central Africa Time";
+    descriptions["SAST" ] = "South African Standard Time";
+    descriptions["EAT"  ] = "East Africa Time";
+
+    descriptions["TRT"  ] = "Turkey Time";
+
+    /// Same as India. Hm-m-m...
+    // descriptions["IST"  ] = QByteArray::fromStdString("Asia/Jerusalem"); // Иерусалимское время - (UTC+02:00) Иерусалим. Israel Standard Time (IST) is the standard time zone in Israel. It is two hours ahead of UTC (UTC+02:00).
+
+    descriptions["IRST" ] = "Iran Standard Time";
+    descriptions["IT"   ] = "Iran Time";
+
+    descriptions["PKT"  ] = "Pakistan Standard Time";
+
+    descriptions["BTT"  ] = "Bhutan Time";
+
+    // Same as Israel. Hm-m-m...
+    descriptions["IST"  ] = "Indian Standard Time";
+    descriptions["Asia/Kolkata"] = "India/Calcutta";
+
+    descriptions["SLST" ] = "Sri Lanka Standard Time";
+    // CST is ambiguos, use own abbreviation CHaina Time
+    descriptions["CHT"  ] = "China Time. Non-standard. CST collised with US CST";
+    descriptions["HKT"  ] = "Hong Kong Time";
+    descriptions["KST"  ] = "South Korea - Korea Standard Time";
+    descriptions["PYT"  ] = "North Korea Pyongyang Time";
+    descriptions["PHT"  ] = "Philippine Standard Time";
+    descriptions["SST"  ] = "Singapore Standard Time";
+    descriptions["SGT"  ] = "Singapore Standard Time";
+    descriptions["JST"  ] = "Japan Standard Time";
+
+
+    // descriptions[""  ] = QByteArray::fromStdString(""); // 
+
+    return descriptions;
 
 }
 
@@ -193,6 +327,71 @@ inline
 QByteArray getTimezoneIanaIdFromAlias( const char* idOrAlias )
 {
     return getTimezoneIanaIdFromAlias( QString::fromLocal8Bit(idOrAlias) );
+}
+
+//----------------------------------------------------------------------------
+inline
+QString appendSentenceHelper( QString baseSentence, QString sentenceToAppendTo = QString() )
+{
+    sentenceToAppendTo = sentenceToAppendTo.trimmed();
+
+    if (sentenceToAppendTo.isEmpty())
+        return baseSentence; // return untouched input
+
+    baseSentence       = baseSentence.trimmed();
+
+    if (baseSentence.isEmpty())
+        return sentenceToAppendTo;
+
+    if (baseSentence.endsWith("."))
+    {
+        baseSentence.chop(1);
+        baseSentence = baseSentence.trimmed();
+    }
+
+    baseSentence.append(". ");
+
+    baseSentence.append(sentenceToAppendTo);
+
+    return baseSentence;
+}
+
+//----------------------------------------------------------------------------
+inline QString getTimezoneAliasDesciption( const QString &tzAlias )
+{
+    const std::map<QString, QByteArray>& aliasMap       = getIanaTimezoneAliases();
+    const std::map<QString, QString>   & descriptionMap = getIanaTimezoneAliasDescriptions();
+
+    std::map<QString, QByteArray>::const_iterator aliasIt       = aliasMap      .find(tzAlias);
+    std::map<QString, QString>   ::const_iterator descriptionIt = descriptionMap.find(tzAlias);
+
+    if (descriptionIt==descriptionMap.end())
+    {
+        // No description found
+
+        if (aliasIt==aliasMap.end())
+            return QString(""); // Alias is also invalid
+
+        //return appendSentenceHelper( QString::fromStdString( aliasIt->second.toStdString() ) );
+        return QString::fromStdString( aliasIt->second.toStdString() );
+    }
+
+    // Description was found
+
+    if (aliasIt==aliasMap.end())
+        return QString(""); // But alias is invalid itself
+
+    std::string ianaIdAsStdStr = aliasIt->second.toStdString();
+
+    std::string sentenceToAppend = std::string("Actually it is \'") + ianaIdAsStdStr + std::string("\'");
+
+    return appendSentenceHelper(descriptionIt->second, QString::fromStdString(sentenceToAppend) );
+}
+
+//----------------------------------------------------------------------------
+inline QString getTimezoneAliasDesciption( const std::string &tzAlias )
+{
+    return getTimezoneAliasDesciption( QString::fromStdString(tzAlias) );
 }
 
 //----------------------------------------------------------------------------

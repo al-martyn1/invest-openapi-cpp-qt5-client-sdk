@@ -25,6 +25,7 @@
 
 #include "invest_openapi/database_config.h"
 #include "invest_openapi/database_manager.h"
+#include "invest_openapi/qt_time_helpers.h"
 
 #include "cpp/cpp.h"
 
@@ -100,6 +101,9 @@ INVEST_OPENAPI_MAIN()
         }
     }
 
+    qDebug().nospace().noquote() << "\n";
+
+
     // Fill ref books here
 
     qDebug().nospace().noquote() << "Fill 'BROKER_ACCOUNT_TYPE' table: " 
@@ -134,18 +138,18 @@ INVEST_OPENAPI_MAIN()
 
     qDebug().nospace().noquote() << "Fill 'CANDLE_RESOLUTION' table: " 
                                  << pDbMan->insertToBulkFromString( "CANDLE_RESOLUTION"
-                                                                  , "0,INVALID,Invalid CandleResolution value;"
-                                                                    "1,_1MIN,1 min;"
-                                                                    "2,_2MIN,2 min;"
-                                                                    "3,_3MIN,3 min;"
-                                                                    "4,_5MIN,5 min;"
-                                                                    "5,_10MIN,10 min;"
-                                                                    "6,_15MIN,15 min;"
-                                                                    "7,_30MIN,30 min;"
-                                                                    "8,HOUR,Hour (60 min);"
-                                                                    "9,DAY,Day (1440 min);"
-                                                                    "10,WEEK,Week (10080 min);"
-                                                                    "11,MONTH,(Avg 43200 min)"
+                                                                  , "0,INVALID,,,Invalid CandleResolution value;"
+                                                                    "1,_1MIN,1m,1d,1 min;"             /* 1min [1 minute, 1 day]    */
+                                                                    "2,_2MIN,2m,1d,2 min;"             /* 2min [2 minutes, 1 day]   */
+                                                                    "3,_3MIN,3m,1d,3 min;"             /* 3min [3 minutes, 1 day]   */
+                                                                    "4,_5MIN,5m,1d,5 min;"             /* 5min [5 minutes, 1 day]   */
+                                                                    "5,_10MIN,10m,1d,10 min;"          /* 10min [10 minutes, 1 day] */
+                                                                    "6,_15MIN,15m,1d,15 min;"          /* 15min [15 minutes, 1 day] */
+                                                                    "7,_30MIN,30m,1d,30 min;"          /* 30min [30 minutes, 1 day] */
+                                                                    "8,HOUR,1h,7d,Hour (60 min);"      /* hour [1 hour, 7 days]     */
+                                                                    "9,DAY,1d,1y,Day (1440 min);"      /* day [1 day, 1 year]       */
+                                                                    "10,WEEK,7d,2y,Week (10080 min);"  /* week [7 days, 2 years]    */
+                                                                    "11,MONTH,1m,10y,Month (Avg 43200 min)"   /* month [1 month, 10 years] */
                                                                   );
 
     qDebug().nospace().noquote() << "Fill 'OPERATION_TYPE' table: " 
@@ -177,6 +181,40 @@ INVEST_OPENAPI_MAIN()
                                                                   );
 
 
+    // TZ_LIST
+
+    QVector<QString> tzColumns     = pDbMan->tableGetColumnsFromSchema("TZ_LIST");
+    QVector<QString> tzColumnsNoId = tkf::removeFirstItems(tzColumns, 1);
+    
+    std::vector<std::string> tzWlknList = qt_helpers::getTimezonesAliasList<std::string>();
+
+    for( const auto &tzWlkn : tzWlknList )
+    {
+        // Pair - Name:Description
+
+        std::string name = tzWlkn;
+        std::string description = qt_helpers::getTimezoneAliasDesciption(name).toStdString();
+
+        QVector<QString> vals;
+        vals.push_back( QString::fromStdString(name) );
+        vals.push_back( QString::fromStdString(description) );
+
+        pDbMan->insertTo( "TZ_LIST", vals, tzColumnsNoId );
+    }
+
+    QList<QByteArray> allTzIdList = QTimeZone::availableTimeZoneIds();
+    for( auto tzId : allTzIdList )
+    {
+        std::string strTzId = tzId.toStdString();
+        QTimeZone qtz = QTimeZone(tzId);
+        std::string descr = qtz.comment().toStdString();
+
+        QVector<QString> vals;
+        vals.push_back( QString::fromStdString(strTzId) );
+        vals.push_back( QString::fromStdString(descr) );
+
+        pDbMan->insertTo( "TZ_LIST", vals, tzColumnsNoId );
+    }
 
 
 

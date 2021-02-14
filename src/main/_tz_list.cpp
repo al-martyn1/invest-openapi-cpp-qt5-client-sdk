@@ -71,10 +71,7 @@ INVEST_OPENAPI_MAIN()
     for( const auto &tzWlkn : tzWlknList )
     {
         cout << "  " << tzWlkn;
-        QByteArray qbaTzBa = qt_helpers::getTimezoneIanaIdFromAlias( tzWlkn );
-        cout << " - " << qbaTzBa.toStdString();
-        cout << " - ";
-        printTimeZoneInfo(qbaTzBa);
+        cout << " - " << qt_helpers::getTimezoneAliasDesciption( tzWlkn ).toStdString();
         cout << endl;
     }
 

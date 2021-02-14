@@ -16,6 +16,7 @@
 #include <QElapsedTimer>
 #include <QTimeZone>
 #include <QDateTime>
+#include <QLocale>
 
 #include "invest_openapi/config_helpers.h"
 #include "invest_openapi/api_config.h"
@@ -28,6 +29,21 @@
 #include "invest_openapi/qt_time_helpers.h"
 
 //----------------------------------------------------------------------------
+
+/*
+    Links to read:
+      https://stackoverflow.com/questions/21976264/qt-isodate-formatted-date-time-including-timezone
+      https://stackoverflow.com/questions/66186141/is-there-the-way-to-parse-time-with-timezone-in-qt/66188970
+      https://stackoverflow.com/questions/55370667/qt-qdatetime-from-string-with-timezone-and-daylight-saving
+
+      https://stackoverflow.com/questions/24909579/how-to-obtain-a-list-of-cities-and-countries-in-qt
+
+*/
+
+// QLocale lc = QLocale();
+// QLocale lc = QLocale::c();
+// QLocale lc = QLocale(QLocale::C);
+QLocale lc = QLocale(QLocale::English);
 
 
 
@@ -53,11 +69,11 @@ void printTimeZone( const std::string title, const QTimeZone &tzi )
     if (!title.empty())
         std::cout << title << ": ";
 
-    std::cout << tzi.displayName( QTimeZone::GenericTime, QTimeZone::ShortName ).toStdString() 
+    std::cout << tzi.displayName( QTimeZone::GenericTime, QTimeZone::ShortName , lc ).toStdString() 
               << " - "
-              << tzi.displayName( QTimeZone::GenericTime, QTimeZone::LongName ).toStdString() 
+              << tzi.displayName( QTimeZone::GenericTime, QTimeZone::LongName  , lc ).toStdString() 
               << " - "
-              << tzi.displayName( QTimeZone::GenericTime, QTimeZone::OffsetName ).toStdString()
+              << tzi.displayName( QTimeZone::GenericTime, QTimeZone::OffsetName, lc ).toStdString()
               //<< std::endl
               ;
 }
@@ -75,7 +91,7 @@ void printTimeZoneInfo( const std::string title, const QByteArray &tzId )
               << " - "
               << timeZone.abbreviation(dtNow).toStdString()
               << " - "
-              << timeZone.displayName( QTimeZone::GenericTime ).toStdString()
+              << timeZone.displayName( QTimeZone::GenericTime, QTimeZone::DefaultName, lc ).toStdString()
               << " - "
               << timeZone.comment().toStdString()
               << " - "
@@ -147,6 +163,7 @@ INVEST_OPENAPI_MAIN()
     cout << endl;
 
     printTimeZone( "Current Time zone      ", dtNow   .timeZone() );
+    cout << endl;
     printTimeZone( "Current Time zone (UTC)", dtNowUtc.timeZone() );
     cout << endl;
 

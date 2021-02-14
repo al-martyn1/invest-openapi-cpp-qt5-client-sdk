@@ -174,8 +174,6 @@ INVEST_OPENAPI_MAIN()
             
              */
 
-            // LOT_MARKET
-
             //inline QVector<QString> removeFirstItems(QVector<QString> v, int numItemsToRemove )
             //inline QVector<QString> removeItemsByName( const QVector<QString> &v, const QString &name )
 
@@ -186,10 +184,6 @@ INVEST_OPENAPI_MAIN()
             qDebug().nospace().noquote() << values;
 
             QString selectQuery = pDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), instrumentColsNoLotMarket );
-            //QString updateQuery = pDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), values, instrumentColsNoLotMarket );
-
-            //qDebug().nospace().noquote() << "Select query: " << selectQuery;
-            //qDebug().nospace().noquote() << "Update query: " << updateQuery;
             
             std::size_t selectResSize = pDbMan->getQueryResultSize( pDbMan->execHelper(selectQuery) );
             if (selectResSize>0)
@@ -200,7 +194,6 @@ INVEST_OPENAPI_MAIN()
             }
             else
             {
-                //QString lotFieldIdx; = values[lotFieldIdx];
                 QString lotValue;
                 if (lotFieldIdx<values.size())
                     lotValue = values[lotFieldIdx];

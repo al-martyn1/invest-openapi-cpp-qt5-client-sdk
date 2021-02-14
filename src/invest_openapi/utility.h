@@ -207,10 +207,22 @@ inline QVector<QStringList> listStringNormalize( const QVector<QStringList> &s )
 }
 
 //----------------------------------------------------------------------------
+inline QStringList listStringTrim( const QStringList &l )
+{
+    QStringList resList;
+    for( auto s : l )
+    {
+        resList.push_back(s.trimmed());
+    }
+
+    return resList;
+}
+
+//----------------------------------------------------------------------------
 inline QStringList listStringSplit( QString s )
 {
     s = listStringNormalize(s);
-    return s.split( ';', Qt::SkipEmptyParts );
+    return listStringTrim( s.split( ';', Qt::KeepEmptyParts ) );
 }
 
 //------------------------------

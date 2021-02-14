@@ -171,6 +171,10 @@ protected:
 
             tablesLevel_1.insert("MARKET_INSTRUMENT");
 
+            tablesLevel_2.insert("TZ_LIST");
+
+            
+
             /*
             tablesLevel_2.insert("_META_TABLES");
             tablesLevel_2.insert("_META_COLUMNS");
@@ -205,6 +209,31 @@ protected:
             tableSchemas[QString("OPERATION_TYPE"     )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationType    >(QString(), false ) );
             tableSchemas[QString("ORDER_STATUS"       )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderStatus      >(QString(), false ) );
             tableSchemas[QString("ORDER_TYPE"         )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderType        >(QString(), false ) );
+
+            tableSchemas[QString("TZ_LIST"            )] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                                           "TZ_NAME          VARCHAR(64),"
+                                                           "DESCRIPTION      VARCHAR(255)"
+                                                         ;
+
+
+            // ISO8601 YYYY-MM-DD HH:MM:SS.SSS
+            // YYYY-MM-DD               - 4-2-2       - 4+1+2+1+2      - 10 chars
+            // HH:MM:SS.SSS             - 2:2:2.3     - 2+1+2+1+2+1+3  - 12 chars
+            // YYYY-MM-DD HH:MM:SS.SSS  - 10 [SP] 12  - 10+1+12        - 23 chars
+            //
+            /*
+            tableSchemas[QString("STOCK_EXCHANGE_LIST")] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                                           "NAME             VARCHAR(12) NOT NULL UNIQUE,"
+                                                           "FOUNDATION_DATE"
+
+            */
+            //yyyy-MM-dd
+
+
+            // Moskovskaya Birzha MMVB-RTS PAO
+            // Moscow Exchange
+            // Moscow Exchange was established on 19 December 2011 by merging the two largest Moscow-based exchanges, the Moscow Interbank Currency Exchange (MICEX) and the Russian Trading System (RTS)
+            //tableSchemas[QString("STOCK_EXCHANGE_LIST"         )] = 
 
             /*
             tableSchemas[QString("_META_TABLES"       )] = lf()    + QString("TABLE_NAME")            + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
