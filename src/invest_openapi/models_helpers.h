@@ -42,48 +42,6 @@ bool getResponsesDebug( );
 
 
 
-//----------------------------------------------------------------------------
-inline QString formatUtcOffset( int utcOffset )
-{
-    QString utcStr;
-
-    if (utcOffset<0)
-    {
-        utcStr.append("-");
-        utcOffset = -utcOffset;
-    }
-    else
-    {
-        utcStr.append("+");
-    }
-
-    utcOffset /= 60;
-    int hours   = utcOffset/60;
-    int minutes = utcOffset%60;
-
-    return utcStr + QString::asprintf("%02d:%02d", hours, minutes );
-}
-
-//----------------------------------------------------------------------------
-inline
-QString formatDateTimeISO8601( const QDateTime &dt, bool utcOffsetAuto = false )
-{
-    int utcOffset = dt.offsetFromUtc();
-    QString utcOffsetStr;
-
-    if (!utcOffsetAuto || utcOffset!=0)
-        utcOffsetStr = formatUtcOffset(utcOffset);
-
-    return dt.toString("yyyy-MM-ddThh:mm:ss.zzz")
-    + QString("000")
-    + utcOffsetStr
-    ;
-}
-
-//----------------------------------------------------------------------------
-
-
-
 
 //----------------------------------------------------------------------------
 inline

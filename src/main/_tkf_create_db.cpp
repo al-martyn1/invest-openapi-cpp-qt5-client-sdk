@@ -139,17 +139,17 @@ INVEST_OPENAPI_MAIN()
     qDebug().nospace().noquote() << "Fill 'CANDLE_RESOLUTION' table: " 
                                  << pDbMan->insertToBulkFromString( "CANDLE_RESOLUTION"
                                                                   , "0,INVALID,,,Invalid CandleResolution value;"
-                                                                    "1,_1MIN,1m,1d,1 min;"             /* 1min [1 minute, 1 day]    */
-                                                                    "2,_2MIN,2m,1d,2 min;"             /* 2min [2 minutes, 1 day]   */
-                                                                    "3,_3MIN,3m,1d,3 min;"             /* 3min [3 minutes, 1 day]   */
-                                                                    "4,_5MIN,5m,1d,5 min;"             /* 5min [5 minutes, 1 day]   */
-                                                                    "5,_10MIN,10m,1d,10 min;"          /* 10min [10 minutes, 1 day] */
-                                                                    "6,_15MIN,15m,1d,15 min;"          /* 15min [15 minutes, 1 day] */
-                                                                    "7,_30MIN,30m,1d,30 min;"          /* 30min [30 minutes, 1 day] */
-                                                                    "8,HOUR,1h,7d,Hour (60 min);"      /* hour [1 hour, 7 days]     */
-                                                                    "9,DAY,1d,1y,Day (1440 min);"      /* day [1 day, 1 year]       */
-                                                                    "10,WEEK,7d,2y,Week (10080 min);"  /* week [7 days, 2 years]    */
-                                                                    "11,MONTH,1m,10y,Month (Avg 43200 min)"   /* month [1 month, 10 years] */
+                                                                    "1,1MIN,1m,1d,1 min;"                    /* 1min [1 minute, 1 day]    */
+                                                                    "2,2MIN,2m,1d,2 min;"                    /* 2min [2 minutes, 1 day]   */
+                                                                    "3,3MIN,3m,1d,3 min;"                    /* 3min [3 minutes, 1 day]   */
+                                                                    "4,5MIN,5m,1d,5 min;"                    /* 5min [5 minutes, 1 day]   */
+                                                                    "5,10MIN,10m,1d,10 min;"                 /* 10min [10 minutes, 1 day] */
+                                                                    "6,15MIN,15m,1d,15 min;"                 /* 15min [15 minutes, 1 day] */
+                                                                    "7,30MIN,30m,1d,30 min;"                 /* 30min [30 minutes, 1 day] */
+                                                                    "8,HOUR,1h,7d,Hour (60 min);"            /* hour [1 hour, 7 days]     */
+                                                                    "9,DAY,1d,1y,Day (1440 min);"            /* day [1 day, 1 year]       */
+                                                                    "10,WEEK,7d,2y,Week (10080 min);"        /* week [7 days, 2 years]    */
+                                                                    "11,MONTH,1m,10y,Month (Avg 43200 min)"  /* month [1 month, 10 years] */
                                                                   );
 
     qDebug().nospace().noquote() << "Fill 'OPERATION_TYPE' table: " 

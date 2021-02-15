@@ -196,7 +196,7 @@ protected:
     {
         static bool schemasInitialized = false;
         
-        static QMap<QString,QString> tableSchemas = modelMakeAllSqlShemas_SQLITE();
+        static QMap<QString,QString> tableSchemas = modelMakeAllSqlSchemas_SQLITE();
 
         if (!schemasInitialized)
         {

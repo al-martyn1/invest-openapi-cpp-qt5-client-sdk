@@ -22,6 +22,7 @@
 #include "HttpRequest.h"
 
 #include "../../models_helpers.h"
+#include "../../qt_time_helpers.h"
 
 
 namespace OpenAPI {

@@ -11,6 +11,7 @@
 #include "models_helpers.h"
 #include "utility.h"
 #include "cpp/cpp.h"
+#include "qt_time_helpers.h"
 
 
 namespace invest_openapi
@@ -251,7 +252,7 @@ QVector<QString> modelToStringsConvertHelper2( const ModelType &m )
 
 
 //----------------------------------------------------------------------------
-inline QVector<QString> modelToStrings( const QDateTime         &v ) { return modelToStrings( formatDateTimeISO8601(v) ); }
+inline QVector<QString> modelToStrings( const QDateTime         &v ) { return modelToStrings( qt_helpers::formatDateTimeISO8601(v) ); }
 inline QVector<QString> modelToStrings( const BrokerAccountType &v ) { return modelToStringsConvertHelper2(v); }
 inline QVector<QString> modelToStrings( const Currency          &v ) { return modelToStringsConvertHelper2(v); }
 inline QVector<QString> modelToStrings( const InstrumentType    &v ) { return modelToStringsConvertHelper2(v); }

@@ -23,7 +23,52 @@ namespace qt_helpers
 
 
 //----------------------------------------------------------------------------
-inline const std::map<QString, QByteArray>& getIanaTimezoneAliases()
+inline QString formatUtcOffset( int utcOffset )
+{
+    QString utcStr;
+
+    if (utcOffset<0)
+    {
+        utcStr.append("-");
+        utcOffset = -utcOffset;
+    }
+    else
+    {
+        utcStr.append("+");
+    }
+
+    utcOffset /= 60;
+    int hours   = utcOffset/60;
+    int minutes = utcOffset%60;
+
+    return utcStr + QString::asprintf("%02d:%02d", hours, minutes );
+}
+
+//----------------------------------------------------------------------------
+inline
+QString formatDateTimeISO8601( const QDateTime &dt, bool utcOffsetAuto = false )
+{
+    int utcOffset = dt.offsetFromUtc();
+    QString utcOffsetStr;
+
+    if (!utcOffsetAuto || utcOffset!=0)
+        utcOffsetStr = formatUtcOffset(utcOffset);
+
+    return dt.toString("yyyy-MM-ddThh:mm:ss.zzz")
+    + QString("000")
+    + utcOffsetStr
+    ;
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+
+//----------------------------------------------------------------------------
+inline 
+const std::map<QString, QByteArray>& getIanaTimezoneAliases()
 {
     static std::map<QString, QByteArray> shortcuts;
 
@@ -166,7 +211,8 @@ inline const std::map<QString, QByteArray>& getIanaTimezoneAliases()
 }
 
 //----------------------------------------------------------------------------
-inline const std::map<QString, QString>& getIanaTimezoneAliasDescriptions()
+inline
+const std::map<QString, QString>& getIanaTimezoneAliasDescriptions()
 {
     static std::map<QString, QString> descriptions;
 
@@ -357,7 +403,8 @@ QString appendSentenceHelper( QString baseSentence, QString sentenceToAppendTo =
 }
 
 //----------------------------------------------------------------------------
-inline QString getTimezoneAliasDesciption( const QString &tzAlias )
+inline
+QString getTimezoneAliasDesciption( const QString &tzAlias )
 {
     const std::map<QString, QByteArray>& aliasMap       = getIanaTimezoneAliases();
     const std::map<QString, QString>   & descriptionMap = getIanaTimezoneAliasDescriptions();
@@ -389,7 +436,8 @@ inline QString getTimezoneAliasDesciption( const QString &tzAlias )
 }
 
 //----------------------------------------------------------------------------
-inline QString getTimezoneAliasDesciption( const std::string &tzAlias )
+inline
+QString getTimezoneAliasDesciption( const std::string &tzAlias )
 {
     return getTimezoneAliasDesciption( QString::fromStdString(tzAlias) );
 }
@@ -401,6 +449,7 @@ inline QString getTimezoneAliasDesciption( const std::string &tzAlias )
 
 //----------------------------------------------------------------------------
 template< typename StringType >
+inline 
 std::vector<StringType> getTimezonesAliasList()
 {
     throw std::runtime_error("getTimezonesAliasList not implemented for this type");
@@ -408,6 +457,7 @@ std::vector<StringType> getTimezonesAliasList()
 
 //------------------------------
 template< >
+inline 
 std::vector<QString> getTimezonesAliasList<QString>()
 {
     std::vector<QString> resVec;
@@ -424,6 +474,7 @@ std::vector<QString> getTimezonesAliasList<QString>()
 
 //------------------------------
 template< >
+inline 
 std::vector<std::string> getTimezonesAliasList<std::string>()
 {
     std::vector<std::string> resVec;

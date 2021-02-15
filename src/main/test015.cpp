@@ -23,6 +23,7 @@
 #include "invest_openapi/factory.h"
 #include "invest_openapi/openapi_completable_future.h"
 #include "invest_openapi/model_to_strings.h"
+#include "invest_openapi/qt_time_helpers.h"
 
 
 INVEST_OPENAPI_MAIN()
@@ -47,7 +48,7 @@ INVEST_OPENAPI_MAIN()
     using tkf::config_helpers::FileReadable;
 
     QSet<QString>         allSqlTables  = tkf::modelMakeAllSqlTablesSet_SQLITE();
-    QMap<QString,QString> allSqlSchemas = tkf::modelMakeAllSqlShemas_SQLITE();
+    QMap<QString,QString> allSqlSchemas = tkf::modelMakeAllSqlSchemas_SQLITE();
 
     QSet<QString>         usedTables;
     QSet<QString>         unusedTables;

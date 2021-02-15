@@ -160,7 +160,7 @@ QString toStringValue(const QDateTime &value) {
     //+ QString("000")
     //+ openapiHelpersFixGetUtcOffsetNumericStr(value)
     //;
-    return formatDateTimeISO8601(value);
+    return qt_helpers::formatDateTimeISO8601(value);
 }
 
 QString toStringValue(const QByteArray &value) {
@@ -214,7 +214,7 @@ QJsonValue toJsonValue(const QDateTime &value) {
                      //  value.toString("yyyy-MM-ddThh:mm:ss.zzz")
                      //+ QString("000")
                      //+ openapiHelpersFixGetUtcOffsetNumericStr(value)
-                     formatDateTimeISO8601(value)
+                     qt_helpers::formatDateTimeISO8601(value)
                      );
 }
 
