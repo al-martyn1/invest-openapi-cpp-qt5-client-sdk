@@ -171,9 +171,9 @@ protected:
 
             tablesLevel_1.insert("MARKET_INSTRUMENT");
 
-            tablesLevel_2.insert("TZ_LIST");
-
-            
+            tablesLevel_2.insert("TIMEZONE");
+            tablesLevel_2.insert("STOCK_EXCHANGE_LIST");
+            tablesLevel_2.insert("INSTRUMENT_LISTING_DATES");
 
             /*
             tablesLevel_2.insert("_META_TABLES");
@@ -210,9 +210,40 @@ protected:
             tableSchemas[QString("ORDER_STATUS"       )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderStatus      >(QString(), false ) );
             tableSchemas[QString("ORDER_TYPE"         )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderType        >(QString(), false ) );
 
-            tableSchemas[QString("TZ_LIST"            )] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                                           "TZ_NAME          VARCHAR(64),"
+            tableSchemas[QString("TIMEZONE"           )] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                                           "NAME             VARCHAR(64) NOT NULL UNIQUE,"
                                                            "DESCRIPTION      VARCHAR(255)"
+                                                         ;
+
+            tableSchemas[QString("STOCK_EXCHANGE_LIST")] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                                           "NAME             VARCHAR(32) NOT NULL UNIQUE,"
+                                                           "FOUNDATION_DATE  VARCHAR(10),"
+                                                           "TIMEZONE_ID      INTEGER REFERENCES TIMEZONE,"
+                                                           "TIMEZONE_NAME    VARCHAR(64),"
+                                                           "DESCRIPTION      VARCHAR(255)"
+                                                         ;
+
+            tableSchemas[QString("INSTRUMENT_LISTING_DATES")] = "INSTRUMENT_ID         INTEGER REFERENCES MARKET_INSTRUMENT,"
+                                                           "INSTRUMENT_FIGI       VARCHAR(12) NOT NULL,"
+                                                           "INSTRUMENT_TICKER     VARCHAR(12) NOT NULL,"
+                                                           "STOCK_EXCHANGE_ID     INTEGER REFERENCES STOCK_EXCHANGE_LIST,"
+                                                           "STOCK_EXCHANGE_NAME   VARCHAR(32),"
+                                                           "LISTING_DATE          VARCHAR(10)"
+                                                         ;
+
+            tableSchemas[QString("INSTRUMENT_CANDLES" )] = "INSTRUMENT_ID         INTEGER REFERENCES MARKET_INSTRUMENT,"
+                                                           "INSTRUMENT_FIGI       VARCHAR(12) NOT NULL,"
+                                                           "INSTRUMENT_TICKER     VARCHAR(12) NOT NULL,"
+                                                           "STOCK_EXCHANGE_ID     INTEGER REFERENCES STOCK_EXCHANGE_LIST NOT NULL,"
+                                                           "STOCK_EXCHANGE_NAME   VARCHAR(32) NOT NULL,"
+                                                           "CANDLE_RESOLUTION_ID  INTEGER REFERENCES CANDLE_RESOLUTION NOT NULL,"
+                                                           "CANDLE_RESOLUTION     VARCHAR(8) NOT NULL,"
+                                                           "CANDLE_DATE_TIME      VARCHAR(24) NOT NULL,"
+                                                           "OPEN_PRICE            DECIMAL(18,8) NOT NULL,"
+                                                           "CLOSE_PRICE           DECIMAL(18,8) NOT NULL,"
+                                                           "HIGH_PRICE            DECIMAL(18,8) NOT NULL,"
+                                                           "LOW_PRICE             DECIMAL(18,8) NOT NULL,"
+                                                           "VOLUME                DECIMAL(18,8) NOT NULL"
                                                          ;
 
 

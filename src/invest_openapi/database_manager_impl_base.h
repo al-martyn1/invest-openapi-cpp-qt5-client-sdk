@@ -172,17 +172,43 @@ protected:
     }
 
     //------------------------------
-    virtual QSqlQuery   execHelper ( const QString &queryText ) const override
+    virtual QSqlQuery   execHelper ( const QString &queryText, bool *pRes = 0 ) const override
     {
         QSqlQuery query(*m_pDb);
-        if (!query.exec(queryText))
-            return query;
 
-        //query.first();
+        bool execRes = query.exec(queryText);
+        if (pRes)
+           *pRes = execRes;
+
         return query;
     }
 
     //------------------------------
+    virtual QVector< QVector<QString> > selectResultToStringVectors( QSqlQuery& query ) const
+    {
+        QVector< QVector<QString> > resVec;
+
+        while (query.next())
+        {
+            QVector<QString> rowVec;
+
+            int idx = 0;
+            QVariant q = query.value(idx++);
+            while( q.isValid() )
+            {
+                rowVec.push_back( q.toString() );
+                q = query.value(idx++);
+            }
+
+            resVec.push_back(rowVec);
+
+        }
+
+        return resVec;
+    
+    }
+    //------------------------------
+
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx, const QVector<QString> &except, bool caseCompare ) const override
     {
         QSet<QString> exceptsSet = makeSet( except, !caseCompare );

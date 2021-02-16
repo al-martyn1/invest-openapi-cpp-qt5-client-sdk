@@ -165,7 +165,7 @@ protected:
 
         for(; idx<fields.size() && idx<values.size(); ++idx )
         {
-            setPairs.push_back( QString("%1 = %2").arg(fields[idx]).arg(values[idx]) );
+            setPairs.push_back( QString("%1 = %2").arg(fields[idx]).arg(sqlQuote(values[idx])) );
         }
 
         QString queryText = QString("UPDATE %1 SET %2").arg(tableName).arg(mergeString(setPairs, ", "));

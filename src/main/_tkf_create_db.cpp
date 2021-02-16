@@ -94,8 +94,8 @@ INVEST_OPENAPI_MAIN()
             auto expandStrForTableName = cpp::makeExpandString( tableName.toStdString(), 20 );
             auto qexp = QString::fromStdString(expandStrForTableName);
 
-            qDebug().nospace().noquote() << "Drop   table '" << tableName << "'" << qexp << ": " << pDbMan->tableDrop(tableName);
-            qDebug().nospace().noquote() << "Create table '" << tableName << "'" << qexp << ": " << pDbMan->tableCreate(tableName);
+            //qDebug().nospace().noquote() << "Drop   table '" << tableName << "'" << qexp << ": " << pDbMan->tableDrop(tableName);
+            qDebug().nospace().noquote() << "Create table '" << tableName << "'" << qexp << ": " << pDbMan->tableCreate(tableName, tkf::IDatabaseManager::IfExists::ifNotExists );
             //qDebug().nospace().noquote() <<"\n";
             //qDebug().nospace().noquote() <<"";
         }
@@ -180,10 +180,7 @@ INVEST_OPENAPI_MAIN()
                                                                     "2,MARKET,Market"
                                                                   );
 
-
-    // TZ_LIST
-
-    QVector<QString> tzColumns     = pDbMan->tableGetColumnsFromSchema("TZ_LIST");
+    QVector<QString> tzColumns     = pDbMan->tableGetColumnsFromSchema("TIMEZONE");
     QVector<QString> tzColumnsNoId = tkf::removeFirstItems(tzColumns, 1);
     
     std::vector<std::string> tzWlknList = qt_helpers::getTimezonesAliasList<std::string>();
@@ -199,7 +196,7 @@ INVEST_OPENAPI_MAIN()
         vals.push_back( QString::fromStdString(name) );
         vals.push_back( QString::fromStdString(description) );
 
-        pDbMan->insertTo( "TZ_LIST", vals, tzColumnsNoId );
+        pDbMan->insertTo( "TIMEZONE", vals, tzColumnsNoId );
     }
 
     QList<QByteArray> allTzIdList = QTimeZone::availableTimeZoneIds();
@@ -213,13 +210,41 @@ INVEST_OPENAPI_MAIN()
         vals.push_back( QString::fromStdString(strTzId) );
         vals.push_back( QString::fromStdString(descr) );
 
-        pDbMan->insertTo( "TZ_LIST", vals, tzColumnsNoId );
+        pDbMan->insertTo( "TIMEZONE", vals, tzColumnsNoId );
     }
 
+    qDebug().nospace().noquote() << "Fill 'STOCK_EXCHANGE_LIST' table: " 
+                                 << pDbMan->insertToBulkFromString( "STOCK_EXCHANGE_LIST"
+                                                                  , "MOEX,2011-12-19,0,PAO Moskovskaya Birzha"
+                                                                  //, QString("NAME;FOUNDATION_DATE;DESCRIPTION").split(";")
+                                                                  , "NAME;FOUNDATION_DATE;TIMEZONE_ID;DESCRIPTION"
+                                                                  );
+
+    QString tzMskSelectQueryText = pDbMan->makeSimpleSelectQueryText( "TIMEZONE", "NAME", "MSK", "ID" );
+    auto tzMskSelectRes          = pDbMan->execHelper( tzMskSelectQueryText );
+
+    QVector< QVector<QString> > tzMskSelectStrings = pDbMan->selectResultToStringVectors(tzMskSelectRes);
+    if (!tzMskSelectStrings.empty() && !tzMskSelectStrings[0].empty())
+    {
+        QVector<QString>  mskTimezoneIdVec = tzMskSelectStrings[0];
+        mskTimezoneIdVec.push_back("MSK");
+
+        QString seUpdateQueryText = pDbMan->makeSimpleUpdateQueryText( "STOCK_EXCHANGE_LIST", "NAME", "MOEX", mskTimezoneIdVec, "TIMEZONE_ID;TIMEZONE_NAME" );
+
+        bool bRes = false;
+        auto updateResultQuery = pDbMan->execHelper(seUpdateQueryText, &bRes);
+        if (!bRes)
+        {
+            qDebug().nospace().noquote() << "Updating MOEX in STOCK_EXCHANGE_LIST failed: " << updateResultQuery.lastError().text();
+        }
+
+    }
+
+    //QString updateQuery = pDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), values, instrumentColsNoLotMarket );
+    //pDbMan->execHelper( updateQuery );
 
 
-    //cout<<"Found config file: " << lookupForConfigFile( "config.properties", "conf;config", FileReadable() ).toStdString() << endl;
-    //cout<<"Found config file: " << lookupForConfigFile( "auth.properties", "conf;config"  , FileReadable() ).toStdString() << endl;
+
     
     return 0;
 }

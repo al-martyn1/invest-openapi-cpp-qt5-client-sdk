@@ -1,10 +1,30 @@
 Параметры свечи (Candle)
-o	double	+	Цена открытия
-c	double	+	Цена закрытия
-h	double	+	Наибольшая цена
-l	double	+	Наименьшая цена
-v	double	+	Объем торгов
+o	double	+	Цена открытия    Open Price (Quote)
+c	double	+	Цена закрытия    Close Price
+h	double	+	Наибольшая цена  High Price
+l	double	+	Наименьшая цена  Low Price
+v	double	+	Объем торгов     Trading Volume
 time	string	+	Время в формате RFC3339
+
+Японские свечи
+https://ru.wikipedia.org/wiki/%D0%AF%D0%BF%D0%BE%D0%BD%D1%81%D0%BA%D0%B8%D0%B5_%D1%81%D0%B2%D0%B5%D1%87%D0%B8
+метод под названием КЭЙСЭН
+труды Хонма Мунехиса - Золотой источник трех обезьян
+книга «Breakthroughs in Technical Analysis», Йосуке Шимизу
+
+https://binguru.net/yaponskie-svechi-3934
+https://dolphin-traders.com/osnovy-trejdinga-dlya-nachinayushhih/yaponskie-svechi-dlya-nachinayushhix-analiz-kombinacij-strategii.html
+https://place.moex.com/useful/yaponskie-svechi-dlya-nachinayushih
+
+зеленая/белая
+красная/черная
+
+тень свечи — это ее мин/максимальное значение, а тело формируется ценами открытия и закрытия за выбранный период времени.
+
+
+Книжки
+https://forum.binguru.net/viewtopic.php?id=578
+https://forum.binguru.net/viewtopic.php?id=580
 
 
 Интервал свечи и допустимый промежуток запроса:

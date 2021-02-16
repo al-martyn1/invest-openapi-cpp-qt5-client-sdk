@@ -69,10 +69,28 @@ struct IDatabaseManager
     virtual QString     tableGetSchema   ( const QString &tableName                   ) const = 0;
     virtual QVector<QString> tableGetColumnsFromSchema  ( const QString &tableName ) const = 0;
 
-    virtual QSqlQuery   execHelper ( const QString &queryText                   ) const = 0;
+    virtual QSqlQuery   execHelper ( const QString &queryText, bool *pRes = 0 ) const = 0;
 
     virtual QString     makeSimpleSelectQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &fields = QVector<QString >() ) const = 0;
-    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &values, QVector<QString > fields = QVector<QString >() ) const = 0;
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QStringList       &fields ) const
+    {
+        return makeSimpleSelectQueryText(tableName, whereName, whereVal, convertToQVectorOfQStrings(fields) );
+    }
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QString           &fields ) const
+    {
+        return makeSimpleSelectQueryText(tableName, whereName, whereVal, convertToQVectorOfQStrings(fields) );
+    }
+
+    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &values, QVector<QString >  fields = QVector<QString >() ) const = 0;
+    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &values, const QStringList &fields ) const
+    {
+        return makeSimpleUpdateQueryText( tableName, whereName, whereVal, values, convertToQVectorOfQStrings(fields)  );
+    }
+    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &values, const QString     &fields ) const
+    {
+        return makeSimpleUpdateQueryText( tableName, whereName, whereVal, values, convertToQVectorOfQStrings(fields)  );
+    }
+
 
     virtual QVector<QString> tableGetNamesFromDb    () const = 0;
     virtual QVector<QString> tableGetColumnsFromDbInternal ( const QString &internalTableName ) const = 0;
@@ -83,6 +101,7 @@ struct IDatabaseManager
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx,       QString           except, bool caseCompare ) const = 0;
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx                                                   ) const = 0;
 
+    virtual QVector< QVector<QString> > selectResultToStringVectors( QSqlQuery& query ) const = 0;
 
     virtual bool insertToImpl( const QString &tableName, const QVector< QVector<QString> > &valsVecVec, const QVector<QString> &tableColumnNames ) const = 0;
 
@@ -120,13 +139,25 @@ struct IDatabaseManager
     virtual bool insertToBulkFromString( const QString &tableName, const QString &vals, const QVector<QString> &tableColumnNames = QVector<QString>() ) const
     {
          if (tableColumnNames.empty())
-         {
              return insertTo( tableName, listStringSplit(vals.split( ';', Qt::KeepEmptyParts )), tableGetColumnsFromSchema(tableName) );
-         }
          else
-         {
              return insertTo( tableName, listStringSplit(vals.split( ';', Qt::KeepEmptyParts )), tableColumnNames );
-         }
+    }
+
+    virtual bool insertToBulkFromString( const QString &tableName, const QString &vals, const QStringList &tableColumnNames ) const
+    {
+         if (tableColumnNames.isEmpty())
+             return insertTo( tableName, listStringSplit(vals.split( ';', Qt::KeepEmptyParts )), tableGetColumnsFromSchema(tableName) );
+         else
+             return insertTo( tableName, listStringSplit(vals.split( ';', Qt::KeepEmptyParts )), convertToQVectorOfQStrings(tableColumnNames) );
+    }
+
+    virtual bool insertToBulkFromString( const QString &tableName, const QString &vals, const QString &tableColumnNames ) const
+    {
+         if (tableColumnNames.isEmpty())
+             return insertTo( tableName, listStringSplit(vals.split( ';', Qt::KeepEmptyParts )), tableGetColumnsFromSchema(tableName) );
+         else
+             return insertTo( tableName, listStringSplit(vals.split( ';', Qt::KeepEmptyParts )), convertToQVectorOfQStrings(tableColumnNames) );
     }
 
     // Meta helpers
