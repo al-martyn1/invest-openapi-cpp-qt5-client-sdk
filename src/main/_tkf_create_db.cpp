@@ -149,7 +149,7 @@ INVEST_OPENAPI_MAIN()
                                                                     "8,HOUR,1h,7d,Hour (60 min);"            /* hour [1 hour, 7 days]     */
                                                                     "9,DAY,1d,1y,Day (1440 min);"            /* day [1 day, 1 year]       */
                                                                     "10,WEEK,7d,2y,Week (10080 min);"        /* week [7 days, 2 years]    */
-                                                                    "11,MONTH,1m,10y,Month (Avg 43200 min)"  /* month [1 month, 10 years] */
+                                                                    "11,MONTH,1M,10y,Month (Avg 43200 min)"  /* month [1 month, 10 years] */
                                                                   );
 
     qDebug().nospace().noquote() << "Fill 'OPERATION_TYPE' table: " 
