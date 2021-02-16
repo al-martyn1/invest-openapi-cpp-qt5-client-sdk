@@ -87,12 +87,19 @@ INVEST_OPENAPI_MAIN()
     QDateTime requestBeginTime; requestBeginTime.setDate(reqDate /* .addDays(0) */ );
     QDateTime requestEndTime  ; requestEndTime  .setDate(reqDate.addDays(1));
 
+    QElapsedTimer timer;
+    timer.start();
+
     //QDate::currentDate()
     // BBG004731354 - ROSN
     auto // CandlesResponse
     candlesRes = pOpenApi->marketCandles( "BBG004731354", requestBeginTime, requestEndTime, "5MIN" );
 
     candlesRes->join();
+
+    auto timeElapsed = timer.restart();
+    qDebug().nospace().noquote() << "Time elapsed: " << timeElapsed;
+
     tkf::checkAbort(candlesRes);
 
     // candlesRes->value.getStatus()

@@ -26,6 +26,8 @@
 
 
 
+
+
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
@@ -75,23 +77,105 @@ INVEST_OPENAPI_MAIN()
     }
 
     // На левую дату приходит пустой ответ без ошибок
-    //QDate reqDate = QDate::fromString("2001-02-11", Qt::ISODate);
 
-    //QDate     curDate          = QDate::currentDate();
-    QDate reqDate = QDate::fromString("2021-02-11", Qt::ISODate);
-    QDateTime requestBeginTime; requestBeginTime.setDate(reqDate /* .addDays(0) */ );
-    QDateTime requestEndTime  ; requestEndTime  .setDate(reqDate.addDays(1));
+    QDate currentDate = QDate::currentDate();
+    QDate startDate   = QDate::fromString("2011-12-19", Qt::ISODate);
 
-    //QDate::currentDate()
-    // BBG004731354 - ROSN
+
+    bool bFound = false;
+    QDateTime foundDateTime;
+
+    while(startDate < currentDate)
+    {
+        QDate nextDate = qt_helpers::addYearsNotGreaterThanDate( startDate, 10, currentDate );
+
+        QDateTime requestBeginTime; requestBeginTime.setDate( startDate );
+        QDateTime requestEndTime  ; requestEndTime  .setDate( nextDate );
+
+        QElapsedTimer timer;
+        timer.start();
+
+        // BBG004731354 - ROSN
+
+        auto // CandlesResponse
+        candlesRes = pOpenApi->marketCandles( "BBG004731354", requestBeginTime, requestEndTime, "MONTH" );
+
+        candlesRes->join();
+
+        auto timeElapsed = timer.restart();
+        qDebug().nospace().noquote() << "Time elapsed: " << timeElapsed;
+
+        tkf::checkAbort(candlesRes);
+
+        auto candles = candlesRes->value.getPayload();
+        QList<tkf::Candle> candleList = candles.getCandles();
+
+        for( const auto &candle : candleList)
+        {
+            if (!candle.isSet() || !candle.isValid())
+            {
+                 qDebug().nospace().noquote() << "Not valid candle, continue";
+                 continue;
+            }
+       
+            QDateTime candleDt = candle.getTime();
+
+            // Не факт, что данные отсортированы по дате
+
+            if (!bFound)
+            {
+                bFound = true;
+                foundDateTime = candleDt;
+            }
+            else
+            {
+                if (foundDateTime>candleDt)
+                    foundDateTime = candleDt;
+            }
+        }
+
+        // Найдено на первом 10ти-летнем интервале
+        // Пока не актуально, так как биржа MOEX работает меньше 10ти лет, но в 2021-12-19 10 лет закончатся.
+        if (bFound)
+            break;
+
+        startDate = nextDate;
+
+        qDebug().nospace().noquote() << "Continuing";
+
+    }
+
+    if (!bFound)
+    {
+        qDebug().nospace().noquote() << "Not found starting date";
+        return 0;
+    }
+
+    qDebug().nospace().noquote() << "Starting date (month): " << qt_helpers::dateTimeToDbString(foundDateTime) ;
+
+
+    bFound = false;
+
+
+    startDate = foundDateTime.date();
+
+    if ( !startDate.setDate( startDate.year(), startDate.month(), 1) )
+    {
+        qDebug().nospace().noquote() << "Failed to reset date to first day of month";
+        return 0;
+    }
+
+    QDate nextDate = startDate.addMonths(1);
+
+    QDateTime requestBeginTime; requestBeginTime.setDate( startDate );
+    QDateTime requestEndTime  ; requestEndTime  .setDate( nextDate );
+
+
     auto // CandlesResponse
-    candlesRes = pOpenApi->marketCandles( "BBG004731354", requestBeginTime, requestEndTime, "5MIN" );
+    candlesRes = pOpenApi->marketCandles( "BBG004731354", requestBeginTime, requestEndTime, "DAY" );
 
     candlesRes->join();
     tkf::checkAbort(candlesRes);
-
-    // candlesRes->value.getStatus()
-    // candlesRes->value.getTrackingId()
 
     auto candles = candlesRes->value.getPayload();
     QList<tkf::Candle> candleList = candles.getCandles();
@@ -100,13 +184,31 @@ INVEST_OPENAPI_MAIN()
     {
         if (!candle.isSet() || !candle.isValid())
              continue;
-
+    
         QDateTime candleDt = candle.getTime();
 
-        qDebug().nospace().noquote() << "FIGI: " << candle.getFigi() << ", Candle DateTime: " << qt_helpers::formatDateTimeISO8601(candleDt);
-    
+        // Не факт, что данные отсортированы по дате
+
+        if (!bFound)
+        {
+            bFound = true;
+            foundDateTime = candleDt;
+        }
+        else
+        {
+            if (foundDateTime>candleDt)
+                foundDateTime = candleDt;
+        }
     }
 
+
+    if (!bFound)
+    {
+        qDebug().nospace().noquote() << "Exact date not found date";
+        return 0;
+    }
+
+    qDebug().nospace().noquote() << "Starting date (exact): " << qt_helpers::dateTimeToDbString(foundDateTime) ;
     
     return 0;
 }

@@ -177,6 +177,11 @@ struct IOpenApi
 
 */
 
+    //------------------------------
+    // Helpers
+    bool findInstrumentListingStartDate( const QString &figi, const QDate stockExchangeFoundationDate &foundationDate, QDate &foundDate ) = 0;
+
+
     virtual ~IOpenApi() {};
 }; // struct IOpenApi
 
@@ -589,6 +594,10 @@ public:
         return response;
     }
 
+    bool findInstrumentListingStartDate( const QString &figi, const QDate stockExchangeFoundationDate &foundationDate, QDate &foundDate )
+    {
+        return false;
+    }
 
 
 

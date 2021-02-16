@@ -23,7 +23,8 @@ namespace qt_helpers
 
 
 //----------------------------------------------------------------------------
-inline QString formatUtcOffset( int utcOffset )
+inline
+QString formatUtcOffset( int utcOffset )
 {
     QString utcStr;
 
@@ -64,6 +65,7 @@ QString formatDateTimeISO8601( const QDateTime &dt, bool utcOffsetAuto = false )
 inline
 QDateTime parseDateTimeISO8601( QString dtStr )
 {
+    /*
     int idxPosT      = dtStr.indexOf('T');
     if (idxPosT<0)
         idxPosT      = dtStr.indexOf(' ');
@@ -92,8 +94,10 @@ QDateTime parseDateTimeISO8601( QString dtStr )
     {
         int signPos = ( idxPlusSign>=0 ? idxPlusSign : idxMinusSign);
     }
-
+    */
     //QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec, int offsetSeconds)
+
+    // Нормально парсит и так, не нужно никаких приседаний
 
     return QDateTime::fromString( dtStr, Qt::ISODateWithMs );
     //return QDateTime();
@@ -103,6 +107,62 @@ QDateTime parseDateTimeISO8601( QString dtStr )
 // QDateTime QDateTime::toUTC()
 
 //----------------------------------------------------------------------------
+inline
+QDateTime dateTimeFromDbString( QString str )
+{
+    str = str.trimmed();
+    int idxSpace = str.indexOf(' ');
+    if (idxSpace>=0)
+        str[idxSpace] = 'T';
+
+    return QDateTime::fromString( str, Qt::ISODateWithMs );
+}
+
+//----------------------------------------------------------------------------
+inline
+QDate dateFromDbString( QString str )
+{
+    str = str.trimmed();
+    return QDate::fromString( str, Qt::ISODateWithMs );
+}
+
+//----------------------------------------------------------------------------
+inline
+QTime timeFromDbString( QString str )
+{
+    str = str.trimmed();
+    return QTime::fromString( str, Qt::ISODateWithMs );
+}
+
+//----------------------------------------------------------------------------
+inline
+QString dateTimeToDbString( const QDateTime &dt )
+{
+    return dt.toUTC().toString("yyyy-MM-dd hh:mm:ss.zzz");
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+
+//----------------------------------------------------------------------------
+inline
+QDate addYearsNotGreaterThanDate( QDate dateAddTo, int nYears, QDate dateLimit )
+{
+    if (nYears<0)
+        nYears = -nYears;
+
+    QDate res = dateAddTo.addYears(nYears);
+    if (res > dateLimit)
+        return dateLimit;
+
+    return res;
+}
+
+//----------------------------------------------------------------------------
+
 
 
 
