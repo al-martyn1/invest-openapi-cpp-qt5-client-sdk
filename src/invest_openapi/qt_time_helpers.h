@@ -61,6 +61,48 @@ QString formatDateTimeISO8601( const QDateTime &dt, bool utcOffsetAuto = false )
 }
 
 //----------------------------------------------------------------------------
+inline
+QDateTime parseDateTimeISO8601( QString dtStr )
+{
+    int idxPosT      = dtStr.indexOf('T');
+    if (idxPosT<0)
+        idxPosT      = dtStr.indexOf(' ');
+
+    int idxPlusSign  = dtStr.indexOf('+');
+    int idxMinusSign = dtStr.indexOf('-', idxPosT);
+
+    if (idxPlusSign>=0 && idxMinusSign>=0)
+    {
+        // Both found, something wrong
+        int maxIdx = idxPlusSign;
+        if (idxMinusSign>idxPlusSign)
+        {
+            maxIdx = idxMinusSign;
+            idxMinusSign = -1;
+        }
+        else
+        {
+            idxPlusSign = -1;
+        }
+
+        dtStr.remove( maxIdx, dtStr.size()-maxIdx);
+    }
+
+    if (idxPlusSign>=0 || idxMinusSign>=0)
+    {
+        int signPos = ( idxPlusSign>=0 ? idxPlusSign : idxMinusSign);
+    }
+
+    //QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec, int offsetSeconds)
+
+    return QDateTime::fromString( dtStr, Qt::ISODateWithMs );
+    //return QDateTime();
+}
+
+// QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
+// QDateTime QDateTime::toUTC()
+
+//----------------------------------------------------------------------------
 
 
 

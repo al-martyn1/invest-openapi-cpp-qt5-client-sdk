@@ -74,6 +74,11 @@ INVEST_OPENAPI_MAIN()
         pOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
     }
 
+    QDateTime testDateTime1 = qt_helpers::parseDateTimeISO8601( "2021-02-11T07:00:00.000000+03:00" );
+    QDateTime testDateTime2 = QDateTime::fromString( "2021-02-11T07:00:00.000000+03:00", Qt::ISODateWithMs );
+    qDebug().nospace().noquote() << "Test DateTime1: " << qt_helpers::formatDateTimeISO8601(testDateTime1);
+    qDebug().nospace().noquote() << "Test DateTime2: " << qt_helpers::formatDateTimeISO8601(testDateTime2);
+
     // На левую дату приходит пустой ответ без ошибок
     //QDate reqDate = QDate::fromString("2001-02-11", Qt::ISODate);
 
