@@ -29,6 +29,8 @@
 #include "utility.h"
 #include "qdebug_support.h"
 #include "marty_decimal.h"
+#include "qt_time_helpers.h"
+
 
 
 //----------------------------------------------------------------------------
@@ -179,7 +181,7 @@ struct IOpenApi
 
     //------------------------------
     // Helpers
-    bool findInstrumentListingStartDate( const QString &figi, const QDate stockExchangeFoundationDate &foundationDate, QDate &foundDate ) = 0;
+    virtual bool findInstrumentListingStartDate( const QString &figi, const QDate &dateStartLookupFrom, QDate &foundDate ) = 0;
 
 
     virtual ~IOpenApi() {};
@@ -594,9 +596,114 @@ public:
         return response;
     }
 
-    bool findInstrumentListingStartDate( const QString &figi, const QDate stockExchangeFoundationDate &foundationDate, QDate &foundDate )
+    bool findInstrumentListingStartDate( const QString &figi, const QDate &dateStartLookupFrom, QDate &foundDate ) override
     {
-        return false;
+        bool bFound = false;
+        QDateTime foundDateTime;
+
+        QDate startDate = dateStartLookupFrom;
+        QDate currentDate = QDate::currentDate();
+
+        while(startDate < currentDate)
+        {
+            QDate nextDate = qt_helpers::addYearsNotGreaterThanDate( startDate, 10, currentDate );
+
+            QDateTime requestBeginTime; requestBeginTime.setDate( startDate );
+            QDateTime requestEndTime  ; requestEndTime  .setDate( nextDate );
+
+            auto // CandlesResponse
+            candlesRes = marketCandles( figi, requestBeginTime, requestEndTime, "MONTH" );
+
+            candlesRes->join();
+
+            if (candlesRes->isCompletionError())
+                return false;
+
+            QList<Candle> candleList = candlesRes->value.getPayload().getCandles();
+
+            for( const auto &candle : candleList)
+            {
+                if (!candle.isSet() || !candle.isValid())
+                     continue;
+           
+                QDateTime candleDt = candle.getTime();
+           
+                // Не факт, что данные отсортированы по дате
+                // Поэтому сравниваем и не брякаемся, а проходим по всем
+           
+                if (!bFound)
+                {
+                    bFound = true;
+                    foundDateTime = candleDt;
+                }
+                else
+                {
+                    if (foundDateTime>candleDt)
+                        foundDateTime = candleDt;
+                }
+
+            } // for
+
+            if (bFound)
+                break;
+           
+            startDate = nextDate;
+
+        } // while
+
+        if (!bFound)
+            return false;
+
+
+        bFound = false;
+        startDate = foundDateTime.date();
+
+        if ( !startDate.setDate( startDate.year(), startDate.month(), 1) )
+            return false;
+
+        QDate nextDate = startDate.addMonths(1);
+       
+        QDateTime requestBeginTime; requestBeginTime.setDate( startDate );
+        QDateTime requestEndTime  ; requestEndTime  .setDate( nextDate );
+       
+       
+        auto // CandlesResponse
+        candlesRes = marketCandles( "BBG004731354", requestBeginTime, requestEndTime, "DAY" );
+
+        candlesRes->join();
+
+        if (candlesRes->isCompletionError())
+            return false;
+
+        QList<Candle> candleList = candlesRes->value.getPayload().getCandles();
+
+        for( const auto &candle : candleList)
+        {
+            if (!candle.isSet() || !candle.isValid())
+                 continue;
+        
+            QDateTime candleDt = candle.getTime();
+       
+            // Не факт, что данные отсортированы по дате
+       
+            if (!bFound)
+            {
+                bFound = true;
+                foundDateTime = candleDt;
+            }
+            else
+            {
+                if (foundDateTime>candleDt)
+                    foundDateTime = candleDt;
+            }
+        }
+
+        if (!bFound)
+            return false;
+
+        foundDate = foundDateTime.date();
+
+        return true;
     }
 
 
