@@ -67,6 +67,7 @@ struct IDatabaseManager
 
     virtual QString     tableMapName     ( const QString &tableName                   ) const = 0; // to internal name mapping
     virtual QString     tableGetSchema   ( const QString &tableName                   ) const = 0;
+    virtual QVector<QString> tableGetAdditionalUniques  ( const QString &tableName    ) const = 0;
     virtual QVector<QString> tableGetColumnsFromSchema  ( const QString &tableName ) const = 0;
 
     virtual QSqlQuery   execHelper ( const QString &queryText, bool *pRes = 0 ) const = 0;

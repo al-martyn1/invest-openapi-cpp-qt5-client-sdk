@@ -78,6 +78,12 @@ INVEST_OPENAPI_MAIN()
     //pDbMan->setDefDecimal(18,8);
     pDbMan->applyDefDecimalFromConfig( *pDatabaseConfig );
 
+
+    QElapsedTimer timer;
+    timer.start();
+
+    //auto sandboxRegisterPostInterval = timer.restart();
+
     int curLevel = 0;
 
     QSet<QString> tablesForCreation = pDbMan->tableGetTableNamesForCreation( curLevel );
@@ -95,7 +101,9 @@ INVEST_OPENAPI_MAIN()
             auto qexp = QString::fromStdString(expandStrForTableName);
 
             //qDebug().nospace().noquote() << "Drop   table '" << tableName << "'" << qexp << ": " << pDbMan->tableDrop(tableName);
-            qDebug().nospace().noquote() << "Create table '" << tableName << "'" << qexp << ": " << pDbMan->tableCreate(tableName, tkf::IDatabaseManager::IfExists::ifNotExists );
+            bool createRes = pDbMan->tableCreate(tableName, tkf::IDatabaseManager::IfExists::ifNotExists );
+            auto elapsed = timer.restart();
+            qDebug().nospace().noquote() << "Create table '" << tableName << "'" << qexp << ": " << createRes<<", tie elapsed: " << elapsed;
             //qDebug().nospace().noquote() <<"\n";
             //qDebug().nospace().noquote() <<"";
         }
@@ -104,6 +112,8 @@ INVEST_OPENAPI_MAIN()
     qDebug().nospace().noquote() << "\n";
 
 
+    timer.restart();
+
     // Fill ref books here
 
     qDebug().nospace().noquote() << "Fill 'BROKER_ACCOUNT_TYPE' table: " 
@@ -111,7 +121,9 @@ INVEST_OPENAPI_MAIN()
                                                                   , "0,INVALID,Invalid BrokerAccountType value;"
                                                                     "1,TINKOFF,Tinkoff broker account;"
                                                                     "2,TINKOFFIIS,Tinkoff IIS account"
-                                                                  );
+                                                                  )
+                                 << ", Elapsed time: " << timer.restart();
+
 
     qDebug().nospace().noquote() << "Fill 'CURRENCY' table: " 
                                  << pDbMan->insertToBulkFromString( "CURRENCY"
@@ -125,7 +137,9 @@ INVEST_OPENAPI_MAIN()
                                                                     "7,JPY:Japanese Yen;"
                                                                     "8,CNY:Chinese Yuan;"
                                                                     "9,TRY:Turkish Lira"
-                                                                  );
+                                                                  )
+                                 << ", Elapsed time: " << timer.restart();
+
 
     qDebug().nospace().noquote() << "Fill 'INSTRUMENT_TYPE' table: " 
                                  << pDbMan->insertToBulkFromString( "INSTRUMENT_TYPE"
@@ -134,7 +148,9 @@ INVEST_OPENAPI_MAIN()
                                                                     "2,CURRENCY,Currencies;"
                                                                     "3,BOND,Bonds;"
                                                                     "4,ETF,Etfs"
-                                                                  );
+                                                                  )
+                                 << ", Elapsed time: " << timer.restart();
+
 
     qDebug().nospace().noquote() << "Fill 'CANDLE_RESOLUTION' table: " 
                                  << pDbMan->insertToBulkFromString( "CANDLE_RESOLUTION"
@@ -150,14 +166,18 @@ INVEST_OPENAPI_MAIN()
                                                                     "9,DAY,1d,1y,Day (1440 min);"            /* day [1 day, 1 year]       */
                                                                     "10,WEEK,7d,2y,Week (10080 min);"        /* week [7 days, 2 years]    */
                                                                     "11,MONTH,1M,10y,Month (Avg 43200 min)"  /* month [1 month, 10 years] */
-                                                                  );
+                                                                  )
+                                 << ", Elapsed time: " << timer.restart();
+
 
     qDebug().nospace().noquote() << "Fill 'OPERATION_TYPE' table: " 
                                  << pDbMan->insertToBulkFromString( "OPERATION_TYPE"
                                                                   , "0,INVALID,Invalid OperationType value;"
                                                                     "1,BUY,Purchaise;"
                                                                     "2,SELL,Sell"
-                                                                  );
+                                                                  )
+                                 << ", Elapsed time: " << timer.restart();
+
 
     qDebug().nospace().noquote() << "Fill 'ORDER_STATUS' table: " 
                                  << pDbMan->insertToBulkFromString( "ORDER_STATUS"
@@ -171,14 +191,18 @@ INVEST_OPENAPI_MAIN()
                                                                     "7,REJECTED,Rejected;"
                                                                     "8,PENDINGREPLACE,Pending replace;"
                                                                     "9,PENDINGNEW,Pending new"
-                                                                  );
+                                                                  )
+                                 << ", Elapsed time: " << timer.restart();
+
 
     qDebug().nospace().noquote() << "Fill 'ORDER_TYPE' table: " 
                                  << pDbMan->insertToBulkFromString( "ORDER_TYPE"
                                                                   , "0,INVALID,Invalid OrderType value;"
                                                                     "1,LIMIT,Limit;"
                                                                     "2,MARKET,Market"
-                                                                  );
+                                                                  )
+                                 << ", Elapsed time: " << timer.restart();
+
 
     QVector<QString> tzColumns     = pDbMan->tableGetColumnsFromSchema("TIMEZONE");
     QVector<QString> tzColumnsNoId = tkf::removeFirstItems(tzColumns, 1);
@@ -213,12 +237,18 @@ INVEST_OPENAPI_MAIN()
         pDbMan->insertTo( "TIMEZONE", vals, tzColumnsNoId );
     }
 
+    qDebug().nospace().noquote() << "Fill 'TIMEZONE' table"
+                                 << ", Elapsed time: " << timer.restart();
+
+
     qDebug().nospace().noquote() << "Fill 'STOCK_EXCHANGE_LIST' table: " 
                                  << pDbMan->insertToBulkFromString( "STOCK_EXCHANGE_LIST"
                                                                   , "MOEX,2011-12-19,0,PAO Moskovskaya Birzha"
                                                                   //, QString("NAME;FOUNDATION_DATE;DESCRIPTION").split(";")
                                                                   , "NAME;FOUNDATION_DATE;TIMEZONE_ID;DESCRIPTION"
-                                                                  );
+                                                                  )
+                                 << ", Elapsed time: " << timer.restart();
+
 
     QString tzMskSelectQueryText = pDbMan->makeSimpleSelectQueryText( "TIMEZONE", "NAME", "MSK", "ID" );
     auto tzMskSelectRes          = pDbMan->execHelper( tzMskSelectQueryText );

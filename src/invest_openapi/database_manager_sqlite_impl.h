@@ -174,6 +174,9 @@ protected:
             tablesLevel_2.insert("TIMEZONE");
             tablesLevel_2.insert("STOCK_EXCHANGE_LIST");
             tablesLevel_2.insert("INSTRUMENT_LISTING_DATES");
+            tablesLevel_2.insert("INSTRUMENT_CANDLES");
+
+            
 
             /*
             tablesLevel_2.insert("_META_TABLES");
@@ -191,6 +194,39 @@ protected:
 
     }
 
+    const QMap<QString,QVector<QString> >& getAdditionalUniques() const
+    {
+        static QMap<QString,QVector<QString> > m;
+        if (!m.empty())
+            return m;
+
+        m["INSTRUMENT_LISTING_DATES"] = QVector<QString>{ "INSTRUMENT_ID,STOCK_EXCHANGE_ID", "INSTRUMENT_FIGI,STOCK_EXCHANGE_NAME" };
+
+        return m;
+    }
+
+    QVector<QString> tableGetAdditionalUniques  ( const QString &tableName    ) const override
+    {
+        const QMap<QString,QVector<QString> >& additionalUniques = getAdditionalUniques();
+
+        auto it = additionalUniques.find(tableName);
+
+        if (it==additionalUniques.end())
+            return QVector<QString>();
+
+        QVector<QString> uList = *it;
+
+        QVector<QString> res;
+
+        for( auto u : uList)
+        {
+            res.push_back( QString("UNIQUE(%1)").arg(u) );
+        }
+
+        return res;
+        //return *it;
+
+    }
 
     const QMap<QString,QString>& getTableSchemas() const
     {

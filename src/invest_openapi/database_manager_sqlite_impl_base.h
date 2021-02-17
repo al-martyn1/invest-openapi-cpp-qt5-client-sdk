@@ -134,7 +134,21 @@ protected:
     virtual bool    tableCreate        ( const QString &tableName, IfExists existence ) const override
     {
         QSqlQuery query(*m_pDb);
-        QString queryText = QString("CREATE TABLE %1 %2 (%3)").arg(exists(existence)).arg(tableMapName(tableName)).arg(tableGetSchema(tableName));
+
+        QVector<QString> additionalUniques = tableGetAdditionalUniques( tableName );
+
+        QString queryText;
+
+        if (additionalUniques.empty())
+        {
+            queryText = QString("CREATE TABLE %1 %2 (%3)").arg(exists(existence)).arg(tableMapName(tableName)).arg(tableGetSchema(tableName));
+        }
+        else
+        {
+            queryText = QString("CREATE TABLE %1 %2 (%3, %4)").arg(exists(existence)).arg(tableMapName(tableName)).arg(tableGetSchema(tableName)).arg(mergeString(additionalUniques, ", "));
+        }
+
+        
         RETURN_IOA_SQL_EXEC_QUERY( query, queryText );
         // return query.exec( queryText );
     }

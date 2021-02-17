@@ -103,6 +103,61 @@ INVEST_OPENAPI_MAIN()
 
 
     //----------------------------------------------------------------------------
+    QVector<QString> instrumentListingDatesTableColumns = pDbMan->tableGetColumnsFromSchema  ( "INSTRUMENT_LISTING_DATES" );
+
+    qDebug().nospace().noquote() << "INSTRUMENT_LISTING_DATES: " << instrumentListingDatesTableColumns;
+
+    //----------------------------------------------------------------------------
+    QString    selectMoexQueryText = pDbMan->makeSimpleSelectQueryText( "STOCK_EXCHANGE_LIST", "NAME", "MOEX", "ID;NAME;FOUNDATION_DATE" );
+
+    bool queryRes = false;
+    QSqlQuery  moexExucutedQuery   = pDbMan->execHelper ( selectMoexQueryText, &queryRes );
+
+    if (!queryRes)
+    {
+        qDebug().nospace().noquote() << "Select MOEX failed: " << moexExucutedQuery.lastError().text();
+        return 1;
+    }
+
+    QVector< QVector<QString> > vvMoex = pDbMan->selectResultToStringVectors( moexExucutedQuery );
+    if (vvMoex.empty())
+    {
+        qDebug().nospace().noquote() << "Select MOEX failed: no such entry";
+        return 1;
+    }
+
+    QVector<QString> vMoexIdName = vvMoex[0];
+
+    QDate moexFoundationDate = qt_helpers::dateFromDbString(vMoexIdName[2]); vMoexIdName.remove(2);
+
+    qDebug().nospace().noquote() << "MOEX: " << vMoexIdName;
+
+
+    QString    selectFigiQueryText = pDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "", "", "ID;FIGI;TICKER" );
+    QSqlQuery  figiExucutedQuery   = pDbMan->execHelper ( selectFigiQueryText, &queryRes );
+
+    QVector< QVector<QString> > vvFigis = pDbMan->selectResultToStringVectors(figiExucutedQuery);
+
+    QElapsedTimer timer;
+    timer.start();
+
+    for( const auto &figiRow: vvFigis )
+    {
+        qDebug().nospace().noquote() << "Lookin up for listing start date for: " << figiRow[1] << " (" << figiRow[2] << ")";
+
+        timer.restart();
+
+        QDate foundDate;
+        bool bFound = pOpenApi->findInstrumentListingStartDate( figiRow[1], moexFoundationDate, foundDate );
+
+        auto elapsedTime = timer.restart();
+    }
+
+
+    
+    // INSTRUMENT_LISTING_DATES: INSTRUMENT_ID, INSTRUMENT_FIGI, INSTRUMENT_TICKER, STOCK_EXCHANGE_ID, STOCK_EXCHANGE_NAME, LISTING_DATE
+
+    #if 0
     QElapsedTimer mainTimer;
     mainTimer.start();
 
@@ -224,6 +279,7 @@ INVEST_OPENAPI_MAIN()
 
     qDebug().nospace().noquote() << "TIMER: Update instruments job full time elapsed: " << mainTimer.restart();
     qDebug().nospace().noquote() << "Total instruments processed: " << instrumentCount;
+    #endif
 
     return 0;
 }
