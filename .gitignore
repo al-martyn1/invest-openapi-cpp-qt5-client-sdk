@@ -73,3 +73,4 @@
 /bat/call-vcvars-x86.bat
 /bat/setup-toolset-vars-msvc2017-x86.bat
 /bat/setup-toolset-vars-msvc2017-x64.bat
+/*.sqlite-journal
