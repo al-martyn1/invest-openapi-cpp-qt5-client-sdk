@@ -141,11 +141,23 @@ protected:
 
         if (additionalUniques.empty())
         {
-            queryText = QString("CREATE TABLE %1 %2 (%3)").arg(exists(existence)).arg(tableMapName(tableName)).arg(tableGetSchema(tableName));
+            queryText = QString("CREATE TABLE %1 %2 (%3%4%5)").arg(exists(existence))
+                                                              .arg(tableMapName(tableName))
+                                                              .arg(lf())
+                                                              .arg(tableGetSchema(tableName))
+                                                              .arg(lf())
+                                                              ;
         }
         else
         {
-            queryText = QString("CREATE TABLE %1 %2 (%3, %4)").arg(exists(existence)).arg(tableMapName(tableName)).arg(tableGetSchema(tableName)).arg(mergeString(additionalUniques, ", "));
+            queryText = QString("CREATE TABLE %1 %2 (%3%4,%5%6%7)").arg(exists(existence))
+                                                                   .arg(tableMapName(tableName))
+                                                                   .arg(lf())
+                                                                   .arg(tableGetSchema(tableName))
+                                                                   .arg(lf())
+                                                                   .arg(mergeString(additionalUniques, ", "))
+                                                                   .arg(lf())
+                                                                   ;
         }
 
         

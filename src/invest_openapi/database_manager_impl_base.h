@@ -19,6 +19,7 @@
 
 #include "i_database_manager.h"
 #include "logging_config.h"
+#include "database_manager_defs.h"
 
 
 //----------------------------------------------------------------------------
@@ -171,12 +172,17 @@ protected:
         return QString('\'') + tableName + QString('\''); // return unmapped value
     }
 
+    bool execHelperImpl ( const QString &queryText, QSqlQuery &q ) const
+    {
+        RETURN_IOA_SQL_EXEC_QUERY( q, queryText );
+    }
+    
     //------------------------------
     virtual QSqlQuery   execHelper ( const QString &queryText, bool *pRes = 0 ) const override
     {
         QSqlQuery query(*m_pDb);
 
-        bool execRes = query.exec(queryText);
+        bool execRes = execHelperImpl(queryText, query);
         if (pRes)
            *pRes = execRes;
 

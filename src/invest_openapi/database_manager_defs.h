@@ -1,6 +1,6 @@
 #pragma once
 
-#define RETURN_IOA_SQL_EXEC_QUERY( queru, querySqlText )                                         \
+#define RETURN_IOA_SQL_EXEC_QUERY( query, querySqlText )                                         \
             do                                                                                   \
             {                                                                                    \
                 if (m_pLoggingConfig->debugSqlQueries)                                           \
@@ -29,7 +29,7 @@
 
 
 /* Mostly same as RETURN_IOA_SQL_EXEC_QUERY */
-#define IOA_SQL_EXEC_QUERY( queru, querySqlText )                                                \
+#define IOA_SQL_EXEC_QUERY( query, querySqlText )                                                \
             do                                                                                   \
             {                                                                                    \
                 if (m_pLoggingConfig->debugSqlQueries)                                           \
