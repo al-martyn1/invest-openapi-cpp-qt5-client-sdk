@@ -105,21 +105,21 @@ INVEST_OPENAPI_MAIN()
     //----------------------------------------------------------------------------
     QVector<QString> instrumentListingDatesTableColumns = pDbMan->tableGetColumnsFromSchema  ( "INSTRUMENT_LISTING_DATES" );
 
-    qDebug().nospace().noquote() << "INSTRUMENT_LISTING_DATES: " << instrumentListingDatesTableColumns;
+    //qDebug().nospace().noquote() << "INSTRUMENT_LISTING_DATES: " << instrumentListingDatesTableColumns;
 
     //----------------------------------------------------------------------------
     QString    selectMoexQueryText = pDbMan->makeSimpleSelectQueryText( "STOCK_EXCHANGE_LIST", "NAME", "MOEX", "ID;NAME;FOUNDATION_DATE" );
 
     bool queryRes = false;
-    QSqlQuery  moexExucutedQuery   = pDbMan->execHelper ( selectMoexQueryText, &queryRes );
+    QSqlQuery  moexExecutedQuery   = pDbMan->execHelper ( selectMoexQueryText, &queryRes );
 
     if (!queryRes)
     {
-        qDebug().nospace().noquote() << "Select MOEX failed: " << moexExucutedQuery.lastError().text();
+        qDebug().nospace().noquote() << "Select MOEX failed: " << moexExecutedQuery.lastError().text();
         return 1;
     }
 
-    QVector< QVector<QString> > vvMoex = pDbMan->selectResultToStringVectors( moexExucutedQuery );
+    QVector< QVector<QString> > vvMoex = pDbMan->selectResultToStringVectors( moexExecutedQuery );
     if (vvMoex.empty())
     {
         qDebug().nospace().noquote() << "Select MOEX failed: no such entry";
@@ -128,158 +128,115 @@ INVEST_OPENAPI_MAIN()
 
     QVector<QString> vMoexIdName = vvMoex[0];
 
-    QDate moexFoundationDate = qt_helpers::dateFromDbString(vMoexIdName[2]); vMoexIdName.remove(2);
+    qDebug().nospace().noquote() << "MOEX foundation date (as string): " << vMoexIdName[2];
+    QDate moexFoundationDate = qt_helpers::dateFromDbString(vMoexIdName[2]);
+    qDebug().nospace().noquote() << "MOEX foundation date (as date)  : " << moexFoundationDate;
+    vMoexIdName.remove(2);
 
     qDebug().nospace().noquote() << "MOEX: " << vMoexIdName;
 
 
-    QString    selectFigiQueryText = pDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "", "", "ID;FIGI;TICKER" );
+    QString    selectFigiQueryText = pDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "ID;FIGI;TICKER" );
     QSqlQuery  figiExucutedQuery   = pDbMan->execHelper ( selectFigiQueryText, &queryRes );
 
     QVector< QVector<QString> > vvFigis = pDbMan->selectResultToStringVectors(figiExucutedQuery);
 
+    // int counter = 0; // Only first 10 items for first time
+
+    QElapsedTimer globalElapsedTimer;
+    globalElapsedTimer.start();
+
     QElapsedTimer timer;
     timer.start();
+    unsigned elapsedTime = 0;
 
-    for( const auto &figiRow: vvFigis )
+    unsigned totalCounter = 0;
+
+    for( auto figiRow: vvFigis )
     {
-        qDebug().nospace().noquote() << "Lookin up for listing start date for: " << figiRow[1] << " (" << figiRow[2] << ")";
+        // 134 записи проверяются за 35 секунд, что привышает лимиты на запросы
+        QTest::qWait(1000); // Поэтому добавляем по секунде ожидания на каждую запись, чтобы гарантировано уложиться в лимит 120 запросов в минуту
+        // по секунде - потому чтобыу нас как минимум два запроса на каждую фигу
 
+        // figiRow contains ID;FIGI;TICKER from MARKET_INSTRUMENT
+        // vMoexIdName contains ID;NAME from STOCK_EXCHANGE_LIST
+        QString checkListingDateExistQuery = pDbMan->makeSimpleSelectQueryText( "INSTRUMENT_LISTING_DATES"
+                                                                              , QVector<QString>{ "INSTRUMENT_ID", "STOCK_EXCHANGE_ID" }
+                                                                              , QVector<QString>{ figiRow[0], vMoexIdName[0] }
+                                                                              );
         timer.restart();
+        QSqlQuery  checkListingDateExistExecutedQuery = pDbMan->execHelper ( checkListingDateExistQuery, &queryRes );
+        std::size_t foundRecordsNumber = pDbMan->getQueryResultSize( checkListingDateExistExecutedQuery, true  /* needBool */ );
+        elapsedTime = (unsigned)timer.restart();
 
-        QDate foundDate;
-        bool bFound = pOpenApi->findInstrumentListingStartDate( figiRow[1], moexFoundationDate, foundDate );
-
-        auto elapsedTime = timer.restart();
-    }
-
-
-    
-    // INSTRUMENT_LISTING_DATES: INSTRUMENT_ID, INSTRUMENT_FIGI, INSTRUMENT_TICKER, STOCK_EXCHANGE_ID, STOCK_EXCHANGE_NAME, LISTING_DATE
-
-    #if 0
-    QElapsedTimer mainTimer;
-    mainTimer.start();
-
-    QVector< QSharedPointer< tkf::OpenApiCompletableFuture< tkf::MarketInstrumentListResponse > > > instrumentResults;
-    instrumentResults.push_back( pOpenApi->marketInstruments( tkf::InstrumentType("STOCK"   ) ) );
-    instrumentResults.push_back( pOpenApi->marketInstruments( tkf::InstrumentType("CURRENCY") ) );
-    instrumentResults.push_back( pOpenApi->marketInstruments( tkf::InstrumentType("BOND"    ) ) );
-    instrumentResults.push_back( pOpenApi->marketInstruments( tkf::InstrumentType("ETF"     ) ) );
-
-    qDebug().nospace().noquote() << "TIMER: Quering instruments, time elapsed: " << mainTimer.restart();
-
-    tkf::joinOpenApiCompletableFutures(instrumentResults);
-
-    qDebug().nospace().noquote() << "TIMER: Waiting instrument responses, time elapsed: " << mainTimer.restart();
-
-
-    QVector<QString> instrumentColsWithLotMarket = tkf::removeItemsByName( pDbMan->tableGetColumnsFromSchema("MARKET_INSTRUMENT"), "ID" );
-    QVector<QString> instrumentColsNoLotMarket   = tkf::removeItemsByName(instrumentColsWithLotMarket, "LOT_MARKET");
-    int lotFieldIdx                              = tkf::findItemByName(instrumentColsWithLotMarket, "LOT");
-
-
-    QVector<QString> instrumentTypes = { "STOCK", "CURRENCY", "BOND", "ETF" };
-    int instrumentTypeIdx = -1;
-
-    //QList<tkf::MarketInstrument> allInstruments;
-
-    unsigned instrumentCount = 0;
-
-    for( auto rsp : instrumentResults )
-    {
-        ++instrumentTypeIdx;
-
-        auto marketInstrumentList = rsp->value.getPayload();
-        auto instrumentsList      = marketInstrumentList.getInstruments();
-
-        for( auto instrumentInfo : instrumentsList )
+        if (foundRecordsNumber)
         {
-            /* 
-               !!!
+            qDebug().nospace().noquote() << "Listing start date for " << figiRow[1] << " (" << figiRow[2] << ") already exist for " << vMoexIdName[1] << ", elapsed time: " << elapsedTime;
+            continue;
+        }
+        
+        qDebug().nospace().noquote() << "Looking up for listing start date for: " << figiRow[1] << " (" << figiRow[2] << ")";
 
-               Чего делаем:
-                 Пробуем найти инструмент
-                 Если его не существует в базе - добавляем
-                 Если он существует в базе - только обновляем
-                 Если что-то пошло не так - пропускаем инструмент
+        // counter++; // Only first 10 items for first time
 
-               Есть два вида заявок (обычно; вообще есть много вариантов, но у нас только так)
-               Лимитная и рыночная заявки:
-                 Лимитная - продать/купить по цене не ниже/выше заданной
-                 Рыночная - купить что продают, по той цене, какую просят; ну или продать по той цене, какую дают
-               Рыночные заявки исполняются обычно сразу
+        bool bFound = false;
+        QDate foundDate;
 
-               В таблице инструментов поле LOT - это размер лота, который отдаёт тиньков API.
-               Но тут есть нюанс.
+        std::size_t tryNo = 0, maxTries = 20;
 
-               Если взять инструмент "доллары" (USD), то они торгуются по лимитным заявкам лотами по $1000
-               По рыночным заявкам они торгуются по одному ($1)
+        for(; !bFound && tryNo!=maxTries; ++tryNo)
+        {
+            timer.restart();
 
-               В основном размеры лотов (как минимум по акциям/STOCK) одни и те же для лимитных и для рыночных заявок.
-               Но вот для USD обнаружилась разница.
+            bFound = pOpenApi->findInstrumentListingStartDate( figiRow[1], moexFoundationDate, foundDate );
 
-               Поэтому было инжектировано поле LOT_MARKET, которое задаёт размер лота для рыночной заявки.
+            elapsedTime = (unsigned)timer.restart();
 
-               При создании (первичном добавлении инструмента в базу) LOT_MARKET копируется из LOT.
+            if (bFound)
+                continue;
 
-               Потом можно ручками (или SQL-запросом) задать для LOT_MARKET другое значение
+            qDebug().nospace().noquote() << "Unsuccessful attempt #" << tryNo << ", elapsed time: " << elapsedTime;
 
-               При обновлении инструмента LOT_MARKET не изменяется
-            
-             */
-
-            //inline QVector<QString> removeFirstItems(QVector<QString> v, int numItemsToRemove )
-            //inline QVector<QString> removeItemsByName( const QVector<QString> &v, const QString &name )
-
-            QElapsedTimer singleInstrumentTimer;
-            singleInstrumentTimer.start();
-
-            QVector<QString> values = tkf::modelToStrings( instrumentInfo );
-            qDebug().nospace().noquote() << values;
-
-            QString selectQuery = pDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), instrumentColsNoLotMarket );
-            
-            std::size_t selectResSize = pDbMan->getQueryResultSize( pDbMan->execHelper(selectQuery) );
-            if (selectResSize>0)
-            {
-                qDebug().nospace().noquote() << "Updating instrument, FIGI = " << instrumentInfo.getFigi();
-                QString updateQuery = pDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), values, instrumentColsNoLotMarket );
-                pDbMan->execHelper( updateQuery );
-            }
-            else
-            {
-                QString lotValue;
-                if (lotFieldIdx<values.size())
-                    lotValue = values[lotFieldIdx];
-                values.insert(lotFieldIdx+1, lotValue); // diplicate LOT to LOT_MARKET
-
-                qDebug().nospace().noquote() << "Creating instrument, FIGI = " << instrumentInfo.getFigi();
-
-                pDbMan->insertTo( "MARKET_INSTRUMENT", values, instrumentColsWithLotMarket );
-            }
-
-            ++instrumentCount;
-
-            qDebug().nospace().noquote() << "Create/update single instrument timeout: "<<singleInstrumentTimer.restart();
-
+            QTest::qWait(1000*(tryNo+1));
         }
 
+        if (!bFound)
+        {
+            qDebug().nospace().noquote() << "Lookup failed on " << figiRow[1] << " (" << figiRow[2] << ")"; // , elapsed time: " << elapsedTime;
+            return 1;
+        }
+
+        qDebug().nospace().noquote() << "Listing start date for " << figiRow[1] << " (" << figiRow[2] << ") was found, elapsed time: " << elapsedTime;
+
+        // figiRow contains ID;FIGI;TICKER from MARKET_INSTRUMENT
+        // vMoexIdName contains ID;NAME from STOCK_EXCHANGE_LIST
+        // Inserting to INSTRUMENT_LISTING_DATES: INSTRUMENT_ID, INSTRUMENT_FIGI, INSTRUMENT_TICKER, STOCK_EXCHANGE_ID, STOCK_EXCHANGE_NAME, LISTING_DATE
+
+        figiRow.append( vMoexIdName );
+        figiRow.append( qt_helpers::dateToDbString(foundDate) );
+
+        // qDebug().nospace().noquote() << "Inserting to: " << instrumentListingDatesTableColumns;
+        // qDebug().nospace().noquote() << "Values      : " << figiRow;
+
+        timer.restart();
+        pDbMan->insertTo( "INSTRUMENT_LISTING_DATES", figiRow, instrumentListingDatesTableColumns );
+        elapsedTime = (unsigned)timer.restart();
+        qDebug().nospace().noquote() << "Listing start date for " << figiRow[1] << " (" << figiRow[2] << ") was inserted, elapsed time: " << elapsedTime;
+
+        // if (counter>=10) break; // Only first 10 items for first time
+
+        totalCounter++;
+
     }
 
-    pDbMan->execHelper( pDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "TICKER", "USD000UTSTOM"
-                                                         , QVector<QString>{ "1" }, QVector<QString>{ "LOT_MARKET" }
-                                                         )
-                      );
+    elapsedTime = (unsigned)globalElapsedTimer.restart();
 
-    pDbMan->execHelper( pDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "TICKER", "EUR_RUB__TOM"
-                                                         , QVector<QString>{ "1" }, QVector<QString>{ "LOT_MARKET" }
-                                                         )
-                      );
+    elapsedTime -= 1000*totalCounter;
 
-    qDebug().nospace().noquote() << "TIMER: Update instruments job full time elapsed: " << mainTimer.restart();
-    qDebug().nospace().noquote() << "Total instruments processed: " << instrumentCount;
-    #endif
+
+    qDebug().nospace().noquote() << "-------------------";
+    qDebug().nospace().noquote() << "Done, time elapsed (clean): " << elapsedTime;
+
 
     return 0;
 }

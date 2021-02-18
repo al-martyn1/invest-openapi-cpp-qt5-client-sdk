@@ -153,19 +153,36 @@ protected:
         // return query.exec( queryText );
     }
 
-    virtual QString     makeSimpleSelectQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &fields = QVector<QString >() ) const override
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName
+                                                 , const QVector<QString > &fields = QVector<QString >() ) const override
     {
-        QString queryText;
-
         if (!fields.empty())
-            queryText = QString("SELECT %1 FROM %2").arg( mergeString(fields, ", ") ).arg(tableName);
+            return QString("SELECT %1 FROM %2").arg( mergeString(fields, ", ") ).arg(tableName);
         else
-            queryText = QString("SELECT %1 FROM %2").arg( mergeString(tableGetColumnsFromSchema(tableName), ", ") ).arg(tableName);
+            return QString("SELECT %1 FROM %2").arg( mergeString(tableGetColumnsFromSchema(tableName), ", ") ).arg(tableName);
+    }
 
-        if (whereName.isEmpty() || whereVal.isEmpty())
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName
+                                                 , const QVector<QString> &whereNames, const QVector<QString> &whereVals
+                                                 , const QVector<QString > &fields = QVector<QString >() ) const override
+    {
+        if ( whereNames.size() != whereVals.size() )
+             throw std::runtime_error("makeSimpleSelectQueryText: whereNames.size() != whereVal.size()");
+
+        QString queryText = makeSimpleSelectQueryText( tableName, fields );
+
+        if (whereNames.size()==0)
             return queryText;
 
-        return queryText + QString(" WHERE %1 = %2").arg(whereName).arg(sqlQuote(whereVal));
+        QVector<QString> whereVec;
+
+        for( int idx=0; idx<whereNames.size(); ++idx)
+        {
+            whereVec.push_back( QString("%1 = %2").arg(whereNames[idx]).arg(sqlQuote(whereVals[idx])) );
+        }
+
+        return QString("%1 WHERE %2").arg(queryText)
+                                     .arg(mergeString(whereVec, " AND "));
     }
 
     virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &values, QVector<QString > fields = QVector<QString >() ) const override

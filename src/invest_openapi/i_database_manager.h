@@ -72,15 +72,80 @@ struct IDatabaseManager
 
     virtual QSqlQuery   execHelper ( const QString &queryText, bool *pRes = 0 ) const = 0;
 
-    virtual QString     makeSimpleSelectQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &fields = QVector<QString >() ) const = 0;
-    virtual QString     makeSimpleSelectQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QStringList       &fields ) const
+
+
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName
+                                                 , const QVector<QString > &fields = QVector<QString >() ) const = 0;
+
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName
+                                                 , const QStringList &fields ) const
     {
-        return makeSimpleSelectQueryText(tableName, whereName, whereVal, convertToQVectorOfQStrings(fields) );
+        return makeSimpleSelectQueryText( tableName, convertToQVectorOfQStrings(fields) );
     }
-    virtual QString     makeSimpleSelectQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QString           &fields ) const
+
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName
+                                                 , const QString &fields ) const
     {
-        return makeSimpleSelectQueryText(tableName, whereName, whereVal, convertToQVectorOfQStrings(fields) );
+        return makeSimpleSelectQueryText( tableName, convertToQVectorOfQStrings(fields) );
     }
+
+
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName
+                                                 , const QVector<QString> &whereNames, const QVector<QString> &whereVals
+                                                 , const QVector<QString > &fields = QVector<QString >() ) const = 0;
+
+
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName
+                                                 , const QVector<QString>  &whereNames, const QVector<QString> &whereVals
+                                                 , const QStringList       &fields ) const
+    {
+        return makeSimpleSelectQueryText(tableName, whereNames, whereVals, convertToQVectorOfQStrings(fields) );
+    }
+
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName
+                                                 , const QVector<QString>  &whereNames, const QVector<QString> &whereVals
+                                                 , const QString           &fields ) const
+    {
+        return makeSimpleSelectQueryText(tableName, whereNames, whereVals, convertToQVectorOfQStrings(fields) );
+    }
+
+    virtual QString     makeSimpleSelectQueryText( const QString     &tableName
+                                                 , const QStringList &whereNames, const QStringList &whereVals
+                                                 , const QVector<QString> &fields = QVector<QString >() ) const
+    {
+        return makeSimpleSelectQueryText(tableName, convertToQVectorOfQStrings(whereNames), convertToQVectorOfQStrings(whereVals), fields );
+    }
+
+    virtual QString     makeSimpleSelectQueryText( const QString     &tableName
+                                                 , const QStringList &whereNames, const QStringList &whereVals
+                                                 , const QStringList &fields ) const
+    {
+        return makeSimpleSelectQueryText(tableName, convertToQVectorOfQStrings(whereNames), convertToQVectorOfQStrings(whereVals), convertToQVectorOfQStrings(fields) );
+    }
+
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName
+                                                 , const QString &whereNames, const QString &whereVals
+                                                 , const QVector<QString> &fields = QVector<QString >() ) const
+    {
+        return makeSimpleSelectQueryText(tableName, convertToQVectorOfQStrings(whereNames), convertToQVectorOfQStrings(whereVals), fields );
+    }
+
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName
+                                                 , const QString &whereNames, const QString &whereVals
+                                                 , const QString &fields ) const
+    {
+        return makeSimpleSelectQueryText(tableName, convertToQVectorOfQStrings(whereNames), convertToQVectorOfQStrings(whereVals), convertToQVectorOfQStrings(fields) );
+    }
+/*
+    virtual QString     makeSimpleSelectQueryText( const QString &tableName
+                                                 , const char    *whereNames, const QString &whereVals
+                                                 , const QString &fields ) const
+    {
+        return makeSimpleSelectQueryText(tableName, convertToQVectorOfQStrings(QString(whereNames)), convertToQVectorOfQStrings(whereVals), convertToQVectorOfQStrings(fields) );
+    }
+*/
+
+
 
     virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &values, QVector<QString >  fields = QVector<QString >() ) const = 0;
     virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &values, const QStringList &fields ) const

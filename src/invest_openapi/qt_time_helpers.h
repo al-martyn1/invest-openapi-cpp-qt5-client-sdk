@@ -123,7 +123,7 @@ inline
 QDate dateFromDbString( QString str )
 {
     str = str.trimmed();
-    return QDate::fromString( str, Qt::ISODateWithMs );
+    return QDate::fromString( str, Qt::ISODate );
 }
 
 //----------------------------------------------------------------------------
@@ -139,6 +139,20 @@ inline
 QString dateTimeToDbString( const QDateTime &dt )
 {
     return dt.toUTC().toString("yyyy-MM-dd hh:mm:ss.zzz");
+}
+
+//----------------------------------------------------------------------------
+inline
+QString dateToDbString( const QDate &dt )
+{
+    return dt.toString("yyyy-MM-dd");
+}
+
+//----------------------------------------------------------------------------
+inline
+QString timeToDbString( const QTime &dt )
+{
+    return dt.toString("hh:mm:ss.zzz");
 }
 
 //----------------------------------------------------------------------------

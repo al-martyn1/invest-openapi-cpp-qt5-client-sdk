@@ -183,6 +183,8 @@ INVEST_OPENAPI_MAIN()
             QVector<QString> values = tkf::modelToStrings( instrumentInfo );
             qDebug().nospace().noquote() << values;
 
+            //QString instrumentFigi = instrumentInfo.getFigi();
+            //QString selectQuery = pDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentFigi, instrumentColsNoLotMarket );
             QString selectQuery = pDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), instrumentColsNoLotMarket );
             
             std::size_t selectResSize = pDbMan->getQueryResultSize( pDbMan->execHelper(selectQuery) );
