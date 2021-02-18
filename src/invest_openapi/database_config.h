@@ -53,6 +53,8 @@ struct DatabaseConfig
     unsigned  defaultDecimalFormatTotalSize      = 18;
     unsigned  defaultDecimalFormatFractionalSize =  8;
 
+    bool      createClean = false;
+
     QString   tableNameInstruments;
 
 
@@ -67,7 +69,9 @@ struct DatabaseConfig
             dbFilename = settings.value("database").toString();
         }
 
-        reopenMode = settings.value("database.reopen", QVariant(false)).toBool();
+        reopenMode  = settings.value("database.reopen", QVariant(false)).toBool();
+        createClean = settings.value("database.create_clean", QVariant(false)).toBool();
+
 
         tableNameInstruments = settings.value("database.schema.table.name.instruments").toString();
 

@@ -111,6 +111,13 @@ INVEST_OPENAPI_MAIN()
 
     qDebug().nospace().noquote() << "\n";
 
+    
+    if (pDatabaseConfig->createClean)
+    {
+        qDebug().nospace().noquote() << "Clean database created. Exiting due config option";
+        return 0;
+    }
+
 
     timer.restart();
 

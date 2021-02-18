@@ -930,10 +930,10 @@ Decimal     fromString( const std::string &numberStr_ )
 
 //----------------------------------------------------------------------------
 inline
-std::ostream& operator<<( std::ostream &s, const Decimal &d )
+std::ostream& operator<<( std::ostream& os, const Decimal &v )
 {
-    s<<toString(d);
-    return s;
+    os << v.toString();
+    return os;
 }
 
 //----------------------------------------------------------------------------
