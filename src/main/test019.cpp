@@ -80,16 +80,17 @@ INVEST_OPENAPI_MAIN()
 
     QDate foundDate;
 
+
     // BBG004731354 - ROSN
-    bool listingDateFound = pOpenApi->findInstrumentListingStartDate( "BBG004731354"
-                                                                    , QDate::fromString("2011-12-19", Qt::ISODate)
-                                                                    , foundDate
-                                                                    );
+    tkf::GenericError findRes = pOpenApi->findInstrumentListingStartDate( "BBG004731354"
+                                                                        , QDate::fromString("2011-12-19", Qt::ISODate)
+                                                                        , foundDate
+                                                                        );
 
     auto timeElapsed = timer.restart();
     qDebug().nospace().noquote() << "Time elapsed: " << timeElapsed;
 
-    if (!listingDateFound)
+    if (findRes!=tkf::GenericError::ok)
     {
         qDebug().nospace().noquote() << "Listing date not found";
     }

@@ -143,14 +143,22 @@ INVEST_OPENAPI_MAIN()
 
     // int counter = 0; // Only first 10 items for first time
 
+    QElapsedTimer firstFailElapsedTimer; 
+    QElapsedTimer failElapsedTimer; 
     QElapsedTimer globalElapsedTimer;
-    globalElapsedTimer.start();
-
     QElapsedTimer timer;
+
+    firstFailElapsedTimer.start();
+    failElapsedTimer.start();
+    globalElapsedTimer.start();
     timer.start();
+
+    unsigned firstFailElapsedTime = 0;
+    unsigned failElapsedTime = 0;
     unsigned elapsedTime = 0;
 
     unsigned totalCounter = 0;
+    unsigned failCounter = 0;
 
     for( auto figiRow: vvFigis )
     {
@@ -179,52 +187,88 @@ INVEST_OPENAPI_MAIN()
 
         // counter++; // Only first 10 items for first time
 
-        bool bFound = false;
+
         QDate foundDate;
+        tkf::GenericError lookupRes = tkf::GenericError::noData;
 
-        std::size_t tryNo = 0, maxTries = 20;
+        std::size_t tryNo = 0, maxTries = 10;
 
-        for(; !bFound && tryNo!=maxTries; ++tryNo)
+        for(; tryNo!=maxTries; ++tryNo)
         {
             timer.restart();
 
-            bFound = pOpenApi->findInstrumentListingStartDate( figiRow[1], moexFoundationDate, foundDate );
+            lookupRes = pOpenApi->findInstrumentListingStartDate( figiRow[1], moexFoundationDate, foundDate );
 
             elapsedTime = (unsigned)timer.restart();
 
-            if (bFound)
-                continue;
+            if (lookupRes!=tkf::GenericError::networkError)
+                break;
+
+            if (!failCounter)
+            {
+                firstFailElapsedTime = (unsigned)firstFailElapsedTimer.elapsed();
+                qDebug().nospace().noquote() << "First fail occurs on " << firstFailElapsedTime << " ms from start, processed item: #" << (totalCounter+1);
+            }
+
+            failCounter++;
 
             qDebug().nospace().noquote() << "Unsuccessful attempt #" << tryNo << ", elapsed time: " << elapsedTime;
 
             QTest::qWait(1000*(tryNo+1));
         }
 
-        if (!bFound)
+        /*
+        if (lookupRes)
         {
             qDebug().nospace().noquote() << "Lookup failed on " << figiRow[1] << " (" << figiRow[2] << ")"; // , elapsed time: " << elapsedTime;
+            failElapsedTime = (unsigned)failElapsedTimer.elapsed();
+            qDebug().nospace().noquote() << "Failed on " << failElapsedTime << " ms from start";
+
             return 1;
         }
+        */
+/*
+enum class GenericError
+{
+    ok,
+    internalError,
+    networkError,
+    noData
+};
 
-        qDebug().nospace().noquote() << "Listing start date for " << figiRow[1] << " (" << figiRow[2] << ") was found, elapsed time: " << elapsedTime;
+*/
 
-        // figiRow contains ID;FIGI;TICKER from MARKET_INSTRUMENT
-        // vMoexIdName contains ID;NAME from STOCK_EXCHANGE_LIST
-        // Inserting to INSTRUMENT_LISTING_DATES: INSTRUMENT_ID, INSTRUMENT_FIGI, INSTRUMENT_TICKER, STOCK_EXCHANGE_ID, STOCK_EXCHANGE_NAME, LISTING_DATE
+        if (lookupRes==tkf::GenericError::internalError)
+        {
+            qDebug().nospace().noquote() << "Lookup listing start date failed due internal error, elapsed time: " << elapsedTime;
+        }
+        else if (lookupRes==tkf::GenericError::networkError)
+        {
+            qDebug().nospace().noquote() << "Lookup listing start date failed due network error, elapsed time: " << elapsedTime;
+        }
+        else if (lookupRes==tkf::GenericError::networkError)
+        {
+            qDebug().nospace().noquote() << "Lookup listing start date failed: no data, elapsed time: " << elapsedTime;
+        }
+        else
+        {
+            qDebug().nospace().noquote() << "Listing start date for " << figiRow[1] << " (" << figiRow[2] << ") was found, elapsed time: " << elapsedTime;
 
-        figiRow.append( vMoexIdName );
-        figiRow.append( qt_helpers::dateToDbString(foundDate) );
-
-        // qDebug().nospace().noquote() << "Inserting to: " << instrumentListingDatesTableColumns;
-        // qDebug().nospace().noquote() << "Values      : " << figiRow;
-
-        timer.restart();
-        pDbMan->insertTo( "INSTRUMENT_LISTING_DATES", figiRow, instrumentListingDatesTableColumns );
-        elapsedTime = (unsigned)timer.restart();
-        qDebug().nospace().noquote() << "Listing start date for " << figiRow[1] << " (" << figiRow[2] << ") was inserted, elapsed time: " << elapsedTime;
-
-        // if (counter>=10) break; // Only first 10 items for first time
-
+            // figiRow contains ID;FIGI;TICKER from MARKET_INSTRUMENT
+            // vMoexIdName contains ID;NAME from STOCK_EXCHANGE_LIST
+            // Inserting to INSTRUMENT_LISTING_DATES: INSTRUMENT_ID, INSTRUMENT_FIGI, INSTRUMENT_TICKER, STOCK_EXCHANGE_ID, STOCK_EXCHANGE_NAME, LISTING_DATE
+           
+            figiRow.append( vMoexIdName );
+            figiRow.append( qt_helpers::dateToDbString(foundDate) );
+           
+            timer.restart();
+            pDbMan->insertTo( "INSTRUMENT_LISTING_DATES", figiRow, instrumentListingDatesTableColumns );
+            elapsedTime = (unsigned)timer.restart();
+            qDebug().nospace().noquote() << "Listing start date for " << figiRow[1] << " (" << figiRow[2] << ") was inserted, elapsed time: " << elapsedTime;
+           
+            // if (counter>=10) break; // Only first 10 items for first time
+        }
+           
         totalCounter++;
 
     }

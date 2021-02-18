@@ -70,6 +70,15 @@ using marty::toString        ;
 using marty::fromString      ;
 
 
+enum class GenericError
+{
+    ok,
+    internalError,
+    networkError,
+    noData
+};
+
+
 
 //----------------------------------------------------------------------------
 inline
@@ -181,7 +190,7 @@ struct IOpenApi
 
     //------------------------------
     // Helpers
-    virtual bool findInstrumentListingStartDate( const QString &figi, const QDate &dateStartLookupFrom, QDate &foundDate ) = 0;
+    virtual GenericError findInstrumentListingStartDate( const QString &figi, const QDate &dateStartLookupFrom, QDate &foundDate ) = 0;
 
 
     virtual ~IOpenApi() {};
@@ -596,7 +605,8 @@ public:
         return response;
     }
 
-    bool findInstrumentListingStartDate( const QString &figi, const QDate &dateStartLookupFrom, QDate &foundDate ) override
+
+    GenericError findInstrumentListingStartDate( const QString &figi, const QDate &dateStartLookupFrom, QDate &foundDate ) override
     {
         bool bFound = false;
         QDateTime foundDateTime;
@@ -617,7 +627,7 @@ public:
             candlesRes->join();
 
             if (candlesRes->isCompletionError())
-                return false;
+                return GenericError::networkError;
 
             QList<Candle> candleList = candlesRes->value.getPayload().getCandles();
 
@@ -652,14 +662,14 @@ public:
         } // while
 
         if (!bFound)
-            return false;
+            return GenericError::noData;
 
 
         bFound = false;
         startDate = foundDateTime.date();
 
         if ( !startDate.setDate( startDate.year(), startDate.month(), 1) )
-            return false;
+            return GenericError::internalError;
 
         QDate nextDate = startDate.addMonths(1);
        
@@ -673,7 +683,7 @@ public:
         candlesRes->join();
 
         if (candlesRes->isCompletionError())
-            return false;
+            return GenericError::networkError;
 
         QList<Candle> candleList = candlesRes->value.getPayload().getCandles();
 
@@ -699,11 +709,11 @@ public:
         }
 
         if (!bFound)
-            return false;
+            return GenericError::noData;
 
         foundDate = foundDateTime.date();
 
-        return true;
+        return GenericError::ok;
     }
 
 
