@@ -88,7 +88,7 @@ INVEST_OPENAPI_MAIN()
     auto operations = operationsRes->value.getPayload();
     QList<tkf::Operation> opList = operations.getOperations();
 
-    for( const auto op : opList )
+    for( const auto &op : opList )
     {
         if (!op.isSet() || !op.isValid())
             continue;
