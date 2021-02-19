@@ -81,6 +81,7 @@ INVEST_OPENAPI_MAIN()
     QDateTime startDate = curTime.addYears(-1); //curTime.date().addYears(-1);
 
     // BBG004731354 - ROSN
+    // BBG00Y91R9T3 - OZON
     auto // OperationsResponse
     operationsRes = pOpenApi->operations( startDate, curTime, "BBG004731354" ); // Если не задать фигу, то ошибки нет, просто пустой список
 
@@ -89,53 +90,56 @@ INVEST_OPENAPI_MAIN()
 
     auto // std::vector< tkf::Operation >
     operations = tkf::makeOrderedVectorFromList( operationsRes->value.getPayload().getOperations()
-                                               , tkf::WithGetDateGreater<tkf::Operation>()
+                                               //, tkf::WithGetDateGreater<tkf::Operation>()
+                                               , tkf::WithGetDateLess<tkf::Operation>()
                                                );
+
+    marty::Decimal totalBalance = 0;
 
     for( const auto &op : operations )
     {
         if (!op.isSet() || !op.isValid())
             continue;
 
-        cout << "Operation ID      : " << op.getId()               << endl;
-        cout << "Operation Status  : " << op.getStatus()           << endl;
-        cout << "Figi              : " << op.getFigi()             << endl;
-        cout << "Date & time       : " << op.getDate()             << endl;
-        cout << "Commission        : " << op.getCommission()       << endl;
-        cout << "Currency          : " << op.getCurrency()         << endl;
-        cout << "Payment           : " << op.getPayment()          << endl;
-        cout << "Price             : " << op.getPrice()            << endl;
-        cout << "Quantity          : " << op.getQuantity()         << endl;
-        cout << "Quantity Executed : " << op.getQuantityExecuted() << endl;
-        cout << "Instrument Type   : " << op.getInstrumentType()   << endl;
-        cout << "Nike called       : " << (op.isIsMarginCall()?"yes":"no") << endl;
-        cout << "Operation Type    : " << op.getOperationType()    << endl;
-        //cout << "        : " << op.get()   << endl;
+        QString operationTypeStr   = op.getOperationType().asJson().toUpper();
+        QString operationStatusStr = op.getStatus().asJson().toUpper();
 
-        /*
-        virtual bool isSet() const override;
-        virtual bool isValid() const override;
-       
-        QString getId() const;                    // ID операции
-        OperationStatus getStatus() const;        // Done, Decline, Progress
-        QList<OperationTrade> getTrades() const;  // list
-        MoneyAmount getCommission() const;
-        Currency getCurrency() const;
-        marty::Decimal getPayment() const;
-        marty::Decimal getPrice() const;
-        qint32 getQuantity() const;               // Число инструментов в выставленной заявке
-        qint32 getQuantityExecuted() const;       // Число инструментов, исполненных в заявке
-        QString getFigi() const;                  // Фига
-        InstrumentType getInstrumentType() const; // Тип инструмента
-        bool isIsMarginCall() const;              // Звонил ли Коля
-        QDateTime getDate() const;
-        OperationTypeWithCommission getOperationType() const;
-        */
+        #if 1
+        if ( (operationTypeStr=="SELL" || operationTypeStr=="BUY") && operationStatusStr=="DONE")
+        {
+            cout << "Operation Type    : " << op.getOperationType()    << endl;
+            cout << "Payment           : " << op.getPayment()          << endl;
+        }
+        #else
+            cout << "Operation ID      : " << op.getId()               << endl;
+            cout << "Operation Status  : " << op.getStatus()           << endl;
+            cout << "Figi              : " << op.getFigi()             << endl;
+            cout << "Date & time       : " << op.getDate()             << endl;
+            cout << "Commission        : " << op.getCommission()       << endl;
+            cout << "Currency          : " << op.getCurrency()         << endl;
+            cout << "Payment           : " << op.getPayment()          << endl;
+            cout << "Price             : " << op.getPrice()            << endl;
+            cout << "Quantity          : " << op.getQuantity()         << endl;
+            cout << "Quantity Executed : " << op.getQuantityExecuted() << endl;
+            cout << "Instrument Type   : " << op.getInstrumentType()   << endl;
+            cout << "Nike called       : " << (op.isIsMarginCall()?"yes":"no") << endl;
+            cout << "Operation Type    : " << op.getOperationType()    << endl;
+            //cout << "        : " << op.get()   << endl;
+            cout << "------------------------------------------------" << endl;
+        #endif
 
-        cout << "------------------------------------------------" << endl;
+        // Operation Type    : Sell/Buy
+        // Operation Status  : Done
+
+        if ( (operationTypeStr=="SELL" || operationTypeStr=="BUY") && operationStatusStr=="DONE")
+        {
+            totalBalance += op.getPayment();
+        }
 
     }
 
+    cout << endl << "--------------------" << endl;
+    cout << "Total balance: " << totalBalance << endl;
     
     #if 0
     auto // PortfolioResponse
