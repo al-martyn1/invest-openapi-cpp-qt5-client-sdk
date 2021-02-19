@@ -211,6 +211,44 @@ INVEST_OPENAPI_MAIN()
                                  << ", Elapsed time: " << timer.restart();
 
 
+    qDebug().nospace().noquote() << "Fill 'OPERATION_STATUS' table: " 
+                                 << pDbMan->insertToBulkFromString( "OPERATION_STATUS"
+                                                                  , "0,INVALID,Invalid OperationStatus value;"
+                                                                    "1,DONE,Operation completed successfully;"
+                                                                    "2,DECLINE,Operation declined;"
+                                                                    "3,PROGRESS,Operation in progress"
+                                                                  )
+                                 << ", Elapsed time: " << timer.restart();
+
+
+    qDebug().nospace().noquote() << "Fill 'OPERATION_TYPE_WITH_COMMISSION' table: " 
+                                 << pDbMan->insertToBulkFromString( "OPERATION_TYPE_WITH_COMMISSION"
+                                                                  , "0,INVALID,Invalid OperationTypeWithCommission value;"
+                                                                    "1,BUY,Buy;"
+                                                                    "2,BUYCARD,Buycard;"
+                                                                    "3,SELL,Sell;"
+                                                                    "4,BROKERCOMMISSION,Broker commission;"
+                                                                    "5,EXCHANGECOMMISSION,Exchange commission;"
+                                                                    "6,SERVICECOMMISSION,Service commission;"
+                                                                    "7,MARGINCOMMISSION,Margin commission;"
+                                                                    "8,OTHERCOMMISSION,Other commission;"
+                                                                    "9,PAYIN,Payin;"
+                                                                    "10,PAYOUT,Payout;"
+                                                                    "11,TAX,Tax;"
+                                                                    "12,TAXLUCRE,Tax lucre;"
+                                                                    "13,TAXDIVIDEND,Tax dividend;"
+                                                                    "14,TAXCOUPON,Tax coupon;"
+                                                                    "15,TAXBACK,Tax back;"
+                                                                    "16,REPAYMENT,Repayment;"
+                                                                    "17,PARTREPAYMENT,Part repayment;"
+                                                                    "18,COUPON,Coupon;"
+                                                                    "19,DIVIDEND,Dividend;"
+                                                                    "20,SECURITYIN,Security in;"
+                                                                    "21,SECURITYOUT,Securityout"
+                                                                  )
+                                 << ", Elapsed time: " << timer.restart();
+
+
     QVector<QString> tzColumns     = pDbMan->tableGetColumnsFromSchema("TIMEZONE");
     QVector<QString> tzColumnsNoId = tkf::removeFirstItems(tzColumns, 1);
     

@@ -168,6 +168,8 @@ protected:
             tablesLevel_0.insert("OPERATION_TYPE");
             tablesLevel_0.insert("ORDER_STATUS");
             tablesLevel_0.insert("ORDER_TYPE");
+            tablesLevel_0.insert("OPERATION_STATUS");
+            tablesLevel_0.insert("OPERATION_TYPE_WITH_COMMISSION");
 
             tablesLevel_1.insert("MARKET_INSTRUMENT");
 
@@ -245,6 +247,8 @@ protected:
             tableSchemas[QString("OPERATION_TYPE"     )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationType    >(QString(), false ) );
             tableSchemas[QString("ORDER_STATUS"       )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderStatus      >(QString(), false ) );
             tableSchemas[QString("ORDER_TYPE"         )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderType        >(QString(), false ) );
+            tableSchemas[QString("OPERATION_STATUS"   )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationStatus   >(QString(), false ) );
+            tableSchemas[QString("OPERATION_TYPE_WITH_COMMISSION")] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationTypeWithCommission>(QString(), false ) );
 
             tableSchemas[QString("TIMEZONE"           )] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT," + lf() +
                                                            "NAME             VARCHAR(64) NOT NULL UNIQUE,"       + lf() +
