@@ -37,7 +37,14 @@
 namespace invest_openapi
 {
 
+
+
+
+//----------------------------------------------------------------------------
+
 void pollMessageQueue();
+
+
 
 /*
 inline
@@ -54,6 +61,82 @@ QVector<QString> toVector( const QStringList &ql )
     return res;
 }
 */
+
+
+
+
+//----------------------------------------------------------------------------
+template< typename KeyIn, typename ValIn
+        , typename NewKeyCheck
+        , typename NewKeyCanonicalize
+        >
+inline
+std::map< ValIn, KeyIn > makeMapSwapKeyVal( const std::map< KeyIn, ValIn > &m
+                                          , NewKeyCheck                     newKeyCheck
+                                          , NewKeyCanonicalize              newKeyCanonicalize
+                                          )
+{
+    typedef ValIn KeyOut;
+    typedef KeyIn ValOut;
+
+    std::map< KeyOut, ValOut > resMap;
+
+    std::map< KeyIn, ValIn >::const_iterator it = m.begin();
+
+    for(; it!=m.end(); ++it)
+    {
+        const KeyOut &keyOut = it->second;
+
+        if (!newKeyCheck(keyOut)) // actually for skip empties
+            continue;
+
+        const ValOut &valOut = it->first;
+
+        resMap[newKeyCanonicalize(keyOut)] = valOut; // actually for new map keys uppercasing
+    }
+
+    return resMap;
+}
+
+//------------------------------
+// have   : map<K1,V1>, map<K1,V2>, K1 - common index for V1 and V2
+// produce: map<V1,V2>
+// template< typename K, typename V1, typename V2 >
+// inline
+// std::map< V1, V2 > makeMapsRemap( const std::map< K, V1 > &keyMap, const std::map< K, V2 > &valMap )
+// {
+// }
+
+//------------------------------
+// Key1 -> Val1
+// Key2 -> Val2 (Val1==Key2)
+template< typename Key, typename TransitionKey, typename Val >
+inline
+std::map< Key, Val > makeTransitionMap( const std::map<Key,TransitionKey> &mapFirst, const std::map<TransitionKey,Val> &mapSecond )
+{
+    std::map< Key, Val > resMap;
+
+    std::map<Key,TransitionKey>::const_iterator fit = mapFirst.begin();
+
+    for(; fit!=mapFirst.end(); ++fit)
+    {
+        const Key &key = fit->first;
+
+        const TransitionKey &tk = fit->second;
+
+        std::map<TransitionKey,Val>::const_iterator tkIt = mapSecond.find(tk);
+
+        if (tkIt==mapSecond.end())
+            continue;
+
+        const Val &val = tkIt->second;
+    }
+
+}
+
+//----------------------------------------------------------------------------
+
+
 
 
 

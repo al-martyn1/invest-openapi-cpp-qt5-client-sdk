@@ -282,8 +282,6 @@ struct IDatabaseManager
     }
 
 
-
-
 }; // struct IDatabaseManager
 
 //----------------------------------------------------------------------------
