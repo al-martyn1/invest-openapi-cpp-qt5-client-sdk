@@ -66,6 +66,52 @@ QVector<QString> toVector( const QStringList &ql )
 
 
 //----------------------------------------------------------------------------
+template< typename ValType >
+struct KeyCheckAlwaysValid
+{
+    bool operator()( const ValType &v ) const
+    {
+        return true;
+    }
+};
+
+//----------------------------------------------------------------------------
+template< typename ValType >
+struct KeyCanonicalizeSimpleCopy
+{
+    ValType operator()( const ValType &v ) const
+    {
+        return v;
+    }
+};
+
+//----------------------------------------------------------------------------
+template< typename KeyIn, typename ValIn
+        >
+inline
+std::map< ValIn, KeyIn > makeMapSwapKeyVal( const std::map< KeyIn, ValIn > &m
+                                          )
+{
+    typedef ValIn KeyOut;
+    typedef KeyIn ValOut;
+
+    std::map< KeyOut, ValOut > resMap;
+
+    std::map< KeyIn, ValIn >::const_iterator it = m.begin();
+
+    for(; it!=m.end(); ++it)
+    {
+        const KeyOut &keyOut = it->second;
+
+        const ValOut &valOut = it->first;
+
+        resMap[keyOut] = valOut;
+    }
+
+    return resMap;
+}
+
+//----------------------------------------------------------------------------
 template< typename KeyIn, typename ValIn
         , typename NewKeyCheck
         , typename NewKeyCanonicalize
@@ -130,7 +176,11 @@ std::map< Key, Val > makeTransitionMap( const std::map<Key,TransitionKey> &mapFi
             continue;
 
         const Val &val = tkIt->second;
+
+        resMap[key] = val;
     }
+
+    return resMap;
 
 }
 
