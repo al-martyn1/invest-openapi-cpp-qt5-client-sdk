@@ -57,7 +57,18 @@ bool dictionaryGetValue( const std::map<K,V> &d, V &vOut, const K &k, const V &v
     return true;
 }
 
+//----------------------------------------------------------------------------
+template< typename K, typename V >
+inline
+V dictionaryGetValue( const std::map<K,V> &d, const K &k )
+{
+    V v;
 
+    if (!dictionaryGetValue( d, v, k))
+        throw std::runtime_error("Something goes wrong in dictionaryGetValue");
+    
+    return v;
+}
 //----------------------------------------------------------------------------
 
 

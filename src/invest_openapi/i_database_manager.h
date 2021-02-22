@@ -241,7 +241,7 @@ struct IDatabaseManager
     virtual bool      tableDrop          ( const QString &tableName, IfExists existence = IfExists::ifExists     ) const = 0;
     virtual bool      tableCreate        ( const QString &tableName, IfExists existence = IfExists::ifNotExists  ) const = 0;
 
-
+                                                                                                            // FIELD,ID
     virtual std::map< QString, int > getDictionaryFromTable( const QString &tableName, const QVector<QString > &fields ) const
     {
         QString queryText = makeSimpleSelectQueryText( tableName, fields );
@@ -279,6 +279,46 @@ struct IDatabaseManager
     virtual std::map< QString, int > getDictionaryFromTable( const QString &tableName, const QString &fields ) const
     {
         return getDictionaryFromTable( tableName, convertToQVectorOfQStrings(fields) );
+    }
+
+                                                                                                               // ID,FIELD
+    virtual std::map< int, QString > getIdToFieldMapFromTable( const QString &tableName, const QVector<QString > &fields ) const
+    {
+        QString queryText = makeSimpleSelectQueryText( tableName, fields );
+        bool queryRes = false;
+        QSqlQuery executedQuery = execHelper ( queryText, &queryRes );
+
+        if (!queryRes)
+            throw std::runtime_error("Something goes wrong in IDatabaseManager::getIdToFieldMapFromTable (1)");
+
+        QVector< QVector<QString> > vvRes = selectResultToStringVectors( executedQuery );
+
+        std::map< int, QString > resMap;
+
+        for( const auto v : vvRes )
+        {
+            if (v.size()<2)
+               throw std::runtime_error("Something goes wrong in IDatabaseManager::getIdToFieldMapFromTable (2)");
+
+            bool convertRes = false;
+            int key = (int)v[0].toUInt(&convertRes, 10);
+            if (!convertRes)
+               throw std::runtime_error("Something goes wrong in IDatabaseManager::getIdToFieldMapFromTable (3)");
+
+            resMap[ key ] = v[1].trimmed();
+        }
+
+        return resMap;
+    }
+
+    virtual std::map< int, QString > getIdToFieldMapFromTable( const QString &tableName, const QStringList &fields ) const
+    {
+        return getIdToFieldMapFromTable( tableName, convertToQVectorOfQStrings(fields) );
+    }
+
+    virtual std::map< int, QString > getIdToFieldMapFromTable( const QString &tableName, const QString &fields ) const
+    {
+        return getIdToFieldMapFromTable( tableName, convertToQVectorOfQStrings(fields) );
     }
 
 

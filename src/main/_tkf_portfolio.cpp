@@ -23,6 +23,10 @@
 #include "invest_openapi/factory.h"
 #include "invest_openapi/openapi_completable_future.h"
 
+#include "invest_openapi/db_utils.h"
+#include "invest_openapi/ioa_utils.h"
+#include "invest_openapi/ioa_ostream.h"
+
 
 
 INVEST_OPENAPI_MAIN()
@@ -99,9 +103,21 @@ INVEST_OPENAPI_MAIN()
         // MoneyAmount getAveragePositionPrice() const;
         // MoneyAmount getAveragePositionPriceNoNkd() const;
 
+        cout << pos.getFigi() << " - " << balanceStr                  << ", " 
+             << "price: " << pos.getAveragePositionPrice()            << ", " 
+             // << "price NoNkd: " << pos.getAveragePositionPriceNoNkd() << ", " 
+             << pos.getInstrumentType() 
+             << ", " 
+             << pos.getTicker() 
+             << " - " << pos.getName()
+             << endl
+             ;
+
+        /*
         qDebug().nospace().noquote() << pos.getTicker() << " (" << pos.getFigi() << ") - " 
                                      << pos.getInstrumentType().asJson() << ": " << QString::fromStdString(balanceStr)
                                      << " - " << pos.getName();
+        */
     }
 
 

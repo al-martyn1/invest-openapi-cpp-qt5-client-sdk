@@ -1,0 +1,41 @@
+Получение токена - https://www.tinkoff.ru/invest/settings/
+Отзыв токена     - https://id.tinkoff.ru/account/security
+
+Доки             - https://api-invest.tinkoff.ru/openapi/docs/
+                   https://github.com/TinkoffCreditSystems/invest-openapi/
+                   https://github.com/TinkoffCreditSystems/invest-openapi.git
+
+Веб-морда, чтобы поиграть с tinkoff REST API - https://tinkoffcreditsystems.github.io/invest-openapi/swagger-ui/
+
+Swagger-ui                                    - https://tinkoffcreditsystems.github.io/invest-openapi/swagger-ui/
+(хз, чтобыэто, но из                            https://github.com/swagger-api/swagger-ui.git
+него генерится код RESTа) 
+
+swagger.yaml доступен по адресу https://tinkoffcreditsystems.github.io/invest-openapi/swagger-ui/swagger.yaml
+
+Что-токенапро генератор - https://openapi-generator.tech/
+
+
+Докер (вроде для сборки док) -  https://github.com/docker/toolbox.git
+
+
+Лимты по запросам - https://tinkoffcreditsystems.github.io/invest-openapi/rest/
+
+Ресурс                 Количество запросов   Количество        Интервал 
+                       для пользователя      запросов на IP    ограничения
+/sandbox                     120                1000           1 минута
+/portfolio                   120                1000           1 минута
+/market                      120                1000           1 минута
+/orders                      100                1000           1 минута
+/orders/limit-order           50                1000           1 минута
+/orders/market-order          50                1000           1 минута
+/orders/cancel                50                1000           1 минута
+/operations                  120                1000           1 минута
+
+При превышении лимита запросов возвращается ошибка 429 Error: Too Many Requests
+
+
+Ограничение количества запросов от Московской Биржи (MOEX)
+  * Среднее допустимое количество действий в секунду 150 запросов в течение 5 минут
+  * Среднее допустимое количество сообщений об ошибке в секунду 10 в течение 5 минут
+Под запросами в биржу подразумевается выставление и отмена заявок

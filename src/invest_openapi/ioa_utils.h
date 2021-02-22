@@ -70,6 +70,15 @@ QDate calcCandleIntervalEnd( QDate intervalStart, QString intervalMaxPeriodStr, 
 
 // int	compare(const QString &other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
 //----------------------------------------------------------------------------
+template< typename OpenApiStructType >
+inline
+std::vector< OpenApiStructType > makeVectorFromList( const QList<OpenApiStructType> &lst )
+{
+    std::vector< OpenApiStructType > res = std::vector< OpenApiStructType >( lst.begin(), lst.end() );
+    return res;
+}
+
+//----------------------------------------------------------------------------
 template< typename OpenApiStructType, typename Compare >
 inline
 std::vector< OpenApiStructType > makeOrderedVectorFromList( const QList<OpenApiStructType> &lst, Compare cmp )

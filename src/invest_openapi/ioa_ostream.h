@@ -27,7 +27,10 @@
 inline
 std::ostream& operator<<( std::ostream& os, const QString &str )
 {
-    os << str.toStdString();
+    // os << str.toStdString();
+    auto ba = str.toLocal8Bit();
+    os << std::string(ba.begin(),ba.end());
+
     return os;
 }
 

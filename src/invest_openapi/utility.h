@@ -19,6 +19,7 @@
 
 #include <exception>
 #include <stdexcept>
+#include <vector>
 #include <map>
 #include <set>
 
@@ -1173,59 +1174,95 @@ inline QVector<QString> removeItemsByName( const QVector<QString> &v, const QStr
 }
 
 //----------------------------------------------------------------------------
-inline QString mergeString(const QVector<QString> &v, const QString &sep )
+template< typename IterType, typename StringType >
+inline StringType mergeString( IterType b, IterType e, const StringType &sep )
 {
-    if (v.empty())
-        return QString();
+    if (b==e)
+        return StringType();
 
-    if (v.size()==1)
-        return v[0];
+    StringType resStr;
 
-    QString resStr;
+    unsigned cnt = 0;
 
-    QVector<QString>::const_iterator it = v.begin();
-
-    resStr.append(*it); ++it;
-
-    for( ; it!=v.end(); ++it)
+    for( ; b!=e; ++b, ++cnt)
     {
-        resStr.append(sep);
-        resStr.append(*it);
+        if (cnt)
+           resStr.append(sep);
+
+        resStr.append(*b);
     }
 
     return resStr;
+}
+
+//----------------------------------------------------------------------------
+inline QString mergeString(const QVector<QString> &v, const QString &sep )
+{
+    return mergeString( v.begin(), v.end(), sep );
+}
+
+//----------------------------------------------------------------------------
+inline QString mergeString(const std::vector<QString> &v, const QString &sep )
+{
+    return mergeString( v.begin(), v.end(), sep );
+}
+
+//----------------------------------------------------------------------------
+inline QString mergeString(const std::set<QString> &v, const QString &sep )
+{
+    return mergeString( v.begin(), v.end(), sep );
 }
 
 //----------------------------------------------------------------------------
 inline QString mergeString(const QStringList &v, const QString &sep )
 {
-    return mergeString( toStringVector(v), sep );
+    return mergeString( v.begin(), v.end(), sep );
+}
+
+//----------------------------------------------------------------------------
+inline std::string mergeString(const QVector<std::string> &v, const std::string &sep )
+{
+    return mergeString( v.begin(), v.end(), sep );
 }
 
 //----------------------------------------------------------------------------
 inline std::string mergeString(const std::vector<std::string> &v, const std::string &sep )
 {
-    if (v.empty())
-        return std::string();
-
-    if (v.size()==1)
-        return v[0];
-
-    std::string resStr;
-
-    std::vector<std::string>::const_iterator it = v.begin();
-
-    resStr.append(*it); ++it;
-
-    for( ; it!=v.end(); ++it)
-    {
-        resStr.append(sep);
-        resStr.append(*it);
-    }
-
-    return resStr;
+    return mergeString( v.begin(), v.end(), sep );
 }
 
+//----------------------------------------------------------------------------
+inline std::string mergeString(const std::set<std::string> &v, const std::string &sep )
+{
+    return mergeString( v.begin(), v.end(), sep );
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+template< typename KeyType, typename ValType >
+inline
+void getMapKeys( const std::map<KeyType,ValType> &m, std::set<KeyType> &s )
+{
+    std::map<KeyType,ValType>::const_iterator it = m.begin();
+
+    for(; it!=m.end(); ++it)
+    {
+        s.insert(it->first);
+    }
+
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+
+//----------------------------------------------------------------------------
 /*
 // Obsolete
 
