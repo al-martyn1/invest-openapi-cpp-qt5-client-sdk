@@ -323,22 +323,8 @@ INVEST_OPENAPI_MAIN()
             if (operationStatusStr!="DONE")
                 continue;
 
-            cout << "Operation ID      : " << op.getId()               << endl;
-            cout << "Operation Status  : " << op.getStatus()           << endl;
-            cout << "Figi              : " << op.getFigi() << " (" << tkf::dictionaryGetValue(figiToTicker, op.getFigi()) << ")" << endl;
-            cout << "Date & time       : " << op.getDate()             << endl;
-            cout << "Commission        : " << op.getCommission()       << endl;
-            cout << "Currency          : " << op.getCurrency()         << endl;
-            cout << "Payment           : " << op.getPayment()          << endl;
-            cout << "Price             : " << op.getPrice()            << endl;
-            cout << "Quantity          : " << op.getQuantity()         << endl;
-            cout << "Quantity Executed : " << op.getQuantityExecuted() << endl;
-            cout << "Instrument Type   : " << op.getInstrumentType()   << endl;
-            cout << "Nike called       : " << (op.isIsMarginCall()?"yes":"no") << endl;
-            cout << "Operation Type    : " << op.getOperationType()    << endl;
-            //cout << "        : " << op.get()   << endl;
+            cout << op;
             cout << "------------------------------------------------" << endl;
-
 
             // BROKERCOMMISSION, BUY, DIVIDEND, SELL, TAXDIVIDEND
             // BBG0013HGFT4 (USD000UTSTOM) : BROKERCOMMISSION, BUY, BUYCARD, SELL

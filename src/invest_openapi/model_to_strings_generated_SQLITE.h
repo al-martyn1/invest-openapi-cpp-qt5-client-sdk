@@ -795,7 +795,7 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Candl
         IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "H"                                , "DECIMAL(18,8)"                    ); // Spec ::schema::Candle::before::h
         IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "L"                                , "DECIMAL(18,8)"                    ); // Spec ::schema::Candle::before::l
         IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "V"                                , "INTEGER"                          ); // Spec ::schema::Candle::before::v
-        IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TIME"                             , "VARCHAR(255)"                     ); // Spec ::schema::Candle::before::time
+        IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TIME"                             , "VARCHAR(24)"                      ); // Spec ::schema::Candle::before::time
 
     IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();
 }
@@ -806,9 +806,12 @@ template <> inline QVector<QString> modelMakeSqlSchemaStringVector_SQLITE< Opera
 {
     IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_PROLOG();
 
-        IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TRADE_ID"                         , "VARCHAR(255)"                     ); // Spec ::schema::OperationTrade::before::tradeId
-        IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DATE"                             , "VARCHAR(255)"                     ); // Spec ::schema::OperationTrade::before::date
+        IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "OPERATION_ID"                     , "VARCHAR(24) REFERENCES OPERATIONS" ); // Spec ::schema::OperationTrade::before::tradeId
+        IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "TRADE_ID"                         , "VARCHAR(24) PRIMARY KEY"          ); // Spec ::schema::OperationTrade::before::tradeId
+        IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "STOCK_EXCHANGE_ID"                , "INTEGER REFERENCES STOCK_EXCHANGE_LIST" ); // Spec ::schema::OperationTrade::before::tradeId
+        IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "DATE"                             , "VARCHAR(24)"                      ); // Spec ::schema::OperationTrade::before::date
         IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "PRICE"                            , "DECIMAL(18,8)"                    ); // Spec ::schema::OperationTrade::before::price
+        IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "CURRENCY_ID"                      , "INTEGER REFERENCES CURRENCY"      ); // Spec ::schema::OperationTrade::before::price
         IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_RES_APPEND2( "QUANTITY"                         , "INTEGER"                          ); // Spec ::schema::OperationTrade::before::quantity
 
     IOA_MODEL_TO_STRINGS_MODEL_MAKE_SQL_SCHEMA_STRING_VECTOR_EPILOG();

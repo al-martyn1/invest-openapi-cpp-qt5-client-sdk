@@ -50,6 +50,14 @@ struct DatabaseConfig
     QString   dbFilename;
     bool      reopenMode; // reopen for each query or not
 
+    enum CreationType
+    {
+        full_clean,
+        fill_predefs,
+        full_fill
+    };
+
+
     unsigned  defaultDecimalFormatTotalSize      = 18;
     unsigned  defaultDecimalFormatFractionalSize =  8;
 

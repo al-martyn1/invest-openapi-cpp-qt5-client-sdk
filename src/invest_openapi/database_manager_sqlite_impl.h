@@ -155,6 +155,8 @@ protected:
         static QSet<QString> tablesLevel_0;
         static QSet<QString> tablesLevel_1;
         static QSet<QString> tablesLevel_2;
+        static QSet<QString> tablesLevel_3;
+        static QSet<QString> tablesLevel_4;
 
         if (!levelsInitialized)
         {
@@ -178,7 +180,9 @@ protected:
             tablesLevel_2.insert("INSTRUMENT_LISTING_DATES");
             tablesLevel_2.insert("INSTRUMENT_CANDLES");
 
+            tablesLevel_3.insert("OPERATIONS");
             
+            tablesLevel_4.insert("OPERATION_TRADE");
 
             /*
             tablesLevel_2.insert("_META_TABLES");
@@ -191,6 +195,8 @@ protected:
             case 0 : return tablesLevel_0;
             case 1 : return tablesLevel_1;
             case 2 : return tablesLevel_2;
+            case 3 : return tablesLevel_3;
+            case 4 : return tablesLevel_4;
             default: return QSet<QString>();
         }
 
@@ -272,12 +278,34 @@ protected:
                                                          ;
 
             tableSchemas[QString("INSTRUMENT_CANDLES" )] = "INSTRUMENT_ID         INTEGER REFERENCES MARKET_INSTRUMENT,"   + lf() +
-                                                           "INSTRUMENT_FIGI       VARCHAR(12) NOT NULL,"                   + lf() +
-                                                           "INSTRUMENT_TICKER     VARCHAR(12) NOT NULL,"                   + lf() +
                                                            "STOCK_EXCHANGE_ID     INTEGER REFERENCES STOCK_EXCHANGE_LIST," + lf() +
-                                                           "STOCK_EXCHANGE_NAME   VARCHAR(32) NOT NULL,"                   + lf() +
                                                            "CANDLE_RESOLUTION_ID  INTEGER REFERENCES CANDLE_RESOLUTION,"   + lf() +
-                                                           "CANDLE_RESOLUTION     VARCHAR(8) NOT NULL,"                    + lf() +
+                                                           "CANDLE_DATE_TIME      VARCHAR(24) NOT NULL,"                   + lf() +
+                                                           "CURRENCY_ID           INTEGER REFERENCES CURRENCY,"            + lf() +
+                                                           "OPEN_PRICE            DECIMAL(18,8) NOT NULL,"                 + lf() +
+                                                           "CLOSE_PRICE           DECIMAL(18,8) NOT NULL,"                 + lf() +
+                                                           "HIGH_PRICE            DECIMAL(18,8) NOT NULL,"                 + lf() +
+                                                           "LOW_PRICE             DECIMAL(18,8) NOT NULL,"                 + lf() +
+                                                           "VOLUME                DECIMAL(18,8) NOT NULL"
+                                                         ;
+
+            tableSchemas[QString("OPERATIONS"         )] = "ID                    VARCHAR(24) NOT NULL UNIQUE,"            + lf() +
+                                                           "OPERATION_TYPE_ID     INTEGER REFERENCES OPERATION_TYPE_WITH_COMMISSION," + lf() +
+                                                           "OPERATION_STATUS_ID   INTEGER REFERENCES OPERATION_STATUS,"    + lf() +
+                                                           "STOCK_EXCHANGE_ID     INTEGER REFERENCES STOCK_EXCHANGE_LIST," + lf() +
+                                                           "PAYMENT               DECIMAL(18,8),"                          + lf() +
+                                                           "PAYMENT_CURRENCY_ID   INTEGER REFERENCES CURRENCY,"            + lf() +
+                                                           "COMMISSION            DECIMAL(18,8),"                          + lf() +
+                                                           "COMMISSION_CURRENCY_ID INTEGER REFERENCES CURRENCY,"           + lf() +
+                                                           "QUANTITY              DECIMAL(18,8),"                          + lf() +
+                                                           "QUANTITY_EXECUTED     DECIMAL(18,8)"
+                                                         ;
+
+            /*
+            tableSchemas[QString("INSTRUMENT_CANDLES" )] = "OPERATION_ID          VARCHAR(24) NOT NULL UNIQUE,"            + lf() +
+                                                           "OPERATION_TYPE_ID     INTEGER REFERENCES OPERATION_TYPE_WITH_COMMISSION," + lf() +
+                                                           "OPERATION_STATUS_ID   INTEGER REFERENCES OPERATION_STATUS"     + lf() +
+                                                           "CANDLE_RESOLUTION_ID  INTEGER REFERENCES CANDLE_RESOLUTION,"   + lf() +
                                                            "CANDLE_DATE_TIME      VARCHAR(24) NOT NULL,"                   + lf() +
                                                            "OPEN_PRICE            DECIMAL(18,8) NOT NULL,"                 + lf() +
                                                            "CLOSE_PRICE           DECIMAL(18,8) NOT NULL,"                 + lf() +
@@ -286,6 +314,7 @@ protected:
                                                            "VOLUME                DECIMAL(18,8) NOT NULL"
                                                          ;
 
+            */
 
             // ISO8601 YYYY-MM-DD HH:MM:SS.SSS
             // YYYY-MM-DD               - 4-2-2       - 4+1+2+1+2      - 10 chars

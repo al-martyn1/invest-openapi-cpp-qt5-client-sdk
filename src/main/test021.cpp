@@ -104,28 +104,17 @@ INVEST_OPENAPI_MAIN()
         QString operationTypeStr   = op.getOperationType().asJson().toUpper();
         QString operationStatusStr = op.getStatus().asJson().toUpper();
 
-        #if 1
-        if ( (operationTypeStr=="SELL" || operationTypeStr=="BUY") && operationStatusStr=="DONE")
-        {
-            cout << "Operation Type    : " << op.getOperationType()    << endl;
-            cout << "Payment           : " << op.getPayment()          << endl;
-        }
+        #if 0
+            if ( (operationTypeStr=="SELL" || operationTypeStr=="BUY") && operationStatusStr=="DONE")
+            {
+                cout << "Operation Type    : " << op.getOperationType()    << endl;
+                cout << "Payment           : " << op.getPayment()          << endl;
+            }
         #else
-            cout << "Operation ID      : " << op.getId()               << endl;
-            cout << "Operation Status  : " << op.getStatus()           << endl;
-            cout << "Figi              : " << op.getFigi()             << endl;
-            cout << "Date & time       : " << op.getDate()             << endl;
-            cout << "Commission        : " << op.getCommission()       << endl;
-            cout << "Currency          : " << op.getCurrency()         << endl;
-            cout << "Payment           : " << op.getPayment()          << endl;
-            cout << "Price             : " << op.getPrice()            << endl;
-            cout << "Quantity          : " << op.getQuantity()         << endl;
-            cout << "Quantity Executed : " << op.getQuantityExecuted() << endl;
-            cout << "Instrument Type   : " << op.getInstrumentType()   << endl;
-            cout << "Nike called       : " << (op.isIsMarginCall()?"yes":"no") << endl;
-            cout << "Operation Type    : " << op.getOperationType()    << endl;
-            //cout << "        : " << op.get()   << endl;
+
+            cout << op;
             cout << "------------------------------------------------" << endl;
+
         #endif
 
         // Operation Type    : Sell/Buy
