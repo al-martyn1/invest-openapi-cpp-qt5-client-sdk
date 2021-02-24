@@ -844,7 +844,7 @@ struct has_getPayload< C, std::enable_if_t<
 //------------------------------
 //! Функция возвращает payload после join'а
 /*! 
-     \tparam C Тип контейнера
+     \tparam ResponseType Тип результата/респонза
  */
 template< typename C >
 std::enable_if_t< has_getPayload< C >::value > inline
@@ -866,6 +866,21 @@ auto joinAndGetPayload( ResponseType response ) -> decltype(response->value.getP
 
 //----------------------------------------------------------------------------
 
+
+
+
+
+//----------------------------------------------------------------------------
+template< typename SomeQtType>
+bool isQtValidNotNull( const SomeQtType &v )
+{
+    if ( !v.isValid() || !v.isNull())
+        return false;
+
+    return true;
+}
+
+//----------------------------------------------------------------------------
 
 
 
