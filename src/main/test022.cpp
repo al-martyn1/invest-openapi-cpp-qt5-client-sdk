@@ -179,7 +179,7 @@ INVEST_OPENAPI_MAIN()
     }
 
 
-    #if defined(I_AM_A_DEBILOID)
+    //#if defined(I_AM_A_DEBILOID)
 
         std::map< QString, tkf::Candle > figiLastCandle; // Последняя пятиминутная свеча для данной фиги - 
                                                          // хз, я не не понял/не нашел, как получить текущую стоимость 
@@ -272,7 +272,7 @@ INVEST_OPENAPI_MAIN()
        
         } // for( auto figi : balanceConfig.figis ) 
 
-    #endif
+    //#endif
     //bool dictionaryGetValue( const std::map<K,V> &d, V &vOut, const K &k )
 
     std::map< QString, std::set<QString> > foundOperationTypes   ; // by FIGI, set of ops
@@ -381,7 +381,7 @@ INVEST_OPENAPI_MAIN()
         if (tkf::dictionaryGetValue(tickerToFigi, figi, figi)) {}
         else if (tkf::dictionaryGetValue(isinToFigi, figi, figi)) {}
     
-        cout << "Instrument Balance Summary, FIGI: " << figi << " (" << tkf::dictionaryGetValue(figiToTicker, figi) << ") - " << tkf::dictionaryGetValue(figiToName, figi) << endl;
+        cout << "Instrument Balance Summary: " << figi << " (" << tkf::dictionaryGetValue(figiToTicker, figi) << ") - " << tkf::dictionaryGetValue(figiToName, figi) << endl;
 
         std::set<QString> figiCurrencies;
         std::map< QString, marty::Decimal > figiCurrencyTotalBalance;
@@ -405,6 +405,10 @@ INVEST_OPENAPI_MAIN()
         cout << "Balance: " << portfolioFigiBalance[figi] << endl;
         cout << "Instrument Average Portfolio Cost" << endl;
 
+
+        QString        instrumentCurrency; // Also used for candles
+        marty::Decimal instrumentPositionsAverageCost;
+
         std::set<QString>::const_iterator figiCurrencyIt = figiCurrencies.begin();
         for( ; figiCurrencyIt!=figiCurrencies.end(); ++figiCurrencyIt)
         {
@@ -418,13 +422,49 @@ INVEST_OPENAPI_MAIN()
             if (figiBalanceIt == portfolioFigiBalance.end())
                 continue;
 
+            instrumentCurrency = currentCurrency;
+
             auto cost = curIt->second * figiBalanceIt->second;
 
-            figiCurrencyTotalBalance[currentCurrency] += cost;
+            // figiCurrencyTotalBalance[currentCurrency] += cost;
 
-            portfolioFigiCurrencyAverageCost[currentCurrency] = cost;
+            //portfolioFigiCurrencyAverageCost[currentCurrency] = cost;
 
-            cout << "    " << currentCurrency << " : " << cost << endl;
+            instrumentPositionsAverageCost = cost;
+
+            cout << "    " << currentCurrency << " : " << figiBalanceIt->second << " x " << curIt->second << " = " << cost << endl;
+        }
+
+
+        std::map< QString, tkf::Candle >::const_iterator figiCandleIt = figiLastCandle.find(figi);
+        if (!instrumentCurrency.isEmpty() && figiCandleIt != figiLastCandle.end())
+        {
+            std::map< QString, marty::Decimal   >::const_iterator figiBalanceIt = portfolioFigiBalance.find(figi);
+            if (figiBalanceIt != portfolioFigiBalance.end())
+            {
+                // figiBalanceIt->second
+
+                cout << "Instrument Current Portfolio Cost" << endl;
+               
+                auto avgCurrentPrice = ( figiCandleIt->second.getO() + figiCandleIt->second.getC() ) / marty::Decimal(2);
+
+                auto cost = avgCurrentPrice * figiBalanceIt->second;
+
+                figiCurrencyTotalBalance[instrumentCurrency] += cost;
+               
+                cout << "    " << instrumentCurrency << " : " << figiBalanceIt->second << " x " << avgCurrentPrice << " = " << cost << endl;
+
+                auto deltaCost = cost - instrumentPositionsAverageCost;
+
+                // instrumentPositionsAverageCost - 100%
+
+                // auto deltaCostPercent = 100 * deltaCost / instrumentPositionsAverageCost;
+                auto deltaCostPercent = marty::Decimal(100) * deltaCost / instrumentPositionsAverageCost;
+                
+
+                cout << "Profit" << endl
+                     << "    " << instrumentCurrency << " : " << deltaCost << " - " << deltaCostPercent << "%" << endl;
+            }
         }
 
 

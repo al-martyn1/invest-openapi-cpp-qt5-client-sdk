@@ -41,6 +41,9 @@
 inline
 std::ostream& operator<<( std::ostream& os, const QString &str )
 {
+    if (str.isEmpty())
+        return os;
+
     // os << str.toStdString();
     auto ba = str.toLocal8Bit();
     os << std::string(ba.begin(),ba.end());
@@ -52,7 +55,20 @@ std::ostream& operator<<( std::ostream& os, const QString &str )
 inline
 std::ostream& operator<<( std::ostream& os, const QDateTime &v )
 {
+    if (v.isNull())
+    {
+        os<<"<NULL>";
+        return os;
+    }
+
+    if (v.isValid())
+    {
+        os<<"<INVALID>";
+        return os;
+    }
+
     os << qt_helpers::dateTimeToDbString(v); // .toStdString();
+
     return os;
 }
 
