@@ -445,28 +445,29 @@ public:
 
     Decimal operator * ( Decimal d2 ) const
     {
-        //minimizePrecision();
-        d2.minimizePrecision();
+        //minimizePrecisionImpl();
+        d2.minimizePrecisionImpl();
 
         num_t num = m_num * d2.m_num;
 
         if (m_denum < d2.m_denum)
         {
             num /= m_denum.denum();
-            return Decimal( num, d2.m_denum ).minimizePrecision();
+            return Decimal( num, d2.m_denum ).minimizePrecisionImpl();
         }
         else
         {
             num /= d2.m_denum.denum();
-            return Decimal( num, m_denum ).minimizePrecision();
+            return Decimal( num, m_denum ).minimizePrecisionImpl();
         }
     }
 
     // 1200.00000 / 22.000 = 54.5454545454545
     // 1200 00000 / 22 000 = 5454.54545454
+    // 1200.00000 / 25.000 = 48
     Decimal operator / ( Decimal d2 ) const
     {
-        d2.minimizePrecision();
+        d2.minimizePrecisionImpl();
 
         Decimal d1 = *this;
         d1.expandTo( m_denum.prec() + d2.m_denum.prec() );
@@ -574,6 +575,53 @@ public:
     }
 
 
+    Decimal minimizePrecision() const
+    {
+        Decimal res = *this;
+        return res.minimizePrecisionImpl();
+    }
+
+    Decimal expantPrecisionTo( precision_t p ) const
+    {
+        Decimal res = *this;
+        res.expandTo(p);
+        return res;
+    }
+
+    Decimal shrinkPrecisionTo( precision_t p ) const
+    {
+        Decimal res = *this;
+        res.shrinkTo(p);
+        return res;
+    }
+
+    Decimal fitPrecisionTo( precision_t p ) const
+    {
+        Decimal res = *this;
+        res.fitTo(p);
+        return res;
+    }
+
+    Decimal getPercentOf( Decimal d ) const
+    {
+        //UNDONE: !!! Need to make correct rounding
+        Decimal tmp = Decimal(100) * *this;
+        tmp.expandTo(2u);
+        return tmp / d;
+    }
+
+    Decimal getPermilleOf( Decimal d ) const
+    {
+        //UNDONE: !!! Need to make correct rounding
+        Decimal tmp = Decimal(1000) * *this;
+        tmp.expandTo(2u);
+        return tmp / d;
+    }
+
+    //UNDONE: !!! Need implement rounding methods
+
+
+
 protected:
 
 
@@ -642,7 +690,7 @@ protected:
            m_num *= (denum_t)adjust;
     }
 
-    Decimal& minimizePrecision()
+    Decimal& minimizePrecisionImpl()
     {
         while( ((m_num%10)==0) && (m_denum.prec()>0) )
         {

@@ -459,10 +459,10 @@ INVEST_OPENAPI_MAIN()
                 // instrumentPositionsAverageCost - 100%
 
                 // auto deltaCostPercent = 100 * deltaCost / instrumentPositionsAverageCost;
-                auto deltaCostPercent = marty::Decimal(100) * deltaCost / instrumentPositionsAverageCost;
-                
+                //auto deltaCostPercent = marty::Decimal(100) * deltaCost / instrumentPositionsAverageCost;
+                auto deltaCostPercent = deltaCost.getPercentOf(instrumentPositionsAverageCost);
 
-                cout << "Profit" << endl
+                cout << "Profit (current)" << endl
                      << "    " << instrumentCurrency << " : " << deltaCost << " - " << deltaCostPercent << "%" << endl;
             }
         }
