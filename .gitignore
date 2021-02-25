@@ -74,3 +74,9 @@
 /bat/setup-toolset-vars-msvc2017-x86.bat
 /bat/setup-toolset-vars-msvc2017-x64.bat
 /*.sqlite-journal
+/conf/sandbox.properties
+/conf/auth.properties
+/conf/balance.properties
+/conf/config.properties
+/conf/database.properties
+/conf/logging.properties

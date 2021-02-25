@@ -1,4 +1,4 @@
-database = tkf_invest_db.sqlite
+database = ../tkf_invest_db.sqlite
 database.reopen = true
 database.defaults.decimal.format = 18.8
 ; Don't add predefined data
