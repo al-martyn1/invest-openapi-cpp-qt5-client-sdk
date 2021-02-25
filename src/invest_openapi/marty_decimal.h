@@ -313,26 +313,8 @@ void swap( DecimalDenumerator &d1, DecimalDenumerator &d2 )
 
 
 //----------------------------------------------------------------------------
-//std::string toString  ( const Decimal     &d );
-std::string decimalToString  ( Decimal d );
-//Decimal     fromString( const std::string &d );
-Decimal     decimalFromString( const std::string &numberStr_ );
-void swap( Decimal &d1, Decimal &d2 );
-
-//----------------------------------------------------------------------------
-
-
-
-
-//----------------------------------------------------------------------------
 class Decimal
 {
-
-    //friend std::string toString  ( const Decimal     &d );
-    friend std::string decimalToString  ( Decimal d );
-    //friend Decimal     fromString( const std::string &d );
-    friend Decimal     decimalFromString( const std::string &d );
-    friend void swap( Decimal &d1, Decimal &d2 );
 
 
 public:
@@ -344,14 +326,21 @@ public:
 
     typedef DecimalDenumerator                DenumeratorType;
 
+
+    friend std::string decimalToString  ( Decimal d, precision_t p );
+    friend Decimal     decimalFromString( const std::string &d );
+    friend void swap( Decimal &d1, Decimal &d2 );
+
+
+
     static Decimal fromString( const std::string &s )
     {
         return decimalFromString(s);
     }
 
-    std::string toString() const
+    std::string toString( precision_t p = 2 ) const
     {
-        return decimalToString( *this );
+        return decimalToString( *this, p );
     }
 
     int toInt() const
@@ -761,8 +750,10 @@ void swap( Decimal &d1, Decimal &d2 )
 
 //----------------------------------------------------------------------------
 inline
-std::string decimalToString  ( Decimal d )
+std::string decimalToString  ( Decimal d, Decimal::precision_t p = 2 )
 {
+    d = d.expantPrecisionTo( p );
+
     Decimal::num_t p1 = d.m_num / d.m_denum.denum();
     Decimal::num_t p2 = d.m_num % d.m_denum.denum();
 
@@ -788,9 +779,9 @@ std::string decimalToString  ( Decimal d )
 //----------------------------------------------------------------------------
 // For compatibility with old code
 inline
-std::string toString  ( const Decimal     &d )
+std::string toString  ( const Decimal     &d, Decimal::precision_t p = 2 )
 {
-    return decimalToString(d);
+    return decimalToString(d,p);
 }
 
 //----------------------------------------------------------------------------
@@ -980,7 +971,10 @@ Decimal     fromString( const std::string &numberStr_ )
 inline
 std::ostream& operator<<( std::ostream& os, const Decimal &v )
 {
-    os << v.toString();
+    auto minPrecision = (Decimal::precision_t)os.precision();
+    if (minPrecision<1)
+        minPrecision = 1;
+    os << v.toString(minPrecision);
     return os;
 }
 

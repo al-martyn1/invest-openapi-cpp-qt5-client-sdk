@@ -61,6 +61,7 @@ INVEST_OPENAPI_MAIN()
 
     using std::cout;
     using std::endl;
+    //cout.precision(2);
 
     cout<<"Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
 
