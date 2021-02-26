@@ -49,8 +49,8 @@ struct IDatabaseManager
     virtual QString getTableExistString( const QString &tableName ) const = 0;
 
     // Common helpers
-    virtual void      setDefDecimal      ( unsigned total, unsigned frac )       = 0;
-    virtual void      applyDefDecimalFromConfig( const DatabaseConfig & cfg )    = 0;
+    virtual void      setDefaultDecimalFormat     ( unsigned total, unsigned frac )    = 0;
+    virtual void      applyDefDecimalFormatFromConfig( const DatabaseConfig & cfg )    = 0;
 
     virtual QString   defDecimal         ( ) const = 0;
     virtual QString   defDecimal         ( unsigned total, unsigned frac ) const = 0;

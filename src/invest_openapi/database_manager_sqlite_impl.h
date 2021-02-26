@@ -16,7 +16,7 @@
 
 
 #include "database_manager_sqlite_impl_base.h"
-#include "i_oa_database_manager.h"
+//#include "i_oa_database_manager.h"
 
 #include "models.h"
 #include "utility.h"
@@ -36,7 +36,6 @@ namespace invest_openapi
 
 //----------------------------------------------------------------------------
 class DatabaseManagerSQLiteImpl : public DatabaseManagerSQLiteImplBase
-                                , public IOaDatabaseManager
 {
 
 protected:
@@ -63,79 +62,6 @@ protected:
         return exec( querySqlText, query );
     }
 
-    //----------------------------------------------------------------------------
-    // IOaDatabaseManager methods
-
-    //------------------------------
-    virtual bool   insertNewCurrencyType     ( Currency         c, const QString & description ) const override
-    {
-        QString queryText
-        = QString( "INSERT INTO " ) + tableMapName("CURRENCIES")
-        + QString("\r\n(ID, CURRENCY, DESCRIPTION)")
-        + QString("\r\nVALUES(\r\n")
-        + tab() + q( toQString(toInt(c)) )
-        + QString(",") + q( toQString(c) )
-        + QString(",") + q( description )
-        + QString("\r\n)") // end of values
-        ;
-
-        return exec(queryText);
-    }
-
-    //------------------------------
-    virtual bool   insertNewInstrumentType   ( InstrumentType   t, const QString & description ) const override
-    {
-        QString queryText
-        = QString( "INSERT INTO " ) + tableMapName("INSTRUMENT_TYPES")
-        + QString("\r\n(ID, INSTRUMENT_TYPE, DESCRIPTION)")
-        + QString("\r\nVALUES(\r\n")
-        + tab() + q( toQString(toInt(t)) )
-        + QString(",") + q( toQString(t) )
-        + QString(",") + q( description )
-        + QString("\r\n)") // end of values
-        ;
-
-        return exec(queryText);
-    }
-
-    //------------------------------
-    virtual bool   insertNewCurrencyType     ( const QString   &c, const QString & description ) const override
-    {
-        return insertNewCurrencyType( toCurrency(c), description );
-    }
-
-    //------------------------------
-    virtual bool   insertNewInstrumentType   ( const QString   &t, const QString & description ) const override
-    {
-        return insertNewInstrumentType( toInstrumentType(t), description );
-    }
-
-    //----------------------------------------------------------------------------
-    virtual bool   insertNewCurrencyTypes    ( const QString &all ) const override
-    {
-        QVector<QStringPair>           pairs = simpleSplitTo<QStringPair>( all );
-        QVector<QStringPair>::iterator it    = pairs.begin();
-
-        for(; it != pairs.end(); ++it)
-        {
-            if (!insertNewCurrencyType( it->first, it->second ))
-                return false;
-        }
-        return true;
-    }
-
-    virtual bool   insertNewInstrumentTypes  ( const QString &all ) const override
-    {
-        QVector<QStringPair>           pairs = simpleSplitTo<QStringPair>( all );
-        QVector<QStringPair>::iterator it    = pairs.begin();
-
-        for(; it != pairs.end(); ++it)
-        {
-            if (!insertNewInstrumentType( it->first, it->second ))
-                return false;
-        }
-        return true;
-    }
 
     //----------------------------------------------------------------------------
     // IDatabaseManager

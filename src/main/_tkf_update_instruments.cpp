@@ -81,7 +81,7 @@ INVEST_OPENAPI_MAIN()
     }
 
     QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
-    pDbMan->applyDefDecimalFromConfig( *pDatabaseConfig );
+    pDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
 
 
     auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );

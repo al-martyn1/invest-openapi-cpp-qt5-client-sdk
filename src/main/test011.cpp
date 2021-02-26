@@ -76,7 +76,7 @@ INVEST_OPENAPI_MAIN()
 
     QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
 
-    pDbMan->setDefDecimal(18,8);
+    pDbMan->setDefaultDecimalFormat(18,8);
 
     qDebug().nospace().noquote() << pDbMan->getTableExistString("INSTRUMENTS");
     qDebug().nospace().noquote() << pDbMan->getTableExistString("CURRENCIES");

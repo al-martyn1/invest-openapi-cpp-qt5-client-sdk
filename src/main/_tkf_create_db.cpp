@@ -75,8 +75,8 @@ INVEST_OPENAPI_MAIN()
 
     QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
 
-    //pDbMan->setDefDecimal(18,8);
-    pDbMan->applyDefDecimalFromConfig( *pDatabaseConfig );
+    //pDbMan->setDefaultDecimalFormat(18,8);
+    pDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
 
 
     QElapsedTimer timer;

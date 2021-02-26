@@ -76,7 +76,7 @@ INVEST_OPENAPI_MAIN()
 
     QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
 
-    pDbMan->setDefDecimal(18,8);
+    pDbMan->setDefaultDecimalFormat(18,8);
 
     qDebug().nospace().noquote() << pDbMan->getTableExistString("INSTRUMENTS");
     qDebug().nospace().noquote() << pDbMan->getTableExistString("CURRENCIES");
@@ -107,6 +107,7 @@ INVEST_OPENAPI_MAIN()
     qDebug().nospace().noquote() << "Drop   table INSTRUMENTS  : " << pDbMan->tableDrop("INSTRUMENTS");
     qDebug().nospace().noquote() << "Create table INSTRUMENTS  : " << pDbMan->tableCreate("INSTRUMENTS");
 
+    /*
     pDbMan->metaInsertForTablesBulk( "CURRENCIES,Currencies,Currency dictionary;"
                                      "INSTRUMENT_TYPES,Instrument types,Instrument types dictionary;"
                                      "INSTRUMENTS,Instruments,Instruments dictionary"
@@ -120,7 +121,7 @@ INVEST_OPENAPI_MAIN()
 
     pOaDbMan->insertNewCurrencyTypes   ("UNK:Unknown;RUB:Russian ruble;USD:US Dollar;EUR:European Euro;GBP:Great Britain Pound;HKD:Hong Kong Dollar;CHF:Swiss Franc;JPY:Japanese Yen;CNY:Chinese Yuan;TRY:Turkish Lira");
     pOaDbMan->insertNewInstrumentTypes ("UNK:Unknown;Stock:Stock;Bond:Bond;Currency:Currency;Etf:Etf");
-
+    */
 
     qDebug() << "";
 

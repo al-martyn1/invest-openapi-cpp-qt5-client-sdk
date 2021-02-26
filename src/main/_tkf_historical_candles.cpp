@@ -65,17 +65,17 @@ INVEST_OPENAPI_MAIN()
     auto apiConfigFullFileName     = lookupForConfigFile( "config.properties"  , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto authConfigFullFileName    = lookupForConfigFile( "auth.properties"    , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto dbConfigFullFileName      = lookupForConfigFile( "database.properties", lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
-    auto balanceConfigFullFileName = lookupForConfigFile( "balance.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
+    //auto balanceConfigFullFileName = lookupForConfigFile( "balance.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
 
     qDebug().nospace().noquote() << "Log  Config File: "<< logConfigFullFileName  ;
     qDebug().nospace().noquote() << "API  Config File: "<< apiConfigFullFileName  ;
     qDebug().nospace().noquote() << "Auth Config File: "<< authConfigFullFileName ;
     qDebug().nospace().noquote() << "DB   Config     : "<< dbConfigFullFileName   ;
-    qDebug().nospace().noquote() << "Balance Config  : "<< balanceConfigFullFileName;
+    //qDebug().nospace().noquote() << "Balance Config  : "<< balanceConfigFullFileName;
 
     auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
     auto authConfig    = tkf::AuthConfig   ( authConfigFullFileName );
-    auto balanceConfig = tkf::BalanceConfig( balanceConfigFullFileName );
+    //auto balanceConfig = tkf::BalanceConfig( balanceConfigFullFileName );
     //auto balance_config.h
 
 
@@ -97,7 +97,7 @@ INVEST_OPENAPI_MAIN()
 
     QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
 
-    pDbMan->applyDefDecimalFromConfig( *pDatabaseConfig );
+    pDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
 
 
 
@@ -115,12 +115,20 @@ INVEST_OPENAPI_MAIN()
     }
 
 
-    std::map< QString, int > figiToId   = pDbMan->getDictionaryFromTable  ( "MARKET_INSTRUMENT", "FIGI,ID"  );
-    std::map< QString, int > tickerToId = pDbMan->getDictionaryFromTable  ( "MARKET_INSTRUMENT", "TICKER,ID");
-    std::map< QString, int > isinToId   = pDbMan->getDictionaryFromTable  ( "MARKET_INSTRUMENT", "ISIN,ID"  );
-    std::map< int, QString > idToName   = pDbMan->getIdToFieldMapFromTable( "MARKET_INSTRUMENT", "ID,NAME"  );
+    std::map< QString, int > figiToId              = pDbMan->getDictionaryFromTable  ( "MARKET_INSTRUMENT", "FIGI,ID"  );
+    std::map< QString, int > tickerToId            = pDbMan->getDictionaryFromTable  ( "MARKET_INSTRUMENT", "TICKER,ID");
+    std::map< QString, int > isinToId              = pDbMan->getDictionaryFromTable  ( "MARKET_INSTRUMENT", "ISIN,ID"  );
+    std::map< int, QString > idToName              = pDbMan->getIdToFieldMapFromTable( "MARKET_INSTRUMENT", "ID,NAME"  );
 
-    if (figiToId.empty())
+    std::map< QString, int > stockExToId           = pDbMan->getDictionaryFromTable  ( "STOCK_EXCHANGE_LIST", "NAME,ID"  );
+
+    std::map< QString, int > currencyToId          = pDbMan->getDictionaryFromTable  ( "CURRENCY", "NAME,ID"  );
+
+    std::map< QString, int > instrumentTypeToId    = pDbMan->getDictionaryFromTable  ( "INSTRUMENT_TYPE", "TYPE,ID"  );
+
+    std::map< QString, int > candleResolutionToId  = pDbMan->getDictionaryFromTable  ( "CANDLE_RESOLUTION", "RESOLUTION,ID"  );
+
+    if ( figiToId.empty() || stockExToId.empty() || currencyToId.empty() )
     {
         qDebug().nospace().noquote() << "Something goes wrong. Possible DB is clean";
         return 1;

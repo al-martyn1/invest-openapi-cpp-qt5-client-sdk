@@ -80,3 +80,4 @@
 /conf/config.properties
 /conf/database.properties
 /conf/logging.properties
+/commit_note.txt

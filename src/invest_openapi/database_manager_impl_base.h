@@ -146,17 +146,17 @@ protected:
     }
 
     //------------------------------
-    virtual void   setDefDecimal      ( unsigned total, unsigned frac ) override
+    virtual void   setDefaultDecimalFormat      ( unsigned total, unsigned frac ) override
     {
         m_defDecimalTotal = total;
         m_defDecimalFrac  = frac;
     }
 
-    virtual void   applyDefDecimalFromConfig( const DatabaseConfig & cfg ) override
+    virtual void   applyDefDecimalFormatFromConfig( const DatabaseConfig & cfg ) override
     {
-        setDefDecimal( cfg.defaultDecimalFormatTotalSize
-                     , cfg.defaultDecimalFormatFractionalSize
-                     );
+        setDefaultDecimalFormat( cfg.defaultDecimalFormatTotalSize
+                               , cfg.defaultDecimalFormatFractionalSize
+                               );
     }
 
     //------------------------------
