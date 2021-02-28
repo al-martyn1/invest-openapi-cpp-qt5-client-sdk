@@ -161,7 +161,7 @@ INVEST_OPENAPI_MAIN()
 
     qDebug().nospace().noquote() << "Fill 'CANDLE_RESOLUTION' table: " 
                                  << pDbMan->insertToBulkFromString( "CANDLE_RESOLUTION"
-                                                                  , "0,INVALID,,,Invalid CandleResolution value;"
+                                                                  , "0,INVALID,INVALID,INVALID,Invalid CandleResolution value;"
                                                                     "1,1MIN,1m,1d,1 min;"                    /* 1min [1 minute, 1 day]    */
                                                                     "2,2MIN,2m,1d,2 min;"                    /* 2min [2 minutes, 1 day]   */
                                                                     "3,3MIN,3m,1d,3 min;"                    /* 3min [3 minutes, 1 day]   */
@@ -172,7 +172,7 @@ INVEST_OPENAPI_MAIN()
                                                                     "8,HOUR,1h,7d,Hour (60 min);"            /* hour [1 hour, 7 days]     */
                                                                     "9,DAY,1d,1y,Day (1440 min);"            /* day [1 day, 1 year]       */
                                                                     "10,WEEK,7d,2y,Week (10080 min);"        /* week [7 days, 2 years]    */
-                                                                    "11,MONTH,1M,10y,Month (Avg 43200 min)"  /* month [1 month, 10 years] */
+                                                                    "11,MONTH,1N,10y,Month (Avg 43200 min)"  /* month [1 month, 10 years] */
                                                                   )
                                  << ", Elapsed time: " << timer.restart();
 

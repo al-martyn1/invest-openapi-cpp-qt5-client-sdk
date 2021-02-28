@@ -36,6 +36,7 @@
 #include "invest_openapi/ioa_utils.h"
 #include "invest_openapi/ioa_ostream.h"
 #include "invest_openapi/ioa_db_dictionaries.h"
+#include "cpp/cpp.h"
 
 
 
@@ -130,8 +131,8 @@ INVEST_OPENAPI_MAIN()
 
     // std::set<QString> findFigisByName( QString name ) const
     // QString getTickerByFigi( QString &figi ) const
-    // QString findFigiByAnyIdSafe( QString idStr ) const
-    // QString findFigiByAnyId( QString idStr ) const
+    // QString findFigiByAnyIdStringChecked( QString idStr ) const
+    // QString findFigiByAnyIdString( QString idStr ) const
     // QString getNameByFigi( QString figi ) const
 
 
@@ -141,15 +142,22 @@ INVEST_OPENAPI_MAIN()
 
     cout << "Test TICKER: " << testTicker << endl;
 
-    QString testFigi = dicts.findFigiByAnyIdSafe(testTicker);
+    QString testFigi         = dicts.findFigiByAnyIdStringChecked(testTicker);
+    QString testTickerByFigi = dicts.getTickerByFigiChecked(testFigi);
 
-    cout << "Test FIGI  : " << testFigi;
-    QString name = dicts.getNameByFigi(testFigi);
+    cout << "Test FIGI  : " << testFigi << ", TICKER: " << testTickerByFigi;
+    QString name = dicts.getNameByFigiChecked(testFigi);
     if (!name.isEmpty())
         cout << " - " << name;
     cout << endl;
 
-    // Need FIGI -> ISIN methods for complete API
+    int testId = dicts.getInstrumentIdChecked(testFigi);
+    cout << "Instrument Id   : " << testId << endl;
+    cout << "Instrument by Id: " << dicts.getInstrumentByIdChecked(testId) << endl;
+
+    cout << endl;
+
+    // Need FIGI -> ISIN methods for complete API?
 
     //QString substringToFind = "energy"; // Found, case ignored
     QString substringToFind = "nergy"; // try here to find the only part of name
@@ -160,10 +168,60 @@ INVEST_OPENAPI_MAIN()
 
     for( auto foundFigi : energyFigis )
     {
-        cout << "    " << foundFigi << " : " << dicts.getNameByFigi(foundFigi) << endl;
+        cout << "    " << foundFigi << " : " << cpp::expandAtBack(dicts.getNameByFigiChecked(foundFigi).toStdString(), 32) 
+             << ", TICKER: " << cpp::expandAtBack(dicts.getTickerByFigiChecked(foundFigi).toStdString(), 6)
+             << ", ID: " << dicts.getInstrumentIdChecked(foundFigi) 
+             << endl;
     }
 
+    cout << endl;
+
+    cout << "Dictionary tests" << endl;
+
+    #define DICTIONARY_SIMPLE_TEST( testTitle, testValue, testMethod )                                                                    \
+                do                                                                                                                        \
+                {                                                                                                                         \
+                    QString testStr     = testValue;                                                                                      \
+                    int     id          = dicts.get ##testMethod ##IdChecked( testStr );                                                  \
+                    QString nameNyId    = dicts.get ##testMethod ##ByIdChecked( id );                                                     \
+                    cout << testTitle << ": " << cpp::expandAtBack(testStr.toStdString(), 10) << ", ID: " << id << ", String ID: " << nameNyId << endl; \
+                } while(0)
+
+    // DICTIONARY_SIMPLE_TEST( "BrokerAccountType test, Acc Type", "usd", BrokerAccountType ); // throws an exception
+    DICTIONARY_SIMPLE_TEST( "BrokerAccountType test           , Acc Type                   ", "Tinkoff"        , BrokerAccountType               );
+
+    DICTIONARY_SIMPLE_TEST( "CandleResolution test            , Resolution                 ", "5min"           , CandleResolution                );
+    DICTIONARY_SIMPLE_TEST( "CandleResolutionIntervalMin test , Interval Min               ", "15m"            , CandleResolutionIntervalMin     ); // Тут нормально работает только get*ById, потому что строки не уникальны
+    DICTIONARY_SIMPLE_TEST( "CandleResolutionIntervalMax test , Interval Max               ", "7d"             , CandleResolutionIntervalMax     ); // Тут нормально работает только get*ById, потому что строки не уникальны
+
+    DICTIONARY_SIMPLE_TEST( "Currency test                    , Currency                   ", "usd"            , Currency                        );
+
+    DICTIONARY_SIMPLE_TEST( "InstrumentType test              , InstrumentType             ", "bond"           , InstrumentType                  );
+
+    DICTIONARY_SIMPLE_TEST( "OperationStatus test             , OperationStatus            ", "done"           , OperationStatus                 );
+
+    DICTIONARY_SIMPLE_TEST( "OperationType test               , OperationType              ", "sell"           , OperationType                   );
+
+    DICTIONARY_SIMPLE_TEST( "OperationTypeWithCommission test , OperationTypeWithCommission", "othercommission", OperationTypeWithCommission     );
+
+    DICTIONARY_SIMPLE_TEST( "OrderStatus test                 , OrderStatus                ", "cancelled"      , OrderStatus                     );
+
+    DICTIONARY_SIMPLE_TEST( "OrderType test                   , OrderType                  ", "market"         , OrderType                       );
+
+    DICTIONARY_SIMPLE_TEST( "StockExangeList test             , StockExangeList            ", "moex"           , StockExangeList                 );
+
     
+
+
+
+    /*            
+    QString currencyName     = "usd";
+    int currencyId           = dicts.getCurrencyId( currencyName );
+    QString currencyNameNyId = dicts.getCurrencyById( currencyId );
+
+    cout << "Currency test, currency: " << currencyName << ", ID: " << currencyId << ", NAME: " << currencyNameNyId << endl;
+    */
+
     return 0;
 }
 
