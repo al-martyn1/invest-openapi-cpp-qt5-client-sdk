@@ -47,20 +47,20 @@ int mainImpl(int argc, char* argv[])
     catch( const std::runtime_error &e )
     {
         cout<<"Error: runtime_error: "<<e.what()<<endl;
-        return -1;
+        return 1;
     }
     catch( const std::exception &e )
     {
         cout<<"Error: exception: "<<e.what()<<endl;
-        return -1;
+        return 2;
     }
     catch( ... )
     {
         cout<<"Error: unknown error"<<endl;
-        return -1;
+        return 3;
     }
 
-    // return 0;
+    return 0;
 }
 
 

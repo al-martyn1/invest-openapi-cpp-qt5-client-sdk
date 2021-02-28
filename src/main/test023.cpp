@@ -35,13 +35,14 @@
 #include "invest_openapi/db_utils.h"
 #include "invest_openapi/ioa_utils.h"
 #include "invest_openapi/ioa_ostream.h"
+#include "invest_openapi/ioa_db_dictionaries.h"
 
 
 
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("_tkf_historical_candles");
+    QCoreApplication::setApplicationName("test023");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");
@@ -114,7 +115,7 @@ INVEST_OPENAPI_MAIN()
         pOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
     }
 
-
+    /*
     std::map< QString, int > figiToId              = pDbMan->getDictionaryFromTable  ( "MARKET_INSTRUMENT", "FIGI,ID"  );
     std::map< QString, int > tickerToId            = pDbMan->getDictionaryFromTable  ( "MARKET_INSTRUMENT", "TICKER,ID");
     std::map< QString, int > isinToId              = pDbMan->getDictionaryFromTable  ( "MARKET_INSTRUMENT", "ISIN,ID"  );
@@ -141,6 +142,54 @@ INVEST_OPENAPI_MAIN()
     std::map< QString, QString > isinToFigi   = tkf::makeTransitionMap( isinToId  , idToFigi   );
     std::map< QString, QString > figiToTicker = tkf::makeTransitionMap( figiToId  , idToTicker );
     std::map< QString, QString > figiToName   = tkf::makeTransitionMap( figiToId  , idToName   );
+    */
+
+    tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pDbMan);
+
+    // Нормально работает
+    dicts.dictLoadTest( pDbMan, "MARKET_INSTRUMENT", "FIGI,ID" );
+
+    // Кидает исключение из кишочек DbMan'а - такой таблицы по просту нет
+    //dicts.dictLoadTest( pDbMan, "HPEN", "FIGI,ID" );
+
+    // Кидает исключение при загрузке словаря (ну, если в базу данные по свечам ещё не были залиты) - тестировал отработку пустого словаря, а базу пересоздавать было лень
+    //dicts.dictLoadTest( pDbMan, "INSTRUMENT_CANDLES", "CANDLE_DATE_TIME,INSTRUMENT_ID" );
+
+
+    // std::set<QString> findFigisByName( QString name ) const
+    // QString getTickerByFigi( QString &figi ) const
+    // QString findFigiByAnyIdSafe( QString idStr ) const
+    // QString findFigiByAnyId( QString idStr ) const
+    // QString getNameByFigi( QString figi ) const
+
+
+    // BBG004731354 - ROSN
+
+    QString testTicker = "ROSN";
+
+    cout << "Test TICKER: " << testTicker << endl;
+
+    QString testFigi = dicts.findFigiByAnyIdSafe(testTicker);
+
+    cout << "Test FIGI  : " << testFigi;
+    QString name = dicts.getNameByFigi(testFigi);
+    if (!name.isEmpty())
+        cout << " - " << name;
+    cout << endl;
+
+    // Need FIGI -> ISIN methods for complete API
+
+    //QString substringToFind = "energy"; // Found, case ignored
+    QString substringToFind = "nergy"; // try here to find the only part of name
+
+    cout << "Lookup for FIGIs by '" << substringToFind << "' substring in name" << endl;
+
+    std::set<QString> energyFigis = dicts.findFigisByName( substringToFind ); 
+
+    for( auto foundFigi : energyFigis )
+    {
+        cout << "    " << foundFigi << " : " << dicts.getNameByFigi(foundFigi) << endl;
+    }
 
     
     return 0;
