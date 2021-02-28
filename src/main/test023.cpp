@@ -115,34 +115,6 @@ INVEST_OPENAPI_MAIN()
         pOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
     }
 
-    /*
-    std::map< QString, int > figiToId              = pDbMan->getDictionaryFromTable  ( "MARKET_INSTRUMENT", "FIGI,ID"  );
-    std::map< QString, int > tickerToId            = pDbMan->getDictionaryFromTable  ( "MARKET_INSTRUMENT", "TICKER,ID");
-    std::map< QString, int > isinToId              = pDbMan->getDictionaryFromTable  ( "MARKET_INSTRUMENT", "ISIN,ID"  );
-    std::map< int, QString > idToName              = pDbMan->getIdToFieldMapFromTable( "MARKET_INSTRUMENT", "ID,NAME"  );
-
-    std::map< QString, int > stockExToId           = pDbMan->getDictionaryFromTable  ( "STOCK_EXCHANGE_LIST", "NAME,ID"  );
-
-    std::map< QString, int > currencyToId          = pDbMan->getDictionaryFromTable  ( "CURRENCY", "NAME,ID"  );
-
-    std::map< QString, int > instrumentTypeToId    = pDbMan->getDictionaryFromTable  ( "INSTRUMENT_TYPE", "TYPE,ID"  );
-
-    std::map< QString, int > candleResolutionToId  = pDbMan->getDictionaryFromTable  ( "CANDLE_RESOLUTION", "RESOLUTION,ID"  );
-
-    if ( figiToId.empty() || stockExToId.empty() || currencyToId.empty() )
-    {
-        qDebug().nospace().noquote() << "Something goes wrong. Possible DB is clean";
-        return 1;
-    }
-
-    std::map< int, QString > idToFigi   = tkf::makeMapSwapKeyVal( figiToId );
-    std::map< int, QString > idToTicker = tkf::makeMapSwapKeyVal( tickerToId );
-
-    std::map< QString, QString > tickerToFigi = tkf::makeTransitionMap( tickerToId, idToFigi   );
-    std::map< QString, QString > isinToFigi   = tkf::makeTransitionMap( isinToId  , idToFigi   );
-    std::map< QString, QString > figiToTicker = tkf::makeTransitionMap( figiToId  , idToTicker );
-    std::map< QString, QString > figiToName   = tkf::makeTransitionMap( figiToId  , idToName   );
-    */
 
     tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pDbMan);
 
