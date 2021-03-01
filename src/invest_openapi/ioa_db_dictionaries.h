@@ -336,7 +336,48 @@ public:
         return figiSet;
     }
 
+    /*
+    QString getInstrumentFigiById( int id ) const
+    {
+        QString res;
+        if (findInMap( idToFigi, id, res ))
+            return res;
+        return QString();
+    }
+    */
+
+    /*
+    int getInstrumentIdBegin( ) const
+    {
+        if (idToStrMap.empty())
+            return 0;
+        return idToStrMap.begin()->first;
+    }
+
+    int getInstrumentIdEnd( ) const
+    {
+        if (idToStrMap.empty())
+            return 0;
+        return idToStrMap.rbegin()->first + 1;
+    }
+    */
+
+
     #define IOA_DB_DICTIONARIES_DEFINE_GET_ID_GET_BY_ID_METHODS( valueType, strToIdMap, idToStrMap )                   \
+                                                                                                                       \
+                    int get ##valueType ##IdBegin( ) const                                                             \
+                    {                                                                                                  \
+                        if (idToStrMap.empty())                                                                        \
+                            return 0;                                                                                  \
+                        return idToStrMap.begin()->first;                                                              \
+                    }                                                                                                  \
+                                                                                                                       \
+                    int get ##valueType ##IdEnd( ) const                                                               \
+                    {                                                                                                  \
+                        if (idToStrMap.empty())                                                                        \
+                            return 0;                                                                                  \
+                        return idToStrMap.rbegin()->first + 1;                                                         \
+                    }                                                                                                  \
                                                                                                                        \
                     int get ##valueType ##Id( const QString &str ) const                                               \
                     {                                                                                                  \
@@ -440,6 +481,7 @@ public:
         return true;
     }
 
+    /*
     template< typename TypeName >
     bool isValidId( int id, const TypeName &t ) const
     {
@@ -457,7 +499,7 @@ public:
             return false;
         return true;
     }
-
+    */
 
 
 //------------------------------
