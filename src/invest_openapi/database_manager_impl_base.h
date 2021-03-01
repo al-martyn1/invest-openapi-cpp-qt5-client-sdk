@@ -64,15 +64,41 @@ protected:
         return m_pDb->driver()->formatValue(f);
     }
 
-    virtual QString sqlQuote( const QVariant &str ) const override
+    virtual QString sqlQuote( const QVariant &variant ) const override
     {
-        if (str.isNull() || !str.isValid())
+        if (variant.isNull() || !variant.isValid())
             return sqlQuote(QString());
-        return sqlQuote(str.toString());
+        return sqlQuote(variant.toString());
+    }
+
+    virtual QString sqlQuote( int             i       ) const override
+    {
+        return sqlQuote( QString::number(i) );
+    }
+
+    virtual QString sqlQuote( unsigned        u       ) const override
+    {
+        return sqlQuote( QString::number(u) );
+    }
+
+
+    template< typename SrcType>
+    QVector<QString> vectorSqlQuoteImpl( const QVector< SrcType > &strs ) const
+    {
+        QVector<QString> resVec;
+        std::transform( strs.begin(), strs.end(), std::back_inserter(resVec)
+                      , [this]( const SrcType &v )
+                        {
+                            return sqlQuote(v);
+                        }
+                      );
+        return resVec;
     }
 
     virtual QVector<QString> sqlQuote( const QVector<QString > &strs ) const override
     {
+        return vectorSqlQuoteImpl( strs );
+        /*
         QVector<QString> resVec;
         std::transform( strs.begin(), strs.end(), std::back_inserter(resVec)
                       , [this]( const QString &s )
@@ -81,10 +107,13 @@ protected:
                         }
                       );
         return resVec;
+        */
     }
 
-    virtual QVector<QString> sqlQuote( const QVector<QVariant> &strs ) const override
+    virtual QVector<QString> sqlQuote( const QVector<QVariant> &variants ) const override
     {
+        return vectorSqlQuoteImpl( variants );
+        /*
         QVector<QString> resVec;
         std::transform( strs.begin(), strs.end(), std::back_inserter(resVec)
                       , [this]( const QVariant &s )
@@ -93,8 +122,18 @@ protected:
                         }
                       );
         return resVec;
+        */
     }
 
+    virtual QVector<QString> sqlQuote( const QVector<int>      &ints ) const override
+    {
+        return vectorSqlQuoteImpl( ints );
+    }
+
+    virtual QVector<QString> sqlQuote( const QVector<unsigned> &uints    ) const override
+    {
+        return vectorSqlQuoteImpl( uints );
+    }
 
 
     //------------------------------
@@ -190,7 +229,7 @@ protected:
     }
 
     //------------------------------
-    virtual QVector< QVector<QString> > selectResultToStringVectors( QSqlQuery& query ) const
+    virtual QVector< QVector<QString> > selectResultToStringVectors( QSqlQuery& query ) const override
     {
         QVector< QVector<QString> > resVec;
 
@@ -213,8 +252,30 @@ protected:
         return resVec;
     
     }
-    //------------------------------
 
+    //------------------------------
+    virtual QVector<QString>            selectFirstResultToSingleStringVector( QSqlQuery& query ) const override
+    {
+        while (query.next())
+        {
+            QVector<QString> rowVec;
+
+            int idx = 0;
+            QVariant q = query.value(idx++);
+            while( q.isValid() )
+            {
+                rowVec.push_back( q.toString() );
+                q = query.value(idx++);
+            }
+
+            return rowVec;
+        }
+
+        return QVector<QString>();
+    
+    }
+
+    //------------------------------
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx, const QVector<QString> &except, bool caseCompare ) const override
     {
         QSet<QString> exceptsSet = makeSet( except, !caseCompare );

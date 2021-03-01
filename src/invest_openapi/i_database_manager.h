@@ -58,10 +58,14 @@ struct IDatabaseManager
     virtual QString q( const QString &str  ) const = 0;
     virtual QString lf( char comma = ' ' ) const = 0;
     virtual QString tab() const = 0;
-    virtual QString sqlQuote( const QString &str ) const = 0;
-    virtual QString sqlQuote( const QVariant &str ) const = 0;
-    virtual QVector<QString> sqlQuote( const QVector<QString > &strs ) const = 0;
-    virtual QVector<QString> sqlQuote( const QVector<QVariant> &strs ) const = 0;
+    virtual QString sqlQuote( const QString  &str     ) const = 0;
+    virtual QString sqlQuote( const QVariant &variant ) const = 0;
+    virtual QString sqlQuote( int             i       ) const = 0;
+    virtual QString sqlQuote( unsigned        u       ) const = 0;
+    virtual QVector<QString> sqlQuote( const QVector<QString > &strs     ) const = 0;
+    virtual QVector<QString> sqlQuote( const QVector<QVariant> &variants ) const = 0;
+    virtual QVector<QString> sqlQuote( const QVector<int>      &ints     ) const = 0;
+    virtual QVector<QString> sqlQuote( const QVector<unsigned> &uints    ) const = 0;
 
 
     // Core functions
@@ -160,6 +164,8 @@ struct IDatabaseManager
         return makeSimpleUpdateQueryText( tableName, whereName, whereVal, values, convertToQVectorOfQStrings(fields)  );
     }
 
+    virtual QString     makeSelectSingleDateQuery( const QString &queryText, const QString &dateField, bool fLast /* true for last, false for first */ ) const = 0;
+
 
     virtual QVector<QString> tableGetNamesFromDb    () const = 0;
     virtual QVector<QString> tableGetColumnsFromDbInternal ( const QString &internalTableName ) const = 0;
@@ -171,6 +177,7 @@ struct IDatabaseManager
     virtual QVector<QString> queryToSingleStringVector( QSqlQuery& query, int valIdx                                                   ) const = 0;
 
     virtual QVector< QVector<QString> > selectResultToStringVectors( QSqlQuery& query ) const = 0;
+    virtual QVector<QString>            selectFirstResultToSingleStringVector( QSqlQuery& query ) const = 0;
 
     virtual bool insertToImpl( const QString &tableName, const QVector< QVector<QString> > &valsVecVec, const QVector<QString> &tableColumnNames ) const = 0;
 

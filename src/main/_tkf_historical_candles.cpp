@@ -143,15 +143,90 @@ INVEST_OPENAPI_MAIN()
             if (!dicts.isValidId(candleResolution))
                continue;
 
-            cout << "Processing candles with resolution " << candleResolution << endl;
+            cout << "    " << "Processing candles with resolution " << candleResolution << endl;
+
+            /*
+            SELECT column_list FROM table_list
+            WHERE row_filter
+            ORDER BY column
+            LIMIT count OFFSET offset
+
+            ORDER BY
+            column_1 ASC,
+            column_2 DESC;
+            */
+
+            /*
+             Для проверки
+             SELECT INSTRUMENT_FIGI, INSTRUMENT_TICKER, LISTING_DATE FROM INSTRUMENT_LISTING_DATES
+             ORDER BY LISTING_DATE DESC
+             LIMIT 20 OFFSET 0
+             */
 
             // Нужно найти дату последней имеющейся свечи
             // INSTRUMENT_CANDLES, поля INSTRUMENT_ID, STOCK_EXCHANGE_ID, CANDLE_RESOLUTION_ID - фильтр
             // Выбираем поле CANDLE_DATE_TIME с максимальным значением
 
+            // QVector{ instrumentId, stockExchangeId, candleResolutionId }
+            // QString::number(instrumentId)
+
+            QString selectQueryText 
+                        = pDbMan->makeSimpleSelectQueryText( "INSTRUMENT_CANDLES"
+                                                           , "INSTRUMENT_ID,STOCK_EXCHANGE_ID,CANDLE_RESOLUTION_ID" // whereNames
+                                                           , QString("%1,%2,%3").arg(instrumentId).arg(stockExchangeId).arg(candleResolutionId) // whereVals
+                                                           , "LISTING_DATE" // fields to select
+                                                           );
+
+            QString selectLastDateQueryText 
+                        = pDbMan->makeSelectSingleDateQuery( selectQueryText, "LISTING_DATE", true /* true for last, false for first */ );
+
+            // cout << "    " << "Select last candle date time expression: " << endl
+            //      << "    " << "  " << selectLastDateQueryText << endl;
+
+            bool papyNotGood = true;
+
+            QDateTime dtLastCandleDate;
+
+            bool bOk = false;
+            auto executedQuery = pDbMan->execHelper( selectLastDateQueryText, &bOk );
+
+            if (bOk)
+            {
+                auto resVec = pDbMan->selectFirstResultToSingleStringVector(executedQuery);
+
+                if (resVec.empty())
+                {
+                    // Ну нет, так нет
+                }
+                else
+                {
+                    dtLastCandleDate = tkf::dateTimeFromDbString( resVec.front() );
+                }
+            }
+
+            if (dtLastCandleDate.isNull() || !dtLastCandleDate.isValid())
+            {
+                // пытаемся получить dtLastCandleDate ещё как-то
+            }
+
+            if (dtLastCandleDate.isNull() || !dtLastCandleDate.isValid())
+            {
+                // Вот тут уже мы поняли точно, что всё пошло не так
+                // continue;
+            }
+
+            // Ду Жоб Хере
+
+
+
+            // virtual QSqlQuery   execHelper ( const QString &queryText, bool *pRes = 0 ) const = 0;
+            // virtual QVector<QString>            selectFirstResultToSingleStringVector( QSqlQuery& query ) const override
+
             // Если дата не найдена в таблице, ищем дату листинга инструмента на бирже
             // INSTRUMENT_LISTING_DATES, поля INSTRUMENT_ID, STOCK_EXCHANGE_ID - фильтр
             // Выбираем поле LISTING_DATE
+
+
 
 
 

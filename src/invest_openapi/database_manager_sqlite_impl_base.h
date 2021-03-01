@@ -218,6 +218,16 @@ protected:
         return queryText + QString(" WHERE %1 = %2").arg(whereName).arg(sqlQuote(whereVal));
     }
 
+    virtual QString     makeSelectSingleDateQuery( const QString &queryText, const QString &dateField, bool fLast /* true for last, false for first */ ) const override
+    {
+        return QString("%1%2ORDER BY %3 %4%5LIMIT 1 OFFSET 0")
+                      .arg(queryText)
+                      .arg(lf())
+                      .arg(dateField)
+                      .arg( fLast ? "DESC" : "ASC" )
+                      .arg(lf());
+    }
+
 
     virtual bool insertToImpl( const QString &tableName, const QVector<QVector<QString> >  &vals, const QVector<QString> &tableColumns ) const override
     {
