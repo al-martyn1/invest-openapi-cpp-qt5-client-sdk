@@ -33,6 +33,7 @@
 #include "invest_openapi/qt_time_helpers.h"
 
 #include "invest_openapi/db_utils.h"
+#include "invest_openapi/qt_time_helpers.h"
 #include "invest_openapi/ioa_utils.h"
 #include "invest_openapi/ioa_ostream.h"
 #include "invest_openapi/ioa_db_dictionaries.h"
@@ -174,11 +175,11 @@ INVEST_OPENAPI_MAIN()
                         = pDbMan->makeSimpleSelectQueryText( "INSTRUMENT_CANDLES"
                                                            , "INSTRUMENT_ID,STOCK_EXCHANGE_ID,CANDLE_RESOLUTION_ID" // whereNames
                                                            , QString("%1,%2,%3").arg(instrumentId).arg(stockExchangeId).arg(candleResolutionId) // whereVals
-                                                           , "LISTING_DATE" // fields to select
+                                                           , "CANDLE_DATE_TIME" // fields to select
                                                            );
 
             QString selectLastDateQueryText 
-                        = pDbMan->makeSelectSingleDateQuery( selectQueryText, "LISTING_DATE", true /* true for last, false for first */ );
+                        = pDbMan->makeSelectSingleDateQuery( selectQueryText, "CANDLE_DATE_TIME", true /* true for last, false for first */ );
 
             // cout << "    " << "Select last candle date time expression: " << endl
             //      << "    " << "  " << selectLastDateQueryText << endl;
@@ -194,37 +195,66 @@ INVEST_OPENAPI_MAIN()
             {
                 auto resVec = pDbMan->selectFirstResultToSingleStringVector(executedQuery);
 
-                if (resVec.empty())
+                if (!resVec.empty() && !resVec.front().isEmpty())
                 {
-                    // Ну нет, так нет
-                }
-                else
-                {
-                    dtLastCandleDate = tkf::dateTimeFromDbString( resVec.front() );
+                    cout << "Starting date found in INSTRUMENT_CANDLES" << endl;
+                    dtLastCandleDate = qt_helpers::dateTimeFromDbString( resVec.front() );
                 }
             }
 
-            if (dtLastCandleDate.isNull() || !dtLastCandleDate.isValid())
+            if (!tkf::isQtValidNotNull(dtLastCandleDate))
             {
-                // пытаемся получить dtLastCandleDate ещё как-то
+                // Если дата не найдена в таблице, ищем дату листинга инструмента на бирже
+                // INSTRUMENT_LISTING_DATES, поля INSTRUMENT_ID, STOCK_EXCHANGE_ID - фильтр
+                // Выбираем поле LISTING_DATE
+
+                cout << "Looking in INSTRUMENT_LISTING_DATES" << endl;
+
+                selectQueryText 
+                        = pDbMan->makeSimpleSelectQueryText( "INSTRUMENT_LISTING_DATES"
+                                                           , "INSTRUMENT_ID,STOCK_EXCHANGE_ID" // whereNames
+                                                           , QString("%1,%2").arg(instrumentId).arg(stockExchangeId) // whereVals
+                                                           , "LISTING_DATE" // fields to select
+                                                           );
+
+                selectLastDateQueryText 
+                        = pDbMan->makeSelectSingleDateQuery( selectQueryText, "LISTING_DATE", true /* true for last, false for first */ );
+
+                executedQuery = pDbMan->execHelper( selectLastDateQueryText, &bOk );
+
+                if (bOk)
+                {
+                    auto resVec = pDbMan->selectFirstResultToSingleStringVector(executedQuery);
+                   
+                    if (!resVec.empty() && !resVec.front().isEmpty())
+                    {
+                        auto date = qt_helpers::dateFromDbString( resVec.front() );
+                        QTime zeroTime = QTime(0 /* h */, 0 /* m */ , 0 /* s */, 0 /* ms */ );
+
+                        cout << "Construct from date & time: " << date << ", " << time << endl;
+
+                        dtLastCandleDate = QDateTime(date, zeroTime, Qt::UTC); // .setDate(date);
+                        //dtLastCandleDate.setTime(zeroTime);
+                    }
+                }
             }
 
-            if (dtLastCandleDate.isNull() || !dtLastCandleDate.isValid())
+
+            if (!tkf::isQtValidNotNull(dtLastCandleDate))
             {
-                // Вот тут уже мы поняли точно, что всё пошло не так
-                // continue;
+                cout << "Starting date not found at all" << endl;
+                continue;
             }
 
             // Ду Жоб Хере
+            cout << "Starting date: " << dtLastCandleDate << endl;
+
 
 
 
             // virtual QSqlQuery   execHelper ( const QString &queryText, bool *pRes = 0 ) const = 0;
             // virtual QVector<QString>            selectFirstResultToSingleStringVector( QSqlQuery& query ) const override
 
-            // Если дата не найдена в таблице, ищем дату листинга инструмента на бирже
-            // INSTRUMENT_LISTING_DATES, поля INSTRUMENT_ID, STOCK_EXCHANGE_ID - фильтр
-            // Выбираем поле LISTING_DATE
 
 
 

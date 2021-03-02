@@ -874,7 +874,7 @@ auto joinAndGetPayload( ResponseType response ) -> decltype(response->value.getP
 template< typename SomeQtType>
 bool isQtValidNotNull( const SomeQtType &v )
 {
-    if ( !v.isValid() || !v.isNull())
+    if ( !v.isValid() || v.isNull())
         return false;
 
     return true;

@@ -33,6 +33,7 @@
 #include "invest_openapi/qt_time_helpers.h"
 
 #include "invest_openapi/db_utils.h"
+#include "invest_openapi/qt_time_helpers.h"
 #include "invest_openapi/ioa_utils.h"
 #include "invest_openapi/ioa_ostream.h"
 #include "invest_openapi/ioa_db_dictionaries.h"

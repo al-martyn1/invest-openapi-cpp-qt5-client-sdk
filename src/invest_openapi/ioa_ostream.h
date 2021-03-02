@@ -61,13 +61,55 @@ std::ostream& operator<<( std::ostream& os, const QDateTime &v )
         return os;
     }
 
-    if (v.isValid())
+    if (!v.isValid())
     {
         os<<"<INVALID>";
         return os;
     }
 
     os << qt_helpers::dateTimeToDbString(v); // .toStdString();
+
+    return os;
+}
+
+//------------------------------
+inline
+std::ostream& operator<<( std::ostream& os, const QDate &v )
+{
+    if (v.isNull())
+    {
+        os<<"<NULL>";
+        return os;
+    }
+
+    if (!v.isValid())
+    {
+        os<<"<INVALID>";
+        return os;
+    }
+
+    os << qt_helpers::dateToDbString(v); // .toStdString();
+
+    return os;
+}
+
+//------------------------------
+inline
+std::ostream& operator<<( std::ostream& os, const QTime &v )
+{
+    if (v.isNull())
+    {
+        os<<"<NULL>";
+        return os;
+    }
+
+    if (!v.isValid())
+    {
+        os<<"<INVALID>";
+        return os;
+    }
+
+    os << qt_helpers::timeToDbString(v); // .toStdString();
 
     return os;
 }
