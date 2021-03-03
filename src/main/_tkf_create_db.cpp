@@ -112,17 +112,26 @@ INVEST_OPENAPI_MAIN()
     qDebug().nospace().noquote() << "\n";
 
     
+    /*
     if (pDatabaseConfig->createClean)
     {
         qDebug().nospace().noquote() << "Clean database created. Exiting due config option";
         return 0;
     }
-
+    */
 
     timer.restart();
 
+
+    pDbMan->initTablesWithPredefinedData( pDatabaseConfig->initTablesList
+                                        , pDatabaseConfig->initFailOnFillUnknownTable
+                                        , pDatabaseConfig->initFailOnInsertionError
+                                        );
+
     // Fill ref books here
 
+
+    #if 0
     qDebug().nospace().noquote() << "Fill 'BROKER_ACCOUNT_TYPE' table: " 
                                  << pDbMan->insertToBulkFromString( "BROKER_ACCOUNT_TYPE"
                                                                   , "0,INVALID,Invalid BrokerAccountType value;"
@@ -130,7 +139,6 @@ INVEST_OPENAPI_MAIN()
                                                                     "2,TINKOFFIIS,Tinkoff IIS account"
                                                                   )
                                  << ", Elapsed time: " << timer.restart();
-
 
     qDebug().nospace().noquote() << "Fill 'CURRENCY' table: " 
                                  << pDbMan->insertToBulkFromString( "CURRENCY"
@@ -157,7 +165,6 @@ INVEST_OPENAPI_MAIN()
                                                                     "4,ETF,Etfs"
                                                                   )
                                  << ", Elapsed time: " << timer.restart();
-
 
     qDebug().nospace().noquote() << "Fill 'CANDLE_RESOLUTION' table: " 
                                  << pDbMan->insertToBulkFromString( "CANDLE_RESOLUTION"
@@ -318,6 +325,7 @@ INVEST_OPENAPI_MAIN()
     //QString updateQuery = pDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), values, instrumentColsNoLotMarket );
     //pDbMan->execHelper( updateQuery );
 
+     #endif
 
 
     

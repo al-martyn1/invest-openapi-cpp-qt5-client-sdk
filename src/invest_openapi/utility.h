@@ -327,7 +327,7 @@ inline QString pathStringNormalize( QString s )
 inline QString listStringNormalize( QString s )
 {
     //s.replace(':', ";"); // replace *nix style list separator to windows style separator
-    s.replace(',', ";"); // replace commas to ';' (windows style separator)
+    //s.replace(',', ";"); // replace commas to ';' (windows style separator)
     return s;
 }
 
@@ -360,25 +360,25 @@ inline QStringList listStringTrim( const QStringList &l )
 }
 
 //----------------------------------------------------------------------------
-inline QStringList listStringSplit( QString s )
+inline QStringList listStringSplit( QString s, QChar splitChar = ';' )
 {
     s = listStringNormalize(s);
-    return listStringTrim( s.split( ';', Qt::KeepEmptyParts ) );
+    return listStringTrim( s.split( splitChar, Qt::KeepEmptyParts ) );
 }
 
 //------------------------------
-inline QVector<QStringList> listStringSplit( const QStringList &s )
+inline QVector<QStringList> listStringSplit( const QStringList &s, QChar splitChar = ',' )
 {
     QVector<QStringList> resList;
-    for( auto str : s ) resList.push_back(listStringSplit(str));
+    for( auto str : s ) resList.push_back(listStringSplit(str, splitChar));
     return resList;
 }
 
 //------------------------------
-inline QVector<QStringList> listStringSplit( const QVector<QString> &s )
+inline QVector<QStringList> listStringSplit( const QVector<QString> &s, QChar splitChar = ',' )
 {
     QVector<QStringList> resList;
-    for( auto str : s ) resList.push_back(listStringSplit(str));
+    for( auto str : s ) resList.push_back(listStringSplit(str, splitChar));
     return resList;
 }
 

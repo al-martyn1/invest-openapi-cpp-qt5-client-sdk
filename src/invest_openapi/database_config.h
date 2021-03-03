@@ -61,9 +61,12 @@ struct DatabaseConfig
     unsigned  defaultDecimalFormatTotalSize      = 18;
     unsigned  defaultDecimalFormatFractionalSize =  8;
 
-    bool      createClean = false;
+    //bool      createClean = false;
+    QStringList initTablesList;
+    bool        initFailOnFillUnknownTable  = true;
+    bool        initFailOnInsertionError    = true;
 
-    QString   tableNameInstruments;
+    QString     tableNameInstruments;
 
 
     friend QSharedPointer<IDatabaseManager> createDatabaseManager( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig );
@@ -78,7 +81,11 @@ struct DatabaseConfig
         }
 
         reopenMode  = settings.value("database.reopen", QVariant(false)).toBool();
-        createClean = settings.value("database.create_clean", QVariant(false)).toBool();
+        //createClean = settings.value("database.create_clean", QVariant(false)).toBool();
+
+        initTablesList              = settings.value("database.init.tables_list").toStringList();
+        initFailOnFillUnknownTable  = settings.value("database.init.fail.on_fill_unknown_table"  , QVariant(true)).toBool();
+        initFailOnInsertionError    = settings.value("database.init.fail.on_insertion_error"     , QVariant(true)).toBool();
 
 
         tableNameInstruments = settings.value("database.schema.table.name.instruments").toString();

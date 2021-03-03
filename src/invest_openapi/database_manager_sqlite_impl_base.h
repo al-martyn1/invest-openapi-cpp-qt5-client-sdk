@@ -236,11 +236,15 @@ protected:
         int columnsSize = tableColumns.size();
 
         std::transform( vals.begin(), vals.end(), std::back_inserter(valuesList)
-                      , [this, columnsSize]( const QVector<QString> &v )
+                      , [this, columnsSize, tableName]( const QVector<QString> &v )
                         {
                             if (columnsSize!=v.size())
                             {
-                                throw std::runtime_error("DatabaseManagerSQLiteImplBase::insertToImpl: number of columns mismatch number of taken values");
+
+                                throw std::runtime_error( std::string("DatabaseManagerSQLiteImplBase::insertToImpl: "
+                                                                      "number of columns mismatch number of taken values for table ")
+                                                        + tableName.toStdString()
+                                                        );
                             }
 
                             return QString("(%1)").arg(mergeString( sqlQuote(v), ", "));

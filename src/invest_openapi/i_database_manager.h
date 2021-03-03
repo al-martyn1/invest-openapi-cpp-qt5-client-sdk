@@ -237,6 +237,10 @@ struct IDatabaseManager
              return insertTo( tableName, listStringSplit(vals.split( ';', Qt::KeepEmptyParts )), convertToQVectorOfQStrings(tableColumnNames) );
     }
 
+    virtual QString getTableInitData( const QString &tableName ) const = 0;
+
+    virtual void initTablesWithPredefinedData( const QStringList &tables, bool throwIfTableUnknown, bool throwIfInsertFailed ) const = 0;
+
     // Meta helpers
 
     //! insert meta for all tables on single call

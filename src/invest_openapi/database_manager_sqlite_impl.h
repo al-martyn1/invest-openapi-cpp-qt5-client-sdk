@@ -23,6 +23,8 @@
 
 #include "model_to_strings.h"
 
+#include "qt_time_helpers.h"
+
 //----------------------------------------------------------------------------
 
 
@@ -166,6 +168,7 @@ protected:
 
     }
 
+
     const QMap<QString,QString>& getTableSchemas() const
     {
         static bool schemasInitialized = false;
@@ -187,7 +190,7 @@ protected:
             tableSchemas[QString("OPERATION_TYPE_WITH_COMMISSION")] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationTypeWithCommission>(QString(), false ) );
 
 
-            tableSchemas[QString("TIMEZONE"           )] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT," + lf() +
+            tableSchemas[QString("TIMEZONE"           )] = //"ID               INTEGER PRIMARY KEY AUTOINCREMENT," + lf() +
                                                            "NAME             VARCHAR(64) NOT NULL UNIQUE,"       + lf() +
                                                            "DESCRIPTION      VARCHAR(255)"
                                                          ;
@@ -195,8 +198,9 @@ protected:
             tableSchemas[QString("STOCK_EXCHANGE_LIST")] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT," + lf() +
                                                            "NAME             VARCHAR(32) NOT NULL UNIQUE,"       + lf() +
                                                            "FOUNDATION_DATE  VARCHAR(10),"                       + lf() +
-                                                           "TIMEZONE_ID      INTEGER REFERENCES TIMEZONE,"       + lf() +
-                                                           "TIMEZONE_NAME    VARCHAR(64),"                       + lf() +
+                                                           "TIMEZONE         VARCHAR(64),"   + lf() + // REFERENCES TIMEZONE
+                                                           // "TIMEZONE_ID      INTEGER REFERENCES TIMEZONE,"       + lf() +
+                                                           // "TIMEZONE_NAME    VARCHAR(64),"                       + lf() +
                                                            "DESCRIPTION      VARCHAR(255)"
                                                          ;
 
@@ -326,7 +330,6 @@ protected:
 
     }
     
-
     virtual QString tableGetSchema      ( const QString &tableName  ) const override
     {
         // tableName = tableMapName(tableName)
@@ -425,12 +428,180 @@ protected:
         );
         */
         
-        
-        
-
     }
 
     //------------------------------
+    //const QMap<QString,QString>& getTableInitialDataMap() const
+    //QString getTableInitData( const QString &tableName ) const
+    virtual QString getTableInitData( const QString &tableName ) const override
+    {
+        std::map<QString, QString> initData;
+
+        if (initData.empty())
+        {
+        
+            initData["BROKER_ACCOUNT_TYPE"] = "0,INVALID,Invalid BrokerAccountType value;"
+                                              "1,TINKOFF,Tinkoff broker account;"
+                                              "2,TINKOFFIIS,Tinkoff IIS account";
+           
+            initData["CURRENCY"           ] = "0,INVALID,Invalid Currency value;"
+                                              "1,RUB,Russian Ruble;"
+                                              "2,USD,US Dollar;"
+                                              "3,EUR,European Euro;"
+                                              "4,GBP,Great Britain Pound Sterling;"
+                                              "5,HKD,Hong Kong Dollar;"
+                                              "6,CHF,Swiss Franc;"
+                                              "7,JPY,Japanese Yen;"
+                                              "8,CNY,Chinese Yuan;"
+                                              "9,TRY,Turkish Lira";
+           
+            initData["INSTRUMENT_TYPE"    ] = "0,INVALID,Invalid InstrumentType value;"
+                                              "1,STOCK,Stocks;"
+                                              "2,CURRENCY,Currencies;"
+                                              "3,BOND,Bonds;"
+                                              "4,ETF,Etfs";
+           
+            initData["CANDLE_RESOLUTION"  ] = "0,INVALID,INVALID,INVALID,Invalid CandleResolution value;"
+                                              "1,1MIN,1MIN,1DAY,1 min;"                        /* 1min [1 minute, 1 day]    */
+                                              "2,2MIN,2MIN,1DAY,2 min;"                        /* 2min [2 minutes, 1 day]   */
+                                              "3,3MIN,3MIN,1DAY,3 min;"                        /* 3min [3 minutes, 1 day]   */
+                                              "4,5MIN,5MIN,1DAY,5 min;"                        /* 5min [5 minutes, 1 day]   */
+                                              "5,10MIN,10MIN,1DAY,10 min;"                     /* 10min [10 minutes, 1 day] */
+                                              "6,15MIN,15MIN,1DAY,15 min;"                     /* 15min [15 minutes, 1 day] */
+                                              "7,30MIN,30MIN,1DAY,30 min;"                     /* 30min [30 minutes, 1 day] */
+                                              "8,HOUR,1HOUR,7DAY,Hour (60 min);"               /* hour [1 hour, 7 days]     */
+                                              "9,DAY,1DAY,1YEAR,Day (1440 min);"               /* day [1 day, 1 year]       */
+                                              "10,WEEK,7DAY,2YEAR,Week (10080 min);"           /* week [7 days, 2 years]    */
+                                              "11,MONTH,1MONTH,10YEAR,Month (Avg 43200 min)";  /* month [1 month, 10 years] */
+           
+            initData["OPERATION_TYPE"     ] = "0,INVALID,Invalid OperationType value;"
+                                              "1,BUY,Purchaise;"
+                                              "2,SELL,Sell";
+           
+            initData["ORDER_STATUS"       ] = "0,INVALID,Invalid OrderStatus value;"
+                                              "1,NEW,New order;"
+                                              "2,PARTIALLYFILL,Partially fill;"
+                                              "3,FILL,Fill;"
+                                              "4,CANCELLED,Cancelled;"
+                                              "5,REPLACED,Replaced;"
+                                              "6,PENDINGCANCEL,Pending cancel;"
+                                              "7,REJECTED,Rejected;"
+                                              "8,PENDINGREPLACE,Pending replace;"
+                                              "9,PENDINGNEW,Pending new";
+           
+            initData["ORDER_TYPE"         ] = "0,INVALID,Invalid OrderType value;"
+                                              "1,LIMIT,Limit;"
+                                              "2,MARKET,Market";
+           
+            initData["OPERATION_STATUS"   ] = "0,INVALID,Invalid OperationStatus value;"
+                                              "1,DONE,Operation completed successfully;"
+                                              "2,DECLINE,Operation declined;"
+                                              "3,PROGRESS,Operation in progress";
+           
+            initData["OPERATION_TYPE_WITH_COMMISSION"] = "0,INVALID,Invalid OperationTypeWithCommission value;"
+                                              "1,BUY,Buy;"
+                                              "2,BUYCARD,Buycard;"
+                                              "3,SELL,Sell;"
+                                              "4,BROKERCOMMISSION,Broker commission;"
+                                              "5,EXCHANGECOMMISSION,Exchange commission;"
+                                              "6,SERVICECOMMISSION,Service commission;"
+                                              "7,MARGINCOMMISSION,Margin commission;"
+                                              "8,OTHERCOMMISSION,Other commission;"
+                                              "9,PAYIN,Payin;"
+                                              "10,PAYOUT,Payout;"
+                                              "11,TAX,Tax;"
+                                              "12,TAXLUCRE,Tax lucre;"
+                                              "13,TAXDIVIDEND,Tax dividend;"
+                                              "14,TAXCOUPON,Tax coupon;"
+                                              "15,TAXBACK,Tax back;"
+                                              "16,REPAYMENT,Repayment;"
+                                              "17,PARTREPAYMENT,Part repayment;"
+                                              "18,COUPON,Coupon;"
+                                              "19,DIVIDEND,Dividend;"
+                                              "20,SECURITYIN,Security in;"
+                                              "21,SECURITYOUT,Securityout";
+       
+            initData["STOCK_EXCHANGE_LIST"] = "0,INVALID,,INVALID,Invalid stock exchange ID;"
+                                              "1,MOEX,2011-12-19,MSK,PAO Moskovskaya Birzha";
+
+        } // if (initData.empty())
+
+
+        std::map<QString, QString>::const_iterator it = initData.find(tableName);
+        if (it!=initData.end())
+        {
+            return it->second;
+        }
+
+        // Relaxed init data creation
+
+        if (tableName=="TIMEZONE")
+        {
+            std::vector<QString> dataLines;
+
+            int tzKeyId = 0;
+
+            // Create alias list
+            std::vector<QString> tzAliasList = qt_helpers::getTimezonesAliasList<QString>();
+
+            for( const auto &tzAlias : tzAliasList )
+            {
+                QString tzAliasDescription = qt_helpers::getTimezoneAliasDesciption(tzAlias);
+                //dataLines.push_back(QString("%1,%2,%3").arg(tzKeyId).arg(tzAlias).arg(tzAliasDescription));
+                dataLines.push_back(QString("%1,%2").arg(tzAlias).arg(tzAliasDescription));
+                ++tzKeyId;
+            }
+
+
+            // Create real timezones list
+
+            QList<QByteArray> tzIdList = QTimeZone::availableTimeZoneIds();
+
+            for( auto tzIdByteArray : tzIdList )
+            {
+                //std::string strTzId = tzId.toStdString();
+                QString tzId = QString::fromStdString( tzIdByteArray.toStdString() );
+
+                QTimeZone qtz     = QTimeZone(tzIdByteArray);
+                QString   tzDescr = qtz.comment();
+                //dataLines.push_back(QString("%1,%2,%3").arg(tzKeyId).arg(tzId).arg(tzDescr));
+                dataLines.push_back(QString("%1,%2").arg(tzId).arg(tzDescr));
+                ++tzKeyId;
+            }
+
+            QString resData = mergeString(dataLines, ";" );
+            initData[tableName] = resData;
+
+            return resData;
+        
+        } // if (tableName=="TIMEZONE")
+
+
+
+
+
+
+        
+#if 0
+
+            tableSchemas[QString("TIMEZONE"           )] = //"ID               INTEGER PRIMARY KEY AUTOINCREMENT," + lf() +
+                                                           "NAME             VARCHAR(64) NOT NULL UNIQUE,"       + lf() +
+                                                           "DESCRIPTION      VARCHAR(255)"
+                                                         ;
+            tableSchemas[QString("STOCK_EXCHANGE_LIST")] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT," + lf() +
+                                                           "NAME             VARCHAR(32) NOT NULL UNIQUE,"       + lf() +
+                                                           "FOUNDATION_DATE  VARCHAR(10),"                       + lf() +
+                                                           "TIMEZONE         VARCHAR(64) REFERENCES TIMEZONE,"   + lf() +
+                                                           "DESCRIPTION      VARCHAR(255)"
+                                                         ;
+
+#endif
+
+        return QString();
+    }
+
+
+
 
 
 }; // DatabaseManagerSQLiteImpl

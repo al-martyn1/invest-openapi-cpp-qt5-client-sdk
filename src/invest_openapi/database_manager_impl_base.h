@@ -242,6 +242,44 @@ protected:
     }
 
 
+    //virtual QString getTableInitData( const QString &tableName ) const = 0;
+    virtual void initTablesWithPredefinedData( const QStringList &tables, bool throwIfTableUnknown, bool throwIfInsertFailed ) const override
+    {
+        for( const auto &tableName : tables )
+        {
+            QString tableInitData = getTableInitData( tableName );
+
+            if (tableInitData.isEmpty() && throwIfTableUnknown)
+                throw std::runtime_error("initTablesWithPredefinedData: unknown table");
+
+            if (throwIfInsertFailed)
+            {
+                insertToBulkFromString( tableName, tableInitData );
+            }
+            else
+            {
+                //QStringList tableInitDataStringList = listStringSplit(tableInitData.split( ";", Qt::KeepEmptyParts ));
+                QVector<QStringList> tableInitDataStringList = listStringSplit(tableInitData.split( ";", Qt::KeepEmptyParts ));
+
+                for( const auto &rowDataStr : tableInitDataStringList )
+                {
+                    // Каждая строчка - комма разделённый список
+                    bool insertRes = insertTo( tableName
+                                             , QVector<QVector<QString  > >{ convertToQVectorOfQStrings( rowDataStr ) }
+                                             , QVector<QString>()
+                                             );
+                    if (!insertRes && throwIfInsertFailed)
+                        throw std::runtime_error("initTablesWithPredefinedData: insert data row failed");
+
+                }
+            
+            }
+
+        } // for( const auto &tableName : tables )
+
+    }
+
+
     //------------------------------
     virtual QVector< QVector<QString> > selectResultToStringVectors( QSqlQuery& query ) const override
     {

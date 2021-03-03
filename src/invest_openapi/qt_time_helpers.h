@@ -8,6 +8,9 @@
 #include <QDateTime>
 
 #include <vector>
+#include <map>
+#include <set>
+#include <algorithm>
 #include <string>
 #include <exception>
 #include <stdexcept>
@@ -356,7 +359,10 @@ const std::map<QString, QByteArray>& getIanaTimezoneAliases()
     if (!shortcuts.empty())
        return shortcuts;
 
+    shortcuts["INVALID"] = QByteArray::fromStdString("INVALID");      // Must be first to got index 0
+
     // https://en.wikipedia.org/wiki/Time_in_Russia
+
     shortcuts["RTZ1" ] = QByteArray::fromStdString("Europe/Kaliningrad");
     shortcuts["RTZ2" ] = QByteArray::fromStdString("Europe/Moscow");
     shortcuts["RTZ3" ] = QByteArray::fromStdString("Europe/Samara");
@@ -491,6 +497,38 @@ const std::map<QString, QByteArray>& getIanaTimezoneAliases()
 
 }
 
+inline 
+const std::vector<QString>& getIanaTimezonesAliasesOrder()
+{
+    static std::vector<QString>   timezoneAliasesOrder;
+
+    if (!timezoneAliasesOrder.empty())
+        return timezoneAliasesOrder;
+
+
+    std::set<QString>             usedTimezoneAliases;
+
+    auto zonePusher = [&]( const QString &tzaName )
+                      {
+                          if (usedTimezoneAliases.find(tzaName)!=usedTimezoneAliases.end())
+                              return;
+
+                          usedTimezoneAliases .insert(tzaName);
+                          timezoneAliasesOrder.push_back(tzaName);
+                      };
+
+    zonePusher("INVALID"); // must got index 0
+    zonePusher("MSK");     // must got index 1
+
+    const std::map<QString, QByteArray>& tzaMap = getIanaTimezoneAliases();
+    for( const auto &tzaPair : tzaMap )
+    {
+        zonePusher(tzaPair.first);
+    }
+
+    return timezoneAliasesOrder;
+}
+
 //----------------------------------------------------------------------------
 inline
 const std::map<QString, QString>& getIanaTimezoneAliasDescriptions()
@@ -499,6 +537,8 @@ const std::map<QString, QString>& getIanaTimezoneAliasDescriptions()
 
     if (!descriptions.empty())
        return descriptions;
+
+    descriptions["INVALID" ] = "INVALID";
 
     // . Actually is bla-bla
 
@@ -741,6 +781,10 @@ template< >
 inline 
 std::vector<QString> getTimezonesAliasList<QString>()
 {
+    return getIanaTimezonesAliasesOrder();
+    //std::vector<QString>& getIanaTimezonesAliasesOrder()
+
+    /*
     std::vector<QString> resVec;
 
     const std::map<QString, QByteArray>& tzaMap = getIanaTimezoneAliases();
@@ -751,6 +795,7 @@ std::vector<QString> getTimezonesAliasList<QString>()
        resVec.push_back(it->first);
 
     return resVec;
+    */
 }
 
 //------------------------------
@@ -760,18 +805,46 @@ std::vector<std::string> getTimezonesAliasList<std::string>()
 {
     std::vector<std::string> resVec;
 
+    const auto & tzaOrder = getIanaTimezonesAliasesOrder();
+
+    std::transform( tzaOrder.begin(), tzaOrder.end(), std::back_inserter(resVec)
+                  , []( const QString &q ) -> std::string
+                    {
+                        return q.toStdString();
+                    }
+                  );
+
+
+    /*
     const std::map<QString, QByteArray>& tzaMap = getIanaTimezoneAliases();
 
     std::map<QString, QByteArray>::const_iterator it = tzaMap.begin();
 
     for( ; it != tzaMap.end(); ++it)
        resVec.push_back(it->first.toStdString());
-
+    */
     return resVec;
 }
 
 //----------------------------------------------------------------------------
+#if 0
+inline QVector<QString> toStringVector(const QVector<QVariant> &v )
+{
+    QVector<QString> resVec;
 
+    std::transform( v.begin(), v.end(), std::back_inserter(resVec)
+                  , []( const QVariant &q ) -> QString
+                    {
+                        if (q.isNull() || !q.isValid())
+                            return QString();
+                        return q.toString();
+                    }
+                  );
+
+    return resVec;
+}
+
+#endif
 
 
 
