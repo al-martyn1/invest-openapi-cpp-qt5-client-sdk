@@ -125,19 +125,29 @@ INVEST_OPENAPI_MAIN()
     int instrumentId     = dicts.getInstrumentIdBegin( );
     int instrumentIdEnd  = dicts.getInstrumentIdEnd( );
 
+    auto instrumentCandlesTableFields = QString("INSTRUMENT_ID,STOCK_EXCHANGE_ID,CANDLE_RESOLUTION_ID,CANDLE_DATE_TIME,CURRENCY_ID,OPEN_PRICE,CLOSE_PRICE,HIGH_PRICE,LOW_PRICE,VOLUME");
+    auto instrumentCandlesTableFieldsVec = tkf::convertToQVectorOfQStrings(instrumentCandlesTableFields);
+
 
     console_helpers::SimpleHandleCtrlC ctrlC;
 
-
+    QElapsedTimer instrumentCandlesTimer;
 
     for( ; instrumentId!=instrumentIdEnd && !ctrlC.isBreaked(); ++instrumentId )
     {
+        if (!dicts.isValidId(instrumentId))
+            continue;
+
         QString figi = dicts.getInstrumentById( instrumentId );
         if (figi.isEmpty())
             continue; // There is a GAP found in instruments enumeration
 
         QString ticker         = dicts.getTickerByFigiChecked(figi);
         QString instrumentName = dicts.getNameByFigiChecked(figi);
+
+        instrumentCandlesTimer.restart();
+
+        int instrumentCurrencyId = dicts.getInstrumentCurrencyId( instrumentId );
 
         
 
@@ -239,7 +249,8 @@ INVEST_OPENAPI_MAIN()
 
                 if ( !resVec.empty() && !resVec.front().isEmpty() )
                 {
-                    auto date = qt_helpers::dateFromDbString( resVec.front() );
+                    //auto date = qt_helpers::dateFromDbString( resVec.front() );
+                    auto date = qt_helpers::dateFromDbString( "2019-02-28" );
                     auto zeroTime = QTime(0 /* h */, 0 /* m */ , 0 /* s */, 0 /* ms */ );
                     dtLastCandleDate = QDateTime(date, zeroTime, Qt::UTC); // .setDate(date);
                 }
@@ -302,8 +313,104 @@ INVEST_OPENAPI_MAIN()
 
             for( ; curIntervalItEnd!=intervalItEnd; ++curIntervalItBegin, ++curIntervalItEnd )
             {
-                cout << "    " << *curIntervalItBegin << " - " << *curIntervalItEnd << endl;
+                //cout << "    " << *curIntervalItBegin << " - " << *curIntervalItEnd << endl;
 
+                QTest::qWait(350);
+
+
+                cout << "Retrieving data from server" << endl;
+
+                auto // CandlesResponse
+                candlesRes = pOpenApi->marketCandles( figi, *curIntervalItBegin, *curIntervalItEnd, candleResolution );
+               
+                candlesRes->join();
+               
+                //auto timeElapsed = timer.restart();
+               
+                //tkf::checkAbort(candlesRes);
+
+                if (candlesRes->isCompletionError())
+                {
+                    cout << "Failed to get " << candleResolution << " candles for " << figi << " (" << ticker << ") on interval: " << *curIntervalItBegin << " - " << *curIntervalItEnd << endl;
+                    continue;
+                }
+
+                //std::vector<tkf::Candle>
+                auto candles = tkf::makeVectorFromList(candlesRes->value.getPayload().getCandles());
+
+                for( const auto &candle : candles )
+                {
+                    if (!candle.isSet())
+                    {
+                        cout << "Candle not set" << endl;
+                        continue;
+                    }
+
+                    if (!candle.isValid())
+                    {
+                        cout << "Candle not is not valid" << endl;
+                        continue;
+                    }
+
+                    auto candleFigi = candle.getFigi();
+                    if (candleFigi!=figi)
+                    {
+                        cout << "Candle FIGI (" << candleFigi << " not equal to current instrument FIGI (" << figi << ")"<< endl;
+                        continue;
+                    }
+
+                    /*
+                    QString getFigi() const;
+                    CandleResolution getInterval() const;
+                    marty::Decimal getO() const;
+                    marty::Decimal getC() const;
+                    marty::Decimal getH() const;
+                    marty::Decimal getL() const;
+                    qint32         getV() const;
+                    QDateTime getTime() const;
+                    */
+
+                    // Table: INSTRUMENT_CANDLES
+                    //auto instrumentCandlesTableFields = QString("INSTRUMENT_ID,STOCK_EXCHANGE_ID,CANDLE_RESOLUTION_ID,CANDLE_DATE_TIME,CURRENCY_ID,OPEN_PRICE,CLOSE_PRICE,HIGH_PRICE,LOW_PRICE,VOLUME");
+                    auto valuesToInsert = QString("%1,%2,%3,%4,%5,%6,%7,%8,%9,%10")
+                                                 .arg(instrumentId)         // INSTRUMENT_ID
+                                                 .arg(stockExchangeId)      // STOCK_EXCHANGE_ID
+                                                 .arg(candleResolutionId)   // CANDLE_RESOLUTION_ID
+                                                 .arg(qt_helpers::dateTimeToDbString(candle.getTime())) // CANDLE_DATE_TIME
+                                                 .arg(instrumentCurrencyId) // CURRENCY_ID
+                                                 .arg(QString::fromStdString(candle.getO().toString()))       // OPEN_PRICE 
+                                                 .arg(QString::fromStdString(candle.getC().toString()))       // CLOSE_PRICE
+                                                 .arg(QString::fromStdString(candle.getH().toString()))       // HIGH_PRICE 
+                                                 .arg(QString::fromStdString(candle.getL().toString()))       // LOW_PRICE  
+                                                 .arg(QString::number(candle.getV())) // VOLUME     
+                                                 ;
+
+                    cout << "Inserting data to DB" << endl;
+
+                    //QVector<QString> valsVec = {valuesToInsert};
+                    pDbMan->insertTo( "INSTRUMENT_CANDLES"
+                                    , QVector< QVector<QString> >{ tkf::convertToQVectorOfQStrings(valuesToInsert) }
+                                    , instrumentCandlesTableFields
+                                    );
+                }
+
+
+
+            /*
+            tableSchemas[QString("INSTRUMENT_CANDLES" )] = "INSTRUMENT_ID         INTEGER REFERENCES MARKET_INSTRUMENT,"   + lf() +
+                                                           "STOCK_EXCHANGE_ID     INTEGER REFERENCES STOCK_EXCHANGE_LIST," + lf() +
+                                                           "CANDLE_RESOLUTION_ID  INTEGER REFERENCES CANDLE_RESOLUTION,"   + lf() +
+                                                           "CANDLE_DATE_TIME      VARCHAR(24) NOT NULL,"                   + lf() +
+                                                           "CURRENCY_ID           INTEGER REFERENCES CURRENCY,"            + lf() +
+                                                           "OPEN_PRICE            DECIMAL(18,8) NOT NULL,"                 + lf() +
+                                                           "CLOSE_PRICE           DECIMAL(18,8) NOT NULL,"                 + lf() +
+                                                           "HIGH_PRICE            DECIMAL(18,8) NOT NULL,"                 + lf() +
+                                                           "LOW_PRICE             DECIMAL(18,8) NOT NULL,"                 + lf() +
+                                                           "VOLUME                DECIMAL(18,8) NOT NULL"
+                                                         ;
+            */    
+
+                
 
             }
 
@@ -320,10 +427,11 @@ INVEST_OPENAPI_MAIN()
 
 
 
-        }
+        } // for(; candleResolutionId!=candleResolutionIdEnd && !ctrlC.isBreaked(); ++candleResolutionId)
 
+        cout << "Get instrument " << figi << " (" << ticker << ") candles completed in " << (unsigned)instrumentCandlesTimer.elapsed() << "ms" << endl;
 
-    }
+    } // for( ; instrumentId!=instrumentIdEnd && !ctrlC.isBreaked(); ++instrumentId )
 
 
     

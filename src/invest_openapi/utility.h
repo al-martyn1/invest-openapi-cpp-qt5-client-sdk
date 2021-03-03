@@ -317,9 +317,16 @@ void checkAbort( const QSharedPointer< OpenApiCompletableFuture< T > > &val )
 }
 
 //----------------------------------------------------------------------------
-inline QString listStringNormalize( QString s )
+inline QString pathStringNormalize( QString s )
 {
     s.replace(':', ";"); // replace *nix style list separator to windows style separator
+    s.replace(',', ";"); // replace commas to ';' (windows style separator)
+    return s;
+}
+//----------------------------------------------------------------------------
+inline QString listStringNormalize( QString s )
+{
+    //s.replace(':', ";"); // replace *nix style list separator to windows style separator
     s.replace(',', ";"); // replace commas to ';' (windows style separator)
     return s;
 }
@@ -449,6 +456,7 @@ inline QVector< QVector<QString> > convertToQVectorOfQVectorOfQStrings( const QV
 //------------------------------
 inline QVector< QVector<QString> > convertToQVectorOfQVectorOfQStrings( const QVector< QString > &lst )
 {
+    //BUG: or not?
     QVector< QVector<QString> > resVec;
     //for( auto s : lst ) resVec.push_back(convertToQVectorOfQStrings(s));
     resVec.push_back(lst);

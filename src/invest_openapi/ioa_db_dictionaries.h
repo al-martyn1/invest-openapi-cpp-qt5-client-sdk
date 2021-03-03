@@ -204,6 +204,10 @@ protected:
         tickerToId    = loadDictionaryChecked( pDbMan, "MARKET_INSTRUMENT", "TICKER,ID" );
         isinToId      = loadDictionaryChecked( pDbMan, "MARKET_INSTRUMENT", "ISIN,ID"   );
 
+        auto figiToCurrencyId = loadDictionaryChecked( pDbMan, "MARKET_INSTRUMENT", "FIGI,CURRENCY_ID" );
+
+        
+
         //std::map< int, QString > 
         idToFigi      = makeMapSwapKeyVal( figiToId );
         tickerToFigi  = makeTransitionMap( tickerToId, idToFigi   );
@@ -215,6 +219,17 @@ protected:
         std::map< int, QString > idToFigiName  = loadIdMapChecked( pDbMan, "MARKET_INSTRUMENT", "ID,NAME"   );
         figiToName                             = makeTransitionMap( figiToId  , idToFigiName );
 
+        for( auto figiCurrency : figiToCurrencyId )
+        {
+            const QString &figi = figiCurrency.first;
+            int currencyId      = figiCurrency.second;
+
+            auto foundIt = figiToId.find(figi);
+            if (foundIt == figiToId.end())
+                continue;
+
+            idToCurrencyId[foundIt->second] = currencyId;
+        }
 
         //std::map< QString, std::set<QString> > nameToFigiSet;
 
@@ -335,6 +350,24 @@ public:
 
         return figiSet;
     }
+
+    int getInstrumentCurrencyId( int instrumentId ) const
+    {
+        std::map< int, int >::const_iterator it = idToCurrencyId.find(instrumentId);
+        if (it==idToCurrencyId.end())
+            return -1;
+        return it->second;
+    }
+
+    int getInstrumentCurrencyId( const QString &figi ) const
+    {
+        int instrumentId = getInstrumentId(figi);
+        if (instrumentId<0)
+            return -1;
+        return getInstrumentCurrencyId(instrumentId);
+    }
+
+    //std::map< int, QString > idToCurrencyId   ;
 
     /*
     QString getInstrumentFigiById( int id ) const
@@ -513,6 +546,7 @@ protected:
     std::map< QString, int > isinToId         ;
 
     std::map< int, QString > idToFigi         ;
+    std::map< int, int     > idToCurrencyId   ;
 
     //std::map< int, QString > idToFigiName     ;
 

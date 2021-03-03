@@ -98,8 +98,10 @@ protected:
             tablesLevel_0.insert("ORDER_TYPE");
             tablesLevel_0.insert("OPERATION_STATUS");
             tablesLevel_0.insert("OPERATION_TYPE_WITH_COMMISSION");
+            tablesLevel_0.insert("TRADING_TARIFF");
 
             tablesLevel_1.insert("MARKET_INSTRUMENT");
+            tablesLevel_1.insert("TRADING_TARIFF_HISTORY");
 
             tablesLevel_2.insert("TIMEZONE");
             tablesLevel_2.insert("STOCK_EXCHANGE_LIST");
@@ -135,6 +137,8 @@ protected:
             return m;
 
         m["INSTRUMENT_LISTING_DATES"] = QVector<QString>{ "INSTRUMENT_ID,STOCK_EXCHANGE_ID", "INSTRUMENT_FIGI,STOCK_EXCHANGE_NAME" };
+        m["INSTRUMENT_CANDLES"] = QVector<QString>{ "INSTRUMENT_ID,STOCK_EXCHANGE_ID,CANDLE_RESOLUTION_ID,CANDLE_DATE_TIME" };
+        
 
         return m;
     }
@@ -182,6 +186,7 @@ protected:
             tableSchemas[QString("OPERATION_STATUS"   )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationStatus   >(QString(), false ) );
             tableSchemas[QString("OPERATION_TYPE_WITH_COMMISSION")] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationTypeWithCommission>(QString(), false ) );
 
+
             tableSchemas[QString("TIMEZONE"           )] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT," + lf() +
                                                            "NAME             VARCHAR(64) NOT NULL UNIQUE,"       + lf() +
                                                            "DESCRIPTION      VARCHAR(255)"
@@ -215,7 +220,8 @@ protected:
                                                            "VOLUME                DECIMAL(18,8) NOT NULL"
                                                          ;
 
-            tableSchemas[QString("OPERATIONS"         )] = "ID                    VARCHAR(24) NOT NULL UNIQUE,"            + lf() +
+            tableSchemas[QString("OPERATIONS"         )] = "ID                    VARCHAR(32) NOT NULL UNIQUE,"            + lf() +
+                                                           "BROKER_ACCOUNT_TYPE_ID INTEGER REFERENCES BROKER_ACCOUNT_TYPE," + lf() +
                                                            "OPERATION_TYPE_ID     INTEGER REFERENCES OPERATION_TYPE_WITH_COMMISSION," + lf() +
                                                            "OPERATION_STATUS_ID   INTEGER REFERENCES OPERATION_STATUS,"    + lf() +
                                                            "STOCK_EXCHANGE_ID     INTEGER REFERENCES STOCK_EXCHANGE_LIST," + lf() +
@@ -226,6 +232,20 @@ protected:
                                                            "QUANTITY              DECIMAL(18,8),"                          + lf() +
                                                            "QUANTITY_EXECUTED     DECIMAL(18,8)"
                                                          ;
+
+
+            tableSchemas[QString("TRADING_TARIFF"     )] = "ID                    INTEGER PRIMARY KEY AUTOINCREMENT,"      + lf() +
+                                                           "NAME                  VARCHAR(64) NOT NULL UNIQUE,"            + lf() +
+                                                           "COMMISSION            DECIMAL(18,8),"                          + lf() +
+                                                           "DESCRIPTION           VARCHAR(255)"
+                                                         ;
+
+            tableSchemas[QString("TRADING_TARIFF_HISTORY")] = "TRADING_TARIFF_ID  INTEGER REFERENCES TRADING_TARIFF,"      + lf() +
+                                                           "BROKER_ACCOUNT_TYPE_ID INTEGER REFERENCES BROKER_ACCOUNT_TYPE," + lf() +
+                                                           "SINCE_DATE_TIME       VARCHAR(24) NOT NULL,"                   + lf() +
+                                                           "COMMISSION            DECIMAL(18,8)"
+                                                         ;
+
 
             /*
             tableSchemas[QString("INSTRUMENT_CANDLES" )] = "OPERATION_ID          VARCHAR(24) NOT NULL UNIQUE,"            + lf() +
