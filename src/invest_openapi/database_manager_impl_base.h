@@ -229,6 +229,20 @@ protected:
     }
 
     //------------------------------
+    virtual QVector<QString> execSelectQueryReturnFirstRow( const QString &queryText ) const override
+    {
+        bool bOk = false;
+
+        QSqlQuery executedQuery = execHelper ( queryText, &bOk );
+
+        if (!bOk)
+            return QVector<QString>();
+
+        return selectFirstResultToSingleStringVector(executedQuery);
+    }
+
+
+    //------------------------------
     virtual QVector< QVector<QString> > selectResultToStringVectors( QSqlQuery& query ) const override
     {
         QVector< QVector<QString> > resVec;

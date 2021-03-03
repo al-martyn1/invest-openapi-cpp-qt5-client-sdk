@@ -9,6 +9,8 @@
 
 #include <vector>
 #include <string>
+#include <exception>
+#include <stdexcept>
 
 //----------------------------------------------------------------------------
 
@@ -21,6 +23,21 @@ namespace qt_helpers
 {
 
 
+
+//----------------------------------------------------------------------------
+inline
+QDateTime makeMidnightDateTime( const QDate &date )
+{
+    auto zeroTime = QTime(0 /* h */, 0 /* m */ , 0 /* s */, 0 /* ms */ );
+    return QDateTime(date, zeroTime, Qt::UTC);
+}
+
+//----------------------------------------------------------------------------
+inline
+QDateTime makeMidnightDateTime( const QDateTime &dt )
+{
+    return makeMidnightDateTime( dt.date() );
+}
 
 //----------------------------------------------------------------------------
 inline
@@ -160,6 +177,154 @@ QString timeToDbString( const QTime &dt )
 
 
 
+
+
+//----------------------------------------------------------------------------
+enum class TimeIntervalScale
+{
+    invalid      ,
+    millisecond  ,
+    second       ,
+    minute       ,
+    hour         ,
+    day          ,
+    week         ,
+    month        ,
+    year
+};
+
+//----------------------------------------------------------------------------
+inline
+bool testEndsWithAndChop( QString &str, const QString &testFor, Qt::CaseSensitivity cs = Qt::CaseSensitive )
+{
+    if (!str.endsWith(testFor))
+        return false;
+
+    str.chop( testFor.size() );
+
+    return true;
+}
+
+//------------------------------
+// removes TimeIntervalScale suffix from input string
+inline
+TimeIntervalScale extractTimeIntervalScale( QString &str )
+{
+    str = str.toUpper();
+
+    if (testEndsWithAndChop(str, "DAY") || testEndsWithAndChop(str, "DAYS"))
+        return TimeIntervalScale::day;
+
+    if (testEndsWithAndChop(str, "YEAR") || testEndsWithAndChop(str, "YEARS"))
+        return TimeIntervalScale::year;
+
+    if (testEndsWithAndChop(str, "MIN") || testEndsWithAndChop(str, "MINUTE") || testEndsWithAndChop(str, "MINS") || testEndsWithAndChop(str, "MINUTES"))
+        return TimeIntervalScale::minute;
+
+    if (testEndsWithAndChop(str, "HOUR") || testEndsWithAndChop(str, "HOURS"))
+        return TimeIntervalScale::hour;
+
+    if (testEndsWithAndChop(str, "WEEK") || testEndsWithAndChop(str, "WEEKS"))
+        return TimeIntervalScale::week;
+
+    if (testEndsWithAndChop(str, "MONTH") || testEndsWithAndChop(str, "MONTHS"))
+        return TimeIntervalScale::month;
+
+    if (testEndsWithAndChop(str, "SEC") || testEndsWithAndChop(str, "SECOND") || testEndsWithAndChop(str, "SECS") || testEndsWithAndChop(str, "SECONDS"))
+        return TimeIntervalScale::second;
+
+    if (testEndsWithAndChop(str, "MILLISECOND") || testEndsWithAndChop(str, "MILLISECONDS") || testEndsWithAndChop(str, "MSECOND") || testEndsWithAndChop(str, "MSEC") || testEndsWithAndChop(str, "MSECONDS") || testEndsWithAndChop(str, "MSECS") || testEndsWithAndChop(str, "MS"))
+        return TimeIntervalScale::millisecond;
+
+    if (testEndsWithAndChop(str, "MONTH") || testEndsWithAndChop(str, "MONTHS"))
+        return TimeIntervalScale::month;
+
+    return TimeIntervalScale::invalid;
+}
+
+
+
+//----------------------------------------------------------------------------
+inline
+QDateTime dtAddTimeInterval( const QDateTime &dt, int val, TimeIntervalScale valScale )
+{
+    switch(valScale)
+    {
+        case TimeIntervalScale::millisecond : 
+                     return dt.addMSecs  (val);
+
+        case TimeIntervalScale::second: 
+                     return dt.addSecs   (val);
+
+        case TimeIntervalScale::minute: 
+                     return dt.addSecs   (    60 * (qint64)val );
+
+        case TimeIntervalScale::hour  : 
+                     return dt.addSecs   ( 60*60 * (qint64)val );
+
+        case TimeIntervalScale::day   : 
+                     return dt.addDays   (         (qint64)val );
+
+        case TimeIntervalScale::week  : 
+                     return dt.addDays   (     7 * (qint64)val );
+
+        case TimeIntervalScale::month : 
+                     return dt.addMonths (         (qint64)val );
+
+        case TimeIntervalScale::year  : 
+                     return dt.addYears  (         (qint64)val );
+
+        default: throw std::runtime_error("dtAddTimeInterval: Invalid interval scale");
+    }
+}
+
+//----------------------------------------------------------------------------
+
+// Syntax: [+|-]XXMMM, where
+//   XX  - interval value, integer,
+//         can be empty, 1 assigned in this case
+//   MMM - interval scale
+//         MIN
+//         HOUR
+//         DAY
+//         WEEK
+//         MONTH
+//         YEAR
+inline
+QDateTime dtAddTimeInterval( const QDateTime &dt, QString intervalStr, int forceSign = 0 /* 0 - use default */ )
+{
+    TimeIntervalScale tiScale = extractTimeIntervalScale( intervalStr );
+
+    if (tiScale==TimeIntervalScale::invalid)
+        throw std::runtime_error("dtAddTimeInterval: Invalid time interval suffix");
+
+    if (forceSign<0)
+        forceSign = -1;
+
+    if (forceSign>0)
+        forceSign =  1;
+
+    int intervalSize = 1;
+
+    if (!intervalStr.isEmpty())
+    {
+        bool bOk = false;
+        intervalSize = intervalStr.toInt(&bOk);
+        if (!bOk)
+           throw std::runtime_error("dtAddTimeInterval: Interval size is not valid");
+    }
+
+    if (forceSign!=0)
+    {
+        if (intervalSize<0)
+            intervalSize = -intervalSize;
+
+        intervalSize *= forceSign;
+    }
+
+    return dtAddTimeInterval( dt, intervalSize, tiScale );
+
+}
 
 //----------------------------------------------------------------------------
 inline

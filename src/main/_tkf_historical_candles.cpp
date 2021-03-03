@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <map>
 #include <set>
+#include <optional>
 
 #include <QCoreApplication>
 #include <QString>
@@ -38,7 +39,7 @@
 #include "invest_openapi/ioa_ostream.h"
 #include "invest_openapi/ioa_db_dictionaries.h"
 
-
+#include "invest_openapi/console_break_helper.h"
 
 INVEST_OPENAPI_MAIN()
 {
@@ -124,7 +125,12 @@ INVEST_OPENAPI_MAIN()
     int instrumentId     = dicts.getInstrumentIdBegin( );
     int instrumentIdEnd  = dicts.getInstrumentIdEnd( );
 
-    for( ; instrumentId!=instrumentIdEnd; ++instrumentId )
+
+    console_helpers::SimpleHandleCtrlC ctrlC;
+
+
+
+    for( ; instrumentId!=instrumentIdEnd && !ctrlC.isBreaked(); ++instrumentId )
     {
         QString figi = dicts.getInstrumentById( instrumentId );
         if (figi.isEmpty())
@@ -133,25 +139,36 @@ INVEST_OPENAPI_MAIN()
         QString ticker         = dicts.getTickerByFigiChecked(figi);
         QString instrumentName = dicts.getNameByFigiChecked(figi);
 
+        
+
+        cout << endl << "----------------------------------------------------------------------------" << endl;
         cout << "Processing " << figi << " (" << ticker << ") - " << instrumentName << endl;
 
         int candleResolutionId     = dicts.getCandleResolutionIdBegin( );
         int candleResolutionIdEnd  = dicts.getCandleResolutionIdEnd( );
 
-        for(; candleResolutionId!=candleResolutionIdEnd ; ++candleResolutionId)
+        for(; candleResolutionId!=candleResolutionIdEnd && !ctrlC.isBreaked(); ++candleResolutionId)
         {
             QString candleResolution = dicts.getCandleResolutionById(candleResolutionId);
             if (!dicts.isValidId(candleResolution))
                continue;
 
-            cout << "    " << "Processing candles with resolution " << candleResolution << endl;
+            QString candleIntervalMin = dicts.getCandleResolutionIntervalMinById(candleResolutionId);
+            QString candleIntervalMax = dicts.getCandleResolutionIntervalMaxById(candleResolutionId);
+
+            cout << "    " << "Processing candles with resolution " << candleResolution 
+                 << ", interval min: " << candleIntervalMin 
+                 << ", interval max: " << candleIntervalMax << endl;
+
+            QElapsedTimer candleLastDateLookupTimer;
+            candleLastDateLookupTimer.start();
+
 
             /*
             SELECT column_list FROM table_list
             WHERE row_filter
             ORDER BY column
             LIMIT count OFFSET offset
-
             ORDER BY
             column_1 ASC,
             column_2 DESC;
@@ -181,26 +198,23 @@ INVEST_OPENAPI_MAIN()
             QString selectLastDateQueryText 
                         = pDbMan->makeSelectSingleDateQuery( selectQueryText, "CANDLE_DATE_TIME", true /* true for last, false for first */ );
 
-            // cout << "    " << "Select last candle date time expression: " << endl
-            //      << "    " << "  " << selectLastDateQueryText << endl;
 
             bool papyNotGood = true;
 
             QDateTime dtLastCandleDate;
 
-            bool bOk = false;
-            auto executedQuery = pDbMan->execHelper( selectLastDateQueryText, &bOk );
+            // std::optional - https://habr.com/ru/post/372103/
+            // Но на самом деле он не нужен
 
-            if (bOk)
+            auto resVec = pDbMan->execSelectQueryReturnFirstRow( selectLastDateQueryText );
+
+            if ( !resVec.empty() && !resVec.front().isEmpty() )
             {
-                auto resVec = pDbMan->selectFirstResultToSingleStringVector(executedQuery);
-
-                if (!resVec.empty() && !resVec.front().isEmpty())
-                {
-                    cout << "Starting date found in INSTRUMENT_CANDLES" << endl;
-                    dtLastCandleDate = qt_helpers::dateTimeFromDbString( resVec.front() );
-                }
+                //cout << "Starting date found in INSTRUMENT_CANDLES" << endl;
+                dtLastCandleDate = qt_helpers::dateTimeFromDbString( resVec.front() );
             }
+
+
 
             if (!tkf::isQtValidNotNull(dtLastCandleDate))
             {
@@ -220,40 +234,86 @@ INVEST_OPENAPI_MAIN()
                 selectLastDateQueryText 
                         = pDbMan->makeSelectSingleDateQuery( selectQueryText, "LISTING_DATE", true /* true for last, false for first */ );
 
-                executedQuery = pDbMan->execHelper( selectLastDateQueryText, &bOk );
 
-                if (bOk)
+                auto resVec = pDbMan->execSelectQueryReturnFirstRow( selectLastDateQueryText );
+
+                if ( !resVec.empty() && !resVec.front().isEmpty() )
                 {
-                    auto resVec = pDbMan->selectFirstResultToSingleStringVector(executedQuery);
-                   
-                    if (!resVec.empty() && !resVec.front().isEmpty())
-                    {
-                        auto date = qt_helpers::dateFromDbString( resVec.front() );
-                        QTime zeroTime = QTime(0 /* h */, 0 /* m */ , 0 /* s */, 0 /* ms */ );
-
-                        cout << "Construct from date & time: " << date << ", " << time << endl;
-
-                        dtLastCandleDate = QDateTime(date, zeroTime, Qt::UTC); // .setDate(date);
-                        //dtLastCandleDate.setTime(zeroTime);
-                    }
+                    auto date = qt_helpers::dateFromDbString( resVec.front() );
+                    auto zeroTime = QTime(0 /* h */, 0 /* m */ , 0 /* s */, 0 /* ms */ );
+                    dtLastCandleDate = QDateTime(date, zeroTime, Qt::UTC); // .setDate(date);
                 }
+
             }
 
+            auto elapsed = (unsigned)candleLastDateLookupTimer.restart();
+
+            cout << "    " << "DB queries performed in " << elapsed << " ms" << endl;
 
             if (!tkf::isQtValidNotNull(dtLastCandleDate))
             {
-                cout << "Starting date not found at all" << endl;
+                cout << "    " << "Starting date not found at all" << endl;
                 continue;
             }
 
+
             // Ду Жоб Хере
-            cout << "Starting date: " << dtLastCandleDate << endl;
+
+            cout << "    " << "Starting date: " << dtLastCandleDate << endl;
+
+            QDateTime curDateTime = QDateTime::currentDateTime().toUTC();
+
+            std::vector< QDateTime > candleIntervals;
+
+            QDateTime dateTime = qt_helpers::makeMidnightDateTime(dtLastCandleDate);
+
+            candleIntervals.push_back(dateTime);
+
+            while(true)
+            {
+                QDateTime nextDateTime = qt_helpers::dtAddTimeInterval(dateTime, candleIntervalMax);
+
+                //cout << "    " << "Next: " << nextDateTime << endl;
+
+                if (nextDateTime>curDateTime)
+                {
+                    nextDateTime = curDateTime;
+                    candleIntervals.push_back(nextDateTime);
+                    break;
+                }
+
+                candleIntervals.push_back(nextDateTime);
+
+                dateTime = nextDateTime;
+
+            }
+
+            std::vector< QDateTime >::const_iterator intervalIt    = candleIntervals.begin();
+            std::vector< QDateTime >::const_iterator intervalItEnd = candleIntervals.end();
+
+            if (intervalIt==intervalItEnd)
+            {
+                continue;
+            }
+
+            std::vector< QDateTime >::const_iterator curIntervalItBegin = intervalIt;
+            ++intervalIt;
+            std::vector< QDateTime >::const_iterator curIntervalItEnd   = intervalIt;
+
+            for( ; curIntervalItEnd!=intervalItEnd; ++curIntervalItBegin, ++curIntervalItEnd )
+            {
+                cout << "    " << *curIntervalItBegin << " - " << *curIntervalItEnd << endl;
 
 
+            }
 
 
-            // virtual QSqlQuery   execHelper ( const QString &queryText, bool *pRes = 0 ) const = 0;
-            // virtual QVector<QString>            selectFirstResultToSingleStringVector( QSqlQuery& query ) const override
+            // qt_helpers::makeMidnightDateTime( const QDate &date )
+            // qt_helpers::makeMidnightDateTime( const QDateTime &dt )
+            // QString candleIntervalMax = dicts.getCandleResolutionIntervalMaxById(candleResolutionId);
+
+
+            //QDateTime qt_helpers::dtAddTimeInterval( const QDateTime &dt, QString intervalStr, int forceSign = 0 /* 0 - use default */ )
 
 
 

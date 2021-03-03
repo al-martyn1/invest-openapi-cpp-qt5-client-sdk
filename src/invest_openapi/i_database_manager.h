@@ -79,6 +79,7 @@ struct IDatabaseManager
 
     virtual QSqlQuery   execHelper ( const QString &queryText, bool *pRes = 0 ) const = 0;
 
+    virtual QVector< QString> execSelectQueryReturnFirstRow( const QString &queryText ) const = 0;
 
 
     virtual QString     makeSimpleSelectQueryText( const QString &tableName

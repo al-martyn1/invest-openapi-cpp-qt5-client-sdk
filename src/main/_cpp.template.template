@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <map>
 #include <set>
+#include <optional>
 
 #include <QCoreApplication>
 #include <QString>
@@ -38,6 +39,7 @@
 #include "invest_openapi/ioa_ostream.h"
 #include "invest_openapi/ioa_db_dictionaries.h"
 
+#include "invest_openapi/console_break_helper.h"
 
 
 INVEST_OPENAPI_MAIN()
