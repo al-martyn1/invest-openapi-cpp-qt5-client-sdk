@@ -327,7 +327,7 @@ inline QString pathStringNormalize( QString s )
 inline QString listStringNormalize( QString s )
 {
     //s.replace(':', ";"); // replace *nix style list separator to windows style separator
-    //s.replace(',', ";"); // replace commas to ';' (windows style separator)
+    s.replace(',', ";"); // replace commas to ';' (windows style separator)
     return s;
 }
 

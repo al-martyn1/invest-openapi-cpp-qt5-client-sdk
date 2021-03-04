@@ -26,6 +26,7 @@ class SimpleHandleCtrlC
         if (dwCtrlType == CTRL_C_EVENT)
         {
             breaked = true;
+            qDebug() << "!!! Breaked by Ctrl+C at " << QDateTime::currentDateTime();
         }
        
         return FALSE;

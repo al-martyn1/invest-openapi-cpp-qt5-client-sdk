@@ -249,8 +249,9 @@ INVEST_OPENAPI_MAIN()
 
                 if ( !resVec.empty() && !resVec.front().isEmpty() )
                 {
-                    //auto date = qt_helpers::dateFromDbString( resVec.front() );
-                    auto date = qt_helpers::dateFromDbString( "2019-02-28" );
+                    //!!!
+                    auto date = qt_helpers::dateFromDbString( resVec.front() );
+                    //auto date = qt_helpers::dateFromDbString( "2019-02-28" );
                     auto zeroTime = QTime(0 /* h */, 0 /* m */ , 0 /* s */, 0 /* ms */ );
                     dtLastCandleDate = QDateTime(date, zeroTime, Qt::UTC); // .setDate(date);
                 }

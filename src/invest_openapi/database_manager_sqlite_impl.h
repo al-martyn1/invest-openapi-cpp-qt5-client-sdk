@@ -555,6 +555,7 @@ protected:
             for( const auto &tzAlias : tzAliasList )
             {
                 QString tzAliasDescription = qt_helpers::getTimezoneAliasDesciption(tzAlias);
+                tzAliasDescription.replace(',', '/');
                 //dataLines.push_back(QString("%1,%2,%3").arg(tzKeyId).arg(tzAlias).arg(tzAliasDescription));
                 dataLines.push_back(QString("%1,%2").arg(tzAlias).arg(tzAliasDescription));
                 ++tzKeyId;
