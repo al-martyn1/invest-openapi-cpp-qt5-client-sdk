@@ -1,9 +1,6 @@
 database = ../tkf_invest_db.sqlite
 database.reopen = true
 database.defaults.decimal.format = 18.8
-; Don't add predefined data
-;database.create_clean = false
-;database.create_clean = true
 
 database.init.fail.on_fill_unknown_table   = true
 database.init.fail.on_insertion_error      = true

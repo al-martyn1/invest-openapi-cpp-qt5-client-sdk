@@ -553,7 +553,7 @@ const std::map<QString, QString>& getIanaTimezoneAliasDescriptions()
     descriptions["RTZ8" ] = "Russian Timezone 8 - Yakutsk";
     descriptions["RTZ9" ] = "Russian Timezone 9 - Vladivostok";
     descriptions["RTZ10"] = "Russian Timezone 10 - Magadan/Srednekolymsk";
-    descriptions["RTZ11"] = "Russian Timezone 11 - Kamchatka, Chukotka and Kamchatka Krai";
+    descriptions["RTZ11"] = "Russian Timezone 11 - Kamchatka / Chukotka and Kamchatka Krai";
 
     descriptions["KALT" ] = "Alias for RTZ1";
     descriptions["MSK"  ] = "Alias for RTZ2";
@@ -594,20 +594,20 @@ const std::map<QString, QString>& getIanaTimezoneAliasDescriptions()
     descriptions["EST"  ] = "Eastern time zone";
     descriptions["AST"  ] = "Atlantic time zone";
 
-    descriptions["PT"   ] = "Same as PST, US Pacific time zone";
-    descriptions["MT"   ] = "Same as MST, US Mountain time zone";
-    descriptions["CT"   ] = "Same as CST, US Central time zone";
-    descriptions["ET"   ] = "Same as EST, Eastern time zone";
+    descriptions["PT"   ] = "Same as PST. US Pacific time zone";
+    descriptions["MT"   ] = "Same as MST. US Mountain time zone";
+    descriptions["CT"   ] = "Same as CST. US Central time zone";
+    descriptions["ET"   ] = "Same as EST. Eastern time zone";
 
     descriptions["AT"   ] = "Atlantic time zone";
-    descriptions["NT"   ] = "Labrador (southeastern), Newfoundland";
+    descriptions["NT"   ] = "Labrador (southeastern) / Newfoundland";
     descriptions["AKT"  ] = "Alaska";
     //descriptions[""  ] = QByteArray::fromStdString(""); // 
 
     //descriptions["AST"  ] = "Guadeloupe, Martinique, Saint Barthélemy, Saint Martin";
-    descriptions["PMST" ] = "French Guiana, Saint Pierre and Miquelon";
-    descriptions["ST"   ] = "American Samoa, Jarvis Island, Kingman Reef, Midway Atoll and Palmyra Atoll";
-    descriptions["HT"   ] = "Hawaii, most of the Aleutian Islands, and Johnston Atoll";
+    descriptions["PMST" ] = "French Guiana / Saint Pierre and Miquelon";
+    descriptions["ST"   ] = "American Samoa / Jarvis Island / Kingman Reef / Midway Atoll and Palmyra Atoll";
+    descriptions["HT"   ] = "Hawaii / most of the Aleutian Islands / and Johnston Atoll";
 
     descriptions["GALT" ] = "Galápagos Province";
 

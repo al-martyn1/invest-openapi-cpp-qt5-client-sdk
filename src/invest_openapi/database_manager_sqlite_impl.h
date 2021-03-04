@@ -179,76 +179,76 @@ protected:
         {
             schemasInitialized = true;
 
-            tableSchemas[QString("BROKER_ACCOUNT_TYPE")] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>(QString(), false ) );
-            tableSchemas[QString("CURRENCY"           )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<Currency         >(QString(), false ) );
-            tableSchemas[QString("INSTRUMENT_TYPE"    )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<InstrumentType   >(QString(), false ) );
-            tableSchemas[QString("CANDLE_RESOLUTION"  )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<CandleResolution >(QString(), false ) );
-            tableSchemas[QString("OPERATION_TYPE"     )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationType    >(QString(), false ) );
-            tableSchemas[QString("ORDER_STATUS"       )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderStatus      >(QString(), false ) );
-            tableSchemas[QString("ORDER_TYPE"         )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderType        >(QString(), false ) );
-            tableSchemas[QString("OPERATION_STATUS"   )] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationStatus   >(QString(), false ) );
-            tableSchemas[QString("OPERATION_TYPE_WITH_COMMISSION")] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationTypeWithCommission>(QString(), false ) );
+            tableSchemas["BROKER_ACCOUNT_TYPE"] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<BrokerAccountType>(QString(), false ) );
+            tableSchemas["CURRENCY"           ] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<Currency         >(QString(), false ) );
+            tableSchemas["INSTRUMENT_TYPE"    ] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<InstrumentType   >(QString(), false ) );
+            tableSchemas["CANDLE_RESOLUTION"  ] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<CandleResolution >(QString(), false ) );
+            tableSchemas["OPERATION_TYPE"     ] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationType    >(QString(), false ) );
+            tableSchemas["ORDER_STATUS"       ] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderStatus      >(QString(), false ) );
+            tableSchemas["ORDER_TYPE"         ] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OrderType        >(QString(), false ) );
+            tableSchemas["OPERATION_STATUS"   ] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationStatus   >(QString(), false ) );
+            tableSchemas["OPERATION_TYPE_WITH_COMMISSION"] = modelMakeSqlCreateTableSchema_SQLITE( modelMakeSqlSchemaStringVector_SQLITE<OperationTypeWithCommission>(QString(), false ) );
 
 
-            tableSchemas[QString("TIMEZONE"           )] = //"ID               INTEGER PRIMARY KEY AUTOINCREMENT," + lf() +
-                                                           "NAME             VARCHAR(64) NOT NULL UNIQUE,"       + lf() +
-                                                           "DESCRIPTION      VARCHAR(255)"
-                                                         ;
+            tableSchemas["TIMEZONE"           ] = //"ID               INTEGER PRIMARY KEY AUTOINCREMENT," + lf() +
+                                                  "NAME             VARCHAR(64) NOT NULL UNIQUE,"       + lf() +
+                                                  "DESCRIPTION      VARCHAR(255)"
+                                                ;
 
-            tableSchemas[QString("STOCK_EXCHANGE_LIST")] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT," + lf() +
-                                                           "NAME             VARCHAR(32) NOT NULL UNIQUE,"       + lf() +
-                                                           "FOUNDATION_DATE  VARCHAR(10),"                       + lf() +
-                                                           "TIMEZONE         VARCHAR(64),"   + lf() + // REFERENCES TIMEZONE
-                                                           // "TIMEZONE_ID      INTEGER REFERENCES TIMEZONE,"       + lf() +
-                                                           // "TIMEZONE_NAME    VARCHAR(64),"                       + lf() +
-                                                           "DESCRIPTION      VARCHAR(255)"
-                                                         ;
+            tableSchemas["STOCK_EXCHANGE_LIST"] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT," + lf() +
+                                                  "NAME             VARCHAR(32) NOT NULL UNIQUE,"       + lf() +
+                                                  "FOUNDATION_DATE  VARCHAR(10),"                       + lf() +
+                                                  "TIMEZONE         VARCHAR(64),"   + lf() + // REFERENCES TIMEZONE
+                                                  // "TIMEZONE_ID      INTEGER REFERENCES TIMEZONE,"       + lf() +
+                                                  // "TIMEZONE_NAME    VARCHAR(64),"                       + lf() +
+                                                  "DESCRIPTION      VARCHAR(255)"
+                                                ;
 
-            tableSchemas[QString("INSTRUMENT_LISTING_DATES")] = "INSTRUMENT_ID         INTEGER REFERENCES MARKET_INSTRUMENT," + lf() +
-                                                           "INSTRUMENT_FIGI       VARCHAR(12) NOT NULL,"                      + lf() +
-                                                           "INSTRUMENT_TICKER     VARCHAR(12) NOT NULL,"                      + lf() +
-                                                           "STOCK_EXCHANGE_ID     INTEGER REFERENCES STOCK_EXCHANGE_LIST,"    + lf() +
-                                                           "STOCK_EXCHANGE_NAME   VARCHAR(32),"                               + lf() +
-                                                           "LISTING_DATE          VARCHAR(10)"
-                                                         ;
+            tableSchemas["INSTRUMENT_LISTING_DATES"] = "INSTRUMENT_ID         INTEGER REFERENCES MARKET_INSTRUMENT," + lf() +
+                                                       "INSTRUMENT_FIGI       VARCHAR(12) NOT NULL,"                      + lf() +
+                                                       "INSTRUMENT_TICKER     VARCHAR(12) NOT NULL,"                      + lf() +
+                                                       "STOCK_EXCHANGE_ID     INTEGER REFERENCES STOCK_EXCHANGE_LIST,"    + lf() +
+                                                       "STOCK_EXCHANGE_NAME   VARCHAR(32),"                               + lf() +
+                                                       "LISTING_DATE          VARCHAR(10)"
+                                                     ;
 
-            tableSchemas[QString("INSTRUMENT_CANDLES" )] = "INSTRUMENT_ID         INTEGER REFERENCES MARKET_INSTRUMENT,"   + lf() +
-                                                           "STOCK_EXCHANGE_ID     INTEGER REFERENCES STOCK_EXCHANGE_LIST," + lf() +
-                                                           "CANDLE_RESOLUTION_ID  INTEGER REFERENCES CANDLE_RESOLUTION,"   + lf() +
-                                                           "CANDLE_DATE_TIME      VARCHAR(24) NOT NULL,"                   + lf() +
-                                                           "CURRENCY_ID           INTEGER REFERENCES CURRENCY,"            + lf() +
-                                                           "OPEN_PRICE            DECIMAL(18,8) NOT NULL,"                 + lf() +
-                                                           "CLOSE_PRICE           DECIMAL(18,8) NOT NULL,"                 + lf() +
-                                                           "HIGH_PRICE            DECIMAL(18,8) NOT NULL,"                 + lf() +
-                                                           "LOW_PRICE             DECIMAL(18,8) NOT NULL,"                 + lf() +
-                                                           "VOLUME                DECIMAL(18,8) NOT NULL"
-                                                         ;
+            tableSchemas["INSTRUMENT_CANDLES" ] = "INSTRUMENT_ID         INTEGER REFERENCES MARKET_INSTRUMENT,"   + lf() +
+                                                  "STOCK_EXCHANGE_ID     INTEGER REFERENCES STOCK_EXCHANGE_LIST," + lf() +
+                                                  "CANDLE_RESOLUTION_ID  INTEGER REFERENCES CANDLE_RESOLUTION,"   + lf() +
+                                                  "CANDLE_DATE_TIME      VARCHAR(24) NOT NULL,"                   + lf() +
+                                                  "CURRENCY_ID           INTEGER REFERENCES CURRENCY,"            + lf() +
+                                                  "OPEN_PRICE            DECIMAL(18,8) NOT NULL,"                 + lf() +
+                                                  "CLOSE_PRICE           DECIMAL(18,8) NOT NULL,"                 + lf() +
+                                                  "HIGH_PRICE            DECIMAL(18,8) NOT NULL,"                 + lf() +
+                                                  "LOW_PRICE             DECIMAL(18,8) NOT NULL,"                 + lf() +
+                                                  "VOLUME                DECIMAL(18,8) NOT NULL"
+                                                ;
 
-            tableSchemas[QString("OPERATIONS"         )] = "ID                    VARCHAR(32) NOT NULL UNIQUE,"            + lf() +
-                                                           "BROKER_ACCOUNT_TYPE_ID INTEGER REFERENCES BROKER_ACCOUNT_TYPE," + lf() +
-                                                           "OPERATION_TYPE_ID     INTEGER REFERENCES OPERATION_TYPE_WITH_COMMISSION," + lf() +
-                                                           "OPERATION_STATUS_ID   INTEGER REFERENCES OPERATION_STATUS,"    + lf() +
-                                                           "STOCK_EXCHANGE_ID     INTEGER REFERENCES STOCK_EXCHANGE_LIST," + lf() +
-                                                           "PAYMENT               DECIMAL(18,8),"                          + lf() +
-                                                           "PAYMENT_CURRENCY_ID   INTEGER REFERENCES CURRENCY,"            + lf() +
-                                                           "COMMISSION            DECIMAL(18,8),"                          + lf() +
-                                                           "COMMISSION_CURRENCY_ID INTEGER REFERENCES CURRENCY,"           + lf() +
-                                                           "QUANTITY              DECIMAL(18,8),"                          + lf() +
-                                                           "QUANTITY_EXECUTED     DECIMAL(18,8)"
-                                                         ;
+            tableSchemas["OPERATIONS"         ] = "ID                    VARCHAR(32) NOT NULL UNIQUE,"            + lf() +
+                                                  "BROKER_ACCOUNT_TYPE_ID INTEGER REFERENCES BROKER_ACCOUNT_TYPE," + lf() +
+                                                  "OPERATION_TYPE_ID     INTEGER REFERENCES OPERATION_TYPE_WITH_COMMISSION," + lf() +
+                                                  "OPERATION_STATUS_ID   INTEGER REFERENCES OPERATION_STATUS,"    + lf() +
+                                                  "STOCK_EXCHANGE_ID     INTEGER REFERENCES STOCK_EXCHANGE_LIST," + lf() +
+                                                  "PAYMENT               DECIMAL(18,8),"                          + lf() +
+                                                  "PAYMENT_CURRENCY_ID   INTEGER REFERENCES CURRENCY,"            + lf() +
+                                                  "COMMISSION            DECIMAL(18,8),"                          + lf() +
+                                                  "COMMISSION_CURRENCY_ID INTEGER REFERENCES CURRENCY,"           + lf() +
+                                                  "QUANTITY              DECIMAL(18,8),"                          + lf() +
+                                                  "QUANTITY_EXECUTED     DECIMAL(18,8)"
+                                                  ;
 
 
-            tableSchemas[QString("TRADING_TARIFF"     )] = "ID                    INTEGER PRIMARY KEY AUTOINCREMENT,"      + lf() +
-                                                           "NAME                  VARCHAR(64) NOT NULL UNIQUE,"            + lf() +
-                                                           "COMMISSION            DECIMAL(18,8),"                          + lf() +
-                                                           "DESCRIPTION           VARCHAR(255)"
-                                                         ;
+            tableSchemas["TRADING_TARIFF"     ] = "ID                    INTEGER PRIMARY KEY AUTOINCREMENT,"      + lf() +
+                                                  "NAME                  VARCHAR(64) NOT NULL UNIQUE,"            + lf() +
+                                                  "COMMISSION            DECIMAL(18,8),"                          + lf() +
+                                                  "DESCRIPTION           VARCHAR(255)"
+                                                  ;
 
-            tableSchemas[QString("TRADING_TARIFF_HISTORY")] = "TRADING_TARIFF_ID  INTEGER REFERENCES TRADING_TARIFF,"      + lf() +
-                                                           "BROKER_ACCOUNT_TYPE_ID INTEGER REFERENCES BROKER_ACCOUNT_TYPE," + lf() +
-                                                           "SINCE_DATE_TIME       VARCHAR(24) NOT NULL,"                   + lf() +
-                                                           "COMMISSION            DECIMAL(18,8)"
-                                                         ;
+            tableSchemas["TRADING_TARIFF_HISTORY"] = "TRADING_TARIFF_ID  INTEGER REFERENCES TRADING_TARIFF,"      + lf() +
+                                                     "BROKER_ACCOUNT_TYPE_ID INTEGER REFERENCES BROKER_ACCOUNT_TYPE," + lf() +
+                                                     "SINCE_DATE_TIME       VARCHAR(24) NOT NULL,"                   + lf() +
+                                                     "COMMISSION            DECIMAL(18,8)"
+                                                      ;
 
 
             /*
@@ -524,6 +524,14 @@ protected:
             initData["STOCK_EXCHANGE_LIST"] = "0,INVALID,,INVALID,Invalid stock exchange ID;"
                                               "1,MOEX,2011-12-19,MSK,PAO Moskovskaya Birzha";
 
+            initData["TRADING_TARIFF"     ] = "0,INVALID,,Invalid trading tariff;"
+                                              "1,INVESTOR,0.3,Investor trading tariff;"
+                                              "2,TRADER,0.05,Trader trading tariff - RUB 290 monthly fee;"
+                                              "3,PREMIUM,0.025,Premium trading tariff - RUB 0/990/3000 monthly fee";
+
+            initData["TRADING_TARIFF_HISTORY"] = "1,1,2021-02-14 00:00:00,0.3;"
+                                                 "2,1,2021-03-27 00:00:00,0.05";
+
         } // if (initData.empty())
 
 
@@ -564,6 +572,7 @@ protected:
 
                 QTimeZone qtz     = QTimeZone(tzIdByteArray);
                 QString   tzDescr = qtz.comment();
+                tzDescr.replace(',', '/');
                 //dataLines.push_back(QString("%1,%2,%3").arg(tzKeyId).arg(tzId).arg(tzDescr));
                 dataLines.push_back(QString("%1,%2").arg(tzId).arg(tzDescr));
                 ++tzKeyId;

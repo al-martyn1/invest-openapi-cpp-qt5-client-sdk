@@ -250,7 +250,7 @@ protected:
             QString tableInitData = getTableInitData( tableName );
 
             if (tableInitData.isEmpty() && throwIfTableUnknown)
-                throw std::runtime_error("initTablesWithPredefinedData: unknown table");
+                throw std::runtime_error(std::string("initTablesWithPredefinedData: unknown table ") + tableName.toStdString());
 
             if (throwIfInsertFailed)
             {

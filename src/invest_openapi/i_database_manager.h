@@ -180,7 +180,7 @@ struct IDatabaseManager
     virtual QVector< QVector<QString> > selectResultToStringVectors( QSqlQuery& query ) const = 0;
     virtual QVector<QString>            selectFirstResultToSingleStringVector( QSqlQuery& query ) const = 0;
 
-    virtual bool insertToImpl( const QString &tableName, const QVector< QVector<QString> > &valsVecVec, const QVector<QString> &tableColumnNames ) const = 0;
+    virtual bool insertToImpl( const QString &tableName, const QVector< QVector<QString> > &valsVecVec, QVector<QString> tableColumnNames ) const = 0;
 
     /*
     virtual bool insertTo( const QString &tableName, const QVector<QString> &valsVec, const QVector<QString> &tableColumnNames ) const

@@ -229,14 +229,17 @@ protected:
     }
 
 
-    virtual bool insertToImpl( const QString &tableName, const QVector<QVector<QString> >  &vals, const QVector<QString> &tableColumns ) const override
+    virtual bool insertToImpl( const QString &tableName, const QVector<QVector<QString> >  &vals, QVector<QString> tableColumns ) const override
     {
+        if (tableColumns.empty())
+            tableColumns = tableGetColumnsFromSchema(tableName);
+
         QVector<QString> valuesList;
 
         int columnsSize = tableColumns.size();
 
         std::transform( vals.begin(), vals.end(), std::back_inserter(valuesList)
-                      , [this, columnsSize, tableName]( const QVector<QString> &v )
+                      , [this, columnsSize, &tableColumns, tableName]( const QVector<QString> &v )
                         {
                             if (columnsSize!=v.size())
                             {
@@ -244,6 +247,9 @@ protected:
                                 throw std::runtime_error( std::string("DatabaseManagerSQLiteImplBase::insertToImpl: "
                                                                       "number of columns mismatch number of taken values for table ")
                                                         + tableName.toStdString()
+                                                        + std::string(". Columns: ") + mergeString(tableColumns, ",").toStdString()
+                                                        + std::string(", values: ")  + mergeString(v, ",").toStdString()
+
                                                         );
                             }
 
