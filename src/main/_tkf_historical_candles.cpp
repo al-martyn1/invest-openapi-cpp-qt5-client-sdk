@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <vector>
 #include <algorithm>
+#include <iterator>
 #include <map>
 #include <set>
 #include <optional>
@@ -131,7 +132,15 @@ INVEST_OPENAPI_MAIN()
 
     console_helpers::SimpleHandleCtrlC ctrlC;
 
+
+
     QElapsedTimer instrumentCandlesTimer;
+
+    QElapsedTimer singleRequestTimer;
+    singleRequestTimer.start();
+
+    unsigned singleRequestElapsedTime = 0;
+
 
     for( ; instrumentId!=instrumentIdEnd && !ctrlC.isBreaked(); ++instrumentId )
     {
@@ -152,12 +161,40 @@ INVEST_OPENAPI_MAIN()
         
 
         cout << endl << "----------------------------------------------------------------------------" << endl;
-        cout << "Processing " << figi << " (" << ticker << ") - " << instrumentName << endl;
+        cout << "!!!!! Processing instrument " << instrumentId << ", FIGI: " << figi << " (" << ticker << ") - " << instrumentName << endl;
 
-        int candleResolutionId     = dicts.getCandleResolutionIdBegin( );
-        int candleResolutionIdEnd  = dicts.getCandleResolutionIdEnd( );
 
-        for(; candleResolutionId!=candleResolutionIdEnd && !ctrlC.isBreaked(); ++candleResolutionId)
+        // Начинаем по порядку с самых жирных свечей - они теоретически помогут нам найти стартовые даты для
+        // интервалов большего разрешния, чтобы не искать лишнего вхолостую
+
+        // Есть нюанс - свечи высокого разрешения могут не существовать, даже если есть свечи низкого разрешения
+
+        // Стартовую дату я ведь так и ищу сначала через месячные свечи, потом через суточные. А вот минутных свечей
+        // много где не хватает. Так что, наверное, не стоит пока заморачиваться.
+
+        int candleResolutionBeginId  = dicts.getCandleResolutionIdBegin( );
+        int candleResolutionEndId    = dicts.getCandleResolutionIdEnd( );
+
+        int candleResolutionRBeginId = candleResolutionEndId   - 1;
+        int candleResolutionREndId   = candleResolutionBeginId - 1;
+
+        singleRequestTimer.restart();
+
+
+        std::map<int, QDate> candleIntervalStartDates;
+        candleIntervalStartDates[8] = qt_helpers::dateFromDbString("2019-01-01"); // HOUR
+        candleIntervalStartDates[7] = qt_helpers::dateFromDbString("2019-01-01"); // 30MIN
+        candleIntervalStartDates[6] = qt_helpers::dateFromDbString("2019-01-01"); // 15MIN
+        candleIntervalStartDates[5] = qt_helpers::dateFromDbString("2019-01-01"); // 10MIN
+        candleIntervalStartDates[4] = qt_helpers::dateFromDbString("2019-01-01"); // 5MIN
+        candleIntervalStartDates[3] = qt_helpers::dateFromDbString("2019-01-01"); // 3MIN
+        candleIntervalStartDates[2] = qt_helpers::dateFromDbString("2019-01-01"); // 2MIN
+        candleIntervalStartDates[1] = qt_helpers::dateFromDbString("2019-01-01"); // 1MIN
+
+
+        for( int candleResolutionId = candleResolutionRBeginId
+           ; candleResolutionId!=candleResolutionREndId && !ctrlC.isBreaked()
+           ; --candleResolutionId)
         {
             QString candleResolution = dicts.getCandleResolutionById(candleResolutionId);
             if (!dicts.isValidId(candleResolution))
@@ -165,40 +202,25 @@ INVEST_OPENAPI_MAIN()
 
             QString candleIntervalMin = dicts.getCandleResolutionIntervalMinById(candleResolutionId);
             QString candleIntervalMax = dicts.getCandleResolutionIntervalMaxById(candleResolutionId);
+            QString candleIntervalRec = dicts.getCandleResolutionIntervalRecById(candleResolutionId);
 
-            cout << "    " << "Processing candles with resolution " << candleResolution 
-                 << ", interval min: " << candleIntervalMin 
-                 << ", interval max: " << candleIntervalMax << endl;
+            cout << "      " << "Processing candles with resolution " << candleResolution 
+                 << ", interval min: " << candleIntervalMin
+                 << ", interval max: " << candleIntervalMax
+                 << ", interval rec: " << candleIntervalRec
+                 << endl;
 
             QElapsedTimer candleLastDateLookupTimer;
             candleLastDateLookupTimer.start();
 
+            bool atLeastOneCandleFound = false;
 
-            /*
-            SELECT column_list FROM table_list
-            WHERE row_filter
-            ORDER BY column
-            LIMIT count OFFSET offset
-            ORDER BY
-            column_1 ASC,
-            column_2 DESC;
-            */
 
-            /*
-             Для проверки
-             SELECT INSTRUMENT_FIGI, INSTRUMENT_TICKER, LISTING_DATE FROM INSTRUMENT_LISTING_DATES
-             ORDER BY LISTING_DATE DESC
-             LIMIT 20 OFFSET 0
-             */
-
-            // Нужно найти дату последней имеющейся свечи
+            // Нужно найти дату последней имеющейся свечи данного интервала
             // INSTRUMENT_CANDLES, поля INSTRUMENT_ID, STOCK_EXCHANGE_ID, CANDLE_RESOLUTION_ID - фильтр
             // Выбираем поле CANDLE_DATE_TIME с максимальным значением
 
-            // QVector{ instrumentId, stockExchangeId, candleResolutionId }
-            // QString::number(instrumentId)
-
-            QString selectQueryText 
+            QString selectCandleDateTimeFromInstrumentCandlesQueryText 
                         = pDbMan->makeSimpleSelectQueryText( "INSTRUMENT_CANDLES"
                                                            , "INSTRUMENT_ID,STOCK_EXCHANGE_ID,CANDLE_RESOLUTION_ID" // whereNames
                                                            , QString("%1,%2,%3").arg(instrumentId).arg(stockExchangeId).arg(candleResolutionId) // whereVals
@@ -206,10 +228,10 @@ INVEST_OPENAPI_MAIN()
                                                            );
 
             QString selectLastDateQueryText 
-                        = pDbMan->makeSelectSingleDateQuery( selectQueryText, "CANDLE_DATE_TIME", true /* true for last, false for first */ );
+                        = pDbMan->makeSelectSingleValueQuery( selectCandleDateTimeFromInstrumentCandlesQueryText , "CANDLE_DATE_TIME", true /* true for last, false for first */ );
 
 
-            bool papyNotGood = true;
+            //bool papyNotGood = true;
 
             QDateTime dtLastCandleDate;
 
@@ -220,86 +242,250 @@ INVEST_OPENAPI_MAIN()
 
             if ( !resVec.empty() && !resVec.front().isEmpty() )
             {
-                //cout << "Starting date found in INSTRUMENT_CANDLES" << endl;
                 dtLastCandleDate = qt_helpers::dateTimeFromDbString( resVec.front() );
+                cout << "/// Starting date found in INSTRUMENT_CANDLES: " << dtLastCandleDate << endl;
+
+                // К найденному значению надо прибавить значение интервала свечи, чтобы не искать с того же интервала
+                //dtLastCandleDate = qt_helpers::dtAddTimeInterval( dtLastCandleDate, candleResolution );
+
+                // Немного отступаем назад, потому что последний интервал может быть некорректным
+                // он мог быть корректным на момент запроса, но охватывать не полный период
+
+                //QString candleResolutionStr = dicts.getCandleResolutionByIdChecked( candleResolutionId );
+
+                // На всякий отступаем на два минимальных интервала.
+                QString adjustmentStr = "-" + candleIntervalMin;
+                cout << "    Adjustment                               : " << adjustmentStr << endl;
+                dtLastCandleDate = qt_helpers::dtAddTimeInterval( dtLastCandleDate, adjustmentStr );
+                dtLastCandleDate = qt_helpers::dtAddTimeInterval( dtLastCandleDate, adjustmentStr );
+
+                cout << "    Starting date adjusted                   : " << dtLastCandleDate << endl;
+
+                /*
+                if (candleResolutionId<=9)
+                {
+                    int candleResolutionBeginId  = dicts.getCandleResolutionIdBegin( );
+                    // dtLastCandleDate = qt_helpers::dtAddTimeInterval( dtLastCandleDate, "-1DAY" ); // Это слишком долго
+                }
+                else
+                {
+                    dtLastCandleDate = qt_helpers::dtAddTimeInterval( dtLastCandleDate, "-" + candleIntervalMin );
+                    //dtLastCandleDate = qt_helpers::dtAddTimeInterval( dtLastCandleDate, "-" + candleIntervalMin );
+                }
+                */
+
+                // А вот это категорически не нужно
+                #if 0
+                QDate    newDate = dtLastCandleDate.date();
+                auto    zeroTime = QTime(0 /* h */, 0 /* m */ , 0 /* s */, 0 /* ms */ );
+                QTimeZone  qtz   = dtLastCandleDate.timeZone();
+
+                dtLastCandleDate = QDateTime( newDate, zeroTime, qtz );
+                #endif
             }
 
 
+
+            //QDateTime dtLastCandleDateFromConst;
+            //QDateTime dtLastCandleDateFromListingDate;
 
             if (!tkf::isQtValidNotNull(dtLastCandleDate))
             {
-                // Если дата не найдена в таблице, ищем дату листинга инструмента на бирже
-                // INSTRUMENT_LISTING_DATES, поля INSTRUMENT_ID, STOCK_EXCHANGE_ID - фильтр
-                // Выбираем поле LISTING_DATE
+                // В таблице не нашли, значит, надо искать с начала
 
-                cout << "Looking in INSTRUMENT_LISTING_DATES" << endl;
-
-                selectQueryText 
-                        = pDbMan->makeSimpleSelectQueryText( "INSTRUMENT_LISTING_DATES"
-                                                           , "INSTRUMENT_ID,STOCK_EXCHANGE_ID" // whereNames
-                                                           , QString("%1,%2").arg(instrumentId).arg(stockExchangeId) // whereVals
-                                                           , "LISTING_DATE" // fields to select
-                                                           );
-
-                selectLastDateQueryText 
-                        = pDbMan->makeSelectSingleDateQuery( selectQueryText, "LISTING_DATE", true /* true for last, false for first */ );
-
-
-                auto resVec = pDbMan->execSelectQueryReturnFirstRow( selectLastDateQueryText );
-
-                if ( !resVec.empty() && !resVec.front().isEmpty() )
+                QDateTime dtLastCandleDateFromConst;
+               
+                // Если дата не найдена в таблице, ищем дату среди констант
+                //if (!tkf::isQtValidNotNull(dtLastCandleDate))
                 {
-                    //!!!
-                    auto date = qt_helpers::dateFromDbString( resVec.front() );
-                    //auto date = qt_helpers::dateFromDbString( "2019-02-28" );
-                    auto zeroTime = QTime(0 /* h */, 0 /* m */ , 0 /* s */, 0 /* ms */ );
-                    dtLastCandleDate = QDateTime(date, zeroTime, Qt::UTC); // .setDate(date);
+                    std::map<int, QDate>::const_iterator cdtIt = candleIntervalStartDates.find(candleResolutionId);
+                    if (cdtIt != candleIntervalStartDates.end())
+                    {
+                        auto date = cdtIt->second;
+                        auto zeroTime = QTime(0 /* h */, 0 /* m */ , 0 /* s */, 0 /* ms */ );
+                        dtLastCandleDateFromConst = QDateTime(date, zeroTime, Qt::UTC); // .setDate(date);
+                    }
+                }
+               
+               
+               
+                QDateTime dtLastCandleDateFromListingDate;
+               
+                //if (!tkf::isQtValidNotNull(dtLastCandleDate))
+                {
+                    // Если дата не найдена в таблице, ищем дату листинга инструмента на бирже
+                    // INSTRUMENT_LISTING_DATES, поля INSTRUMENT_ID, STOCK_EXCHANGE_ID - фильтр
+                    // Выбираем поле LISTING_DATE
+               
+                    cout << "      Looking in INSTRUMENT_LISTING_DATES" << endl;
+               
+                    QString selectQueryText 
+                            = pDbMan->makeSimpleSelectQueryText( "INSTRUMENT_LISTING_DATES"
+                                                               , "INSTRUMENT_ID,STOCK_EXCHANGE_ID" // whereNames
+                                                               , QString("%1,%2").arg(instrumentId).arg(stockExchangeId) // whereVals
+                                                               , "LISTING_DATE" // fields to select
+                                                               );
+               
+                    selectLastDateQueryText 
+                            = pDbMan->makeSelectSingleValueQuery( selectQueryText, "LISTING_DATE", true /* true for last, false for first */ );
+               
+               
+                    auto resVec = pDbMan->execSelectQueryReturnFirstRow( selectLastDateQueryText );
+               
+                    if ( !resVec.empty() && !resVec.front().isEmpty() )
+                    {
+                        //!!!
+                        auto date = qt_helpers::dateFromDbString( resVec.front() );
+                        //auto date = qt_helpers::dateFromDbString( "2019-02-28" );
+                        auto zeroTime = QTime(0 /* h */, 0 /* m */ , 0 /* s */, 0 /* ms */ );
+                        dtLastCandleDateFromListingDate = QDateTime(date, zeroTime, Qt::UTC); // .setDate(date);
+                    }
                 }
 
+            //QDateTime dtLastCandleDateFromConst;
+            //QDateTime dtLastCandleDateFromListingDate;
+
+                // if (!tkf::isQtValidNotNull(dtLastCandleDate))
+
+                if (!tkf::isQtValidNotNull(dtLastCandleDateFromConst) && !tkf::isQtValidNotNull(dtLastCandleDateFromListingDate))
+                {
+                    // Обе даты не установлены, берем за последний год + пара месяцев
+                    dtLastCandleDate = qt_helpers::dateTimeFromDbString("2020-01-01 00:00:00.000");
+                }
+                else if (tkf::isQtValidNotNull(dtLastCandleDateFromConst) && tkf::isQtValidNotNull(dtLastCandleDateFromListingDate))
+                {
+                    // Обе даты установлены, берём ту, которая позже
+                    dtLastCandleDate = (dtLastCandleDateFromConst > dtLastCandleDateFromListingDate) ? dtLastCandleDateFromConst : dtLastCandleDateFromListingDate;
+                }
+                else if (tkf::isQtValidNotNull(dtLastCandleDateFromConst))
+                {
+                    dtLastCandleDate = dtLastCandleDateFromConst;
+                }
+                else
+                {
+                    dtLastCandleDate = dtLastCandleDateFromListingDate;
+                }
             }
+
 
             auto elapsed = (unsigned)candleLastDateLookupTimer.restart();
 
-            cout << "    " << "DB queries performed in " << elapsed << " ms" << endl;
+            cout << "      " << "DB queries performed in " << elapsed << " ms" << endl;
 
             if (!tkf::isQtValidNotNull(dtLastCandleDate))
             {
-                cout << "    " << "Starting date not found at all" << endl;
+                cout << "      " << "Starting date not found at all" << endl;
                 continue;
             }
+
+            // Делаем std::set компрессированных дат
+            std::set< std::string > allCurCandleDates;
+            {
+                auto resVec = pDbMan->queryToSingleStringVector( pDbMan->execHelper( selectCandleDateTimeFromInstrumentCandlesQueryText ) // результат выполнения игнорим
+                                                               , 0 // индекс требуемой величины в векторо строки результата
+                                                               );
+
+                if (!resVec.empty()) // особого смысла не имеет, просто, чтобы брякнуться в отладчик, если множество не пустое
+                {
+                    transform( resVec.begin(), resVec.end()
+                             , std::inserter(allCurCandleDates, allCurCandleDates.begin())
+                             , []( const QString &dtStr )
+                                 {
+                                     return qt_helpers::compressDateTimeString<std::string,QString>(dtStr);
+                                 }
+                             );
+                }
+
+            }
+            //selectCandleDateTimeFromInstrumentCandlesQueryText
 
 
             // Ду Жоб Хере
 
-            cout << "    " << "Starting date: " << dtLastCandleDate << endl;
+            cout << "      " << "Starting date: " << dtLastCandleDate << endl;
+
 
             QDateTime curDateTime = QDateTime::currentDateTime().toUTC();
 
             std::vector< QDateTime > candleIntervals;
 
-            QDateTime dateTime = qt_helpers::makeMidnightDateTime(dtLastCandleDate);
+            QDateTime dateTime;
 
-            candleIntervals.push_back(dateTime);
+            if (candleResolutionId<=8)
+            {
+                cout << "      " << "Intraday candle interval detected" << endl;
+                // Свечи внутри дня
+
+                // Нужно захватить конец дня
+
+                dateTime = dtLastCandleDate;
+                QDateTime dateTimeDayStart = qt_helpers::makeMidnightDateTime(dateTime);
+                if (dateTimeDayStart==dateTime)
+                {
+                    // Дата время совпадает с началом дня - ничего не делаем
+                    cout << "      " << "Starting date-time equals to day start" << endl;
+                    candleIntervals.push_back(dateTime);
+                }
+                else
+                {
+                    // Кладём стартовую дату-время, обнуляем время, и прибавляем интервал - он будет стартовой датой для дальнейшего алгоритма
+                    // Таким образом, добавили хвостик от текущего дня до начала следующего
+                    cout << "      " << "Starting date-time NOT equals to day start, starting date-time: " << dateTime << endl;
+                    candleIntervals.push_back(dateTime);
+                    dateTime = qt_helpers::dtAddTimeInterval(dateTimeDayStart, candleIntervalRec);
+                    if (dateTime == curDateTime)
+                        dateTime = curDateTime;
+                    cout << "      " << "                                    starting day end date-time: " << dateTime << endl;
+                    candleIntervals.push_back(dateTime);
+                }
+
+            }
+            else
+            {
+                dateTime = qt_helpers::makeMidnightDateTime(dtLastCandleDate);
+                candleIntervals.push_back(dateTime);
+            }
+
 
             while(true)
             {
-                QDateTime nextDateTime = qt_helpers::dtAddTimeInterval(dateTime, candleIntervalMax);
+                QDateTime nextDateTime = qt_helpers::dtAddTimeInterval(dateTime, candleIntervalRec);
 
-                //cout << "    " << "Next: " << nextDateTime << endl;
+                //cout << "      " << "Next date    : " << nextDateTime << endl;
 
                 if (nextDateTime>curDateTime)
-                {
                     nextDateTime = curDateTime;
-                    candleIntervals.push_back(nextDateTime);
-                    break;
-                }
 
-                candleIntervals.push_back(nextDateTime);
+                if (candleIntervals.empty())
+                {
+                    candleIntervals.push_back(nextDateTime);
+                }
+                else
+                {
+                    if (nextDateTime > candleIntervals.back())
+                    {
+                        candleIntervals.push_back(nextDateTime);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
 
                 dateTime = nextDateTime;
 
             }
 
+            cout << "------------------------------" << endl;
+            cout << "!!! Calculated start date&times for " << candleResolution << " candles" << endl;
+            for( std::vector< QDateTime >::const_iterator dtIt = candleIntervals.begin(); dtIt != candleIntervals.end(); ++dtIt )
+            {
+                cout << "        " << *dtIt << endl;
+            }
+            cout << endl;
+
+
+            /*
             std::vector< QDateTime >::const_iterator intervalIt    = candleIntervals.begin();
             std::vector< QDateTime >::const_iterator intervalItEnd = candleIntervals.end();
 
@@ -311,65 +497,163 @@ INVEST_OPENAPI_MAIN()
             std::vector< QDateTime >::const_iterator curIntervalItBegin = intervalIt;
             ++intervalIt;
             std::vector< QDateTime >::const_iterator curIntervalItEnd   = intervalIt;
+            */
 
-            for( ; curIntervalItEnd!=intervalItEnd; ++curIntervalItBegin, ++curIntervalItEnd )
+            if (candleIntervals.size()<2)
+            {
+                cout << "/// Number of candle dates less from 2" << endl;
+                continue;
+            }
+
+            std::vector< QDateTime >::size_type candleIntervalStartIdx = 0;
+            std::vector< QDateTime >::size_type candleIntervalEndIdx   = 1;
+
+            unsigned numItemsInPrevCandleResponse = 0;
+
+            singleRequestTimer.restart();
+
+            for( ; candleIntervalEndIdx!=candleIntervals.size(); ++candleIntervalStartIdx, ++candleIntervalEndIdx )
             {
                 //cout << "    " << *curIntervalItBegin << " - " << *curIntervalItEnd << endl;
 
-                QTest::qWait(350);
+                singleRequestElapsedTime = (unsigned)singleRequestTimer.restart();
+
+                QDateTime candleIntervalStartDateTime = candleIntervals[candleIntervalStartIdx];
+                QDateTime candleIntervalEndDateTime   = candleIntervals[candleIntervalEndIdx];
+
+                cout << "------------------------------" << endl
+                     << "!!! Candles for instrument " << instrumentId << ", FIGI: " << figi << " (" << ticker << ") - " << instrumentName << endl
+                     << "    Resolution: " << candleResolution 
+                     << ", interval: " << candleIntervalMax << endl
+                     << "    Start date: " << candleIntervalStartDateTime << endl
+                     << "    End   date: " << candleIntervalEndDateTime << endl
+                     
+                     << endl
+                     << "    Prev request completed at ??? : " << singleRequestElapsedTime << " ms" << endl
+                     << "    Total candle items in response: " << numItemsInPrevCandleResponse
+                     << endl
+                     ;
+
+                if ( candleIntervalStartDateTime.offsetFromUtc() != 0 )
+                {
+                    cout << "*** Abort: interval start date&time is not UTC" << endl;
+                    return 1;
+                }
+
+                if ( candleIntervalEndDateTime.offsetFromUtc() != 0 )
+                {
+                    cout << "*** Abort: interval end date&time is not UTC" << endl;
+                    return 1;
+                }
 
 
-                cout << "Retrieving data from server" << endl;
+                // Разрешено не более 120 запросов в минуту
+                const unsigned defaultDelay = 60*1000 / 120 + 50; // Подождать чуть дольше - не жалко
+                // Всё равно на порядок больше выиграли, когда стали добавлять дынные пачками
+
+                unsigned waitTime = 0;
+
+                if (singleRequestElapsedTime<defaultDelay)
+                {
+                    unsigned delayTime = defaultDelay - singleRequestElapsedTime;
+                    cout << "    Waiting for " << delayTime << " ms" << endl;
+                    QTest::qWait(delayTime);
+                }
+
+                // cout << "Retrieving data from server" << endl;
+
+                #if defined(DEBUG) || defined(_DEBUG)
+
+                QString candleIntervalStartDateStr = qt_helpers::dateTimeToDbString(candleIntervalStartDateTime);
+                QString candleIntervalEndDateStr   = qt_helpers::dateTimeToDbString(candleIntervalEndDateTime);
+
+                do
+                {
+                } while(0);
+               
+                #endif
+
 
                 auto // CandlesResponse
-                candlesRes = pOpenApi->marketCandles( figi, *curIntervalItBegin, *curIntervalItEnd, candleResolution );
+                //candlesRes = pOpenApi->marketCandles( figi, *curIntervalItBegin, *curIntervalItEnd, candleResolution );
+                //candlesRes = pOpenApi->marketCandles( figi, candleIntervals[candleIntervalStartIdx], candleIntervals[candleIntervalEndIdx], candleResolution );
+                candlesRes = pOpenApi->marketCandles( figi, candleIntervalStartDateTime, candleIntervalEndDateTime, candleResolution );
+                
                
                 candlesRes->join();
-               
-                //auto timeElapsed = timer.restart();
-               
-                //tkf::checkAbort(candlesRes);
 
                 if (candlesRes->isCompletionError())
                 {
-                    cout << "Failed to get " << candleResolution << " candles for " << figi << " (" << ticker << ") on interval: " << *curIntervalItBegin << " - " << *curIntervalItEnd << endl;
+                    cout << endl
+                         << "*** Error: (HTTP/Server error) failed to get " << candleResolution 
+                         << " candles for " << figi << " (" << ticker << ") on interval: " 
+                         << candleIntervalStartDateTime << " - " << candleIntervalEndDateTime << endl
+                         << "    Error message: " << candlesRes->getErrorMessage() << endl
+                         << endl;
                     continue;
                 }
 
+                QElapsedTimer dbInsertionsTimer;
+                dbInsertionsTimer.start();
+
                 //std::vector<tkf::Candle>
                 auto candles = tkf::makeVectorFromList(candlesRes->value.getPayload().getCandles());
+
+                if (!candles.empty())
+                    atLeastOneCandleFound = true;
+
+                if ( candleResolutionId<=8 && !atLeastOneCandleFound )
+                {
+                    // Нет свечей часовых или на более короткие интервалы на данную дату
+                    // Логично предположить, что и более коротких свечей тоже нет.
+                    // Поэтому для более коротких свечей смещаем стартовую дату до текущей
+
+                    QDate startDate = candleIntervalStartDateTime.date();
+
+                    for( int idx=candleResolutionId; idx!=0; --idx )
+                    {
+                        candleIntervalStartDates[idx] = startDate;
+                    }
+
+                }
+
+                QVector< QVector<QString> > candleDataForInsertion;
 
                 for( const auto &candle : candles )
                 {
                     if (!candle.isSet())
                     {
-                        cout << "Candle not set" << endl;
+                        cout << endl
+                             << "*** Error: Candle not set" 
+                             << endl;
                         continue;
                     }
 
                     if (!candle.isValid())
                     {
-                        cout << "Candle not is not valid" << endl;
+                        cout << endl
+                             << "*** Error: Candle not is not valid" 
+                             << endl;
                         continue;
                     }
 
                     auto candleFigi = candle.getFigi();
                     if (candleFigi!=figi)
                     {
-                        cout << "Candle FIGI (" << candleFigi << " not equal to current instrument FIGI (" << figi << ")"<< endl;
+                        cout << endl
+                             << "*** Error: Candle FIGI (" << candleFigi << " not equal to current instrument FIGI (" << figi << ")"
+                             << endl;
                         continue;
                     }
 
-                    /*
-                    QString getFigi() const;
-                    CandleResolution getInterval() const;
-                    marty::Decimal getO() const;
-                    marty::Decimal getC() const;
-                    marty::Decimal getH() const;
-                    marty::Decimal getL() const;
-                    qint32         getV() const;
-                    QDateTime getTime() const;
-                    */
+                    // Почему-то иногда вылетает добавление в базу по юник констрайнту
+                    // Добавлять мы хотим пачкой - это на порядок быстрее, поэтому надо убедится, что такой даты в базе 
+                    // для данного свечного интервала, инструмента и биржи - нет
+
+                    // std::set< std::string > allCurCandleDates;
+                    auto candleDt = candle.getTime();
+                    QString candleDtStr = qt_helpers::dateTimeToDbString( candleDt );
+                    std::string compressedCandleDtStr = qt_helpers::compressDateTimeString<std::string,QString>(candleDtStr);
 
                     // Table: INSTRUMENT_CANDLES
                     //auto instrumentCandlesTableFields = QString("INSTRUMENT_ID,STOCK_EXCHANGE_ID,CANDLE_RESOLUTION_ID,CANDLE_DATE_TIME,CURRENCY_ID,OPEN_PRICE,CLOSE_PRICE,HIGH_PRICE,LOW_PRICE,VOLUME");
@@ -377,25 +661,78 @@ INVEST_OPENAPI_MAIN()
                                                  .arg(instrumentId)         // INSTRUMENT_ID
                                                  .arg(stockExchangeId)      // STOCK_EXCHANGE_ID
                                                  .arg(candleResolutionId)   // CANDLE_RESOLUTION_ID
-                                                 .arg(qt_helpers::dateTimeToDbString(candle.getTime())) // CANDLE_DATE_TIME
+                                                 .arg(candleDtStr)          // CANDLE_DATE_TIME
                                                  .arg(instrumentCurrencyId) // CURRENCY_ID
-                                                 .arg(QString::fromStdString(candle.getO().toString()))       // OPEN_PRICE 
-                                                 .arg(QString::fromStdString(candle.getC().toString()))       // CLOSE_PRICE
-                                                 .arg(QString::fromStdString(candle.getH().toString()))       // HIGH_PRICE 
-                                                 .arg(QString::fromStdString(candle.getL().toString()))       // LOW_PRICE  
-                                                 .arg(QString::number(candle.getV())) // VOLUME     
+                                                 .arg(QString::fromStdString(candle.getO().toString())) // OPEN_PRICE 
+                                                 .arg(QString::fromStdString(candle.getC().toString())) // CLOSE_PRICE
+                                                 .arg(QString::fromStdString(candle.getH().toString())) // HIGH_PRICE 
+                                                 .arg(QString::fromStdString(candle.getL().toString())) // LOW_PRICE  
+                                                 .arg(QString::number(candle.getV()))                   // VOLUME     
                                                  ;
 
-                    cout << "Inserting data to DB" << endl;
+                    // cout << "Inserting data to DB" << endl;
 
+                    if (allCurCandleDates.find(compressedCandleDtStr) != allCurCandleDates.end())
+                    {
+                         cout
+                         << "Candles for " << figi << " (" << ticker << "), resolution: " << candleResolution 
+                         << " started at : " 
+                         << candleDtStr /* candleIntervalStartDateTime */  << " - already exist in DB" << endl;
+
+                         // QStringList fieldsLstTmp    = instrumentCandlesTableFields.split(',');
+                         // QStringList whereFieldsList = QStringList( fieldsLstTmp.begin(), std::advance(fieldsLstTmp.begin(), 4) );
+
+                         // QStringList valuesLstTmp    = valuesToInsert.split(',');
+                         // QStringList whereValuesList = QStringList( valuesLstTmp.begin(), std::advance(valuesLstTmp.begin(), 4) );
+
+                         QStringList whereFieldsList = tkf::getPartialStringList( instrumentCandlesTableFields.split(',', Qt::KeepEmptyParts), 4 );
+                         QStringList whereValuesList = tkf::getPartialStringList( valuesToInsert              .split(',', Qt::KeepEmptyParts), 4 );
+
+                         QString whereFieldsStr = tkf::mergeString(whereFieldsList, ",");
+                         QString whereValuesStr = tkf::mergeString(whereValuesList, ",");
+                         
+
+                         QString updateQuery = pDbMan->makeSimpleUpdateQueryText( "INSTRUMENT_CANDLES"
+                                                                                , whereFieldsStr // whereFields
+                                                                                , whereValuesStr // whereVal
+                                                                                , tkf::convertToQVectorOfQStrings(valuesToInsert) // valuesToInsert
+                                                                                , instrumentCandlesTableFields // whereName
+                                                                                );
+
+                        pDbMan->execHelper( updateQuery );
+
+                        continue;
+                    }
+
+                    allCurCandleDates.insert(compressedCandleDtStr);
+
+
+                    candleDataForInsertion.push_back( tkf::convertToQVectorOfQStrings(valuesToInsert) );
+                    /*
                     //QVector<QString> valsVec = {valuesToInsert};
                     pDbMan->insertTo( "INSTRUMENT_CANDLES"
                                     , QVector< QVector<QString> >{ tkf::convertToQVectorOfQStrings(valuesToInsert) }
                                     , instrumentCandlesTableFields
                                     );
+                    */
+
+                } // for( const auto &candle : candles )
+
+                numItemsInPrevCandleResponse = candleDataForInsertion.size();
+
+                if (!candleDataForInsertion.empty())
+                {
+                    pDbMan->insertTo( "INSTRUMENT_CANDLES"
+                                    , candleDataForInsertion
+                                    , instrumentCandlesTableFields
+                                    );
                 }
 
-
+                cout << endl
+                     << "Insertions time summary: " << (unsigned)dbInsertionsTimer.elapsed()
+                     << endl
+                     << endl
+                     ;
 
             /*
             tableSchemas[QString("INSTRUMENT_CANDLES" )] = "INSTRUMENT_ID         INTEGER REFERENCES MARKET_INSTRUMENT,"   + lf() +
@@ -411,8 +748,6 @@ INVEST_OPENAPI_MAIN()
                                                          ;
             */    
 
-                
-
             }
 
 
@@ -424,8 +759,9 @@ INVEST_OPENAPI_MAIN()
             //QDateTime qt_helpers::dtAddTimeInterval( const QDateTime &dt, QString intervalStr, int forceSign = 0 /* 0 - use default */ )
 
 
-
-
+            cout
+                 << endl
+                 ;
 
 
         } // for(; candleResolutionId!=candleResolutionIdEnd && !ctrlC.isBreaked(); ++candleResolutionId)

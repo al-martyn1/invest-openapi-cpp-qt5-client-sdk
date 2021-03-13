@@ -461,18 +461,19 @@ protected:
                                               "3,BOND,Bonds;"
                                               "4,ETF,Etfs";
            
-            initData["CANDLE_RESOLUTION"  ] = "0,INVALID,INVALID,INVALID,Invalid CandleResolution value;"
-                                              "1,1MIN,1MIN,1DAY,1 min;"                        /* 1min [1 minute, 1 day]    */
-                                              "2,2MIN,2MIN,1DAY,2 min;"                        /* 2min [2 minutes, 1 day]   */
-                                              "3,3MIN,3MIN,1DAY,3 min;"                        /* 3min [3 minutes, 1 day]   */
-                                              "4,5MIN,5MIN,1DAY,5 min;"                        /* 5min [5 minutes, 1 day]   */
-                                              "5,10MIN,10MIN,1DAY,10 min;"                     /* 10min [10 minutes, 1 day] */
-                                              "6,15MIN,15MIN,1DAY,15 min;"                     /* 15min [15 minutes, 1 day] */
-                                              "7,30MIN,30MIN,1DAY,30 min;"                     /* 30min [30 minutes, 1 day] */
-                                              "8,HOUR,1HOUR,7DAY,Hour (60 min);"               /* hour [1 hour, 7 days]     */
-                                              "9,DAY,1DAY,1YEAR,Day (1440 min);"               /* day [1 day, 1 year]       */
-                                              "10,WEEK,7DAY,2YEAR,Week (10080 min);"           /* week [7 days, 2 years]    */
-                                              "11,MONTH,1MONTH,10YEAR,Month (Avg 43200 min)";  /* month [1 month, 10 years] */
+            // ID, RESOLUTION, INTERVAL_MIN, INTERVAL_MAX, INTERVAL_RECOMENDED_INCREMENT, DESCRIPTION
+            initData["CANDLE_RESOLUTION"  ] = "0,INVALID,INVALID,INVALID,INVALID,Invalid CandleResolution value;"
+                                              "1,1MIN,1MIN,1DAY,1DAY,1 min;"                        /* 1min [1 minute, 1 day]    */
+                                              "2,2MIN,2MIN,1DAY,1DAY,2 min;"                        /* 2min [2 minutes, 1 day]   */
+                                              "3,3MIN,3MIN,1DAY,1DAY,3 min;"                        /* 3min [3 minutes, 1 day]   */
+                                              "4,5MIN,5MIN,1DAY,1DAY,5 min;"                        /* 5min [5 minutes, 1 day]   */
+                                              "5,10MIN,10MIN,1DAY,1DAY,10 min;"                     /* 10min [10 minutes, 1 day] */
+                                              "6,15MIN,15MIN,1DAY,1DAY,15 min;"                     /* 15min [15 minutes, 1 day] */
+                                              "7,30MIN,30MIN,1DAY,1DAY,30 min;"                     /* 30min [30 minutes, 1 day] */
+                                              "8,HOUR,1HOUR,7DAY,7DAY,Hour (60 min);"               /* hour [1 hour, 7 days]     */
+                                              "9,DAY,1DAY,1YEAR,1YEAR,Day (1440 min);"               /* day [1 day, 1 year]       */
+                                              "10,WEEK,7DAY,2YEAR,1YEAR,Week (10080 min);"           /* week [7 days, 2 years]    */
+                                              "11,MONTH,1MONTH,10YEAR,5YEAR,Month (Avg 43200 min)";  /* month [1 month, 10 years] */
            
             initData["OPERATION_TYPE"     ] = "0,INVALID,Invalid OperationType value;"
                                               "1,BUY,Purchaise;"

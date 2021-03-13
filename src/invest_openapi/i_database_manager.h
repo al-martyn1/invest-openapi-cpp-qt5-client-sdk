@@ -155,17 +155,17 @@ struct IDatabaseManager
 
 
 
-    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &values, QVector<QString >  fields = QVector<QString >() ) const = 0;
-    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &values, const QStringList &fields ) const
+    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereNames, const QString &whereVals, const QVector<QString > &values, QVector<QString >  fields = QVector<QString >() ) const = 0;
+    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereNames, const QString &whereVals, const QVector<QString > &values, const QStringList &fields ) const
     {
-        return makeSimpleUpdateQueryText( tableName, whereName, whereVal, values, convertToQVectorOfQStrings(fields)  );
+        return makeSimpleUpdateQueryText( tableName, whereNames, whereVals, values, convertToQVectorOfQStrings(fields)  );
     }
-    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &values, const QString     &fields ) const
+    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereNames, const QString &whereVals, const QVector<QString > &values, const QString     &fields ) const
     {
-        return makeSimpleUpdateQueryText( tableName, whereName, whereVal, values, convertToQVectorOfQStrings(fields)  );
+        return makeSimpleUpdateQueryText( tableName, whereNames, whereVals, values, convertToQVectorOfQStrings(fields)  );
     }
 
-    virtual QString     makeSelectSingleDateQuery( const QString &queryText, const QString &dateField, bool fLast /* true for last, false for first */ ) const = 0;
+    virtual QString     makeSelectSingleValueQuery( const QString &queryText, const QString &valueField, bool fLast /* true for last, false for first */ ) const = 0;
 
 
     virtual QVector<QString> tableGetNamesFromDb    () const = 0;

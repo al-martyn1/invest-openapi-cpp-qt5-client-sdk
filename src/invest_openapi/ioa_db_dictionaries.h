@@ -477,6 +477,7 @@ public:
     // Но другое и не нужно, ID берём от CandleResolution
     IOA_DB_DICTIONARIES_DEFINE_LOAD_AND_GETTERS( CandleResolutionIntervalMin , candleResolutionIntervalMinToId , idToCandleResolutionIntervalMin , "CANDLE_RESOLUTION"             , "ID,INTERVAL_MIN" )
     IOA_DB_DICTIONARIES_DEFINE_LOAD_AND_GETTERS( CandleResolutionIntervalMax , candleResolutionIntervalMaxToId , idToCandleResolutionIntervalMax , "CANDLE_RESOLUTION"             , "ID,INTERVAL_MAX" )
+    IOA_DB_DICTIONARIES_DEFINE_LOAD_AND_GETTERS( CandleResolutionIntervalRec , candleResolutionIntervalRecToId , idToCandleResolutionIntervalRec , "CANDLE_RESOLUTION"             , "ID,INTERVAL_RECOMENDED_INCREMENT" )
 
     IOA_DB_DICTIONARIES_DEFINE_LOAD_AND_GETTERS( Currency                    , currencyToId                    , idToCurrency                    , "CURRENCY"                      , "ID,NAME" )
 
@@ -573,6 +574,7 @@ public:
         loadCandleResolutionDictionary( pDbMan );
         loadCandleResolutionIntervalMinDictionary( pDbMan );
         loadCandleResolutionIntervalMaxDictionary( pDbMan );
+        loadCandleResolutionIntervalRecDictionary( pDbMan );
 
         loadCurrencyDictionary( pDbMan );
 

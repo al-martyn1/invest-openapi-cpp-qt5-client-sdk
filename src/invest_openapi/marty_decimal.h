@@ -33,16 +33,19 @@ typedef std::int32_t   DecimalDenumeratorSignedRawType;
 //  1 000 000 000.000 000  000 - 10**9 -  миллиард - бюджет страны верстать не выйдет с точностью 9 нулей после точки
 //  1 000 000 000 000 00.0 000 - 10**15 - 100 трлн с точностью до сотых копейки - для домашней бухгалтерии норм
 
-typedef std::int64_t   DecimalNumeratorRawType;
+typedef std::int64_t    DecimalNumeratorRawType;
+typedef std::uint64_t   DecimalNumeratorUnsignedRawType;
 
 
 
 //----------------------------------------------------------------------------
 class DecimalDenumerator;
+class Decimal;
 
 class DecimalPrecision
 {
     friend class DecimalDenumerator;
+    friend class Decimal;
 
     std::uint32_t m_precision;
 
@@ -319,12 +322,14 @@ class Decimal
 
 public:
 
-    typedef DecimalNumeratorRawType           num_t      ;
-    typedef DecimalDenumerator::denum_t       denum_t    ;
-    typedef DecimalDenumerator::sdenum_t      sdenum_t   ;
-    typedef DecimalDenumerator::precision_t   precision_t;
+    typedef DecimalNumeratorRawType             num_t      ;
+    typedef DecimalNumeratorUnsignedRawType     unum_t     ;
+    
+    typedef DecimalDenumerator::denum_t         denum_t    ;
+    typedef DecimalDenumerator::sdenum_t        sdenum_t   ;
+    typedef DecimalDenumerator::precision_t     precision_t;
 
-    typedef DecimalDenumerator                DenumeratorType;
+    typedef DecimalDenumerator                  DenumeratorType;
 
 
     friend std::string decimalToString  ( Decimal d, precision_t p );
@@ -332,6 +337,29 @@ public:
     friend void swap( Decimal &d1, Decimal &d2 );
 
 
+    static
+    precision_t maxPrecision()
+    {
+        return DecimalPrecision::maxPrecision<num_t>();
+    }
+
+    //singleRequestTimer
+    //num_t               m_num;
+
+    //! Возвращает максимальный десятичный множитель (его степень), на который может быть умножено число без переполнения
+    denum_t findMaxDecimalScalePower() const
+    {
+        unum_t unum = (unum_t)( (m_num<0) ? -m_num : m_num );
+
+        denum_t maxScalePower = (denum_t)maxPrecision();
+
+        denum_t curScalePower = 0;
+
+        for(; unum!=0; unum /= 10, ++curScalePower ) {}
+
+        return maxScalePower - curScalePower;
+
+    }
 
     static Decimal fromString( const std::string &s )
     {

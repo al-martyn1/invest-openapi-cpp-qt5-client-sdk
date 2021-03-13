@@ -197,7 +197,7 @@ protected:
                                      .arg(mergeString(whereVec, " AND "));
     }
 
-    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereName, const QString &whereVal, const QVector<QString > &values, QVector<QString > fields = QVector<QString >() ) const override
+    virtual QString     makeSimpleUpdateQueryText( const QString &tableName, const QString &whereNames, const QString &whereVals, const QVector<QString > &values, QVector<QString > fields = QVector<QString >() ) const override
     {
         if (fields.empty())
             fields = tableGetColumnsFromSchema(tableName);
@@ -211,19 +211,35 @@ protected:
             setPairs.push_back( QString("%1 = %2").arg(fields[idx]).arg(sqlQuote(values[idx])) );
         }
 
-        QString queryText = QString("UPDATE %1 SET %2").arg(tableName).arg(mergeString(setPairs, ", "));
-        if (whereName.isEmpty() || whereVal.isEmpty())
+        QString queryText = QString("UPDATE %1%2SET%3%4").arg(tableName).arg(lf()).arg(lf()).arg(mergeString(setPairs, ", "));
+        //if (whereName.isEmpty() || whereVal.isEmpty())
+        //    return queryText;
+
+        QVector<QString> whereNamesVec = convertToQVectorOfQStrings( whereNames.split(',', Qt::KeepEmptyParts) );
+        QVector<QString> whereValsVec  = convertToQVectorOfQStrings( whereVals .split(',', Qt::KeepEmptyParts) );
+        
+        if (whereNamesVec.size()!=whereValsVec.size())
+            throw std::runtime_error("makeSimpleUpdateQueryText: Number of 'where' fields mismatch number of 'where' vals");
+
+        if (whereNamesVec.empty())
             return queryText;
 
-        return queryText + QString(" WHERE %1 = %2").arg(whereName).arg(sqlQuote(whereVal));
+        QVector<QString> whereVec;
+
+        for( int idx=0; idx<whereNamesVec.size(); ++idx)
+        {
+            whereVec.push_back( QString("%1 = %2").arg(whereNamesVec[idx]).arg(sqlQuote(whereValsVec[idx])) );
+        }
+
+        return QString("%1%2WHERE%3%4").arg(queryText).arg(lf()).arg(lf()).arg(mergeString(whereVec, " AND "));
     }
 
-    virtual QString     makeSelectSingleDateQuery( const QString &queryText, const QString &dateField, bool fLast /* true for last, false for first */ ) const override
+    virtual QString     makeSelectSingleValueQuery( const QString &queryText, const QString &valueField, bool fLast /* true for last, false for first */ ) const override
     {
         return QString("%1%2ORDER BY %3 %4%5LIMIT 1 OFFSET 0")
                       .arg(queryText)
                       .arg(lf())
-                      .arg(dateField)
+                      .arg(valueField)
                       .arg( fLast ? "DESC" : "ASC" )
                       .arg(lf());
     }

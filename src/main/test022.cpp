@@ -213,14 +213,18 @@ INVEST_OPENAPI_MAIN()
             candleDateTimes.push_back(curDateTime);
             {
                 QDate todayBeginDate = curDateTime.date();
-                QDateTime todayBeginDateTime; todayBeginDateTime.setDate(todayBeginDate);
+
+                QDateTime todayBeginDateTime = QDateTime( curDateTime.date(), QTime(0, 0, 0, 0 ), Qt::UTC );
+                //todayBeginDateTime.setDate(todayBeginDate);
                 candleDateTimes.push_back(todayBeginDateTime);
+                curDateTime = todayBeginDateTime;
             }
        
-            for( unsigned i=0; i!=15; ++i )
+            for( unsigned i=0; i!=12; ++i )
             {
-                QDate prevDate = curDateTime.date().addDays(-1);
-                QDateTime prevDateTime; prevDateTime.setDate(prevDate);
+                //QDate prevDate = curDateTime.date().addDays(-1);
+                //QDateTime prevDateTime; prevDateTime.setDate(prevDate);
+                QDateTime prevDateTime = qt_helpers::dtAddTimeInterval( curDateTime, "-1DAY" );
                 candleDateTimes.push_back(prevDateTime);
                 curDateTime = prevDateTime;
             }
@@ -228,6 +232,13 @@ INVEST_OPENAPI_MAIN()
             std::reverse( candleDateTimes.begin(), candleDateTimes.end() );
        
             // Самые последние - теперь в конце
+
+            cout << "Query candles for dates:" << endl;
+            for( std::vector<QDateTime>::const_iterator it = candleDateTimes.begin(); it != candleDateTimes.end(); ++it)
+            {
+                cout << "    " << *it << endl;
+            }
+            cout << endl;
        
             // Получаем пятиминутные свечи за последние 12 дней (самые длинные каникулы меньше, поэтому что-то да получим)
             // Это нужно, чтобы узнать актуальную стоимость инструмента
@@ -236,8 +247,17 @@ INVEST_OPENAPI_MAIN()
        
             for( unsigned i=0; i!=(candleDateTimes.size()-1); ++i )
             {
+                QDateTime startDateTime = candleDateTimes[i];
+                QDateTime endDateTime   = candleDateTimes[i+1];
+
+                if (startDateTime>endDateTime)
+                {
+                    std::swap(startDateTime,endDateTime);
+                }
+
+
                 auto // CandlesResponse
-                candlesRes = pOpenApi->marketCandles( figi, candleDateTimes[i], candleDateTimes[i+1], "5MIN" );
+                candlesRes = pOpenApi->marketCandles( figi, startDateTime, endDateTime, "5MIN" );
                
                 candlesRes->join();
        
@@ -249,7 +269,8 @@ INVEST_OPENAPI_MAIN()
        
                 // 1 запрос - 0.2 секунды (примерно, на практике), всего 3 секунды чистого времени
                 // Притормаживаем на 0.3 секунды, чтобы уложиться в лимит 120 запросов в минуту
-                QTest::qWait(300);
+                //QTest::qWait(300);
+                QTest::qWait(5000); // У нас паралелльно идёт закачка свеч, чтобы не сломать её
        
                 // Итого 7.5 секунды на инструмент
             }
@@ -360,7 +381,7 @@ INVEST_OPENAPI_MAIN()
 
         } // for( const auto &op : operations )
 
-        QTest::qWait(1000);
+        QTest::qWait(5000);
 
     } // for( auto figi : balanceConfig.figis ) 
 
@@ -375,6 +396,9 @@ INVEST_OPENAPI_MAIN()
     cout << "----------------------------------------------------------------------------" << endl;
     cout << "Found Operation Statuses" << endl;
     printMapOfFigiSets( foundOperationStatuses, figiToTicker );
+
+
+    //#define DETAILED_REPORT
 
 
     for( auto figi : balanceConfig.figis ) 
@@ -405,9 +429,11 @@ INVEST_OPENAPI_MAIN()
 
         std::map< QString, marty::Decimal > portfolioFigiCurrencyAverageCost;
 
+        #if defined(DETAILED_REPORT)
         cout << "Instrument Portfolio Balance" << endl;
         cout << "Balance: " << portfolioFigiBalance[figi] << endl;
         cout << "Instrument Average Portfolio Cost" << endl;
+        #endif
 
 
         QString        instrumentCurrency; // Also used for candles
@@ -436,7 +462,9 @@ INVEST_OPENAPI_MAIN()
 
             instrumentPositionsAverageCost = cost;
 
+            #if defined(DETAILED_REPORT)
             cout << "    " << currentCurrency << " : " << figiBalanceIt->second << " x " << curIt->second << " = " << cost << endl;
+            #endif
         }
 
 
@@ -448,7 +476,9 @@ INVEST_OPENAPI_MAIN()
             {
                 // figiBalanceIt->second
 
+                #if defined(DETAILED_REPORT)
                 cout << "Instrument Current Portfolio Cost" << endl;
+                #endif
                
                 auto avgCurrentPrice = ( figiCandleIt->second.getO() + figiCandleIt->second.getC() ) / marty::Decimal(2);
 
@@ -456,7 +486,9 @@ INVEST_OPENAPI_MAIN()
 
                 figiCurrencyTotalBalance[instrumentCurrency] += cost;
                
+                #if defined(DETAILED_REPORT)
                 cout << "    " << instrumentCurrency << " : " << figiBalanceIt->second << " x " << avgCurrentPrice << " = " << cost << endl;
+                #endif
 
                 auto deltaCost = cost - instrumentPositionsAverageCost;
 
@@ -487,21 +519,31 @@ INVEST_OPENAPI_MAIN()
 
                      figiCurrencyTotalBalance[currentCurrency] += curIt->second;
 
+                     #if defined(DETAILED_REPORT)
                      cout << "    " << currentCurrency << " : " << curIt->second << endl;
+                     #endif
                  }
 
              };
 
+        #if defined(DETAILED_REPORT)
         cout << "Instrument Buy/Sale Balance" << endl;
+        #endif
         processCurrencies( figiCurrencyBalance );
 
+        #if defined(DETAILED_REPORT)
         cout << "Instrument Commission Balance" << endl;
+        #endif
         processCurrencies( figiCurrencyCommission );
 
+        #if defined(DETAILED_REPORT)
         cout << "Instrument Devidends Balance" << endl;
+        #endif
         processCurrencies( figiCurrencyDevidends );
 
+        #if defined(DETAILED_REPORT)
         cout << "Instrument Devidends Tax Balance" << endl;
+        #endif
         processCurrencies( figiCurrencyDevidendsTax );
 
 

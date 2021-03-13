@@ -1,19 +1,6 @@
 #pragma once
 
-#include <QTimeZone>
-#include <QDate>
-#include <QTime>
-#include <QString>
-#include <QByteArray>
-#include <QDateTime>
-
-#include <vector>
-#include <map>
-#include <set>
-#include <algorithm>
-#include <string>
-#include <exception>
-#include <stdexcept>
+#include "qt_basic_time_helpers.h"
 
 //----------------------------------------------------------------------------
 
@@ -29,111 +16,17 @@ namespace qt_helpers
 
 //----------------------------------------------------------------------------
 inline
-QDateTime makeMidnightDateTime( const QDate &date )
-{
-    auto zeroTime = QTime(0 /* h */, 0 /* m */ , 0 /* s */, 0 /* ms */ );
-    return QDateTime(date, zeroTime, Qt::UTC);
-}
-
-//----------------------------------------------------------------------------
-inline
-QDateTime makeMidnightDateTime( const QDateTime &dt )
-{
-    return makeMidnightDateTime( dt.date() );
-}
-
-//----------------------------------------------------------------------------
-inline
-QString formatUtcOffset( int utcOffset )
-{
-    QString utcStr;
-
-    if (utcOffset<0)
-    {
-        utcStr.append("-");
-        utcOffset = -utcOffset;
-    }
-    else
-    {
-        utcStr.append("+");
-    }
-
-    utcOffset /= 60;
-    int hours   = utcOffset/60;
-    int minutes = utcOffset%60;
-
-    return utcStr + QString::asprintf("%02d:%02d", hours, minutes );
-}
-
-//----------------------------------------------------------------------------
-inline
-QString formatDateTimeISO8601( const QDateTime &dt, bool utcOffsetAuto = false )
-{
-    int utcOffset = dt.offsetFromUtc();
-    QString utcOffsetStr;
-
-    if (!utcOffsetAuto || utcOffset!=0)
-        utcOffsetStr = formatUtcOffset(utcOffset);
-
-    return dt.toString("yyyy-MM-ddThh:mm:ss.zzz")
-    + QString("000")
-    + utcOffsetStr
-    ;
-}
-
-//----------------------------------------------------------------------------
-inline
-QDateTime parseDateTimeISO8601( QString dtStr )
-{
-    /*
-    int idxPosT      = dtStr.indexOf('T');
-    if (idxPosT<0)
-        idxPosT      = dtStr.indexOf(' ');
-
-    int idxPlusSign  = dtStr.indexOf('+');
-    int idxMinusSign = dtStr.indexOf('-', idxPosT);
-
-    if (idxPlusSign>=0 && idxMinusSign>=0)
-    {
-        // Both found, something wrong
-        int maxIdx = idxPlusSign;
-        if (idxMinusSign>idxPlusSign)
-        {
-            maxIdx = idxMinusSign;
-            idxMinusSign = -1;
-        }
-        else
-        {
-            idxPlusSign = -1;
-        }
-
-        dtStr.remove( maxIdx, dtStr.size()-maxIdx);
-    }
-
-    if (idxPlusSign>=0 || idxMinusSign>=0)
-    {
-        int signPos = ( idxPlusSign>=0 ? idxPlusSign : idxMinusSign);
-    }
-    */
-    //QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec, int offsetSeconds)
-
-    // Нормально парсит и так, не нужно никаких приседаний
-
-    return QDateTime::fromString( dtStr, Qt::ISODateWithMs );
-    //return QDateTime();
-}
-
-// QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
-// QDateTime QDateTime::toUTC()
-
-//----------------------------------------------------------------------------
-inline
 QDateTime dateTimeFromDbString( QString str )
 {
     str = str.trimmed();
     int idxSpace = str.indexOf(' ');
     if (idxSpace>=0)
         str[idxSpace] = 'T';
+
+    if (!str.isEmpty() && str.back()!='Z')
+    {
+        str.append("Z"); // date-time is always UTC in DB
+    }
 
     return QDateTime::fromString( str, Qt::ISODateWithMs );
 }
@@ -200,7 +93,7 @@ enum class TimeIntervalScale
 inline
 bool testEndsWithAndChop( QString &str, const QString &testFor, Qt::CaseSensitivity cs = Qt::CaseSensitive )
 {
-    if (!str.endsWith(testFor))
+    if (!str.endsWith(testFor, cs))
         return false;
 
     str.chop( testFor.size() );
@@ -245,9 +138,77 @@ TimeIntervalScale extractTimeIntervalScale( QString &str )
     return TimeIntervalScale::invalid;
 }
 
-
-
 //----------------------------------------------------------------------------
+// Стандартный кутишный addYears что-о некорректно работает
+// Bad candle interval: from=2016-01-04T00:00:00Z to=2018-01-08T00:00:00Z expected from 7 days to 2 years
+//                      from=2016-01-04T00:00:00Z to=2018-01-08T00:00:00Z expected from 7 days to 2 years
+// За два года - лишних четыре дня приросло
+
+inline
+QDateTime addYearsHelper( const QDateTime &dateTime, int addYears )
+{
+    #if defined(DEBUG) || defined(_DEBUG)
+        QString strDateTime = dateTimeToDbString(dateTime);
+    #endif
+
+    QDate      qdate = dateTime.date();
+    QTime      qtime = dateTime.time();
+    QTimeZone  qtz   = dateTime.timeZone();
+
+    #if defined(DEBUG) || defined(_DEBUG)
+
+        QString strDate = dateToDbString(qdate);
+        if (strDate=="2016-01-04")
+        {
+            do
+            {
+            } while(0);
+        }
+
+    #endif
+
+    // int QDate::daysInMonth(QCalendar cal) const
+
+    int day   = qdate.day();
+    int month = qdate.month();
+    int year  = qdate.year();
+
+    int /*happy ;) */ newYear = year + addYears;
+
+    if (month==2 && day==29 && !QDate::isLeapYear(newYear))
+    {
+        --day;
+    }
+
+    QDate newDate = QDate( newYear, month, day );
+
+    QDateTime newDateTime = QDateTime( newDate, qtime, qtz );
+
+    #if defined(DEBUG) || defined(_DEBUG)
+
+        QDate newDateTmp = newDateTime.date();
+        QString strNewDate = dateToDbString(newDateTmp);
+
+        do
+        {
+        } while(0);
+
+    #endif
+
+
+    return newDateTime;
+
+}
+// QDate date()
+// QTime time() 
+// QTimeZone timeZone()
+
+// int QDate::day()
+// int QDate::month()
+// int QDate::year()
+
+// month() const
+
 inline
 QDateTime dtAddTimeInterval( const QDateTime &dt, int val, TimeIntervalScale valScale )
 {
@@ -275,7 +236,8 @@ QDateTime dtAddTimeInterval( const QDateTime &dt, int val, TimeIntervalScale val
                      return dt.addMonths (         (qint64)val );
 
         case TimeIntervalScale::year  : 
-                     return dt.addYears  (         (qint64)val );
+                     //return dt.addYears  (         (qint64)val );
+                     return addYearsHelper( dt, val );
 
         default: throw std::runtime_error("dtAddTimeInterval: Invalid interval scale");
     }
@@ -345,6 +307,71 @@ QDate addYearsNotGreaterThanDate( QDate dateAddTo, int nYears, QDate dateLimit )
 
 //----------------------------------------------------------------------------
 
+
+
+
+
+//----------------------------------------------------------------------------
+inline
+std::string compressDateTimeStringImpl( const std::string &dtStr )
+{
+    // 2014-01-20 07:00:00.000 - 23 chars len
+    // 20140120070000000       - 17 chars len
+    // 20140120070000          - 14 chars len
+
+    // Если отбросить дробную часть (обычно она нулевая, если нет - то по хорошему компрессить нельзя)
+    // и предположить, что 14 байт будут размещены в строке без аллокации (обычно многие реализации хранят 16 байт прямо в себе),
+    // то получиться вполне эффективненько
+
+    std::string resStr; resStr.reserve(14); // Но на всякий случай резервируем, чтобы не было переаллокаций
+
+    std::string::size_type i = 0, size = dtStr.size();
+
+    for (; i!=size; ++i)
+    {
+        char ch = dtStr[i];
+        switch(ch)
+        {
+            case '-':
+            case ':':
+            case ' ':
+                continue;
+        
+            case '.':
+                return resStr;
+        
+            default:            
+                resStr.append(1, ch);
+        
+        }
+    }
+
+    return resStr;
+}
+
+//----------------------------------------------------------------------------
+template<typename ResultType, typename InputType>
+inline
+ResultType compressDateTimeString( const InputType &dtStr )
+{
+    throw std::runtime_error("compressDateTimeString has now generic realisation");
+    return ResultType();
+}
+
+//----------------------------------------------------------------------------
+template<> inline
+std::string compressDateTimeString<std::string,std::string>( const std::string &dtStr ) { return compressDateTimeStringImpl( dtStr ); }
+
+template<> inline
+std::string compressDateTimeString<std::string,QString>    ( const QString &dtStr )     { return compressDateTimeStringImpl( dtStr.toStdString() ); }
+
+template<> inline
+QString     compressDateTimeString<QString, std::string>   ( const std::string &dtStr ) { return QString::fromStdString(compressDateTimeStringImpl( dtStr )); }
+
+template<> inline
+QString     compressDateTimeString<QString, QString>       ( const QString &dtStr )     { return QString::fromStdString(compressDateTimeStringImpl( dtStr.toStdString() )); }
+
+//----------------------------------------------------------------------------
 
 
 

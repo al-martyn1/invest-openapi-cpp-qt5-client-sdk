@@ -103,7 +103,7 @@ INVEST_OPENAPI_MAIN()
             //qDebug().nospace().noquote() << "Drop   table '" << tableName << "'" << qexp << ": " << pDbMan->tableDrop(tableName);
             bool createRes = pDbMan->tableCreate(tableName, tkf::IDatabaseManager::IfExists::ifNotExists );
             auto elapsed = timer.restart();
-            qDebug().nospace().noquote() << "Create table '" << tableName << "'" << qexp << ": " << createRes<<", tie elapsed: " << elapsed;
+            qDebug().nospace().noquote() << "Create table '" << tableName << "'" << qexp << ": " << createRes<<", time elapsed: " << elapsed;
             //qDebug().nospace().noquote() <<"\n";
             //qDebug().nospace().noquote() <<"";
         }

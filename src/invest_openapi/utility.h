@@ -323,30 +323,54 @@ inline QString pathStringNormalize( QString s )
     s.replace(',', ";"); // replace commas to ';' (windows style separator)
     return s;
 }
+
 //----------------------------------------------------------------------------
+QStringList::const_iterator getPartialStringListAdvanceHelper( QStringList::const_iterator b, std::size_t distance )
+{
+    for(std::size_t i =0; i!=distance; ++i, ++b) {}
+    return b;
+}
+
+//----------------------------------------------------------------------------
+QStringList getPartialStringList( QStringList::const_iterator b, std::size_t chunkLen )
+{
+    QStringList::const_iterator e = getPartialStringListAdvanceHelper( b, chunkLen );
+    return QStringList( b, e );
+}
+
+//----------------------------------------------------------------------------
+QStringList getPartialStringList( const QStringList &lst, std::size_t chunkLen )
+{
+    return getPartialStringList( lst.begin(), chunkLen );
+}
+  
+//----------------------------------------------------------------------------
+/*
 inline QString listStringNormalize( QString s )
 {
     //s.replace(':', ";"); // replace *nix style list separator to windows style separator
     s.replace(',', ";"); // replace commas to ';' (windows style separator)
     return s;
 }
-
+*/
 //------------------------------
+/*
 inline QStringList listStringNormalize( const QStringList s )
 {
     QStringList resList;
     for( auto str : s ) resList.push_back(listStringNormalize(str));
     return resList;
 }
-
+*/
 //------------------------------
+/*
 inline QVector<QStringList> listStringNormalize( const QVector<QStringList> &s )
 {
     QVector<QStringList> resList;
     for( auto str : s ) resList.push_back(listStringNormalize(str));
     return resList;
 }
-
+*/
 //----------------------------------------------------------------------------
 inline QStringList listStringTrim( const QStringList &l )
 {
@@ -362,7 +386,7 @@ inline QStringList listStringTrim( const QStringList &l )
 //----------------------------------------------------------------------------
 inline QStringList listStringSplit( QString s, QChar splitChar = ';' )
 {
-    s = listStringNormalize(s);
+    //s = listStringNormalize(s);
     return listStringTrim( s.split( splitChar, Qt::KeepEmptyParts ) );
 }
 
@@ -418,10 +442,10 @@ inline QVector<QString> convertToQVectorOfQStrings( const QStringList strList )
 }
 
 //------------------------------
-inline QVector<QString> convertToQVectorOfQStrings( const QString &listStr )
+inline QVector<QString> convertToQVectorOfQStrings( const QString &listStr, QChar splitChar = ',' )
 {
-    QString     normalizedListStr = listStringNormalize(listStr);
-    QStringList strList = listStringSplit(normalizedListStr);
+    QString     normalizedListStr = listStr; // listStringNormalize(listStr);
+    QStringList strList = listStringSplit(normalizedListStr, splitChar);
     return convertToQVectorOfQStrings(strList);
 }
 
@@ -458,7 +482,7 @@ inline QVector< QVector<QString> > convertToQVectorOfQVectorOfQStrings( const QV
 {
     //BUG: or not?
     QVector< QVector<QString> > resVec;
-    //for( auto s : lst ) resVec.push_back(convertToQVectorOfQStrings(s));
+    for( auto s : lst ) resVec.push_back(convertToQVectorOfQStrings(s, ','));
     resVec.push_back(lst);
     return resVec;
 }
