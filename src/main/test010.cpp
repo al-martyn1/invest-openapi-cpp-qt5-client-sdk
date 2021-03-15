@@ -6,6 +6,7 @@
 #include <iostream>
 #include <exception>
 #include <stdexcept>
+#include <sstream>
 
 #include <QCoreApplication>
 #include <QString>
@@ -63,7 +64,53 @@ INVEST_OPENAPI_MAIN()
     auto    d1_2_sum_plus_15_c = d1_2_sum + (int          )(15); PRINT(d1_2_sum_plus_15_c);
     auto    d1_2_sum_plus_15_d = d1_2_sum + (unsigned     )(15); PRINT(d1_2_sum_plus_15_d);
     auto    d1_2_sum_plus_15_e = d1_2_sum + (double       )(15); PRINT(d1_2_sum_plus_15_e);
+
+
+    Decimal divideD1   = Decimal( 100, DecimalPrecision(2) );
+    Decimal divideD2   = Decimal(  25, DecimalPrecision(1) );
+    Decimal divideRes  = divideD1.divide(divideD2, 6);
     
+    cout << divideRes.toString() << endl;
+
+
+    #define ROUNDING_TEST( dblVal, strResForCompare, roundingPrecision, roundingMethod ) \
+                do                                                                       \
+                {                                                                        \
+                    Decimal decimal    = Decimal(dblVal);                                \
+                    Decimal roundedVal = decimal.rounded( roundingPrecision, Decimal::RoundingMethod::roundingMethod ); \
+                    /*std::ostringstream os;*/                                           \
+                    std::string strRes = roundedVal.toString(0);                         \
+                                                                                         \
+                    cout << "[" << (strRes==strResForCompare ? "+" : "-") << "]  " << decimal.toString(0) << " rounded to " << roundingPrecision << " signs with " << #roundingMethod << " is " << strRes << endl; \
+                } while(0)
+
+
+    ROUNDING_TEST(   23.7,  "23", 0, roundFloor           );
+    ROUNDING_TEST(  -23.2, "-24", 0, roundFloor           );
+    ROUNDING_TEST(   23.2,  "24", 0, roundCeil            );
+    ROUNDING_TEST(  -23.7, "-23", 0, roundCeil            );
+    ROUNDING_TEST(   23.7,  "23", 0, roundTowardsZero     );
+    ROUNDING_TEST(  -23.7, "-23", 0, roundTowardsZero     );
+    ROUNDING_TEST(   23.2,  "24", 0, roundTowardsInf      );
+    ROUNDING_TEST(  -23.2, "-24", 0, roundTowardsInf      );
+    ROUNDING_TEST(   23.5,  "24", 0, roundHalfUp          );
+    ROUNDING_TEST(  -23.5, "-23", 0, roundHalfUp          );
+    ROUNDING_TEST(   23.5,  "23", 0, roundHalfDown        );
+    ROUNDING_TEST(  -23.5, "-24", 0, roundHalfDown        );
+    ROUNDING_TEST(   23.5,  "23", 0, roundHalfTowardsZero );
+    ROUNDING_TEST(  -23.5, "-23", 0, roundHalfTowardsZero );
+    ROUNDING_TEST(   23.5,  "24", 0, roundHalfTowardsInf  );
+    ROUNDING_TEST(  -23.5, "-24", 0, roundHalfTowardsInf  );
+    ROUNDING_TEST(   23.5,  "24", 0, roundHalfToEven      );
+    ROUNDING_TEST(   24.5,  "24", 0, roundHalfToEven      );
+    ROUNDING_TEST(  -23.5, "-24", 0, roundHalfToEven      );
+    ROUNDING_TEST(  -24.5, "-24", 0, roundHalfToEven      );
+    ROUNDING_TEST(   23.5,  "23", 0, roundHalfToOdd       );
+    ROUNDING_TEST(   22.5,  "23", 0, roundHalfToOdd       );
+    ROUNDING_TEST(  -23.5, "-23", 0, roundHalfToOdd       );
+    ROUNDING_TEST(  -22.5, "-23", 0, roundHalfToOdd       );
+
+
     return 0;
 }
 

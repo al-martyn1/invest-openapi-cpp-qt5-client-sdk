@@ -83,15 +83,11 @@ public:
     DecimalPrecision( std::uint32_t pr ) : m_precision(pr) {}
     DecimalPrecision( const DecimalPrecision &pr ) : m_precision(pr.m_precision) {}
 
-    denum_t denum( ) const
-    {
-        return denum(m_precision);
-    }
+    denum_t denum( ) const         { return denum(m_precision);  } // for compatibility
+    denum_t denumerator( ) const   { return denum(m_precision);  }
 
-    precision_t prec() const 
-    {
-        return m_precision;
-    }
+    precision_t prec() const       { return m_precision; }  // for compatibility
+    precision_t precision() const  { return m_precision; }
 
 protected:
 
@@ -205,90 +201,30 @@ public:
         return *this;
     }
 
-    precision_t prec () const { return m_precision; }
-    denum_t     denum() const { return m_denum; }
+    precision_t prec       () const { return m_precision; } // for compatibility
+    precision_t precision  () const { return m_precision; }
+
+    denum_t     denum      () const { return m_denum; }     // for compatibility
+    denum_t     denumerator() const { return m_denum; }
 
     DecimalPrecision decimalPrecision( ) const { return DecimalPrecision(m_precision); }
 
-    void swap( DecimalDenumerator &d2 )
-    {
-        //using namespace std;
-        std::swap( m_precision, d2.m_precision );
-        std::swap( m_denum    , d2.m_denum     );
-    }
+    void swap( DecimalDenumerator &d2 );
 
-    int compare( const DecimalDenumerator d2 ) const
-    {
-        if (m_precision<d2.m_precision) return -1;
-        if (m_precision>d2.m_precision) return  1;
-        return 0;
-    }
+    int compare( const DecimalDenumerator d2 ) const;
 
     MARTY_DECIMAL_IMPLEMENT_RELATIONAL_OPERATORS(DecimalDenumerator)
 
 
 protected:
 
-    void incPrec()
-    {
-        tryIncDenum();
-        m_precision += 1;
-    }
-
-    void decPrec()
-    {
-        tryDecDenum();
-        m_precision -= 1;
-    }
-
-    denum_t expandTo( precision_t p )
-    {
-        denum_t deltaDenum = 1;
-        while(m_precision < p)
-        {
-            incPrec();
-            deltaDenum *= 10;
-        }
-
-        return deltaDenum;
-    }
-
-    denum_t shrinkTo( precision_t p )
-    {
-        denum_t deltaDenum = 1;
-        while(m_precision > p)
-        {
-            decPrec();
-            deltaDenum *= 10;
-        }
-
-        return deltaDenum;
-    }
-
-    sdenum_t fitTo( precision_t p )
-    {
-        if (m_precision<p)
-            return   (sdenum_t)expandTo(p);
-        else
-            return - (sdenum_t)shrinkTo(p);
-    }
-
-
-    void tryIncDenum()
-    {
-        denum_t newDenum = m_denum*10u;
-        if (newDenum<m_denum)
-            throw std::runtime_error("DecimalDenumerator precision to big to increment");
-        m_denum = newDenum;
-    }
-
-    void tryDecDenum()
-    {
-        if (!m_denum)
-            throw std::runtime_error("DecimalDenumerator precision to small to decrement");
-        m_denum = m_denum / 10u;
-    }
-
+    void incPrec();
+    void decPrec();
+    denum_t precisionExpandTo( precision_t p );
+    denum_t precisionShrinkTo( precision_t p );
+    sdenum_t precisionFitTo( precision_t p );
+    void tryIncDenum();
+    void tryDecDenum();
 
     // default constructor disabled
     DecimalDenumerator();
@@ -322,6 +258,7 @@ class Decimal
 
 public:
 
+    //------------------------------
     typedef DecimalNumeratorRawType             num_t      ;
     typedef DecimalNumeratorUnsignedRawType     unum_t     ;
     
@@ -331,110 +268,108 @@ public:
 
     typedef DecimalDenumerator                  DenumeratorType;
 
-
+    //------------------------------
     friend std::string decimalToString  ( Decimal d, precision_t p );
     friend Decimal     decimalFromString( const std::string &d );
     friend void swap( Decimal &d1, Decimal &d2 );
 
-
-    static
-    precision_t maxPrecision()
+    //------------------------------
+    enum class RoundingMethod
     {
-        return DecimalPrecision::maxPrecision<num_t>();
-    }
+        // https://en.wikipedia.org/wiki/Rounding
 
-    //singleRequestTimer
-    //num_t               m_num;
 
+        // Directed rounding to an integer methods
+
+        roundDown                                     ,
+        roundFloor        = roundDown                 ,
+
+        roundUp                                       ,
+        roundCeil         = roundUp                   ,
+
+        roundTowardsZero                              ,
+        roundAwayFromInf  = roundTowardsZero          ,
+        roundTrunc        = roundTowardsZero          ,
+
+        roundTowardsInf                               ,
+        roundAwayFromZero = roundTowardsInf           ,
+
+
+        // Rounding to the nearest integer
+
+        roundHalfUp                                   ,
+        roundHalfTowardsPositiveInf = roundHalfUp     ,
+
+        roundHalfDown                                 ,
+        roundHalfTowardsNegativeInf = roundHalfDown   ,
+
+        roundHalfTowardsZero                          ,
+        roundHalfAwayFromInf  = roundHalfTowardsZero  ,
+
+        roundHalfTowardsInf                           ,
+        roundHalfAwayFromZero = roundHalfTowardsInf   ,
+        roundMath             = roundHalfTowardsInf   ,
+
+        roundHalfToEven                               ,
+        roundBankers      = roundHalfToEven           ,
+        roundBanking      = roundHalfToEven           ,
+        roundConvergent   = roundHalfToEven           ,
+        roundStatistician = roundHalfToEven           ,
+        roundStatistic    = roundHalfToEven           ,
+        roundDutch        = roundHalfToEven           ,
+        roundGaussian     = roundHalfToEven           ,
+
+        roundHalfToOdd
+
+    };
+
+
+    //------------------------------
+    static precision_t maxPrecision()    { return DecimalPrecision::maxPrecision<num_t>(); }
+    precision_t precision() const        { return m_denum.precision(); }
+    unum_t getPositiveNumerator() const  { return (unum_t)( (m_num<0) ? -m_num : m_num ); }
+
+    //------------------------------
     //! Возвращает максимальный десятичный множитель (его степень), на который может быть умножено число без переполнения
-    denum_t findMaxDecimalScalePower() const
-    {
-        unum_t unum = (unum_t)( (m_num<0) ? -m_num : m_num );
+    precision_t findMaxDecimalScalePower() const;
 
-        denum_t maxScalePower = (denum_t)maxPrecision();
+    //------------------------------
+    static Decimal fromString( const std::string &s )     { return decimalFromString(s); }
 
-        denum_t curScalePower = 0;
-
-        for(; unum!=0; unum /= 10, ++curScalePower ) {}
-
-        return maxScalePower - curScalePower;
-
-    }
-
-    static Decimal fromString( const std::string &s )
-    {
-        return decimalFromString(s);
-    }
-
-    std::string toString( precision_t p = 2 ) const
-    {
-        return decimalToString( *this, p );
-    }
-
-    int toInt() const
-    {
-        return (int)(m_num/m_denum.denum());
-    }
-
-    unsigned toUnsigned() const
-    {
-        return (unsigned)(m_num/m_denum.denum());
-    }
-
-    std::int64_t toInt64() const
-    {
-        return (m_num/m_denum.denum());
-    }
-
-    std::uint64_t toUnsigned64() const
-    {
-        return (std::uint64_t)(m_num/m_denum.denum());
-    }
-
-    float toFloat() const
-    {
-        return (float)((double)m_num/(double)m_denum.denum());
-    }
-
-    double toDouble() const
-    {
-        return ((double)m_num/(double)m_denum.denum());
-    }
+    std::string   toString( precision_t p = 2 ) const     { return decimalToString( *this, p ); }
+    int           toInt() const                           { return (int)(m_num/m_denum.denum()); }
+    unsigned      toUnsigned() const                      { return (unsigned)(m_num/m_denum.denum()); }
+    std::int64_t  toInt64() const                         { return (m_num/m_denum.denum()); }
+    std::uint64_t toUnsigned64() const                    { return (std::uint64_t)(m_num/m_denum.denum()); }
+    float         toFloat() const                         { return (float)((double)m_num/(double)m_denum.denum()); }
+    double        toDouble() const                        { return ((double)m_num/(double)m_denum.denum()); }
+    //------------------------------
 
 
+
+    //------------------------------
     Decimal()                   : m_num(0)      , m_denum(DecimalPrecision(0))   {}
     Decimal( const Decimal &d ) : m_num(d.m_num), m_denum(d.m_denum)             {}
     Decimal( int            v, const DecimalPrecision &prec = DecimalPrecision(0) ) : m_num(v), m_denum(prec) { m_num *= m_denum.denum(); }
     Decimal( unsigned       v, const DecimalPrecision &prec = DecimalPrecision(0) ) : m_num(v), m_denum(prec) { m_num *= m_denum.denum(); }
     Decimal( std::int64_t   v, const DecimalPrecision &prec = DecimalPrecision(0) ) : m_num(v), m_denum(prec) { m_num *= m_denum.denum(); }
     Decimal( std::uint64_t  v, const DecimalPrecision &prec = DecimalPrecision(0) ) : m_num(v), m_denum(prec) { m_num *= m_denum.denum(); }
-
-    Decimal( float          f, const DecimalPrecision &prec = DecimalPrecision(0) )
-    : m_num(0), m_denum(prec)
-    {
-        fromFloat( f, prec );
-    }
-
-    Decimal( double          f, const DecimalPrecision &prec = DecimalPrecision(0) )
-    : m_num(0), m_denum(prec)
-    {
-        fromFloat( f, prec );
-    }
-
-    void swap( Decimal &d2 )
-    {
-        //using namespace std;
-        std::swap( m_num   , d2.m_num   );
-        m_denum.swap( d2.m_denum );
-    }
+    Decimal( float          f, const DecimalPrecision &prec = DecimalPrecision(0) ) : m_num(0), m_denum(prec) { fromFloat( f, prec ); }
+    Decimal( double          f, const DecimalPrecision &prec = DecimalPrecision(0) ): m_num(0), m_denum(prec) { fromFloat( f, prec ); }
+    //------------------------------
 
 
-    Decimal& operator=( Decimal d2 )
-    {
-        swap(d2);
-        return *this;
-    }
 
+    //------------------------------
+    void swap( Decimal &d2 );
+    Decimal& operator=( Decimal d2 );
+    int compare( Decimal d2 ) const;
+
+    //------------------------------
+
+
+
+    //------------------------------
     // операторы преобразования типа 
     explicit operator int() const           { return toInt(); }
     explicit operator unsigned() const      { return toUnsigned(); }
@@ -443,104 +378,21 @@ public:
     explicit operator float() const         { return toFloat(); }
     explicit operator double() const        { return toDouble(); }
 
+    //------------------------------
+    Decimal operator + ( Decimal d2 ) const;
+    Decimal operator - ( Decimal d2 ) const;
+    Decimal operator - ( ) const;
+    Decimal operator * ( Decimal d2 ) const;
+    Decimal divide( Decimal devider, precision_t resultPrecision ) const;
+    Decimal operator / ( Decimal d2 ) const;
+    Decimal operator % ( Decimal d2 ) const;
+    Decimal& operator += ( Decimal d2 );
+    Decimal& operator -= ( Decimal d2 );
+    Decimal& operator *= ( Decimal d2 );
+    Decimal& operator /= ( Decimal d2 );
+    Decimal& operator %= ( Decimal d2 );
 
-    Decimal operator + ( Decimal d2 ) const
-    {
-        Decimal d1 = *this;
-        adjustPrecisions( d1, d2 );
-        d1.m_num += d2.m_num;
-        return d1;
-    }
-
-    Decimal operator - ( Decimal d2 ) const
-    {
-        Decimal d1 = *this;
-        adjustPrecisions( d1, d2 );
-        d1.m_num -= d2.m_num;
-        return d1;
-    }
-
-    Decimal operator * ( Decimal d2 ) const
-    {
-        //minimizePrecisionImpl();
-        d2.minimizePrecisionImpl();
-
-        num_t num = m_num * d2.m_num;
-
-        if (m_denum < d2.m_denum)
-        {
-            num /= m_denum.denum();
-            return Decimal( num, d2.m_denum ).minimizePrecisionImpl();
-        }
-        else
-        {
-            num /= d2.m_denum.denum();
-            return Decimal( num, m_denum ).minimizePrecisionImpl();
-        }
-    }
-
-    // 1200.00000 / 22.000 = 54.5454545454545
-    // 1200 00000 / 22 000 = 5454.54545454
-    // 1200.00000 / 25.000 = 48
-    Decimal operator / ( Decimal d2 ) const
-    {
-        d2.minimizePrecisionImpl();
-
-        Decimal d1 = *this;
-        d1.expandTo( m_denum.prec() + d2.m_denum.prec() );
-        return Decimal( d1.m_num / d2.m_num, m_denum);
-    }
-
-    // 1200.00000   % 22.000    = 12.000
-    // 1200         % 22        = 12
-    // 1200 00000   % 22 000    = 12000
-    // 1200 000000  % 22 000    = 10000
-    // 1200.00000   % 22.00000  = 12.00000
-    // 120000000    % 2200000   = 12 00000
-
-    Decimal operator % ( Decimal d2 ) const
-    {
-        Decimal d1 = *this;
-        adjustPrecisions( d1, d2 );
-        d1.m_num %= d2.m_num;
-        return d1;
-    }
-
-
-    Decimal& operator += ( Decimal d2 )
-    {
-        *this = operator+(d2);
-        return *this;
-    }
-
-    Decimal& operator -= ( Decimal d2 )
-    {
-        *this = operator-(d2);
-        return *this;
-    }
-
-    Decimal& operator *= ( Decimal d2 )
-    {
-        *this = operator*(d2);
-        return *this;
-    }
-
-    Decimal& operator /= ( Decimal d2 )
-    {
-        *this = operator/(d2);
-        return *this;
-    }
-
-    Decimal& operator %= ( Decimal d2 )
-    {
-        *this = operator%(d2);
-        return *this;
-    }
-
-    // Decimal operator +   ( int i ) const { return operator+ ( Decimal((int)i, DecimalPrecision(0)) ); }
-    // Decimal& operator += ( int i )       { return operator+=( Decimal((int)i, DecimalPrecision(0)) ); }
-
-
+    //------------------------------
     #define MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE( integralType )         \
                                                                                                     \
                 Decimal operator +   ( integralType i ) const { return operator+ ( Decimal(i) ); }  \
@@ -563,23 +415,22 @@ public:
     MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE( float         )
     MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE( double        )
 
+    //----------------------------------------------------------------------------
 
 
-    int compare( Decimal d2 ) const
-    {
-        if (m_denum.prec()==d2.m_denum.prec())
-        {
-            return compare(d2.m_num);
-        }
 
-        Decimal d1 = *this;
-        adjustPrecisions( d1, d2 );
-        return d1.compare(d2);
-    }
+    //----------------------------------------------------------------------------
 
     MARTY_DECIMAL_IMPLEMENT_RELATIONAL_OPERATORS(Decimal)
 
+    //----------------------------------------------------------------------------
 
+
+
+protected:
+
+
+    //------------------------------
     static
     Decimal fromRawNumPrec( num_t num, precision_t prec )
     {
@@ -592,93 +443,104 @@ public:
     }
 
 
-    Decimal minimizePrecision() const
-    {
-        Decimal res = *this;
-        return res.minimizePrecisionImpl();
-    }
+public:
 
-    Decimal expantPrecisionTo( precision_t p ) const
-    {
-        Decimal res = *this;
-        res.expandTo(p);
-        return res;
-    }
+    //------------------------------
+    Decimal minimizePrecision() const;
+    Decimal& minimizePrecisionInplace();
+    Decimal expantPrecisionTo( precision_t p ) const;
+    Decimal shrinkPrecisionTo( precision_t p ) const;
+    Decimal fitPrecisionTo   ( precision_t p ) const;
 
-    Decimal shrinkPrecisionTo( precision_t p ) const
-    {
-        Decimal res = *this;
-        res.shrinkTo(p);
-        return res;
-    }
+    //------------------------------
+    int sign() const;
+    Decimal abs() const;
+    Decimal mod( Decimal d2 ) const;
 
-    Decimal fitPrecisionTo( precision_t p ) const
-    {
-        Decimal res = *this;
-        res.fitTo(p);
-        return res;
-    }
+    //------------------------------
+    Decimal getPercentOf( Decimal d ) const;
+    Decimal getPermilleOf( Decimal d ) const;
+    Decimal rounded( precision_t precision, RoundingMethod roundingMethod ) const;
 
-    Decimal getPercentOf( Decimal d ) const
-    {
-        //UNDONE: !!! Need to make correct rounding
-        Decimal tmp = Decimal(100) * *this;
-        tmp.expandTo(2u);
-        return tmp / d;
-    }
-
-    Decimal getPermilleOf( Decimal d ) const
-    {
-        //UNDONE: !!! Need to make correct rounding
-        Decimal tmp = Decimal(1000) * *this;
-        tmp.expandTo(2u);
-        return tmp / d;
-    }
-
-    //UNDONE: !!! Need implement rounding methods
-
-
+    //------------------------------
 
 protected:
 
 
+
+    //------------------------------
     Decimal( num_t n, DenumeratorType denum) : m_num(n), m_denum(denum)   {}
 
+    //------------------------------
     static
-    void adjustPrecisions( Decimal &d1, Decimal &d2 )
+    void adjustPrecisionsToGreater( Decimal &d1, Decimal &d2 )
     {
         int cmp = d1.m_denum.compare( d2.m_denum );
         if (cmp==0) return;
 
         if (cmp<0)
-           d1.expandTo(d2.m_denum.prec());
+           d1.precisionExpandTo(d2.m_denum.prec());
         else
-           d2.expandTo(d1.m_denum.prec());
+           d2.precisionExpandTo(d1.m_denum.prec());
     }
 
+    //------------------------------
     std::string rtrimZeros( std::string s )
     {
+        if (s.empty())
+            return s;
+
+        {
+            std::string::size_type commaPos = s.find( ',' );
+            if (commaPos!=std::string::npos)
+                s[commaPos] = '.';
+        }
+        
+        std::string::size_type dotPos = s.find( '.' );
+
+        if (dotPos==std::string::npos)
+            return s; // do nothing
+
+        std::string::size_type lastGoodPos = s.size()-1;
+
+        while( lastGoodPos!=dotPos && s[lastGoodPos]=='0')
+            --lastGoodPos;
+
+        if (s[lastGoodPos]=='.')
+            --lastGoodPos;
+
+        s.erase(lastGoodPos+1);
+
+        if (s.empty())
+            s = "0";
+
+        /*
         while( !s.empty() && s.back()=='0' ) s.erase(s.size()-1, 1);
         if ( !s.empty() && (s.back()=='.' || s.back()==',') )
             s.append(1,'0');
+        */
+
         return s;
     }
 
+    //------------------------------
     template<typename FloatType>
     void fromFloat( FloatType f, precision_t p )
     {
         bool precAuto = (p==0);
         *this = decimalFromString(rtrimZeros(std::to_string(f)));
         if (!precAuto)
-            fitTo(p);
+            precisionFitTo(p);
     }
 
+    //------------------------------
     template<typename FloatType>
     void fromFloat( FloatType f, DecimalPrecision p )
     {
         fromFloat( f, p.prec() );
     }
 
+    //------------------------------
     int compare( num_t n ) const
     {
         if (m_num<n) return -1;
@@ -686,27 +548,31 @@ protected:
         return 0;
     }
 
-    void expandTo( precision_t p )
+    //------------------------------
+    void precisionExpandTo( precision_t p )
     {
-        denum_t adjust = m_denum.expandTo(p);
+        denum_t adjust = m_denum.precisionExpandTo(p);
         m_num *= adjust;
     }
 
-    void shrinkTo( precision_t p )
+    //------------------------------
+    void precisionShrinkTo( precision_t p )
     {
-        denum_t adjust = m_denum.shrinkTo(p);
+        denum_t adjust = m_denum.precisionShrinkTo(p);
         m_num /= adjust;
     }
 
-    void fitTo( precision_t p )
+    //------------------------------
+    void precisionFitTo( precision_t p )
     {
-        sdenum_t adjust = m_denum.fitTo(p);
+        sdenum_t adjust = m_denum.precisionFitTo(p);
         if (adjust<0)
            m_num /= (denum_t)-adjust;
         else
            m_num *= (denum_t)adjust;
     }
 
+    //------------------------------
     Decimal& minimizePrecisionImpl()
     {
         while( ((m_num%10)==0) && (m_denum.prec()>0) )
@@ -718,17 +584,289 @@ protected:
         return *this;
     }
 
+    //------------------------------
+    unum_t getLowestDecimalDigit() const
+    {
+        unum_t unum = getPositiveNumerator();
+        return unum % 10;
+    }
 
+    //------------------------------
+    static
+    bool isDigitEven( unum_t d ) // Чётно?
+    {
+        switch(d)
+        {
+            case 0: case 2: case 4: case 6: case 8:
+            return true;
+        }
+        
+        return false;
+    }
     
-    //precision_t
+    //------------------------------
+    static
+    bool isDigitOdd( unum_t d ) // Нечётно?
+    {
+        switch(d)
+        {
+            case 1: case 3: case 5: case 7: case 9:
+            return true;
+        }
+        
+        return false;
+    }
 
-    //DecimalPrecision decimalPrecision( )
+    //------------------------------
+    void replaceLowestDecimalDigit( unum_t d )
+    {
+        // Clear place for new lowest digit
+        m_num /= 10;
+        m_num *= 10;
+
+        if (d>9)
+            d = 9;
+
+        if (m_num<0)
+            m_num -= (num_t)d;
+        else
+            m_num += (num_t)d;
+    }
+
+    Decimal makeMinimalPrecisionImplHelper( num_t newNum ) const
+    {
+        Decimal res;
+        res.m_denum = m_denum;
+        res.m_num   = newNum;
+        return res;
+    }
+
+    Decimal makeMinimalPrecisionOne() const
+    {
+        return makeMinimalPrecisionImplHelper(1);
+    }
+
+    Decimal makeMinimalPrecisionTwo() const
+    {
+        return makeMinimalPrecisionImplHelper(2);
+    }
+
+    Decimal makeMinimalPrecisionFive() const
+    {
+        return makeMinimalPrecisionImplHelper(5);
+    }
+
+
+    //------------------------------
+
+    #if 0
+    enum class RoundingMethod
+    {
+        // https://en.wikipedia.org/wiki/Rounding
+
+
+        // Directed rounding to an integer methods
+
+        roundDown                                     ,
+        roundFloor        = roundDown                 ,
+
+        roundUp                                       ,
+        roundCeil         = roundUp                   ,
+
+        roundTowardsZero                              ,
+        roundAwayFromInf  = roundTowardsZero          ,
+        roundTrunc        = roundTowardsZero          ,
+
+        roundTowardsInf                               ,
+        roundAwayFromZero = roundTowardsInf           ,
+
+
+        // Rounding to the nearest integer
+
+        roundHalfUp                                   ,
+        roundHalfTowardsPositiveInf = roundHalfUp     ,
+
+        roundHalfDown                                 ,
+        roundHalfTowardsNegativeInf = roundHalfDown   ,
+
+        roundHalfTowardsZero                          ,
+        roundHalfAwayFromInf  = roundHalfTowardsZero  ,
+
+        roundHalfTowardsInf                           ,
+        roundHalfAwayFromZero = roundHalfTowardsInf   ,
+
+        roundHalfToEven                               ,
+        roundBankers     = roundHalfToEven            ,
+        roundBanking     = roundHalfToEven            ,
+
+        roundHalfToOdd
+
+    };
+    #endif
+
+
+    //------------------------------
+    Decimal& roundingImpl( precision_t requestedPrecision, RoundingMethod roundingMethod )
+    {
+        // Нужно привести точность к precision+1
+        // Если необходимо, то расширить точность
+        // Нужно проверить, возможно ли такое расширение
+
+        // Если невозможно расширение точности, 
+        // то: а) вернуть, как есть
+        //     б) кинуть исключение
+        // Наверное - (а), так как если точность меньше требуемой, то и округления никакого не нужно
+
+        // В итоге - если текущая точность меньше или равна запрошенной, то ничего делать и не надо 
+
+        //precision_t curPrecision = m_denum.precision();
+        if ( m_denum.precision() <= requestedPrecision )
+            return *this;
+
+        // if (findMaxDecimalScalePower()<1) // maxAllowedPrecisionIncrement < 1
+        //     return *this;
+
+        // Decimal makeMinimalPrecisionOne()
+        // Decimal makeMinimalPrecisionFive()
+        // unum_t  getLowestDecimalDigit()
+
+
+        switch(roundingMethod)
+        {
+            case RoundingMethod::roundDown: // roundFloor
+                 {
+                     precisionFitTo(requestedPrecision + 1);
+
+                     unum_t ldd = getLowestDecimalDigit();
+                     precisionShrinkTo( requestedPrecision );
+
+                     if (ldd==0)
+                         break;
+
+                     if (sign()<0)
+                     {
+                         *this -= makeMinimalPrecisionOne();
+                     }
+                 }
+                 break;
+        
+            case RoundingMethod::roundUp: // roundCeil
+                 {
+                     precisionFitTo(requestedPrecision + 1);
+                     unum_t ldd = getLowestDecimalDigit();
+                     precisionShrinkTo( requestedPrecision );
+
+                     if (ldd==0)
+                         break;
+
+                     if (sign()>0)
+                     {
+                         *this += makeMinimalPrecisionOne();
+                     }
+                 }
+                 break;
+        
+            case RoundingMethod::roundTowardsZero: // roundAwayFromInf, roundTrunc
+                 {
+                     precisionFitTo(requestedPrecision + 1);
+                     precisionShrinkTo( requestedPrecision );
+                 }
+                 break;
+        
+            case RoundingMethod::roundTowardsInf: // roundAwayFromZero
+                 {
+                     precisionFitTo(requestedPrecision + 1);
+                     precisionShrinkTo( requestedPrecision );
+                     *this += makeMinimalPrecisionOne() * sign();
+                 }
+                 break;
+        
+            case RoundingMethod::roundHalfUp: // roundHalfTowardsPositiveInf
+                 {
+                     precisionFitTo(requestedPrecision + 1);
+                     *this += makeMinimalPrecisionFive();
+                     precisionShrinkTo( requestedPrecision );
+                 }
+                 break;
+        
+            case RoundingMethod::roundHalfDown: // roundHalfTowardsNegativeInf
+                 {
+                     precisionFitTo(requestedPrecision + 1);
+                     *this -= makeMinimalPrecisionFive();
+                     precisionShrinkTo( requestedPrecision );
+                 }
+                 break;
+        
+            case RoundingMethod::roundHalfTowardsZero: // roundHalfAwayFromInf
+                 {
+                     precisionFitTo(requestedPrecision + 1);
+                     *this -= makeMinimalPrecisionFive() * sign();
+                     precisionShrinkTo( requestedPrecision );
+                 }
+                 break;
+        
+            case RoundingMethod::roundHalfTowardsInf: // roundHalfAwayFromZero, roundMath
+                 {
+                     precisionFitTo(requestedPrecision + 1);
+                     *this += makeMinimalPrecisionFive() * sign();
+                     precisionShrinkTo( requestedPrecision );
+                 }
+                 break;
+        
+            case RoundingMethod::roundHalfToEven: // roundBankers, roundBanking
+                 {
+                     precisionFitTo(requestedPrecision + 1);
+                     precisionFitTo(requestedPrecision);
+
+                     int     thisSign     = sign();
+                     Decimal thisAbs      = abs();
+                     Decimal thisAbsMod2  = abs();
+                     thisAbsMod2 = thisAbsMod2.mod(makeMinimalPrecisionTwo());
+                     *this = (thisAbs+thisAbsMod2) * thisSign;
+
+                 }
+                 break;
+        
+            case RoundingMethod::roundHalfToOdd:
+                 {
+                     throw std::runtime_error("RoundingMethod::roundHalfToOdd not implemented");
+                 }
+                 break;
+        
+        
+        };
+
+
+
+        // precisionExpandTo( requestedPrecision + 1 ); // На всякий случай расширяем точность
+        // precisionShrinkTo( requestedPrecision + 1 ); // Обрезаем до требуемоей + 1 (если изначально была больше)
+
+
+
+        return *this;
+    }
+
+    //----------------------------------------------------------------------------
+
+
+
+
+
+    //----------------------------------------------------------------------------
+    // Class members goes here
 
     num_t               m_num;
     DenumeratorType     m_denum;
 
+
 }; // class Decimal
 
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
+#include "marty_decimal_impl.h"
 //----------------------------------------------------------------------------
 
 
@@ -960,11 +1098,11 @@ Decimal     decimalFromString( const std::string &numberStr_ )
         dig = charToDecimalDigit(numberStr[pos]);
     }
 
-    if (neg)
-        num = -num;
-
     if (!charIsDecimalSeparator(numberStr[pos]))
     {
+        if (neg)
+            num = -num;
+
         return Decimal( num, DecimalPrecision(0) );
     }
 
@@ -981,6 +1119,9 @@ Decimal     decimalFromString( const std::string &numberStr_ )
         dig = charToDecimalDigit(numberStr[pos]);
         prec++;
     }
+
+    if (neg)
+        num = -num;
 
     return Decimal::fromRawNumPrec( num, prec );
 
