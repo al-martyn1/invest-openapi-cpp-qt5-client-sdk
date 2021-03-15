@@ -1,6 +1,6 @@
 #pragma once
 
-#define MARTY_DECIMAL__F7FEF215_956E_4063_8AD1_1F66F6E17EB7__
+#define MARTY_DECIMAL_H__F7FEF215_956E_4063_8AD1_1F66F6E17EB7__
 
 #include <string>
 #include <cstdint>
