@@ -72,44 +72,150 @@ INVEST_OPENAPI_MAIN()
     
     cout << divideRes.toString() << endl;
 
+    unsigned totalRoundingTests       = 0;
+    unsigned totalRoundingTestsFailed = 0;
+
 
     #define ROUNDING_TEST( dblVal, strResForCompare, roundingPrecision, roundingMethod ) \
                 do                                                                       \
                 {                                                                        \
+                    ++totalRoundingTests;                                                \
                     Decimal decimal    = Decimal(dblVal);                                \
                     Decimal roundedVal = decimal.rounded( roundingPrecision, Decimal::RoundingMethod::roundingMethod ); \
                     /*std::ostringstream os;*/                                           \
-                    std::string strRes = roundedVal.toString(0);                         \
+                    std::string strRes = roundedVal.toString(roundingPrecision);         \
                                                                                          \
-                    cout << "[" << (strRes==strResForCompare ? "+" : "-") << "]  " << decimal.toString(0) << " rounded to " << roundingPrecision << " signs with " << #roundingMethod << " is " << strRes << endl; \
+                    bool bGood /* Johny */ = (strRes==strResForCompare);                 \
+                    if (!bGood)                                                          \
+                       ++totalRoundingTestsFailed;                                       \
+                                                                                         \
+                                                                                         \
+                    cout << "[" << (bGood ? "+" : "-") << "]  " << (decimal<0 ? "" : " ") << decimal.toString(roundingPrecision+1) << " rounded to " << roundingPrecision << " signs with " << #roundingMethod << " rounding method is " << strRes; \
+                    if (!bGood)                                                          \
+                    {                                                                    \
+                        cout << " (expected " << strResForCompare << ")";                \
+                    }                                                                    \
+                    cout << endl;                                                        \
+                                                                                         \
                 } while(0)
 
 
+    // https://en.wikipedia.org/wiki/Rounding#Round_half_to_odd
+
+    cout << "------------------------------" << endl;
+    ROUNDING_TEST(   23.0,  "23", 0, roundFloor           );
     ROUNDING_TEST(   23.7,  "23", 0, roundFloor           );
+    ROUNDING_TEST(   24.0,  "24", 0, roundFloor           );
+
+    cout << endl;
+    ROUNDING_TEST(  -23.0, "-23", 0, roundFloor           );
     ROUNDING_TEST(  -23.2, "-24", 0, roundFloor           );
+    ROUNDING_TEST(  -24.0, "-24", 0, roundFloor           );
+
+    cout << "------------------------------" << endl;
+    ROUNDING_TEST(   23.0,  "23", 0, roundCeil            );
     ROUNDING_TEST(   23.2,  "24", 0, roundCeil            );
+    ROUNDING_TEST(   24.0,  "24", 0, roundCeil            );
+
+    cout << endl;
+    ROUNDING_TEST(  -23.0, "-23", 0, roundCeil            );
     ROUNDING_TEST(  -23.7, "-23", 0, roundCeil            );
-    ROUNDING_TEST(   23.7,  "23", 0, roundTowardsZero     );
-    ROUNDING_TEST(  -23.7, "-23", 0, roundTowardsZero     );
-    ROUNDING_TEST(   23.2,  "24", 0, roundTowardsInf      );
-    ROUNDING_TEST(  -23.2, "-24", 0, roundTowardsInf      );
+    ROUNDING_TEST(  -24.0, "-24", 0, roundCeil            );
+
+    cout << "------------------------------" << endl;
+    ROUNDING_TEST(   23.0,  "23", 0, roundTrunc           ); // roundTowardsZero
+    ROUNDING_TEST(   23.7,  "23", 0, roundTrunc           ); // roundTowardsZero
+    ROUNDING_TEST(   24.0,  "24", 0, roundTrunc           ); // roundTowardsZero
+
+    cout << endl;
+    ROUNDING_TEST(  -23.0, "-23", 0, roundTrunc           ); // roundTowardsZero
+    ROUNDING_TEST(  -23.7, "-23", 0, roundTrunc           ); // roundTowardsZero
+    ROUNDING_TEST(  -24.0, "-24", 0, roundTrunc           ); // roundTowardsZero
+
+    cout << "------------------------------" << endl;
+    ROUNDING_TEST(   23.0,  "23", 0, roundTowardsInf      ); // roundAwayFromZero
+    ROUNDING_TEST(   23.2,  "24", 0, roundTowardsInf      ); // roundAwayFromZero
+    ROUNDING_TEST(   24.0,  "24", 0, roundTowardsInf      ); // roundAwayFromZero
+
+    cout << endl;
+    ROUNDING_TEST(  -23.0, "-23", 0, roundTowardsInf      ); // roundAwayFromZero
+    ROUNDING_TEST(  -23.2, "-24", 0, roundTowardsInf      ); // roundAwayFromZero
+    ROUNDING_TEST(  -24.0, "-24", 0, roundTowardsInf      ); // roundAwayFromZero
+
+    cout << "------------------------------" << endl;
+    ROUNDING_TEST(   23.1,  "23", 0, roundHalfUp          );
     ROUNDING_TEST(   23.5,  "24", 0, roundHalfUp          );
+    ROUNDING_TEST(   23.9,  "24", 0, roundHalfUp          );
+
+    cout << endl;
+    ROUNDING_TEST(  -23.1, "-23", 0, roundHalfUp          );
     ROUNDING_TEST(  -23.5, "-23", 0, roundHalfUp          );
+    ROUNDING_TEST(  -23.9, "-24", 0, roundHalfUp          );
+
+    cout << "------------------------------" << endl;
+    ROUNDING_TEST(   23.1,  "23", 0, roundHalfDown        );
     ROUNDING_TEST(   23.5,  "23", 0, roundHalfDown        );
+    ROUNDING_TEST(   23.9,  "24", 0, roundHalfDown        );
+    cout << endl;
+    ROUNDING_TEST(  -23.1, "-23", 0, roundHalfDown        );
     ROUNDING_TEST(  -23.5, "-24", 0, roundHalfDown        );
+    ROUNDING_TEST(  -23.9, "-24", 0, roundHalfDown        );
+
+    cout << "------------------------------" << endl;
+    ROUNDING_TEST(   23.1,  "23", 0, roundHalfTowardsZero );
     ROUNDING_TEST(   23.5,  "23", 0, roundHalfTowardsZero );
+    ROUNDING_TEST(   23.9,  "24", 0, roundHalfTowardsZero );
+
+    cout << endl;
+    ROUNDING_TEST(  -23.1, "-23", 0, roundHalfTowardsZero );
     ROUNDING_TEST(  -23.5, "-23", 0, roundHalfTowardsZero );
+    ROUNDING_TEST(  -23.9, "-24", 0, roundHalfTowardsZero );
+
+    cout << "------------------------------" << endl;
+    ROUNDING_TEST(   23.1,  "23", 0, roundHalfTowardsInf  ); // roundMath
     ROUNDING_TEST(   23.5,  "24", 0, roundHalfTowardsInf  );
+    ROUNDING_TEST(   23.9,  "24", 0, roundHalfTowardsInf  );
+
+    cout << endl;
+    ROUNDING_TEST(  -23.1, "-23", 0, roundHalfTowardsInf  );
     ROUNDING_TEST(  -23.5, "-24", 0, roundHalfTowardsInf  );
+    ROUNDING_TEST(  -23.9, "-24", 0, roundHalfTowardsInf  );
+
+    cout << "------------------------------" << endl;
+    ROUNDING_TEST(   23.1,  "23", 0, roundHalfToEven      );
     ROUNDING_TEST(   23.5,  "24", 0, roundHalfToEven      );
+    ROUNDING_TEST(   23.9,  "24", 0, roundHalfToEven      );
+
+    cout << endl;
+    ROUNDING_TEST(   24.1,  "24", 0, roundHalfToEven      );
     ROUNDING_TEST(   24.5,  "24", 0, roundHalfToEven      );
+    ROUNDING_TEST(   24.9,  "25", 0, roundHalfToEven      );
+
+    cout << endl;
+    ROUNDING_TEST(  -23.1, "-23", 0, roundHalfToEven      );
     ROUNDING_TEST(  -23.5, "-24", 0, roundHalfToEven      );
+    ROUNDING_TEST(  -23.9, "-24", 0, roundHalfToEven      );
+
+    cout << endl;
+    ROUNDING_TEST(  -24.1, "-24", 0, roundHalfToEven      );
     ROUNDING_TEST(  -24.5, "-24", 0, roundHalfToEven      );
+    ROUNDING_TEST(  -24.9, "-25", 0, roundHalfToEven      );
+
+    /*
+    cout << "------------------------------" << endl;
     ROUNDING_TEST(   23.5,  "23", 0, roundHalfToOdd       );
     ROUNDING_TEST(   22.5,  "23", 0, roundHalfToOdd       );
     ROUNDING_TEST(  -23.5, "-23", 0, roundHalfToOdd       );
     ROUNDING_TEST(  -22.5, "-23", 0, roundHalfToOdd       );
+    */
 
+    cout << endl;
+    cout << "------------------------------" << endl;
+    cout << endl;
+
+    cout << "Failed " << totalRoundingTestsFailed << " tests from total " << totalRoundingTests << endl;
+    if (!totalRoundingTestsFailed)
+        cout << "+++ All rounding tests passed"  << endl;
 
     return 0;
 }

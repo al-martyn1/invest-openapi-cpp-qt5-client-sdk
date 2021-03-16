@@ -1,7 +1,7 @@
 #pragma once
 
-#if !defined(MARTY_DECIMAL__F7FEF215_956E_4063_8AD1_1F66F6E17EB7__)
-    #error "This header file is part of marty_decimal.h"
+#if !defined(MARTY_DECIMAL_H__F7FEF215_956E_4063_8AD1_1F66F6E17EB7__)
+    #error "This header file must be used from marty_decimal.h only"
 #endif
 
 //----------------------------------------------------------------------------

@@ -454,9 +454,10 @@ public:
     Decimal fitPrecisionTo   ( precision_t p ) const;
 
     //------------------------------
-    int sign() const;
-    Decimal abs() const;
-    Decimal mod( Decimal d2 ) const;
+    int     sign() const;
+    int     sgn () const { return sign(); }
+    Decimal abs () const;
+    Decimal mod ( Decimal d2 ) const;
 
     //------------------------------
     Decimal getPercentOf( Decimal d ) const;
@@ -737,8 +738,8 @@ protected:
             case RoundingMethod::roundDown: // roundFloor
                  {
                      precisionFitTo(requestedPrecision + 1);
-
                      unum_t ldd = getLowestDecimalDigit();
+
                      precisionShrinkTo( requestedPrecision );
 
                      if (ldd==0)
@@ -755,6 +756,7 @@ protected:
                  {
                      precisionFitTo(requestedPrecision + 1);
                      unum_t ldd = getLowestDecimalDigit();
+
                      precisionShrinkTo( requestedPrecision );
 
                      if (ldd==0)
@@ -785,15 +787,31 @@ protected:
             case RoundingMethod::roundHalfUp: // roundHalfTowardsPositiveInf
                  {
                      precisionFitTo(requestedPrecision + 1);
-                     *this += makeMinimalPrecisionFive();
+                     unum_t ldd = getLowestDecimalDigit();
+
+                     if (ldd==5 || sgn()>0)
+                         *this += makeMinimalPrecisionFive();
+                     else if (ldd>=5 || sgn()<0)
+                         *this -= makeMinimalPrecisionFive();
+                     else
+                         { /* simple truncation */ }
+
                      precisionShrinkTo( requestedPrecision );
                  }
                  break;
-        
+
             case RoundingMethod::roundHalfDown: // roundHalfTowardsNegativeInf
                  {
                      precisionFitTo(requestedPrecision + 1);
-                     *this -= makeMinimalPrecisionFive();
+                     unum_t ldd = getLowestDecimalDigit();
+
+                     if (ldd==5 /* || sgn()>0 */ )
+                         *this -= makeMinimalPrecisionFive(); // Ok
+                     else if (ldd>=5)
+                         *this += makeMinimalPrecisionFive() * sgn();
+                     else
+                         { /* simple truncation */ }
+
                      precisionShrinkTo( requestedPrecision );
                  }
                  break;
@@ -801,7 +819,16 @@ protected:
             case RoundingMethod::roundHalfTowardsZero: // roundHalfAwayFromInf
                  {
                      precisionFitTo(requestedPrecision + 1);
-                     *this -= makeMinimalPrecisionFive() * sign();
+                     unum_t ldd = getLowestDecimalDigit();
+
+                     if (ldd<=5)
+                         { /* simple truncation */ }
+                     else
+                     {
+                         *this += makeMinimalPrecisionFive() * sgn();
+                     }
+
+                     //*this -= makeMinimalPrecisionFive() * sign();
                      precisionShrinkTo( requestedPrecision );
                  }
                  break;
@@ -817,20 +844,30 @@ protected:
             case RoundingMethod::roundHalfToEven: // roundBankers, roundBanking
                  {
                      precisionFitTo(requestedPrecision + 1);
+                     unum_t ldd = getLowestDecimalDigit();
+
                      precisionFitTo(requestedPrecision);
 
-                     int     thisSign     = sign();
-                     Decimal thisAbs      = abs();
-                     Decimal thisAbsMod2  = abs();
-                     thisAbsMod2 = thisAbsMod2.mod(makeMinimalPrecisionTwo());
-                     *this = (thisAbs+thisAbsMod2) * thisSign;
-
+                     if (ldd==5)
+                     {
+                         int     thisSign     = sign();
+                         Decimal thisAbs      = abs();
+                         Decimal thisAbsMod2  = abs();
+                         thisAbsMod2 = thisAbsMod2.mod(makeMinimalPrecisionTwo());
+                         *this = (thisAbs+thisAbsMod2) * thisSign;
+                     }
+                     else if (ldd>5)
+                     {
+                         *this += makeMinimalPrecisionOne() * sign();
+                     }
                  }
                  break;
         
             case RoundingMethod::roundHalfToOdd:
                  {
-                     throw std::runtime_error("RoundingMethod::roundHalfToOdd not implemented");
+                     //throw std::runtime_error("RoundingMethod::roundHalfToOdd not implemented");
+
+                     // Soryan, not implemented yet
                  }
                  break;
         
