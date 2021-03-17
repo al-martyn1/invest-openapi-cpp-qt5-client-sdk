@@ -732,14 +732,14 @@ protected:
         // Decimal makeMinimalPrecisionFive()
         // unum_t  getLowestDecimalDigit()
 
+        precisionFitTo(requestedPrecision + 1);
+        unum_t ldd = getLowestDecimalDigit();
+
 
         switch(roundingMethod)
         {
             case RoundingMethod::roundDown: // roundFloor
                  {
-                     precisionFitTo(requestedPrecision + 1);
-                     unum_t ldd = getLowestDecimalDigit();
-
                      precisionShrinkTo( requestedPrecision );
 
                      if (ldd==0)
@@ -754,9 +754,6 @@ protected:
         
             case RoundingMethod::roundUp: // roundCeil
                  {
-                     precisionFitTo(requestedPrecision + 1);
-                     unum_t ldd = getLowestDecimalDigit();
-
                      precisionShrinkTo( requestedPrecision );
 
                      if (ldd==0)
@@ -771,14 +768,12 @@ protected:
         
             case RoundingMethod::roundTowardsZero: // roundAwayFromInf, roundTrunc
                  {
-                     precisionFitTo(requestedPrecision + 1);
                      precisionShrinkTo( requestedPrecision );
                  }
                  break;
         
             case RoundingMethod::roundTowardsInf: // roundAwayFromZero
                  {
-                     precisionFitTo(requestedPrecision + 1);
                      precisionShrinkTo( requestedPrecision );
                      *this += makeMinimalPrecisionOne() * sign();
                  }
@@ -786,9 +781,6 @@ protected:
         
             case RoundingMethod::roundHalfUp: // roundHalfTowardsPositiveInf
                  {
-                     precisionFitTo(requestedPrecision + 1);
-                     unum_t ldd = getLowestDecimalDigit();
-
                      if (ldd==5 || sgn()>0)
                          *this += makeMinimalPrecisionFive();
                      else if (ldd>=5 || sgn()<0)
@@ -802,9 +794,6 @@ protected:
 
             case RoundingMethod::roundHalfDown: // roundHalfTowardsNegativeInf
                  {
-                     precisionFitTo(requestedPrecision + 1);
-                     unum_t ldd = getLowestDecimalDigit();
-
                      if (ldd==5 /* || sgn()>0 */ )
                          *this -= makeMinimalPrecisionFive(); // Ok
                      else if (ldd>=5)
@@ -818,9 +807,6 @@ protected:
         
             case RoundingMethod::roundHalfTowardsZero: // roundHalfAwayFromInf
                  {
-                     precisionFitTo(requestedPrecision + 1);
-                     unum_t ldd = getLowestDecimalDigit();
-
                      if (ldd<=5)
                          { /* simple truncation */ }
                      else
@@ -835,7 +821,6 @@ protected:
         
             case RoundingMethod::roundHalfTowardsInf: // roundHalfAwayFromZero, roundMath
                  {
-                     precisionFitTo(requestedPrecision + 1);
                      *this += makeMinimalPrecisionFive() * sign();
                      precisionShrinkTo( requestedPrecision );
                  }
@@ -843,9 +828,6 @@ protected:
         
             case RoundingMethod::roundHalfToEven: // roundBankers, roundBanking
                  {
-                     precisionFitTo(requestedPrecision + 1);
-                     unum_t ldd = getLowestDecimalDigit();
-
                      precisionFitTo(requestedPrecision);
 
                      if (ldd==5)
@@ -868,18 +850,14 @@ protected:
                      //throw std::runtime_error("RoundingMethod::roundHalfToOdd not implemented");
 
                      // Soryan, not implemented yet
+                     precisionFitTo(requestedPrecision);
+                     // Currently is the same as "trunc"
+
                  }
                  break;
         
         
         };
-
-
-
-        // precisionExpandTo( requestedPrecision + 1 ); // На всякий случай расширяем точность
-        // precisionShrinkTo( requestedPrecision + 1 ); // Обрезаем до требуемоей + 1 (если изначально была больше)
-
-
 
         return *this;
     }
