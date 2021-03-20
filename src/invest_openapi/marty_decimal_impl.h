@@ -430,3 +430,181 @@ Decimal Decimal::mod( Decimal d2 ) const
     return d1;
 }
 
+//------------------------------
+inline
+Decimal& Decimal::negate()
+{
+    m_num = -m_num;
+    return *this;
+}
+
+//------------------------------
+inline
+Decimal Decimal::neg () const
+{
+    Decimal res = *this;
+    return res.negate();
+}
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+inline
+bool Decimal::precisionExpandTo( precision_t p )
+{
+    denum_t adjust = m_denum.precisionExpandTo(p);
+    m_num *= adjust;
+    return true; // При расширении точости жизненно важные органы не задеваются
+}
+
+//------------------------------
+inline
+bool Decimal::precisionShrinkTo( precision_t p )
+{
+    denum_t adjust   = m_denum.precisionShrinkTo(p);
+    num_t   reminder = m_num % adjust;
+    m_num /= adjust;
+    return reminder==0; // Возврат true, если ничего лишнего не обрезали
+}
+
+//------------------------------
+inline
+bool Decimal::precisionFitTo( precision_t p )
+{
+    sdenum_t adjust = m_denum.precisionFitTo(p);
+    if (adjust<0)
+    {
+       num_t   reminder = m_num % -adjust;
+       m_num /= (denum_t)-adjust;
+       return reminder==0;
+    }
+    else if (adjust==0)
+    {
+       // Ничего делать не надо
+       return true; // Точность не меняется, жизненно важные органы не задеты
+    }
+    else
+    {
+       m_num *= (denum_t)adjust;
+       return true; // При расширении точости жизненно важные органы не задеваются
+    }
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+inline
+Decimal Decimal::makeMinimalPrecisionImplHelper( Decimal::num_t newNum ) const
+{
+    Decimal res;
+    res.m_denum = m_denum;
+    res.m_num   = newNum;
+    return res;
+}
+
+//------------------------------
+inline
+Decimal Decimal::makeMinimalPrecisionOne() const
+{
+    return makeMinimalPrecisionImplHelper(1);
+}
+
+//------------------------------
+inline
+Decimal Decimal::makeMinimalPrecisionTwo() const
+{
+    return makeMinimalPrecisionImplHelper(2);
+}
+
+//------------------------------
+inline
+Decimal Decimal::makeMinimalPrecisionFive() const
+{
+    return makeMinimalPrecisionImplHelper(5);
+}
+
+//------------------------------
+inline
+Decimal& Decimal::minimizePrecisionImpl()
+{
+    while( ((m_num%10)==0) && (m_denum.prec()>0) )
+    {
+        m_num /= 10;
+        m_denum.decPrec();
+    }
+
+    return *this;
+}
+
+//------------------------------
+inline
+Decimal::unum_t Decimal::getLowestDecimalDigit() const
+{
+    unum_t unum = getPositiveNumerator();
+    return unum % 10;
+}
+
+//------------------------------
+inline
+void Decimal::replaceLowestDecimalDigit( Decimal::unum_t d )
+{
+    // Clear place for new lowest digit
+    m_num /= 10;
+    m_num *= 10;
+
+    if (d>9)
+        d = 9;
+
+    if (m_num<0)
+        m_num -= (num_t)d;
+    else
+        m_num += (num_t)d;
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+inline
+std::string  Decimal::toString( precision_t p ) const
+{
+    Decimal d = *this;
+    if (p==(Decimal::precision_t)-1)
+    {
+        p = d.m_denum.precision();
+    }
+    else
+    {
+        d = d.expantPrecisionTo( p );
+    }
+
+    Decimal::num_t p1 = d.m_num / d.m_denum.denum();
+    Decimal::num_t p2 = d.m_num % d.m_denum.denum();
+
+    std::string res = std::to_string(p1);
+
+    std::size_t prec = d.m_denum.prec();
+
+    if (!prec)
+        return res; // No decimal digits after dot
+
+    if (p2<0)
+        p2 = -p2;
+
+    std::string strP2 = std::to_string(p2);
+
+    std::size_t leadingZerosNum = 0;
+    if (prec>strP2.size())
+        leadingZerosNum = prec - strP2.size();
+
+    return res + std::string(1, '.') + std::string(leadingZerosNum, '0') + strP2;
+
+}
+//{ return decimalToString( *this, p ); }
