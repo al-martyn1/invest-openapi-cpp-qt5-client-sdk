@@ -334,6 +334,20 @@ public:
     unum_t getPositiveNumerator() const  { return (unum_t)( (m_num<0) ? -m_num : m_num ); }
 
     //------------------------------
+    //! Возвращает число десятичных знаков числа
+    static precision_t findCurrentDecimalPower( unum_t unum )
+    {
+        precision_t curPower = 0;
+        for(; unum!=0; unum /= 10, ++curPower ) {}
+        return curPower;
+    }
+
+    static precision_t findCurrentDecimalPower( num_t num )
+    {
+        return (num < 0) ? findCurrentDecimalPower( (unum_t)(-num) ) : findCurrentDecimalPower( (unum_t)(num) );
+    }
+
+    //------------------------------
     //! Возвращает максимальный десятичный множитель (его степень), на который может быть умножено число без переполнения
     precision_t findMaxDecimalScalePower() const;
 
@@ -1053,15 +1067,15 @@ protected:
     // if == -1  - Exact Decimal number precision will be used
     // if ==  0  - Output stream precision will be used
     // if >   0  - Exact precision will be used
-    static precision_t         m_outputPrecision = (precision_t)-1; 
+    inline static precision_t         m_outputPrecision = (precision_t)-1; 
 
     // RoundingMethod::roundingInvalid
     // RoundingMethod::roundHalfTowardsInf
     // RoundingMethod::roundHalfToEven
 
-    static RoundingMethod      m_divideRoundingMethod   = RoundingMethod::roundHalfToEven; 
+    inline static RoundingMethod      m_divideRoundingMethod   = RoundingMethod::roundHalfToEven; 
 
-    static precision_t         m_dividePrecision        = 6;
+    inline static precision_t         m_dividePrecision        = 6;
     
 
 

@@ -157,12 +157,9 @@ Decimal::precision_t Decimal::findMaxDecimalScalePower() const
 
     precision_t maxScalePower = maxPrecision();
 
-    precision_t curScalePower = 0;
-
-    for(; unum!=0; unum /= 10, ++curScalePower ) {}
+    precision_t curScalePower = findCurrentDecimalPower( unum );
 
     return maxScalePower - curScalePower;
-
 }
 
 //----------------------------------------------------------------------------
@@ -239,20 +236,69 @@ inline
 Decimal Decimal::operator * ( Decimal d2 ) const
 {
     //minimizePrecisionImpl();
-    d2.minimizePrecisionImpl();
+    d2.minimizePrecisionInplace();
+    Decimal d1 = minimizePrecision();
+
+    //precision_t findMaxDecimalScalePower() const;
+    //precision_t findCurrentDecimalPower( unum_t unum )
+
+    precision_t maxResultPower = DecimalPrecision::maxPrecision<num_t>();
+    precision_t resultPower    = d1.findCurrentDecimalPower(m_num) + d2.findCurrentDecimalPower(m_num);
+
+    precision_t needReducePrecision1 = (resultPower > maxResultPower) ? (resultPower - maxResultPower) : 0;
+
+    precision_t resultPrecision      = d1.precision() + d2.precision();
+    precision_t needReducePrecision2 = (resultPrecision > maxPrecision()) ? (resultPrecision - maxPrecision()) : 0;
+
+    precision_t needReducePrecision  = (needReducePrecision1 > needReducePrecision2) ? needReducePrecision1 : needReducePrecision2;
+
+
+    // precision_t reducePrecision1 = needReducePrecision/2;
+    // Пытаемся сделать пропорциональное уменьшение точности
+
+    precision_t reducePrecision1 = needReducePrecision; // Уменьшаем первую точность по максимуму по умолчанию
+
+    if (d2.precision()!=0)
+    {
+        reducePrecision1 = d1.precision()*needReducePrecision / d2.precision();
+    }
+
+    if (reducePrecision1 > d1.precision())
+    {
+        reducePrecision1 = d1.precision();
+    }
+
+    d1 = d1.rounded( reducePrecision1, RoundingMethod::roundStatistician ); // RoundingMethod::roundMath
+
+
+    precision_t reducePrecision2 = needReducePrecision - reducePrecision1;
+
+    if (reducePrecision2 > d2.precision())
+    {
+        reducePrecision2 = d2.precision();
+    }
+
+    d2 = d2.rounded( reducePrecision1, RoundingMethod::roundStatistician ); // RoundingMethod::roundMath
+
+    // Вообще-то надо бы уменьшать точность пропорционально исходным
+    // Может возникнуть такая ситуация, что точность у d1 большая, а у d2 - маленькая.
+    // Но точность d2 мы уменьшили вполовину суммарной, и еще есть место для манёвра, 
+    // а точность d2 уменьшать некуда
+
 
     num_t num = m_num * d2.m_num;
 
-    if (m_denum < d2.m_denum)
+    if (d1.m_denum < d2.m_denum)
     {
-        num /= m_denum.denum();
+        //num /= m_denum.denum();
         return Decimal( num, d2.m_denum ).minimizePrecisionImpl();
     }
     else
     {
-        num /= d2.m_denum.denum();
-        return Decimal( num, m_denum ).minimizePrecisionImpl();
+        //num /= d2.m_denum.denum();
+        return Decimal( num, d1.m_denum ).minimizePrecisionImpl();
     }
+
 }
 
 //------------------------------

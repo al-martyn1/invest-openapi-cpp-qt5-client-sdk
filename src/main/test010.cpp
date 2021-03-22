@@ -104,15 +104,56 @@ INVEST_OPENAPI_MAIN()
 
     cout << "Failed " << totalCtorTestsFailed << " CTOR tests from total " << totalCtorTestsFailed << endl;
     if (!totalCtorTestsFailed)
-        cout << "+++ All rounding tests passed"  << endl;
+        cout << "+++ All CTOR tests passed"  << endl;
 
     cout << endl;
     cout << endl;
 
 
 
+    #define DECIMAL_OP_TEST( val1, val2, op, strResForCompare )                             \
+                do                                                                          \
+                {                                                                           \
+                    ++totalOpTests;                                                         \
+                    Decimal     d1       = Decimal(val1);                                   \
+                    Decimal     d2       = Decimal(val2);                                   \
+                    Decimal     dRes     = d1 op d2;                                        \
+                    std::string strRes   = dRes.toString( /* precision - auto */ );         \
+                                                                                            \
+                    bool bGood /* Johny */ = dRes.checkIsExact(strResForCompare);           \
+                    if (!bGood)                                                             \
+                       ++totalOpTestsFailed;                                                \
+                                                                                            \
+                                                                                            \
+                    cout << "[" << (bGood ? "+" : "-") << "]  " << d1 << " " << #op << " " << d2 << " = " << strRes << ""; \
+                    if (!bGood)                                                             \
+                    {                                                                       \
+                        cout << " (expected '" << strResForCompare << "')";                 \
+                    }                                                                       \
+                    cout << endl;                                                           \
+                                                                                            \
+                } while(0)
 
 
+    unsigned totalOpTests       = 0;
+    unsigned totalOpTestsFailed = 0;
+
+    DECIMAL_OP_TEST( 3, 4.12, +, "7.12" );
+
+
+    cout << endl;
+    cout << "------------------------------" << endl;
+    cout << endl;
+
+    cout << "Failed " << totalOpTestsFailed << " OP tests from total " << totalOpTestsFailed << endl;
+    if (!totalOpTestsFailed)
+        cout << "+++ All OP tests passed"  << endl;
+
+    cout << endl;
+    cout << endl;
+
+
+    /*
     #define PRINT( var ) cout << #var << ": "<< var << endl;
 
     Decimal d1_u64_3   = (std::uint64_t)(3)  ;     PRINT(d1_u64_3);
@@ -139,6 +180,10 @@ INVEST_OPENAPI_MAIN()
     Decimal divideRes  = divideD1.divide(divideD2, 6);
     
     cout << divideRes.toString() << endl;
+    */
+
+
+
 
     unsigned totalRoundingTests       = 0;
     unsigned totalRoundingTestsFailed = 0;
