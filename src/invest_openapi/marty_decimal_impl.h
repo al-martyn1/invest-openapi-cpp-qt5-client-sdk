@@ -243,7 +243,7 @@ Decimal Decimal::operator * ( Decimal d2 ) const
     //precision_t findCurrentDecimalPower( unum_t unum )
 
     precision_t maxResultPower = DecimalPrecision::maxPrecision<num_t>();
-    precision_t resultPower    = d1.findCurrentDecimalPower(m_num) + d2.findCurrentDecimalPower(m_num);
+    precision_t resultPower    = d1.findNumCurrentDecimalPower() + d2.findNumCurrentDecimalPower();
 
     precision_t needReducePrecision1 = (resultPower > maxResultPower) ? (resultPower - maxResultPower) : 0;
 
@@ -258,9 +258,16 @@ Decimal Decimal::operator * ( Decimal d2 ) const
 
     precision_t reducePrecision1 = needReducePrecision; // Уменьшаем первую точность по максимуму по умолчанию
 
+    /*
     if (d2.precision()!=0)
     {
         reducePrecision1 = d1.precision()*needReducePrecision / d2.precision();
+    }
+    */
+
+    if (resultPrecision!=0)
+    {
+        reducePrecision1 = d1.precision()*needReducePrecision / resultPrecision;
     }
 
     if (reducePrecision1 > d1.precision())
@@ -268,7 +275,8 @@ Decimal Decimal::operator * ( Decimal d2 ) const
         reducePrecision1 = d1.precision();
     }
 
-    d1 = d1.rounded( reducePrecision1, RoundingMethod::roundStatistician ); // RoundingMethod::roundMath
+    if (reducePrecision1)
+        d1 = d1.rounded( d1.precision()-reducePrecision1, RoundingMethod::roundStatistician ); // RoundingMethod::roundMath
 
 
     precision_t reducePrecision2 = needReducePrecision - reducePrecision1;
@@ -278,7 +286,8 @@ Decimal Decimal::operator * ( Decimal d2 ) const
         reducePrecision2 = d2.precision();
     }
 
-    d2 = d2.rounded( reducePrecision1, RoundingMethod::roundStatistician ); // RoundingMethod::roundMath
+    if (reducePrecision2)
+        d2 = d2.rounded( d2.precision()-reducePrecision2, RoundingMethod::roundStatistician ); // RoundingMethod::roundMath
 
     // Вообще-то надо бы уменьшать точность пропорционально исходным
     // Может возникнуть такая ситуация, что точность у d1 большая, а у d2 - маленькая.
@@ -286,8 +295,10 @@ Decimal Decimal::operator * ( Decimal d2 ) const
     // а точность d2 уменьшать некуда
 
 
-    num_t num = m_num * d2.m_num;
+    num_t num = d1.m_num * d2.m_num;
 
+    return Decimal( num, d1.precision() + d2.precision() ).minimizePrecision();
+    /*
     if (d1.m_denum < d2.m_denum)
     {
         //num /= m_denum.denum();
@@ -298,6 +309,7 @@ Decimal Decimal::operator * ( Decimal d2 ) const
         //num /= d2.m_denum.denum();
         return Decimal( num, d1.m_denum ).minimizePrecisionImpl();
     }
+    */
 
 }
 

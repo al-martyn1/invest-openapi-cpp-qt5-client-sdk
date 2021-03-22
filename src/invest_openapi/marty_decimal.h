@@ -210,6 +210,11 @@ public:
 
     DecimalPrecision decimalPrecision( ) const { return DecimalPrecision(m_precision); }
 
+    static precision_t maxPrecision()
+    {
+        return DecimalPrecision::maxPrecision<denum_t>();
+    }
+
     void swap( DecimalDenumerator &d2 );
 
     int compare( const DecimalDenumerator d2 ) const;
@@ -329,7 +334,7 @@ public:
 
 
     //------------------------------
-    static precision_t maxPrecision()    { return DecimalPrecision::maxPrecision<num_t>(); }
+    static precision_t maxPrecision()    { return DenumeratorType::maxPrecision(); }
     precision_t precision() const        { return m_denum.precision(); }
     unum_t getPositiveNumerator() const  { return (unum_t)( (m_num<0) ? -m_num : m_num ); }
 
@@ -345,6 +350,11 @@ public:
     static precision_t findCurrentDecimalPower( num_t num )
     {
         return (num < 0) ? findCurrentDecimalPower( (unum_t)(-num) ) : findCurrentDecimalPower( (unum_t)(num) );
+    }
+
+    precision_t findNumCurrentDecimalPower( ) const
+    {
+        return findCurrentDecimalPower(m_num);
     }
 
     //------------------------------

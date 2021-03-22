@@ -111,7 +111,7 @@ INVEST_OPENAPI_MAIN()
 
 
 
-    #define DECIMAL_OP_TEST( val1, val2, op, strResForCompare )                             \
+    #define DECIMAL_OP_TEST( val1, op, val2, strResForCompare )                             \
                 do                                                                          \
                 {                                                                           \
                     ++totalOpTests;                                                         \
@@ -138,8 +138,18 @@ INVEST_OPENAPI_MAIN()
     unsigned totalOpTests       = 0;
     unsigned totalOpTestsFailed = 0;
 
-    DECIMAL_OP_TEST( 3, 4.12, +, "7.12" );
-
+    DECIMAL_OP_TEST( 3, + , 4.12, "7.12" );
+    DECIMAL_OP_TEST( 35.64745, + , 89.253464, "124.900914" );
+    DECIMAL_OP_TEST( 3, - , 4.12, "-1.12" );
+    DECIMAL_OP_TEST( 35.64745, - , 89.253464, "-53.606014" );
+    DECIMAL_OP_TEST( 4.12, - , 3, "1.12" );
+    DECIMAL_OP_TEST( 89.253464, - , 35.64745, "53.606014" );
+    //DECIMAL_OP_TEST( 4.12, * , 3.457, "14.24284" );
+    DECIMAL_OP_TEST( 89.253464, * , 35.64745, "3181.659678575" );
+                                            // 3181.6583952668
+                                            // 3181.653790004
+    // 89.253464 * 35.64745 = 3181.653790004 (expected '3181.659678575')
+    // 89.25346 * 35.6474 = 3181.653790004 (expected '3181.659678575')
 
     cout << endl;
     cout << "------------------------------" << endl;
