@@ -42,7 +42,7 @@ INVEST_OPENAPI_MAIN()
                     Decimal     decimal    = Decimal(val);                                  \
                     std::string strDecimal = decimal.toString( /* precision - auto */ );    \
                                                                                             \
-                    bool bGood /* Johny */ = (strDecimal==strResForCompare);                \
+                    bool bGood /* Johny */ = decimal.checkIsExact(strResForCompare);        \
                     if (!bGood)                                                             \
                        ++totalCtorTestsFailed;                                              \
                                                                                             \
@@ -63,7 +63,7 @@ INVEST_OPENAPI_MAIN()
                     Decimal     decimal    = Decimal(val, marty::DecimalPrecision(prec));   \
                     std::string strDecimal = decimal.toString( /* precision - auto */ );    \
                                                                                             \
-                    bool bGood /* Johny */ = (strDecimal==strResForCompare);                \
+                    bool bGood /* Johny */ = decimal.checkIsExact(strResForCompare);        \
                     if (!bGood)                                                             \
                        ++totalCtorTestsFailed;                                              \
                                                                                             \
@@ -153,7 +153,7 @@ INVEST_OPENAPI_MAIN()
                     /*std::ostringstream os;*/                                           \
                     std::string strRes = roundedVal.toString(roundingPrecision);         \
                                                                                          \
-                    bool bGood /* Johny */ = (strRes==strResForCompare);                 \
+                    bool bGood /* Johny */ = decimal.checkIsExact(strResForCompare);        \
                     if (!bGood)                                                          \
                        ++totalRoundingTestsFailed;                                       \
                                                                                          \

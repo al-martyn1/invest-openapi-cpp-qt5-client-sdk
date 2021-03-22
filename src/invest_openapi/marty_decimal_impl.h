@@ -42,6 +42,10 @@ inline
 DecimalDenumerator::denum_t
 DecimalDenumerator::precisionExpandTo( precision_t p )
 {
+    precision_t pMax = DecimalPrecision::maxPrecision<denum_t>();
+    if (p > pMax)
+        p = pMax;
+
     denum_t deltaDenum = 1;
     while(m_precision < p)
     {
@@ -263,6 +267,8 @@ Decimal Decimal::divide( Decimal devider, precision_t resultPrecision ) const
 
     precision_t maxAllowedPrecisionIncrement  = findMaxDecimalScalePower();
     precision_t maxAllowedPrecision           = this->m_denum.precision() + maxAllowedPrecisionIncrement;
+    if (maxAllowedPrecision > maxPrecision())
+        maxAllowedPrecision = maxPrecision();
 
     precision_t requiredSrcPrecision = resultPrecision + devider.m_denum.precision();
 
@@ -290,11 +296,27 @@ Decimal Decimal::divide( Decimal devider, precision_t resultPrecision ) const
 inline
 Decimal Decimal::operator / ( Decimal d2 ) const
 {
-    d2.minimizePrecisionImpl();
+    d2.minimizePrecisionInplace();
 
-    Decimal d1 = *this;
-    d1.precisionExpandTo( m_denum.prec() + d2.m_denum.prec() );
-    return Decimal( d1.m_num / d2.m_num, m_denum);
+    // Проблема в том, что если у делимого точность нулевая или минимальная, 
+    // и значения сравнимого порядка, то точность у результата будет никакая
+
+    precision_t recomendedNumPrecision = 2*d2.m_denum.prec();
+    if (recomendedNumPrecision < 3)
+        recomendedNumPrecision = 3;
+
+    precision_t numPrecision = m_denum.prec() + d2.m_denum.prec();
+    if (numPrecision < recomendedNumPrecision)
+        numPrecision = recomendedNumPrecision;
+
+    if (numPrecision < d2.m_denum.prec())
+        numPrecision = d2.m_denum.prec();
+
+    return divide( d2, numPrecision - d2.m_denum.prec() );
+
+    //Decimal d1 = *this;
+    //d1.precisionExpandTo( m_denum.prec() + d2.m_denum.prec() );
+    //return Decimal( d1.m_num / d2.m_num, m_denum);
 }
 
 //------------------------------
@@ -578,12 +600,16 @@ std::string  Decimal::toString( precision_t p ) const
     Decimal d = *this;
     if (p==(Decimal::precision_t)-1)
     {
-        p = d.m_denum.precision();
+        p = d.precision();
     }
     else
     {
+        if (p > Decimal::maxPrecision())
+            p = Decimal::maxPrecision();
         d = d.expantPrecisionTo( p );
     }
+
+    d = d.rounded( p, RoundingMethod::roundMath );
 
     Decimal::num_t p1 = d.m_num / d.m_denum.denum();
     Decimal::num_t p2 = d.m_num % d.m_denum.denum();

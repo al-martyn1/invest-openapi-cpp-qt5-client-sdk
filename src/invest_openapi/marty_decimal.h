@@ -278,6 +278,8 @@ public:
     {
         // https://en.wikipedia.org/wiki/Rounding
 
+        roundingInvalid                               ,
+
 
         // Directed rounding to an integer methods
 
@@ -352,8 +354,8 @@ public:
 
 
     //------------------------------
-    bool checkIsExact( const std::string &strDecimal  ) const { toString( (Decimal::precision_t)-1 )==strDecimal; }
-    bool checkIsExact( const char        *pStrDecimal ) const { checkIsExact(std::string(pStrDecimal)); }
+    bool checkIsExact( const std::string &strDecimal  ) const { return toString( (Decimal::precision_t)-1 )==strDecimal; }
+    bool checkIsExact( const char        *pStrDecimal ) const { return checkIsExact(std::string(pStrDecimal)); }
 
     //------------------------------
 
@@ -503,6 +505,13 @@ public:
     Decimal getPermilleOf( Decimal d ) const;
 
     Decimal rounded( precision_t precision, RoundingMethod roundingMethod ) const;
+
+    //------------------------------
+
+    static precision_t getOutputPrecision()                   { return m_outputPrecision; }
+    static void        setOutputPrecision( precision_t p )    { m_outputPrecision = p; }
+    static void        setOutputPrecisionToStreamPrecision( ) { setOutputPrecision(0); }
+    static void        setOutputPrecisionToAuto( )            { setOutputPrecision((precision_t)-1); }
 
     //------------------------------
 
@@ -789,6 +798,11 @@ protected:
     //------------------------------
     Decimal& roundingImpl( precision_t requestedPrecision, RoundingMethod roundingMethod )
     {
+        if (roundingMethod==RoundingMethod::roundingInvalid)
+        {
+            throw std::runtime_error("Decimal::roundingImpl: rounding method isInvalid");
+        }
+
         if ( m_denum.precision() <= requestedPrecision )
             return *this;
 
@@ -1025,11 +1039,32 @@ protected:
 
 
 
+
     //----------------------------------------------------------------------------
     // Class members goes here
 
     num_t               m_num;
     DenumeratorType     m_denum;
+
+
+
+    // Global affecting options
+
+    // if == -1  - Exact Decimal number precision will be used
+    // if ==  0  - Output stream precision will be used
+    // if >   0  - Exact precision will be used
+    static precision_t         m_outputPrecision = (precision_t)-1; 
+
+    // RoundingMethod::roundingInvalid
+    // RoundingMethod::roundHalfTowardsInf
+    // RoundingMethod::roundHalfToEven
+
+    static RoundingMethod      m_divideRoundingMethod   = RoundingMethod::roundHalfToEven; 
+
+    static precision_t         m_dividePrecision        = 6;
+    
+
+
 
 
 }; // class Decimal
@@ -1316,10 +1351,34 @@ Decimal     fromString( const std::string &numberStr_ )
 inline
 std::ostream& operator<<( std::ostream& os, const Decimal &v )
 {
-    auto minPrecision = (Decimal::precision_t)os.precision();
-    if (minPrecision<1)
-        minPrecision = 1;
-    os << v.toString(minPrecision);
+    Decimal::precision_t  precision = Decimal::getOutputPrecision();
+
+    if (precision==(Decimal::precision_t)-1)
+    {
+        // Exact Decimal number precision will be used
+        precision = v.precision();
+        if (precision > Decimal::maxPrecision())
+            precision = Decimal::maxPrecision();
+    }
+    else if (precision>0)
+    {
+        // Exact global output precision will be used
+        if (precision > Decimal::maxPrecision())
+            precision = Decimal::maxPrecision();
+    }
+    else // precision==0
+    {
+        // Output stream precision will be used
+        precision = (Decimal::precision_t)os.width();
+        if (precision > Decimal::maxPrecision())
+            precision = Decimal::maxPrecision();
+    }
+
+
+    //auto minPrecision = (Decimal::precision_t)os.precision();
+    //if (minPrecision<1)
+    //    minPrecision = 1;
+    os << v.toString(precision);
     return os;
 }
 
