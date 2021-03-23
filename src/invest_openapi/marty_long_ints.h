@@ -44,9 +44,15 @@ unsigned numBits<unsigned char>()
 }
 
 template<typename IntType> inline
+std::size_t getShiftSize()
+{
+    return (sizeof(IntType)*numBits<unsigned char>());
+}
+
+template<typename IntType> inline
 std::size_t getHalfShiftSize()
 {
-    return (sizeof(IntType)*numBits<unsigned char>()) / 2;
+    return getShiftSize<IntType>() / 2;
 }
 
 
@@ -168,12 +174,13 @@ void unsignedMultiplyNumbersMnImpl( UnsignedIntType1 *w
 /*! uint16_t используется как 1 разряд для того, чтобы два разряда влезало в 32 бита, что доступно на контроллерах
  */
 inline
-void miltipleUnsignedLongInts( const std::uint16_t *pM1 , std::size_t szM1
+void miltiplyUnsignedLongInts( const std::uint16_t *pM1 , std::size_t szM1
                              , const std::uint16_t *pM2 , std::size_t szM2
-                             ,       std::uint16_t *pRes, std::size_t szResBuf
+                             ,       std::uint16_t *pRes, std::size_t szResBuf // high parts will be skipped if szResBuf is not enough
                              )
 {
     const std::size_t resIdxEnd   = szResBuf;
+
     for( std::size_t k=0; k!=resIdxEnd; ++k)
        *pRes = 0;
 
@@ -187,8 +194,8 @@ void miltipleUnsignedLongInts( const std::uint16_t *pM1 , std::size_t szM1
         {
             std::size_t resIdxBegin = i+j;
 
-            std::uint16_t m1 = *pM1;
-            std::uint16_t m2 = *pM2;
+            std::uint16_t m1 = pM1[i];
+            std::uint16_t m2 = pM2[j];
 
             if (!m2)
                continue;
@@ -200,26 +207,70 @@ void miltipleUnsignedLongInts( const std::uint16_t *pM1 , std::size_t szM1
                 tmpRes += (std::uint32_t)pRes[k];
                 pRes[k] = (std::uint16_t)tmpRes; // усекаем отрубанием старшей части
 
-                tmpRes >>= (unsigned)int_helpers::getHalfShiftSize<std::uint32_t>();
-
-                std::uint32_t tmp2 = 0;
-                if ((k+1)<resIdxEnd)
-                {
-                    tmp2 = (std::uint32_t)pRes[k+1];
-                }
-
-                tmp2 <<= (unsigned)int_helpers::getHalfShiftSize<std::uint32_t>();
-
-                tmpRes |= tmp2;
+                tmpRes >>= (unsigned)int_helpers::getHalfShiftSize<std::uint32_t>(); // Удаляем младшую часть, старшую - на её место
+                if (!tmpRes)
+                    break;
             }
 
-            
-        }
-    }
+        } // for( std::size_t j=0; j!=szM2; ++j)
+
+    } // for( std::size_t i=0; i!=szM1; ++i)
 }
+
+
+template <typename UnsignedType>
+constexpr /* inline */ 
+std::size_t calcNumberOfUint16ItemsInLong()
+{
+    return sizeof(UnsignedType) / sizeof(std::uint16_t);
+}
+
+
+template <typename UnsignedType> inline
+void convertToLongUnsigned( UnsignedType u
+                          , std::uint16_t *pLongUnsigned // buf must be enough 
+                          )
+{
+    const std::size_t numParts = calcNumberOfUint16ItemsInLong<UnsignedType>();
+
+    for( std::size_t i=0; i!=numParts; ++i, ++pLongUnsigned)
+    {
+        *pLongUnsigned = (std::uint16_t)u;
+        u >>= int_helpers::getShiftSize<std::uint16_t>();
+    }
+
+}
+
+template <typename UnsignedType>
+inline
+void convertFromLongUnsigned( UnsignedType &u
+                            , std::uint16_t *pLongUnsigned
+                            , std::size_t    bufSize // in counts of std::uint16_t
+                            )
+{
+    const std::size_t end = (std::size_t)-1;
+
+    const std::size_t unsignedTypeSizeInUint16Items = sizeof(UnsignedType) / sizeof(std::uint16_t);
+
+    // Выбираем меньшее из двух размеров
+    const std::size_t numItems = (unsignedTypeSizeInUint16Items < bufSize) ? unsignedTypeSizeInUint16Items : bufSize;
+
+    u = 0;
+
+    for( std::size_t i=(numItems-1); i!=end; --i)
+    {
+         u <<= int_helpers::getShiftSize<std::uint16_t>();
+         u  |= (UnsignedType)pLongUnsigned[i];
+    }
+
+}
+
+
+
 
 // int_helpers::getHalfShiftSize()
 // int_helpers::makeMaskLowHalf()
+// int_helpers::numBits()
 
 
 

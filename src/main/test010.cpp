@@ -18,7 +18,29 @@
 #include "invest_openapi/openapi_completable_future.h"
 
 #include "invest_openapi/marty_decimal.h"
+#include "invest_openapi/marty_long_ints.h"
 
+
+
+template<typename IntType1, typename IntType2, typename IntTypeRes>
+void martyLongIntMultiplyTestHelper( IntType1 u1, IntType2 u2, IntTypeRes &res )
+{
+    std::uint16_t ul1[ marty::calcNumberOfUint16ItemsInLong<IntType1>() ];
+    marty::convertToLongUnsigned( u1, &ul1[0] );
+
+    std::uint16_t ul2[ marty::calcNumberOfUint16ItemsInLong<IntType2>() ];
+    marty::convertToLongUnsigned( u2, &ul2[0] );
+
+    std::uint16_t ulRes[ marty::calcNumberOfUint16ItemsInLong<IntType1>() + marty::calcNumberOfUint16ItemsInLong<IntType2>() ];
+
+    marty::miltiplyUnsignedLongInts( &ul1[0], marty::calcNumberOfUint16ItemsInLong<IntType1>()
+                                   , &ul2[0], marty::calcNumberOfUint16ItemsInLong<IntType2>()
+                                   , &ulRes[0], marty::calcNumberOfUint16ItemsInLong<IntType1>() + marty::calcNumberOfUint16ItemsInLong<IntType2>()
+                                   );
+
+    marty::convertFromLongUnsigned( res, &ulRes[0], marty::calcNumberOfUint16ItemsInLong<IntType1>() + marty::calcNumberOfUint16ItemsInLong<IntType2>() );
+
+}
 
 
 INVEST_OPENAPI_MAIN()
@@ -30,6 +52,54 @@ INVEST_OPENAPI_MAIN()
     using marty::DecimalPrecision;
     //using marty::toString;
     //using marty::fromString;
+
+
+    // simple pretest
+    {
+
+        std::uint32_t u1 = 213251u;
+        // u1  = 0x00034103
+        // ul1 = { 0x4103, 0x0003 }
+
+        std::uint32_t u2 = 153754u; 
+        // u2   = 0x0002589a
+        // ul2  = { 0x589a, 0x0002 }
+
+        // 0x4103 * 0x589a = 377496526 // 0x168023CE
+
+
+        std::uint64_t uRes; // 213251 * 153754 = 32788194254
+
+        // 0x07A25423CE
+
+        martyLongIntMultiplyTestHelper( u1, u2, uRes );
+        cout << u1 << " x " << u2 << " = " << uRes << endl;
+
+
+        u1 = 54213251u;
+        u2 = 91153754u;
+
+        martyLongIntMultiplyTestHelper( u1, u2, uRes );
+        cout << u1 << " x " << u2 << " = " << uRes << endl;
+        // 54213251 * 91153754 = 4941741345194254
+        // Got                   5082459127136526
+
+
+        u1 = 4213251u;
+        u2 = 1153754u;
+
+        martyLongIntMultiplyTestHelper( u1, u2, uRes );
+        cout << u1 << " x " << u2 << " = " << uRes << endl;
+        // 4213251 * 1153754 =    4861055194254
+        // Got                 5082459127136526
+
+    }
+
+    cout << endl;
+    cout << endl;
+    cout << endl;
+
+
 
     unsigned totalCtorTests       = 0;
     unsigned totalCtorTestsFailed = 0;
