@@ -163,6 +163,24 @@ INVEST_OPENAPI_MAIN()
 
         precision = marty::bcd::reduceLeadingZeros( bcdNumber, precision );
         cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+
+        precision = marty::bcd::extendPrecision( bcdNumber, precision, 9 );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+
+        precision = marty::bcd::extendLeadings( bcdNumber, precision, 5 /* requestedLeadings */  );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+
+        precision = marty::bcd::makeRawBcdNumber( bcdNumber, "0.000" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber) ? "true" : "false") << endl;
+
+        precision = marty::bcd::extendPrecision( bcdNumber, precision, 9 );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber) ? "true" : "false") << endl;
+
+        precision = marty::bcd::extendLeadings( bcdNumber, precision, 5 /* requestedLeadings */  );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber) ? "true" : "false") << endl;
         
     }
 
