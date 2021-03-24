@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <climits>
 #include <limits>
+#include <exception>
+#include <stdexcept>
 
 namespace marty
 {
@@ -174,15 +176,15 @@ void unsignedMultiplyNumbersMnImpl( UnsignedIntType1 *w
 /*! uint16_t используется как 1 разряд для того, чтобы два разряда влезало в 32 бита, что доступно на контроллерах
  */
 inline
-void miltiplyUnsignedLongInts( const std::uint16_t *pM1 , std::size_t szM1
-                             , const std::uint16_t *pM2 , std::size_t szM2
-                             ,       std::uint16_t *pRes, std::size_t szResBuf // high parts will be skipped if szResBuf is not enough
-                             )
+void multiplicationOfUnsignedLongInts( const std::uint16_t *pM1 , std::size_t szM1
+                                     , const std::uint16_t *pM2 , std::size_t szM2
+                                     ,       std::uint16_t *pRes, std::size_t szResBuf // high parts will be skipped if szResBuf is not enough
+                                     )
 {
     const std::size_t resIdxEnd   = szResBuf;
 
     for( std::size_t k=0; k!=resIdxEnd; ++k)
-       *pRes = 0;
+       pRes[k] = 0;
 
 
     for( std::size_t i=0; i!=szM1; ++i)
@@ -215,6 +217,38 @@ void miltiplyUnsignedLongInts( const std::uint16_t *pM1 , std::size_t szM1
         } // for( std::size_t j=0; j!=szM2; ++j)
 
     } // for( std::size_t i=0; i!=szM1; ++i)
+}
+
+//! Тупое сложение в столбик беззнаковых чисел произвольной длины, 1 разряд - 2 байта, младшие - сначала
+/*! uint16_t используется как 1 разряд для того, чтобы два разряда влезало в 32 бита, что доступно на контроллерах
+    \returns true, если бпроизошло переполнение
+ */
+inline
+bool summationOfUnsignedLongInts( const std::uint16_t *pS1 , std::size_t szS1
+                                , const std::uint16_t *pS2 , std::size_t szS2
+                                ,       std::uint16_t *pRes, std::size_t szResBuf // high parts will be skipped if szResBuf is not enough
+                                )
+{
+    if (szS1!=szS2)
+        throw std::runtime_error("summationOfUnsignedLongInts: addendums must have the same lenght");
+    if (szS1!=szResBuf)
+        throw std::runtime_error("summationOfUnsignedLongInts: addendums and result must have the same lenght");
+
+    std::uint32_t tmpRes = 0;
+
+    for(std::size_t i=0; i!=szS1; ++i)
+    {
+        tmpRes >>= (unsigned)int_helpers::getHalfShiftSize<std::uint32_t>(); // Удаляем младшую часть, старшую - на её место
+        tmpRes += pS1[i];
+        tmpRes += pS2[i];
+
+        pRes[i] = (std::uint16_t)tmpRes;
+
+    }
+
+    tmpRes >>= (unsigned)int_helpers::getHalfShiftSize<std::uint32_t>(); // Удаляем младшую часть, старшую - на её место
+
+    return tmpRes!=0;
 }
 
 

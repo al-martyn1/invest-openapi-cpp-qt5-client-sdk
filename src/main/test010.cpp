@@ -19,7 +19,7 @@
 
 #include "invest_openapi/marty_decimal.h"
 #include "invest_openapi/marty_long_ints.h"
-
+#include "invest_openapi/marty_bcd.h"
 
 
 template<typename IntType1, typename IntType2, typename IntTypeRes>
@@ -33,14 +33,36 @@ void martyLongIntMultiplyTestHelper( IntType1 u1, IntType2 u2, IntTypeRes &res )
 
     std::uint16_t ulRes[ marty::calcNumberOfUint16ItemsInLong<IntType1>() + marty::calcNumberOfUint16ItemsInLong<IntType2>() ];
 
-    marty::miltiplyUnsignedLongInts( &ul1[0], marty::calcNumberOfUint16ItemsInLong<IntType1>()
-                                   , &ul2[0], marty::calcNumberOfUint16ItemsInLong<IntType2>()
-                                   , &ulRes[0], marty::calcNumberOfUint16ItemsInLong<IntType1>() + marty::calcNumberOfUint16ItemsInLong<IntType2>()
-                                   );
+    marty::multiplicationOfUnsignedLongInts( &ul1[0], marty::calcNumberOfUint16ItemsInLong<IntType1>()
+                                           , &ul2[0], marty::calcNumberOfUint16ItemsInLong<IntType2>()
+                                           , &ulRes[0], marty::calcNumberOfUint16ItemsInLong<IntType1>() + marty::calcNumberOfUint16ItemsInLong<IntType2>()
+                                           );
 
     marty::convertFromLongUnsigned( res, &ulRes[0], marty::calcNumberOfUint16ItemsInLong<IntType1>() + marty::calcNumberOfUint16ItemsInLong<IntType2>() );
 
 }
+
+template<typename IntType>
+void martyLongIntSummTestHelper( IntType u1, IntType u2, IntType &res )
+{
+    std::uint16_t ul1[ marty::calcNumberOfUint16ItemsInLong<IntType>() ];
+    marty::convertToLongUnsigned( u1, &ul1[0] );
+
+    std::uint16_t ul2[ marty::calcNumberOfUint16ItemsInLong<IntType>() ];
+    marty::convertToLongUnsigned( u2, &ul2[0] );
+
+    std::uint16_t ulRes[ marty::calcNumberOfUint16ItemsInLong<IntType>() ];
+
+    marty::summationOfUnsignedLongInts( &ul1[0], marty::calcNumberOfUint16ItemsInLong<IntType>()
+                                      , &ul2[0], marty::calcNumberOfUint16ItemsInLong<IntType>()
+                                      , &ulRes[0], marty::calcNumberOfUint16ItemsInLong<IntType>()
+                                      );
+
+    marty::convertFromLongUnsigned( res, &ulRes[0], marty::calcNumberOfUint16ItemsInLong<IntType>() );
+
+}
+
+
 
 
 INVEST_OPENAPI_MAIN()
@@ -69,11 +91,15 @@ INVEST_OPENAPI_MAIN()
 
 
         std::uint64_t uRes; // 213251 * 153754 = 32788194254
+        std::uint32_t sumRes;
 
         // 0x07A25423CE
 
         martyLongIntMultiplyTestHelper( u1, u2, uRes );
         cout << u1 << " x " << u2 << " = " << uRes << endl;
+
+        martyLongIntSummTestHelper( u1, u2, sumRes );
+        cout << u1 << " + " << u2 << " = " << sumRes << endl; // 213251+153754 = 367005
 
 
         u1 = 54213251u;
@@ -82,21 +108,68 @@ INVEST_OPENAPI_MAIN()
         martyLongIntMultiplyTestHelper( u1, u2, uRes );
         cout << u1 << " x " << u2 << " = " << uRes << endl;
         // 54213251 * 91153754 = 4941741345194254
-        // Got                   5082459127136526
+
+        martyLongIntSummTestHelper( u1, u2, sumRes );
+        cout << u1 << " + " << u2 << " = " << sumRes << endl; // 54213251+91153754 = 145367005
 
 
-        u1 = 4213251u;
-        u2 = 1153754u;
+        u1 = 4213251u;  // 0x0040 4A03
+        u2 = 1153754u;  // 0x0011 9ADA
+        // 0x4A03*0x9ADA = 0x2CC4 D48E
+        // 0x4A03*0x0011 = 0x0004 EA33
+        //                             0x2CC9 BEC1
+        // 0x0040*0x9ADA = 0x0026 B680
+        //                             0x2CF0 7541
+        // 0x0040*0x0011 = 0x0000 0440
+        //                             0x2CF07981
 
+        
         martyLongIntMultiplyTestHelper( u1, u2, uRes );
         cout << u1 << " x " << u2 << " = " << uRes << endl;
         // 4213251 * 1153754 =    4861055194254
-        // Got                 5082459127136526
 
+        martyLongIntSummTestHelper( u1, u2, sumRes );
+        cout << u1 << " + " << u2 << " = " << sumRes << endl; // 4213251+1153754 = 5367005
+
+     }
+
+    cout << endl;
+    cout << "------------------------------" << endl;
+    cout << endl;
+
+
+    {
+        marty::bcd::raw_bcd_number_t bcdNumber;
+        std::size_t             precision;
+        char formatBuf[256];
+
+        precision = marty::bcd::makeRawBcdNumber( bcdNumber, "3.141592654" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+
+        precision = marty::bcd::makeRawBcdNumber( bcdNumber, ".141" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+
+        precision = marty::bcd::makeRawBcdNumber( bcdNumber, ".141000" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+
+        precision = marty::bcd::reducePrecision( bcdNumber, precision );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+
+        precision = marty::bcd::makeRawBcdNumber( bcdNumber, "025.000" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+
+        precision = marty::bcd::reducePrecision( bcdNumber, precision );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+
+        precision = marty::bcd::reduceLeadingZeros( bcdNumber, precision );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+        
     }
 
+
+
     cout << endl;
-    cout << endl;
+    cout << "------------------------------" << endl;
     cout << endl;
 
 
