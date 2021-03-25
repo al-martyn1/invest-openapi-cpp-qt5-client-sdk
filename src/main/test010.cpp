@@ -139,12 +139,19 @@ INVEST_OPENAPI_MAIN()
 
 
     {
-        marty::bcd::raw_bcd_number_t bcdNumber;
-        std::size_t             precision;
+        marty::bcd::raw_bcd_number_t bcdNumber, bcdNumber2;
+        std::size_t                  precision, precision2;
         char formatBuf[256];
+        char formatBuf2[256];
 
         precision = marty::bcd::makeRawBcdNumber( bcdNumber, "3.141592654" );
         cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+
+        precision2 = marty::bcd::makeRawBcdNumber( bcdNumber2, "314.15" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber2, precision2, formatBuf2, sizeof(formatBuf2) ) << endl;
+
+        marty::bcd::compareRaws( bcdNumber , precision , bcdNumber2, precision2 );
+        marty::bcd::compareRaws( bcdNumber2, precision2, bcdNumber , precision  );
 
         precision = marty::bcd::makeRawBcdNumber( bcdNumber, ".141" );
         cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;

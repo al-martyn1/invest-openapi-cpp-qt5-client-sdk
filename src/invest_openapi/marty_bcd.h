@@ -19,6 +19,11 @@
 //----------------------------------------------------------------------------
 
 
+/* Все функции/операции в marty::bcd неготовы к неконсистентным данным
+   и предназначены только для внутреннего использования
+
+ */
+
 
 //----------------------------------------------------------------------------
 namespace marty
@@ -36,7 +41,8 @@ namespace bcd
 
 //----------------------------------------------------------------------------
 
-typedef signed char decimal_digit_t;
+typedef signed char     decimal_digit_t;
+typedef unsigned char   decimal_udigit_t;
 
 typedef std::vector<decimal_digit_t> raw_bcd_number_t; // without sign
 
@@ -277,6 +283,146 @@ bool checkForZero( const raw_bcd_number_t &bcdNumber )
 
     return true;
 }
+
+//----------------------------------------------------------------------------
+inline
+std::size_t getMaxPrecision( std::size_t precision1, std::size_t precision2 )
+{
+    return (precision1 > precision2) ? precision1 : precision2;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::size_t getMinPrecision( std::size_t precision1, std::size_t precision2 )
+{
+    return (precision1 < precision2) ? precision1 : precision2;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::size_t getIntegerPartSize( const raw_bcd_number_t &bcdNumber, std::size_t precision )
+{
+    return bcdNumber.size() - precision;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::size_t getMaxIntegerPartSize( std::size_t ip1
+                                 , std::size_t ip2
+                                 )
+{
+    return (ip1 > ip2) ? ip1 : ip2;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::size_t getMaxIntegerPartSize( const raw_bcd_number_t &bcdNumber1, std::size_t precision1
+                                 , const raw_bcd_number_t &bcdNumber2, std::size_t precision2
+                                 )
+{
+    return getMaxIntegerPartSize( getIntegerPartSize( bcdNumber1, precision1 )
+                                , getIntegerPartSize( bcdNumber2, precision2 )
+                                );
+}
+
+//----------------------------------------------------------------------------
+inline
+std::size_t getMinIntegerPartSize( std::size_t ip1
+                                 , std::size_t ip2
+                                 )
+{
+    return (ip1 < ip2) ? ip1 : ip2;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::size_t getMinIntegerPartSize( const raw_bcd_number_t &bcdNumber1, std::size_t precision1
+                                 , const raw_bcd_number_t &bcdNumber2, std::size_t precision2
+                                 )
+{
+    return getMinIntegerPartSize( getIntegerPartSize( bcdNumber1, precision1 )
+                                , getIntegerPartSize( bcdNumber2, precision2 )
+                                );
+}
+
+//----------------------------------------------------------------------------
+inline
+int compareRaws( const raw_bcd_number_t &bcdNumber1, std::size_t precision1
+               , const raw_bcd_number_t &bcdNumber2, std::size_t precision2
+               )
+{
+    // Как быть, вот в чем вопрос?
+    //
+    // 1) Можно уравнять
+    //    а) в обоих bcdNumbers precisions (расширением снизу/at front),
+    //    б) целую часть (расширением сверху/at back)
+    //    Тогда на каждом шаге не будет лишних проверок и сама операция будет произведена быстро.
+    //    Но будут переаллокации вектора(ов) BCD, и их же перемещения.
+    // 2) Можно ничего не переаллоцировать/перемещать, но на каждом 
+    //    шаге будет смещение и проверки индексов.
+    //    Зато не придётся лазать в кучу
+
+    std::size_t ipSize1      = getIntegerPartSize( bcdNumber1, precision1 );
+    std::size_t ipSize2      = getIntegerPartSize( bcdNumber2, precision2 );
+
+    std::size_t maxIpSize    = getMaxIntegerPartSize( ipSize1, ipSize2 );
+    //std::size_t minIpSize    = getMinIntegerPartSize( ipSize1, ipSize2 );
+
+    std::size_t maxPrecision = getMaxPrecision( precision1, precision2 );
+    std::size_t minPrecision = getMinPrecision( precision1, precision2 );
+    std::size_t dtPrecision  = maxPrecision - minPrecision;
+
+    std::size_t offset1      = maxPrecision - precision1;
+    std::size_t offset2      = maxPrecision - precision2;
+
+
+    std::size_t totalSize    = maxPrecision + maxIpSize; // virtual size
+
+
+    for( std::size_t idxFromBegin=0; idxFromBegin!=totalSize; ++idxFromBegin)
+    {
+        int idx  = (int)idxFromBegin;
+
+        int idx1 = idx - (int)maxPrecision;
+        int idx2 = idx - (int)maxPrecision;
+
+        idx1 += (int)precision1;
+        idx2 += (int)precision2;
+
+
+        #if 0
+        int idxFb1 = (int)idxFromBegin - (int)maxPrecision + (int)offset1 + (int)minPrecision;
+        int idxFb2 = (int)idxFromBegin - (int)maxPrecision + (int)offset2 + (int)minPrecision;
+
+        // std::size_t idxFromEnd = totalSize - idxFromBegin - 1; 
+        // начинаем со старших разрядов (только для операции сравнения,
+        // для сложения/вычитания/умножения начинать следует с младших разрядов )
+
+        // int idx1 = (int)idxFb1 - (int)dtPrecision;
+        // int idx2 = (int)idxFb2 - (int)dtPrecision;
+
+        int idx1 =  /* (int)totalSize - */  (int)idxFb1;
+        int idx2 =  /* (int)totalSize - */  (int)idxFb2;
+        #endif
+
+        decimal_digit_t d1 = 0;
+        decimal_digit_t d2 = 0;
+
+        if (idx1>=0 && idx1<(int)bcdNumber1.size())
+            d1 = bcdNumber1[idx1];
+
+        if (idx2>=0 && idx2<(int)bcdNumber2.size())
+            d2 = bcdNumber2[idx2];
+
+        //std::cout<<(unsigned)(d1+'0');
+        std::cout<<(unsigned)(d1);
+    }
+
+    std::cout<<"\n";
+
+    return 0;
+}
+
 
 
 /* Что ещё необходимо:
