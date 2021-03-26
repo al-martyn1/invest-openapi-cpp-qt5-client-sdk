@@ -65,19 +65,22 @@ typedef std::vector<decimal_digit_t> raw_bcd_number_t; // without sign
     Поэтому, чтобы избежать неоднозначности, международные стандарты (ISO 31-0, Международное бюро мер и весов, ИЮПАК) рекомендуют 
     использовать для разделителя групп разрядов только неразрывный пробел (или тонкую шпацию при типографском наборе)
  */
+
+typedef const char* const_char_ptr;
+
 inline
-std::size_t makeRawBcdNumber( raw_bcd_number_t &bcdNumber
-                            , const char *str
-                            , std::size_t strSize = (std::size_t)-1
-                            , std::size_t *pProcessedSymbols = 0     // заменить на указатель на указатель на char - начало строки двигается в функции
-                            )
+int makeRawBcdNumber( raw_bcd_number_t &bcdNumber
+                    , const char *str
+                    , std::size_t strSize = (std::size_t)-1
+                    , const_char_ptr * pFirstUnknown = 0 //  std::size_t *pProcessedSymbols = 0     // заменить на указатель на указатель на char - начало строки двигается в функции
+                    )
 {
     if (strSize==(std::size_t)-1)
         strSize = std::strlen(str);
 
     bcdNumber.clear();
 
-    std::size_t precision = 0;
+    int precision = 0;
 
     std::size_t processedSymbols = 0;
 
@@ -93,15 +96,17 @@ std::size_t makeRawBcdNumber( raw_bcd_number_t &bcdNumber
 
 
     //for(; *str; ++str, ++processedSymbols /* , ++precision */  )
-    for( std::size_t i=0; i!=strSize; ++i)
+    std::size_t i = 0;
+
+    for( ; i!=strSize; ++i)
     {
         if ( (str[i] == '.') || (str[i] == ',') )
         {
             if (processingFranctionalPart)
             {
                 // Already processing franctional part
-                if (pProcessedSymbols)
-                   *pProcessedSymbols = processedSymbols;
+                if (pFirstUnknown)
+                   *pFirstUnknown = &str[i];
                 std::reverse(bcdNumber.begin(), bcdNumber.end());
                 return precision;
             }
@@ -119,8 +124,8 @@ std::size_t makeRawBcdNumber( raw_bcd_number_t &bcdNumber
 
         if ( (str[i] < '0') || (str[i] > '9') )
         {
-            if (pProcessedSymbols)
-               *pProcessedSymbols = processedSymbols;
+            if (pFirstUnknown)
+               *pFirstUnknown = &str[i];
 
             std::reverse(bcdNumber.begin(), bcdNumber.end());
             return precision;
@@ -135,8 +140,8 @@ std::size_t makeRawBcdNumber( raw_bcd_number_t &bcdNumber
             ++precision;
     }
 
-    if (pProcessedSymbols)
-       *pProcessedSymbols = processedSymbols;
+    if (pFirstUnknown)
+       *pFirstUnknown = &str[i];
 
     std::reverse(bcdNumber.begin(), bcdNumber.end());
     return precision;
@@ -144,46 +149,16 @@ std::size_t makeRawBcdNumber( raw_bcd_number_t &bcdNumber
 }
 
 //----------------------------------------------------------------------------
-//! Форматирование "сырого" BCD, форматируется в строку с заданной точностью
-inline
-const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, std::size_t precision, char *pBuf, std::size_t bufSize, char sep = '.' )
-{
-    if (bufSize < (bcdNumber.size()+3)) // place for dot and final zero and leading zero digit
-        throw std::runtime_error("marty::formatRawBcdNumber: bufSize is not enough");
-
-    std::size_t i = 0, size = bcdNumber.size();
-
-    char *pBufBegin = pBuf;
-
-    for(; i!=size; ++i, ++pBuf)
-    {
-        if (i!=0 && i==precision)
-        {
-            *pBuf++ = sep;
-        }
-
-        *pBuf = bcdNumber[i] + '0';
-    }
-
-    if (size==precision)
-    {
-        *pBuf++ = sep;
-        *pBuf++ = '0'; // add leading zero digit
-    }
-
-    *pBuf = 0;
-
-    std::reverse(pBufBegin, pBuf);
-
-    return pBufBegin;
-}
-
-//----------------------------------------------------------------------------
 //! Обрезаем точность, если возможно (в хвосте одни нули)
+//!!!
 inline
-std::size_t reducePrecision( raw_bcd_number_t &bcdNumber, std::size_t precision )
+int reducePrecision( raw_bcd_number_t &bcdNumber, int precision )
 {
-    std::size_t i = 0, size = bcdNumber.size();
+    int i = 0, size = (int)bcdNumber.size();
+
+    if (precision<0)
+        return precision;
+
 
     for(; i!=size && i!=precision; ++i)
     {
@@ -212,8 +187,9 @@ std::size_t reducePrecision( raw_bcd_number_t &bcdNumber, std::size_t precision 
 
 //----------------------------------------------------------------------------
 //! Обрезаем ведущие незначащие нули
+//!!!
 inline
-std::size_t reduceLeadingZeros( raw_bcd_number_t &bcdNumber, std::size_t precision )
+int reduceLeadingZeros( raw_bcd_number_t &bcdNumber, int precision )
 {
     /*
     bool  bEmpty    =  bcdNumber.empty();
@@ -231,12 +207,12 @@ std::size_t reduceLeadingZeros( raw_bcd_number_t &bcdNumber, std::size_t precisi
 //----------------------------------------------------------------------------
 //! Расширяем точность до заданной
 inline
-std::size_t extendPrecision( raw_bcd_number_t &bcdNumber, std::size_t curPrecision, std::size_t newPrecision )
+int extendPrecision( raw_bcd_number_t &bcdNumber, int curPrecision, int newPrecision )
 {
     if (newPrecision<=curPrecision) // Нет расширения
         return curPrecision;
 
-    std::size_t deltaPrecision = newPrecision - curPrecision;
+    int deltaPrecision = newPrecision - curPrecision;
 
     // void insert( iterator pos, size_type count, const T& value );
     bcdNumber.insert( bcdNumber.begin(), (raw_bcd_number_t::size_type)deltaPrecision, (raw_bcd_number_t::value_type)0 );
@@ -247,10 +223,11 @@ std::size_t extendPrecision( raw_bcd_number_t &bcdNumber, std::size_t curPrecisi
 
 //----------------------------------------------------------------------------
 //! Расширяем перед точкой
+//!!!
 inline
-std::size_t extendLeadings( raw_bcd_number_t &bcdNumber, std::size_t precision, std::size_t requestedLeadings )
+int extendLeadings( raw_bcd_number_t &bcdNumber, int precision, int requestedLeadings )
 {
-    std::size_t bcdSize = bcdNumber.size();
+    int bcdSize = (int)bcdNumber.size();
 
     if (bcdSize<precision)
         return precision;
@@ -260,7 +237,7 @@ std::size_t extendLeadings( raw_bcd_number_t &bcdNumber, std::size_t precision, 
     if (requestedLeadings<curLeadings)
         return precision;
 
-    std::size_t leadingsToAdd = requestedLeadings - curLeadings;
+    int leadingsToAdd = requestedLeadings - curLeadings;
 
     if (!leadingsToAdd)
         return precision;
@@ -275,6 +252,9 @@ std::size_t extendLeadings( raw_bcd_number_t &bcdNumber, std::size_t precision, 
 inline
 bool checkForZero( const raw_bcd_number_t &bcdNumber )
 {
+    if (bcdNumber.empty())
+        return true;
+
     for( auto it=bcdNumber.begin(); it!=bcdNumber.end(); ++it )
     {
         if (*it!=0)
@@ -286,39 +266,48 @@ bool checkForZero( const raw_bcd_number_t &bcdNumber )
 
 //----------------------------------------------------------------------------
 inline
-std::size_t getMaxPrecision( std::size_t precision1, std::size_t precision2 )
+int getMaxPrecision( int precision1, int precision2 )
 {
-    return (precision1 > precision2) ? precision1 : precision2;
+    int res = (precision1 > precision2) ? precision1 : precision2;
+    if (res<0)
+        res = 0;
+    return res;
 }
 
 //----------------------------------------------------------------------------
 inline
-std::size_t getMinPrecision( std::size_t precision1, std::size_t precision2 )
+int getMinPrecision( int precision1, int precision2 )
 {
-    return (precision1 < precision2) ? precision1 : precision2;
+    int res = (precision1 < precision2) ? precision1 : precision2;
+    if (res<0)
+        res = 0;
+    return res;
 }
 
 //----------------------------------------------------------------------------
 inline
-std::size_t getIntegerPartSize( const raw_bcd_number_t &bcdNumber, std::size_t precision )
+int getIntegerPartSize( const raw_bcd_number_t &bcdNumber, int precision )
 {
-    return bcdNumber.size() - precision;
+    int res = (int)bcdNumber.size() - precision;
+    if (res<0)
+        res = 1;
+    return res; // (int)bcdNumber.size() - precision;
 }
 
 //----------------------------------------------------------------------------
 inline
-std::size_t getMaxIntegerPartSize( std::size_t ip1
-                                 , std::size_t ip2
-                                 )
+int getMaxIntegerPartSize( int ip1
+                         , int ip2
+                         )
 {
     return (ip1 > ip2) ? ip1 : ip2;
 }
 
 //----------------------------------------------------------------------------
 inline
-std::size_t getMaxIntegerPartSize( const raw_bcd_number_t &bcdNumber1, std::size_t precision1
-                                 , const raw_bcd_number_t &bcdNumber2, std::size_t precision2
-                                 )
+int getMaxIntegerPartSize( const raw_bcd_number_t &bcdNumber1, int precision1
+                         , const raw_bcd_number_t &bcdNumber2, int precision2
+                         )
 {
     return getMaxIntegerPartSize( getIntegerPartSize( bcdNumber1, precision1 )
                                 , getIntegerPartSize( bcdNumber2, precision2 )
@@ -327,18 +316,18 @@ std::size_t getMaxIntegerPartSize( const raw_bcd_number_t &bcdNumber1, std::size
 
 //----------------------------------------------------------------------------
 inline
-std::size_t getMinIntegerPartSize( std::size_t ip1
-                                 , std::size_t ip2
-                                 )
+int getMinIntegerPartSize( int ip1
+                         , int ip2
+                         )
 {
     return (ip1 < ip2) ? ip1 : ip2;
 }
 
 //----------------------------------------------------------------------------
 inline
-std::size_t getMinIntegerPartSize( const raw_bcd_number_t &bcdNumber1, std::size_t precision1
-                                 , const raw_bcd_number_t &bcdNumber2, std::size_t precision2
-                                 )
+int getMinIntegerPartSize( const raw_bcd_number_t &bcdNumber1, int precision1
+                         , const raw_bcd_number_t &bcdNumber2, int precision2
+                         )
 {
     return getMinIntegerPartSize( getIntegerPartSize( bcdNumber1, precision1 )
                                 , getIntegerPartSize( bcdNumber2, precision2 )
@@ -346,9 +335,28 @@ std::size_t getMinIntegerPartSize( const raw_bcd_number_t &bcdNumber1, std::size
 }
 
 //----------------------------------------------------------------------------
+#define MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS()                                  \
+                    int ipSize1      = getIntegerPartSize( bcdNumber1, precision1 );           \
+                    int ipSize2      = getIntegerPartSize( bcdNumber2, precision2 );           \
+                                                                                               \
+                    int maxIpSize    = getMaxIntegerPartSize( ipSize1, ipSize2 );              \
+                    /*std::size_t minIpSize    = getMinIntegerPartSize( ipSize1, ipSize2 );*/  \
+                                                                                               \
+                    int maxPrecision = getMaxPrecision( precision1, precision2 );              \
+                    int minPrecision = getMinPrecision( precision1, precision2 );              \
+                    int dtPrecision  = maxPrecision - minPrecision;                            \
+                                                                                               \
+                    int offset1      = maxPrecision - precision1;                              \
+                    int offset2      = maxPrecision - precision2;                              \
+                                                                                               \
+                    int totalSize    = maxIpSize; /* virtual size */                           \
+                    if (maxPrecision>0)                                                        \
+                        totalSize += maxPrecision;
+
+
 inline
-int compareRaws( const raw_bcd_number_t &bcdNumber1, std::size_t precision1
-               , const raw_bcd_number_t &bcdNumber2, std::size_t precision2
+int compareRaws( const raw_bcd_number_t &bcdNumber1, int precision1
+               , const raw_bcd_number_t &bcdNumber2, int precision2
                )
 {
     // Как быть, вот в чем вопрос?
@@ -362,48 +370,18 @@ int compareRaws( const raw_bcd_number_t &bcdNumber1, std::size_t precision1
     //    шаге будет смещение и проверки индексов.
     //    Зато не придётся лазать в кучу
 
-    std::size_t ipSize1      = getIntegerPartSize( bcdNumber1, precision1 );
-    std::size_t ipSize2      = getIntegerPartSize( bcdNumber2, precision2 );
+    MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS();
 
-    std::size_t maxIpSize    = getMaxIntegerPartSize( ipSize1, ipSize2 );
-    //std::size_t minIpSize    = getMinIntegerPartSize( ipSize1, ipSize2 );
-
-    std::size_t maxPrecision = getMaxPrecision( precision1, precision2 );
-    std::size_t minPrecision = getMinPrecision( precision1, precision2 );
-    std::size_t dtPrecision  = maxPrecision - minPrecision;
-
-    std::size_t offset1      = maxPrecision - precision1;
-    std::size_t offset2      = maxPrecision - precision2;
-
-
-    std::size_t totalSize    = maxPrecision + maxIpSize; // virtual size
-
-
-    for( std::size_t idxFromBegin=0; idxFromBegin!=totalSize; ++idxFromBegin)
+    for( int idxFromBegin=0; idxFromBegin!=totalSize; ++idxFromBegin)
     {
         int idx  = (int)idxFromBegin;
 
-        int idx1 = idx - (int)maxPrecision;
-        int idx2 = idx - (int)maxPrecision;
+        int idx1 = totalSize - idx - 1;
+        int idx2 = totalSize - idx - 1;
 
-        idx1 += (int)precision1;
-        idx2 += (int)precision2;
+        idx1 -= (int)maxPrecision - (int)precision1;
+        idx2 -= (int)maxPrecision - (int)precision2;
 
-
-        #if 0
-        int idxFb1 = (int)idxFromBegin - (int)maxPrecision + (int)offset1 + (int)minPrecision;
-        int idxFb2 = (int)idxFromBegin - (int)maxPrecision + (int)offset2 + (int)minPrecision;
-
-        // std::size_t idxFromEnd = totalSize - idxFromBegin - 1; 
-        // начинаем со старших разрядов (только для операции сравнения,
-        // для сложения/вычитания/умножения начинать следует с младших разрядов )
-
-        // int idx1 = (int)idxFb1 - (int)dtPrecision;
-        // int idx2 = (int)idxFb2 - (int)dtPrecision;
-
-        int idx1 =  /* (int)totalSize - */  (int)idxFb1;
-        int idx2 =  /* (int)totalSize - */  (int)idxFb2;
-        #endif
 
         decimal_digit_t d1 = 0;
         decimal_digit_t d2 = 0;
@@ -414,14 +392,193 @@ int compareRaws( const raw_bcd_number_t &bcdNumber1, std::size_t precision1
         if (idx2>=0 && idx2<(int)bcdNumber2.size())
             d2 = bcdNumber2[idx2];
 
-        //std::cout<<(unsigned)(d1+'0');
-        std::cout<<(unsigned)(d1);
-    }
+        if (d1<d2)
+            return -1;
 
-    std::cout<<"\n";
+        if (d1>d2)
+            return  1;
+
+    }
 
     return 0;
 }
+
+//----------------------------------------------------------------------------
+//! Форматирование "сырого" BCD, форматируется в строку с заданной точностью
+inline
+const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision, char *pBuf, std::size_t bufSize, char sep = '.' )
+{
+    int ipSize1      = getIntegerPartSize( bcdNumber, precision );
+                                                                    
+    int maxIpSize    = ipSize1;   
+
+    int precision1   = precision;
+                                                                    
+    int maxPrecision = getMaxPrecision( precision1, 0 );
+    int minPrecision = getMinPrecision( precision1, 0 );
+    int dtPrecision  = maxPrecision - minPrecision;                 
+                                                                    
+    int offset1      = maxPrecision - precision1;                   
+
+    int totalSize    = maxIpSize; /* virtual size */
+    if (maxPrecision>0)
+        totalSize += maxPrecision;
+
+
+    if ((int)bufSize < (int)(totalSize+3) )
+        throw std::runtime_error("marty::formatRawBcdNumber: bufSize is not enough");
+
+    char *pBufBegin = pBuf;
+
+    //bool digitsPrintedAfterDot = false;
+
+    for( int idxFromBegin=0; idxFromBegin!=totalSize; ++idxFromBegin)
+    {
+        int idx  = (int)idxFromBegin;
+
+        int idx1 = totalSize - idx - 1;
+
+        idx1 -= (int)maxPrecision - (int)precision1;
+
+        decimal_digit_t d1 = 0;
+
+        if (idx1>=0 && idx1<(int)bcdNumber.size())
+            d1 = bcdNumber[idx1];
+
+        if (precision>0)
+        {
+            //int dotIndex = idx1 - precision1 - 1;
+            //if (dotIndex==0) // dot pos found
+            {
+                //*pBuf++ = sep;
+                //digitsPrintedAfterDot = false;
+            }
+        }
+
+        *pBuf++ = d1 + '0';
+
+        if (precision>0 && idxFromBegin==(maxIpSize-1))
+        {
+            *pBuf++ = sep;
+        }
+
+        
+    }
+
+    *pBuf = 0;
+
+    //std::reverse(pBufBegin, pBuf);
+
+    return pBufBegin;
+
+
+    /*
+    int i = 0, size = (int)bcdNumber.size();
+
+    char *pBufBegin = pBuf;
+
+    for(; i!=size; ++i, ++pBuf)
+    {
+        if (i!=0 && i==precision)
+        {
+            *pBuf++ = sep;
+        }
+
+        *pBuf = bcdNumber[i] + '0';
+    }
+
+    if (size==precision)
+    {
+        *pBuf++ = sep;
+        *pBuf++ = '0'; // add leading zero digit
+    }
+
+    *pBuf = 0;
+
+    std::reverse(pBufBegin, pBuf);
+
+    return pBufBegin;
+    */
+}
+
+
+
+
+/* Шаблон перебора цифр от старших к младшим - сравнение, возможно - деление
+
+inline
+int tplFromMsdToLsd( const raw_bcd_number_t &bcdNumber1, int precision1
+                   , const raw_bcd_number_t &bcdNumber2, int precision2
+                   )
+{
+    MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS();
+
+    for( int idxFromBegin=0; idxFromBegin!=totalSize; ++idxFromBegin)
+    {
+        int idx  = (int)idxFromBegin;
+
+        int idx1 = totalSize - idx - 1;
+        int idx2 = totalSize - idx - 1;
+
+        idx1 -= (int)maxPrecision - (int)precision1;
+        idx2 -= (int)maxPrecision - (int)precision2;
+
+
+        decimal_digit_t d1 = 0;
+        decimal_digit_t d2 = 0;
+
+        if (idx1>=0 && idx1<(int)bcdNumber1.size())
+            d1 = bcdNumber1[idx1];
+
+        if (idx2>=0 && idx2<(int)bcdNumber2.size())
+            d2 = bcdNumber2[idx2];
+
+        // Do something with digits here
+
+    }
+
+    return 0;
+}
+
+*/
+
+
+/* Шаблон перебора цифр от младших к старшим - сложение, вычитание, умножение
+
+inline
+int templateForOperation( const raw_bcd_number_t &bcdNumber1, int precision1
+                        , const raw_bcd_number_t &bcdNumber2, int precision2
+                        )
+{
+    MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS();
+
+    for( int idxFromBegin=0; idxFromBegin!=totalSize; ++idxFromBegin)
+    {
+        int idx  = (int)idxFromBegin;
+
+        int idx1 = idx - (int)maxPrecision;
+        int idx2 = idx - (int)maxPrecision;
+
+        idx1 += (int)precision1;
+        idx2 += (int)precision2;
+
+        decimal_digit_t d1 = 0;
+        decimal_digit_t d2 = 0;
+
+        if (idx1>=0 && idx1<(int)bcdNumber1.size())
+            d1 = bcdNumber1[idx1];
+
+        if (idx2>=0 && idx2<(int)bcdNumber2.size())
+            d2 = bcdNumber2[idx2];
+
+        std::cout<<(unsigned)(d1);
+
+    }
+
+    return 0;
+}
+*/
+
 
 
 

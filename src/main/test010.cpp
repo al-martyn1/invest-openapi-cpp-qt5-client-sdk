@@ -139,10 +139,13 @@ INVEST_OPENAPI_MAIN()
 
 
     {
-        marty::bcd::raw_bcd_number_t bcdNumber, bcdNumber2;
-        std::size_t                  precision, precision2;
+        marty::bcd::raw_bcd_number_t bcdNumber, bcdNumber2, bcdNumber3, bcdNumber4, bcdNumber5;
+        int                          precision, precision2, precision3, precision4, precision5;
         char formatBuf[256];
         char formatBuf2[256];
+        char formatBuf3[256];
+        char formatBuf4[256];
+        char formatBuf5[256];
 
         precision = marty::bcd::makeRawBcdNumber( bcdNumber, "3.141592654" );
         cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
@@ -150,8 +153,41 @@ INVEST_OPENAPI_MAIN()
         precision2 = marty::bcd::makeRawBcdNumber( bcdNumber2, "314.15" );
         cout << marty::bcd::formatRawBcdNumber( bcdNumber2, precision2, formatBuf2, sizeof(formatBuf2) ) << endl;
 
-        marty::bcd::compareRaws( bcdNumber , precision , bcdNumber2, precision2 );
-        marty::bcd::compareRaws( bcdNumber2, precision2, bcdNumber , precision  );
+        precision3 = marty::bcd::makeRawBcdNumber( bcdNumber3, "31.4159" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber3, precision3, formatBuf3, sizeof(formatBuf3) ) << endl;
+
+        precision4 = marty::bcd::makeRawBcdNumber( bcdNumber4, "3" ); precision4 = -2;
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber4, precision4, formatBuf4, sizeof(formatBuf4) ) << endl;
+
+        precision5 = marty::bcd::makeRawBcdNumber( bcdNumber5, "3" ); precision5 = -3;
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber5, precision5, formatBuf5, sizeof(formatBuf5) ) << endl;
+
+        cout << "Compare 3.141592654 vs 314.15      : " << marty::bcd::compareRaws( bcdNumber , precision , bcdNumber2, precision2 ) << endl;
+        cout << "Compare 314.15 vs 3.141592654      : " << marty::bcd::compareRaws( bcdNumber2, precision2, bcdNumber , precision  ) << endl;
+        cout << "Compare 3.141592654 vs 3.141592654 : " << marty::bcd::compareRaws( bcdNumber , precision , bcdNumber , precision  ) << endl;
+
+        cout << "Compare 3.141592654 vs 31.4159     : " << marty::bcd::compareRaws( bcdNumber , precision , bcdNumber3, precision3 ) << endl;
+        cout << "Compare 31.4159 vs 3.141592654     : " << marty::bcd::compareRaws( bcdNumber3, precision3, bcdNumber , precision  ) << endl;
+
+        cout << "Compare 314.15 vs 31.4159          : " << marty::bcd::compareRaws( bcdNumber2, precision2, bcdNumber3, precision3 ) << endl;
+        cout << "Compare 31.4159 vs 314.15          : " << marty::bcd::compareRaws( bcdNumber3, precision3, bcdNumber2, precision2 ) << endl;
+
+        cout << "Compare 314.15 vs 300              : " << marty::bcd::compareRaws( bcdNumber2, precision2, bcdNumber4, precision4 ) << endl;
+        cout << "Compare 300 vs 314.15              : " << marty::bcd::compareRaws( bcdNumber4, precision4, bcdNumber2, precision2 ) << endl;
+
+        cout << "Compare 3000 vs 300                : " << marty::bcd::compareRaws( bcdNumber5, precision5, bcdNumber4, precision4 ) << endl;
+        cout << "Compare 300 vs 3000                : " << marty::bcd::compareRaws( bcdNumber4, precision4, bcdNumber5, precision5 ) << endl;
+
+        cout << "Compare 3000 vs 3000               : " << marty::bcd::compareRaws( bcdNumber5, precision5, bcdNumber5, precision5 ) << endl;
+
+        precision4 = marty::bcd::makeRawBcdNumber( bcdNumber4, "0.003" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber4, precision4, formatBuf4, sizeof(formatBuf4) ) << endl;
+
+        precision5 = marty::bcd::makeRawBcdNumber( bcdNumber5, "3" ); precision5 = 3;
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber5, precision5, formatBuf5, sizeof(formatBuf5) ) << endl;
+
+        cout << "Compare 0.003 vs 0.003             : " << marty::bcd::compareRaws( bcdNumber4, precision4, bcdNumber5, precision5 ) << endl;
+
 
         precision = marty::bcd::makeRawBcdNumber( bcdNumber, ".141" );
         cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
@@ -176,6 +212,10 @@ INVEST_OPENAPI_MAIN()
 
         precision = marty::bcd::extendLeadings( bcdNumber, precision, 5 /* requestedLeadings */  );
         cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+
+        precision = marty::bcd::makeRawBcdNumber( bcdNumber, "0" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber) ? "true" : "false") << endl;
 
         precision = marty::bcd::makeRawBcdNumber( bcdNumber, "0.000" );
         cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
