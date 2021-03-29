@@ -435,125 +435,6 @@ INVEST_OPENAPI_MAIN()
 
 
 
-    {
-        marty::bcd::raw_bcd_number_t bcdNumberRes, bcdNumber1, bcdNumber2, bcdNumber3, bcdNumber4, bcdNumber5;
-        int                          precisionRes, precision1, precision2, precision3, precision4, precision5;
-        char formatBufRes[256]; char formatBuf[256]; char formatBuf2[256]; char formatBuf3[256]; char formatBuf4[256]; char formatBuf5[256];
-
-        precision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, "3.141592654" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
-
-        precision2 = marty::bcd::makeRawBcdNumber( bcdNumber2, "314.15" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber2, precision2, formatBuf2, sizeof(formatBuf2) ) << endl;
-        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber2, precision2 );
-        cout << "3.141592654+314.15=317.291592654, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber2, precision2, bcdNumber1, precision1 );
-        cout << "314.15-3.141592654=311.008407346, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-
-        precision3 = marty::bcd::makeRawBcdNumber( bcdNumber3, "31.4159" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber3, precision3, formatBuf3, sizeof(formatBuf3) ) << endl;
-        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber3, precision3 );
-        cout << "3.141592654+31.4159=34.557492654, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber3, precision3, bcdNumber1, precision1 );
-        cout << "31.4159-3.141592654=28.274307346, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-
-        precision4 = marty::bcd::makeRawBcdNumber( bcdNumber4, "3" ); precision4 = -2;
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber4, precision4, formatBuf4, sizeof(formatBuf4) ) << endl;
-        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber4, precision4 );
-        cout << "3.141592654+300=303.141592654, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber4, precision4, bcdNumber1, precision1 );
-        cout << "300-3.141592654=296.858407346, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-
-        precision5 = marty::bcd::makeRawBcdNumber( bcdNumber5, "3" ); precision5 = -3;
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber5, precision5, formatBuf5, sizeof(formatBuf5) ) << endl;
-        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber5, precision5 );
-        cout << "3.141592654+3000=3003.141592654, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber5, precision5, bcdNumber1, precision1 );
-        cout << "3000-3.141592654=2996.858407346, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-
-        precision4 = marty::bcd::makeRawBcdNumber( bcdNumber4, "0.003" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber4, precision4, formatBuf4, sizeof(formatBuf4) ) << endl;
-        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber4, precision4 );
-        cout << "3.141592654+0.003=3.144592654, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber1, precision1, bcdNumber4, precision4 );
-        cout << "3.141592654-0.003=3.138592654, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-
-        precision5 = marty::bcd::makeRawBcdNumber( bcdNumber5, "3" ); precision5 = 3;
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber5, precision5, formatBuf5, sizeof(formatBuf5) ) << endl;
-
-        precision5 = marty::bcd::makeRawBcdNumber( bcdNumber5, "945" ); precision5 = -2;
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber5, precision5, formatBuf5, sizeof(formatBuf5) ) << endl;
-
-        precision1 = marty::bcd::rawMultiplication( bcdNumber1, bcdNumber5, precision5, bcdNumber3, precision3 );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf5, sizeof(formatBuf5) ) << endl;
-
-        // 31.4159*94500 = 2968802.55
-
-
-        precision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, ".141" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
-
-        precision2 = marty::bcd::makeRawBcdNumber( bcdNumber2, ".141000" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber2, precision2, formatBuf, sizeof(formatBuf) ) << endl;
-        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber2, precision2 );
-        cout << ".141+.141000=0.282, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber1, precision1, bcdNumber2, precision2 );
-        cout << ".141-.141000=0, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-
-        precision1 = marty::bcd::reducePrecision( bcdNumber1, precision1 );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
-        
-        precision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, "25.000" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
-        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber2, precision2 );
-        cout << "25.000+.141000=25.141, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber2, precision2, bcdNumber1, precision1 );
-        cout << "25.000-.141000=24.859, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-
-        precision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, "025.000" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
-        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber2, precision2 );
-        cout << "025.000+.141000=25.141, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber2, precision2, bcdNumber1, precision1 );
-        cout << "025.000-.141000=24.859, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
-
-        precision1 = marty::bcd::reducePrecision( bcdNumber1, precision1 );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
-
-        precision1 = marty::bcd::reduceLeadingZeros( bcdNumber1, precision1 );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
-
-        precision1 = marty::bcd::extendPrecision( bcdNumber1, precision1, 9 );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
-
-        precision1 = marty::bcd::extendLeadings( bcdNumber1, precision1, 5 /* requestedLeadings */  );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
-
-        precision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, "0" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
-        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber1) ? "true" : "false") << endl;
-
-        precision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, "0.000" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
-        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber1) ? "true" : "false") << endl;
-
-        precision1 = marty::bcd::extendPrecision( bcdNumber1, precision1, 9 );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
-        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber1) ? "true" : "false") << endl;
-
-        precision1 = marty::bcd::extendLeadings( bcdNumber1, precision1, 5 /* requestedLeadings */  );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
-        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber1) ? "true" : "false") << endl;
-        
-    }
-
-
-
-    cout << endl;
-    cout << "------------------------------" << endl;
-    cout << endl;
-
-
 
     unsigned totalCtorTests       = 0;
     unsigned totalCtorTestsFailed = 0;
@@ -621,7 +502,7 @@ INVEST_OPENAPI_MAIN()
     DECIMAL_CTOR_TEST(  3.1415926          ,  "3.141593" );
     // DECIMAL_CTOR_TEST();
 
-    Decimal decimal01    = Decimal(((std::uint64_t)3141592654ULL), marty::DecimalPrecision(9));
+    //Decimal decimal01    = Decimal(((std::uint64_t)3141592654ULL), marty::DecimalPrecision(9));
 
     // 3.141592654
     //                                             .
@@ -629,17 +510,15 @@ INVEST_OPENAPI_MAIN()
 
 
     cout << endl;
-    cout << "------------------------------" << endl;
-    cout << endl;
 
     cout << "Failed " << totalCtorTestsFailed << " CTOR tests from total " << totalCtorTests << endl;
     if (!totalCtorTestsFailed)
         cout << "+++ All CTOR tests passed"  << endl;
 
-    cout << endl;
-    cout << endl;
+    cout << "------------------------------" << endl << endl << endl;
 
 
+    #if 0
 
     #define DECIMAL_OP_TEST( val1, op, val2, strResForCompare )                             \
                 do                                                                          \
@@ -685,15 +564,12 @@ INVEST_OPENAPI_MAIN()
     // 89.25346 * 35.6474 = 3181.653790004 (expected '3181.659678575')
 
     cout << endl;
-    cout << "------------------------------" << endl;
-    cout << endl;
 
     cout << "Failed " << totalOpTestsFailed << " OP tests from total " << totalOpTests << endl;
     if (!totalOpTestsFailed)
         cout << "+++ All OP tests passed"  << endl;
 
-    cout << endl;
-    cout << endl;
+    cout << "------------------------------" << endl << endl << endl;
 
 
     /*
@@ -1047,6 +923,8 @@ INVEST_OPENAPI_MAIN()
     ROUNDING_TEST(  -24.9  , "-25", 0, roundHalfToEven      );
     ROUNDING_TEST(  -24.99 , "-25", 0, roundHalfToEven      );
 
+    #endif
+
     /*
     cout << "------------------------------" << endl;
     ROUNDING_TEST(   23.5,  "23", 0, roundHalfToOdd       );
@@ -1056,12 +934,12 @@ INVEST_OPENAPI_MAIN()
     */
 
     cout << endl;
-    cout << "------------------------------" << endl;
-    cout << endl;
 
     cout << "Failed " << totalRoundingTestsFailed << " rounding tests from total " << totalRoundingTests << endl;
     if (!totalRoundingTestsFailed)
         cout << "+++ All rounding tests passed"  << endl;
+
+    cout << "------------------------------" << endl << endl << endl;
 
     return 0;
 }
