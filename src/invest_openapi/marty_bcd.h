@@ -46,13 +46,9 @@ namespace marty
 {
 
 
-
-
 //----------------------------------------------------------------------------
 namespace bcd
 {
-
-
 
 
 //----------------------------------------------------------------------------
@@ -66,7 +62,13 @@ typedef std::vector<decimal_digit_t> raw_bcd_number_t; // without sign
 
 
 
-
+//----------------------------------------------------------------------------
+inline
+void clearShrink( raw_bcd_number_t &bcdNumber )
+{
+    bcdNumber.clear();
+    bcdNumber.shrink_to_fit();
+}
 //----------------------------------------------------------------------------
 //! Returns precision
 /*!
@@ -174,6 +176,28 @@ int makeRawBcdNumber( raw_bcd_number_t &bcdNumber
 
     std::reverse(bcdNumber.begin(), bcdNumber.end());
     return precision;
+
+}
+
+//----------------------------------------------------------------------------
+template<typename UnsignedIntegerType>
+inline
+int makeRawBcdNumberFromUnsigned( raw_bcd_number_t &bcdNumber
+                                , UnsignedIntegerType u
+                                )
+{
+    bcdNumber.clear();
+
+    while(u)
+    {
+        bcdNumber.push_back( u%10 );
+        u /= 10;
+    }
+
+    if (bcdNumber.empty())
+       bcdNumber.push_back( 0 );
+
+    return 0;
 
 }
 
@@ -555,13 +579,19 @@ const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision
     if (maxPrecision>0)
         totalSize += maxPrecision;
 
+    //if ((int)bufSize < (int)(totalSize+3) )
+    //    throw std::runtime_error("marty::formatRawBcdNumber: bufSize is not enough");
 
-    if ((int)bufSize < (int)(totalSize+3) )
-        throw std::runtime_error("marty::formatRawBcdNumber: bufSize is not enough");
+    //char *pBufBegin = pBuf;
 
-    char *pBufBegin = pBuf;
+    if (bufSize < 4 )
+        throw std::runtime_error("marty::bcd::formatRawBcdNumber: bufSize is not enough");
+
+    --bufSize;
 
     //bool digitsPrintedAfterDot = false;
+
+    std::size_t bufPos = 0; // bufSize
 
     for( int idxFromBegin=0; idxFromBegin!=totalSize; ++idxFromBegin)
     {
@@ -576,18 +606,24 @@ const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision
         if (idx1>=0 && idx1<(int)bcdNumber.size())
             d1 = bcdNumber[idx1];
 
-        *pBuf++ = d1 + '0';
+        if (bufPos<bufSize)
+            pBuf[bufPos++] = d1 + '0';
+        // *pBuf++ = d1 + '0';
 
         if (precision>0 && idxFromBegin==(maxIpSize-1))
         {
-            *pBuf++ = sep;
+            if (bufPos<bufSize)
+                pBuf[bufPos++] = sep;
+            //*pBuf++ = sep;
         }
         
     }
 
-    *pBuf = 0;
+    //*pBuf = 0;
+    pBuf[bufPos] = 0;
 
-    return pBufBegin;
+    //return pBufBegin;
+    return pBuf;
 
 }
 

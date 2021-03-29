@@ -8,15 +8,9 @@
 #include <stdexcept>
 #include <sstream>
 
-#include "invest_openapi/config_helpers.h"
-#include "invest_openapi/api_config.h"
-#include "invest_openapi/auth_config.h"
-#include "invest_openapi/currencies_config.h"
+#define MARTY_NO_QT
 
-#include "invest_openapi/invest_openapi.h"
-#include "invest_openapi/factory.h"
-#include "invest_openapi/openapi_completable_future.h"
-
+#include "invest_openapi/invest_openapi_safe_main.h"
 #include "invest_openapi/marty_decimal.h"
 #include "invest_openapi/marty_long_ints.h"
 #include "invest_openapi/marty_bcd.h"
@@ -76,9 +70,9 @@ INVEST_OPENAPI_MAIN()
     using std::endl;
 
     using marty::Decimal;
-    using marty::DecimalPrecision;
-    //using marty::toString;
-    //using marty::fromString;
+    // using marty::DecimalPrecision;
+    // using marty::toString;
+    // using marty::fromString;
 
 
     // simple pretest

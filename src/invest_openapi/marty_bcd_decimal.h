@@ -10,10 +10,11 @@
 #include <iostream>
 #include <exception>
 #include <stdexcept>
-
+#include <cstdio>
 
 
 #include "marty_bcd.h"
+#include "marty_relops_impl.h"
 
 
 //----------------------------------------------------------------------------
@@ -84,12 +85,50 @@ public:
 
 
     //------------------------------
-    static Decimal fromString( const char        *pStrDecimal );
-    static Decimal fromString( const std::string &strDecimal  );
+    void assignFromString( const char        *pStr );
+    void assignFromString( const std::string &str  );
+
+    static Decimal fromString( const char        *pStr ) { Decimal res; res.assignFromString(pStr); return res; }
+    static Decimal fromString( const std::string &str  ) { Decimal res; res.assignFromString(str ); return res; }
+
+
+//----------------------------------------------------------------------------
+protected:
+
+    void assignFromIntImpl( std::int64_t  i, int precision = 0 );
+    void assignFromIntImpl( std::uint64_t u, int precision = 0 );
+
+    void assignFromDoubleImpl( double d, int precision = 9 );
+
+//----------------------------------------------------------------------------
+public:
+
+
+    //------------------------------
+    #define MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_INT_METHODS( castType, intType )                                                           \
+                  void assignFromInt( intType i, int precision = 0 )      { assignFromIntImpl( (castType)i ); m_precision = precision; }      \
+                  static Decimal fromInt( intType i, int precision = 0 )  { Decimal res; res.assignFromInt(i, precision);  return res; }
+
+    MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_INT_METHODS( std::int64_t , std::int64_t  )
+    MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_INT_METHODS( std::int64_t , int           )
+    MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_INT_METHODS( std::uint64_t, std::uint64_t )
+    MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_INT_METHODS( std::uint64_t, unsigned      )
+
+
+    //------------------------------
+    #define MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_FLOAT_METHODS( castType, floatType )                                                       \
+                  void assignFromFloat( floatType f, int precision = 9 )      { assignFromDoubleImpl( (castType)f, precision ); }             \
+                  static Decimal fromFloat( floatType f, int precision = 9 )  { Decimal res; res.assignFromFloat(f, precision);  return res; }
+
+    MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_FLOAT_METHODS( double, double )
+    MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_FLOAT_METHODS( double, float  )
+
+
+    //------------------------------
+    const char* toString( char *pBuf, std::size_t bufSize, int precision = -1 ) const;
+    std::string toString( int precision = -1 ) const;
 
 #if 0
-
-    std::string   toString( int precision = -1 ) const;
 
     int           toInt() const                           { return (int)(m_num/m_denum.denum()); }
     unsigned      toUnsigned() const                      { return (unsigned)(m_num/m_denum.denum()); }
@@ -98,6 +137,8 @@ public:
     float         toFloat() const                         { return (float)((double)m_num/(double)m_denum.denum()); }
     double        toDouble() const                        { return ((double)m_num/(double)m_denum.denum()); }
     //------------------------------
+#endif
+
 
 
 
@@ -110,15 +151,33 @@ public:
 
 
     //------------------------------
-    Decimal()                      {}
-    Decimal( const Decimal &d ) {}
+    Decimal( ) : m_sign(0), m_precision(0), m_number()  {}
+    Decimal( const Decimal &d ) : m_sign(d.m_sign), m_precision(d.m_precision), m_number(d.m_number)  {}
+
+    Decimal( int            v, int precision = 0 ) { assignFromInt( v, precision ); }
+    Decimal( unsigned       v, int precision = 0 ) { assignFromInt( v, precision ); }
+    Decimal( std::int64_t   v, int precision = 0 ) { assignFromInt( v, precision ); }
+    Decimal( std::uint64_t  v, int precision = 0 ) { assignFromInt( v, precision ); }
+
+    Decimal( double         d, int precision = 9 ) { assignFromFloat( d, precision ); }
+    Decimal( float          d, int precision = 6 ) { assignFromFloat( d, precision ); }
+
+    //------------------------------
+
+
+
+
+    //------------------------------
+    int compare( const Decimal &rightOp ) const;
+    MARTY_IMPLEMENT_RELATIONAL_OPERATORS_BY_COMPARE( Decimal )
+
+
+
+
+#if 0
 
     //------------------------------
     // 
-    Decimal( int            v, int precision = 0 ) {  /* m_num *= m_denum.denum(); */  }
-    Decimal( unsigned       v, int precision = 0 ) {  /* m_num *= m_denum.denum(); */  }
-    Decimal( std::int64_t   v, int precision = 0 ) {  /* m_num *= m_denum.denum(); */  }
-    Decimal( std::uint64_t  v, int precision = 0 ) {  /* m_num *= m_denum.denum(); */  }
 
     //------------------------------
     //
@@ -298,7 +357,7 @@ protected:
     // if == -1  - Exact Decimal number precision will be used
     // if ==  0  - Output stream precision will be used
     // if >   0  - Exact precision will be used
-    inline static precision_t         m_outputPrecision = (precision_t)-1; 
+    inline static int       m_outputPrecision = -1;
 
 
 }; // class Decimal

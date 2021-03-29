@@ -4,10 +4,12 @@
 
 #pragma once
 
-#include <QObject>
-#include <QDebug>
-#include <QtDebug>
-#include <QTest>
+#if !defined(MARTY_NO_QT)
+    #include <QObject>
+    #include <QDebug>
+    #include <QtDebug>
+    #include <QTest>
+#endif
 //#include <QtConcurrent/QtConcurrent>
 
 #include <iostream>
