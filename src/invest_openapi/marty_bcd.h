@@ -35,6 +35,12 @@
 #endif
 
 
+
+#ifndef MARTY_BCD_DEFAULT_DIVISION_PRECISION
+    #define MARTY_BCD_DEFAULT_DIVISION_PRECISION   18
+#endif
+
+
 //----------------------------------------------------------------------------
 namespace marty
 {
@@ -403,6 +409,38 @@ int getMinIntegerPartSize( const raw_bcd_number_t &bcdNumber1, int precision1
 }
 
 //----------------------------------------------------------------------------
+//! Lookup for Most/Least Significant Digit (MSD/LSD). Младшие цифры идут с начала.
+inline
+raw_bcd_number_t::size_type getMsdIndex( const raw_bcd_number_t &bcdNumber )
+{
+    raw_bcd_number_t::size_type i = bcdNumber.size();
+
+    for( ; i!=0; --i)
+    {
+        if (bcdNumber[i-1]!=0)
+            return i-1;
+    }
+
+    return (raw_bcd_number_t::size_type)-1;
+
+}
+
+//----------------------------------------------------------------------------
+//! Lookup for Most/Least Significant Digit (MSD/LSD). Младшие цифры идут с начала.
+inline
+raw_bcd_number_t::size_type getLsdIndex( const raw_bcd_number_t &bcdNumber )
+{
+    raw_bcd_number_t::size_type i = 0, size = bcdNumber.size();
+    for( ; i!=size; ++i)
+    {
+        if (bcdNumber[i]!=0)
+            return i;
+    }
+
+    return (raw_bcd_number_t::size_type)-1;
+}
+
+//----------------------------------------------------------------------------
 #define MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS()                                  \
                     int ipSize1      = getIntegerPartSize( bcdNumber1, precision1 );           \
                     int ipSize2      = getIntegerPartSize( bcdNumber2, precision2 );           \
@@ -450,6 +488,13 @@ int getMinIntegerPartSize( const raw_bcd_number_t &bcdNumber1, int precision1
                                                                                                                   \
                 if (idx2>=0 && idx2<(int)bcdNumber2.size())                                                       \
                     d2 = bcdNumber2[idx2];
+
+inline
+int getDecimalOrderByIndex( raw_bcd_number_t::size_type idx, const raw_bcd_number_t &bcdNumber, int precision )
+{
+    return ((int)idx) - precision;
+}
+//raw_bcd_number_t::size_type getMsdIndex( const raw_bcd_number_t &bcdNumber )
 
 
 //----------------------------------------------------------------------------
@@ -793,11 +838,39 @@ int rawMultiplication( raw_bcd_number_t &multRes
 }
 
 //----------------------------------------------------------------------------
+inline
+bool rawDivisionCheckContinueCondition( int dividendPrecision, int divisorPrecision
+                                      , int  deltaCmp
+                                      , bool relativeDelta
+                                      )
+{
+    int delta = dividendPrecision - divisorPrecision;
+
+    if (relativeDelta)
+    {
+        if (delta < deltaCmp)
+            return true; // continue division
+        return false;
+    }
+    else
+    {
+        // absolute precision required
+        // Hm-m-m
+        throw std::runtime_error("rawDivisionCheckContinueCondition: absolute precision not implemented");
+    }
+
+    return false;
+
+}
+
+//----------------------------------------------------------------------------
 //! Деление "сырых" BCD чисел с "плавающей" точкой.
 inline
 int rawDivision( raw_bcd_number_t &quotient
                , raw_bcd_number_t dividend, int dividendPrecision
                , raw_bcd_number_t divisor , int divisorPrecision
+               , int  deltaCmp = MARTY_BCD_DEFAULT_DIVISION_PRECISION
+               , bool relativeDelta = true
                )
 {
     // Удаляем все нули справа от значащих цифр, до точки или после - не важно
@@ -810,16 +883,46 @@ int rawDivision( raw_bcd_number_t &quotient
     // Нужно выровнять размеры
     if (dividend.size() < divisor.size())
     {
+        //std::cout<<"NNN1" << std::endl;
         std::size_t delta = divisor.size() - dividend.size();
         dividend.insert( dividend.begin(), delta, 0 );
         dividendPrecision += (int)delta;
     }
     else if (dividend.size() > divisor.size())
     {
+        //std::cout<<"NNN2" << std::endl;
         std::size_t delta = dividend.size() - divisor.size();
         divisor.insert( divisor.begin(), delta, 0 );
         divisorPrecision += (int)delta;
     }
+
+
+    // Не размеры надо выровнять, а порядок старшей значащей цифры (вернее, положение в векторе, 
+    // так как порядок далее везде берём нулевой при вычислениях)
+
+    /*
+    int dividendMsdOrder = getDecimalOrderByIndex( getMsdIndex(dividend), dividend, dividendPrecision );
+    int divisorMsdOrder  = getDecimalOrderByIndex( getMsdIndex(divisor ), divisor , divisorPrecision  );
+
+    if (dividendMsdOrder > divisorMsdOrder)
+    {
+        std::cout<<"NNN1" << std::endl;
+        int delta = dividendMsdOrder - divisorMsdOrder;
+        divisor.insert( divisor.begin(), delta, 0 );
+        divisorPrecision += (int)delta;
+    }
+    if (dividendMsdOrder < divisorMsdOrder)
+    {
+        std::cout<<"NNN2" << std::endl;
+        int delta = divisorMsdOrder - dividendMsdOrder;
+        dividend.insert( dividend.begin(), delta, 0 );
+        dividendPrecision += (int)delta;
+    }
+    */
+
+//int getDecimalOrderByIndex( raw_bcd_number_t::size_type idx, const raw_bcd_number_t &bcdNumber, int precision )
+//raw_bcd_number_t::size_type getMsdIndex( const raw_bcd_number_t &bcdNumber )
+
 
 
     //int resultPrecision = dividendPrecision - divisorPrecision;
@@ -841,7 +944,10 @@ int rawDivision( raw_bcd_number_t &quotient
 
     raw_bcd_number_t tmp;
 
-    while( (dividendPrecision - divisorPrecision) < 18 )
+    quotient.insert( quotient.begin(), 1, 0 );
+
+    //while( (dividendPrecision - divisorPrecision) < 18 )
+    while( rawDivisionCheckContinueCondition( dividendPrecision, divisorPrecision, deltaCmp, relativeDelta ) )
     {
         if (checkForZero( dividend ) )
             break;
@@ -850,9 +956,8 @@ int rawDivision( raw_bcd_number_t &quotient
         {
             dividend.insert( dividend.begin(), 1, 0 );
             ++dividendPrecision;
+            quotient.insert( quotient.begin(), 1, 0 );
         }
-
-        quotient.insert( quotient.begin(), 1, 0 );
 
         while( compareRaws( dividend, 0, divisor , 0 ) >= 0 )
         {
@@ -865,7 +970,14 @@ int rawDivision( raw_bcd_number_t &quotient
     
     //return 0;
 
-    return dividendPrecision - divisorPrecision;
+    int 
+    resultPrecision = dividendPrecision - divisorPrecision;
+    resultPrecision = reducePrecisionFull( quotient, resultPrecision );
+    resultPrecision = reduceLeadingZerosFull( quotient, resultPrecision );
+
+    quotient.shrink_to_fit();
+
+    return resultPrecision;
 }
 
 
