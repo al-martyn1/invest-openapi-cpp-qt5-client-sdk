@@ -22,6 +22,11 @@
 #include "invest_openapi/marty_bcd.h"
 
 
+
+#define THROW_ERROR() do{ throw std::runtime_error("Test failed"); } while(0)
+//#define THROW_ERROR() do{ } while(0)
+
+
 template<typename IntType1, typename IntType2, typename IntTypeRes>
 void martyLongIntMultiplyTestHelper( IntType1 u1, IntType2 u2, IntTypeRes &res )
 {
@@ -79,21 +84,12 @@ INVEST_OPENAPI_MAIN()
     // simple pretest
     {
 
-        std::uint32_t u1 = 213251u;
-        // u1  = 0x00034103
-        // ul1 = { 0x4103, 0x0003 }
-
-        std::uint32_t u2 = 153754u; 
-        // u2   = 0x0002589a
-        // ul2  = { 0x589a, 0x0002 }
-
+        std::uint32_t u1 = 213251u; // u1  = 0x00034103á ul1 = { 0x4103, 0x0003 }
+        std::uint32_t u2 = 153754u; // u2  = 0x0002589a  ul2  = { 0x589a, 0x0002 }
         // 0x4103 * 0x589a = 377496526 // 0x168023CE
 
-
-        std::uint64_t uRes; // 213251 * 153754 = 32788194254
+        std::uint64_t uRes; // 213251 * 153754 = 32788194254 (0x07A25423CE)
         std::uint32_t sumRes;
-
-        // 0x07A25423CE
 
         martyLongIntMultiplyTestHelper( u1, u2, uRes );
         cout << u1 << " x " << u2 << " = " << uRes << endl;
@@ -122,7 +118,6 @@ INVEST_OPENAPI_MAIN()
         //                             0x2CF0 7541
         // 0x0040*0x0011 = 0x0000 0440
         //                             0x2CF07981
-
         
         martyLongIntMultiplyTestHelper( u1, u2, uRes );
         cout << u1 << " x " << u2 << " = " << uRes << endl;
@@ -138,96 +133,409 @@ INVEST_OPENAPI_MAIN()
     cout << endl;
 
 
-    {
-        marty::bcd::raw_bcd_number_t bcdNumber, bcdNumber2, bcdNumber3, bcdNumber4, bcdNumber5;
-        int                          precision, precision2, precision3, precision4, precision5;
-        char formatBuf[256];
-        char formatBuf2[256];
-        char formatBuf3[256];
-        char formatBuf4[256];
-        char formatBuf5[256];
+    #define RAW_BCD_FROM_STRING_TEST( strVal, strResForCompare )                            \
+                do                                                                          \
+                {                                                                           \
+                    ++totalRawBcdFromStringConvertTests;                                    \
+                    marty::bcd::raw_bcd_number_t bcdNumber;                                 \
+                    int                          bcdNumberPrecision;                        \
+                                                                                            \
+                    bcdNumberPrecision = marty::bcd::makeRawBcdNumber( bcdNumber, strVal ); \
+                                                                                            \
+                    std::string bcdStrFormatted = marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision );\
+                                                                                            \
+                    bool bGood = bcdStrFormatted==strResForCompare;                         \
+                                                                                            \
+                    if (!bGood)                                                             \
+                       ++totalRawBcdFromStringConvertTestsFailed;                           \
+                                                                                            \
+                                                                                            \
+                    cout << "[" << (bGood ? "+" : "-") << "]  " << strVal << " converted to BCD is '" << bcdStrFormatted << "'"; \
+                    if (!bGood)                                                             \
+                    {                                                                       \
+                        cout << " (expected '" << strResForCompare << "')";                 \
+                    }                                                                       \
+                    cout << endl;                                                           \
+                                                                                            \
+                    if (!bGood)                                                             \
+                        THROW_ERROR();                                                      \
+                                                                                            \
+                } while(0)
 
-        precision = marty::bcd::makeRawBcdNumber( bcdNumber, "3.141592654" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+
+    #define RAW_BCD_COMPARE_TEST( strVal1, strVal2, cmpResForCompare )                      \
+                do                                                                          \
+                {                                                                           \
+                    ++totalRawBcdCompareTests;                                              \
+                    marty::bcd::raw_bcd_number_t bcdNumber1;                                \
+                    int                          bcdNumberPrecision1;                       \
+                    marty::bcd::raw_bcd_number_t bcdNumber2;                                \
+                    int                          bcdNumberPrecision2;                       \
+                                                                                            \
+                    bcdNumberPrecision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, strVal1 ); \
+                    bcdNumberPrecision2 = marty::bcd::makeRawBcdNumber( bcdNumber2, strVal2 ); \
+                                                                                            \
+                    int cmpRes = marty::bcd::compareRaws( bcdNumber1, bcdNumberPrecision1, bcdNumber2, bcdNumberPrecision2 );\
+                                                                                            \
+                    bool bGood = cmpRes==cmpResForCompare;                                  \
+                                                                                            \
+                    if (!bGood)                                                             \
+                       ++totalRawBcdCompareTestsFailed;                                     \
+                                                                                            \
+                                                                                            \
+                    cout << "[" << (bGood ? "+" : "-") << "]  " << strVal1 << " compare with " << strVal2 << " is " << cmpRes << ""; \
+                    if (!bGood)                                                             \
+                    {                                                                       \
+                        cout << " (expected " << cmpResForCompare << ")";                   \
+                    }                                                                       \
+                    cout << endl;                                                           \
+                                                                                            \
+                    if (!bGood)                                                             \
+                        THROW_ERROR();                                                      \
+                                                                                            \
+                } while(0)
+
+    #define RAW_BCD_ZERO_TEST( strVal1, cmpResForCompare )                                  \
+                do                                                                          \
+                {                                                                           \
+                    ++totalRawBcdZeroTests;                                                 \
+                    marty::bcd::raw_bcd_number_t bcdNumber1;                                \
+                    int                          bcdNumberPrecision1;                       \
+                                                                                            \
+                    bcdNumberPrecision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, strVal1 ); \
+                                                                                            \
+                    bool zeroRes = marty::bcd::checkForZero( bcdNumber1 );                  \
+                                                                                            \
+                    bool bGood = zeroRes==cmpResForCompare;                                 \
+                                                                                            \
+                    if (!bGood)                                                             \
+                       ++totalRawBcdZeroTestsFailed;                                        \
+                                                                                            \
+                                                                                            \
+                    cout << "[" << (bGood ? "+" : "-") << "]  " << strVal1 << " is zero: " << (zeroRes?"true":"false") << ""; \
+                    if (!bGood)                                                             \
+                    {                                                                       \
+                        cout << " (expected " << cmpResForCompare << ")";                   \
+                    }                                                                       \
+                    cout << endl;                                                           \
+                                                                                            \
+                    if (!bGood)                                                             \
+                        THROW_ERROR();                                                      \
+                                                                                            \
+                } while(0)
+
+
+    #define RAW_BCD_OP_TEST( strVal1, strVal2, op, strResForCompare )                       \
+                do                                                                          \
+                {                                                                           \
+                    ++totalRawBcdOpTests;                                                   \
+                    marty::bcd::raw_bcd_number_t bcdNumber1;                                \
+                    int                          bcdNumberPrecision1;                       \
+                    marty::bcd::raw_bcd_number_t bcdNumber2;                                \
+                    int                          bcdNumberPrecision2;                       \
+                    marty::bcd::raw_bcd_number_t bcdNumberRes;                                 \
+                    int                          bcdNumberPrecisionRes;                        \
+                                                                                               \
+                    bcdNumberPrecision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, strVal1 ); \
+                    bcdNumberPrecision2 = marty::bcd::makeRawBcdNumber( bcdNumber2, strVal2 ); \
+                                                                                               \
+                    bcdNumberPrecisionRes = marty::bcd:: op ( bcdNumberRes, bcdNumber1, bcdNumberPrecision1, bcdNumber2, bcdNumberPrecision2 );  \
+                                                                                            \
+                    std::string bcdStrFormatted = marty::bcd::formatRawBcdNumber( bcdNumberRes, bcdNumberPrecisionRes );\
+                                                                                            \
+                    bool bGood = bcdStrFormatted==strResForCompare;                         \
+                                                                                            \
+                    if (!bGood)                                                             \
+                       ++totalRawBcdOpTestsFailed;                                          \
+                                                                                            \
+                                                                                            \
+                    cout << "[" << (bGood ? "+" : "-") << "]  " << strVal1 << " " << #op << " " << strVal2 << " = " << bcdStrFormatted << ""; \
+                    if (!bGood)                                                             \
+                    {                                                                       \
+                        cout << " (expected " << strResForCompare << ")";                   \
+                    }                                                                       \
+                    cout << endl;                                                           \
+                                                                                            \
+                    if (!bGood)                                                             \
+                        THROW_ERROR();                                                      \
+                                                                                            \
+                } while(0)
+
+
+    unsigned totalRawBcdFromStringConvertTests        = 0;
+    unsigned totalRawBcdFromStringConvertTestsFailed  = 0;
+
+
+    RAW_BCD_FROM_STRING_TEST( "3.141592654"    , "3.141592654"     );
+    RAW_BCD_FROM_STRING_TEST( "314.15"         , "314.15"          );
+    RAW_BCD_FROM_STRING_TEST( "31.4159"        , "31.4159"         );
+    RAW_BCD_FROM_STRING_TEST( "317.291592654"  , "317.291592654"   );
+    RAW_BCD_FROM_STRING_TEST( "311.008407346"  , "311.008407346"   );
+    RAW_BCD_FROM_STRING_TEST( "34.557492654"   , "34.557492654"    );
+    RAW_BCD_FROM_STRING_TEST( "28.274307346"   , "28.274307346"    );
+    RAW_BCD_FROM_STRING_TEST( "303.141592654"  , "303.141592654"   );
+    RAW_BCD_FROM_STRING_TEST( "296.858407346"  , "296.858407346"   );
+    RAW_BCD_FROM_STRING_TEST( "3003.141592654" , "3003.141592654"  );
+    RAW_BCD_FROM_STRING_TEST( "2996.858407346" , "2996.858407346"  );
+    RAW_BCD_FROM_STRING_TEST( "0.003"          , "0.003"           );
+    RAW_BCD_FROM_STRING_TEST( ".141"           , "0.141"           );
+    RAW_BCD_FROM_STRING_TEST( ".141000"        , "0.141"           );
+    RAW_BCD_FROM_STRING_TEST( "25.141"         , "25.141"          );
+    RAW_BCD_FROM_STRING_TEST( "24.859"         , "24.859"          );
+    //RAW_BCD_FROM_STRING_TEST();
+
+    cout << endl;
+
+    cout << "Failed " << totalRawBcdFromStringConvertTestsFailed << " BCD convert tests from total " << totalRawBcdFromStringConvertTests << endl;
+    if (!totalRawBcdFromStringConvertTestsFailed)
+        cout << "+++ All BCD convert tests passed"  << endl;
+
+    cout << "------------------------------" << endl << endl << endl;
+
+
+
+    unsigned totalRawBcdZeroTests       = 0;
+    unsigned totalRawBcdZeroTestsFailed = 0;
+
+    RAW_BCD_ZERO_TEST( "3.141592654"    , false );
+    RAW_BCD_ZERO_TEST( "314.15"         , false );
+    RAW_BCD_ZERO_TEST( "31.4159"        , false );
+    RAW_BCD_ZERO_TEST( "317.291592654"  , false );
+    RAW_BCD_ZERO_TEST( "311.008407346"  , false );
+    RAW_BCD_ZERO_TEST( "34.557492654"   , false );
+    RAW_BCD_ZERO_TEST( "28.274307346"   , false );
+    RAW_BCD_ZERO_TEST( "303.141592654"  , false );
+    RAW_BCD_ZERO_TEST( "296.858407346"  , false );
+    RAW_BCD_ZERO_TEST( "3003.141592654" , false );
+    RAW_BCD_ZERO_TEST( "2996.858407346" , false );
+    RAW_BCD_ZERO_TEST( "0.003"          , false );
+    RAW_BCD_ZERO_TEST( ".141"           , false );
+    RAW_BCD_ZERO_TEST( ".141000"        , false );
+    RAW_BCD_ZERO_TEST( "25.141"         , false );
+    RAW_BCD_ZERO_TEST( "24.859"         , false );
+    RAW_BCD_ZERO_TEST( "0"              , true  );
+    RAW_BCD_ZERO_TEST( "00"             , true  );
+    RAW_BCD_ZERO_TEST( "000"            , true  );
+    RAW_BCD_ZERO_TEST( "00.0"           , true  );
+    RAW_BCD_ZERO_TEST( "0.000"          , true  );
+    RAW_BCD_ZERO_TEST( "00.00"          , true  );
+
+
+    cout << endl;
+
+    cout << "Failed " << totalRawBcdZeroTestsFailed << " BCD zero tests from total " << totalRawBcdZeroTests << endl;
+    if (!totalRawBcdZeroTestsFailed)
+        cout << "+++ All BCD zero tests passed"  << endl;
+
+    cout << "------------------------------" << endl << endl << endl;
+
+
+
+    unsigned totalRawBcdCompareTests       = 0;
+    unsigned totalRawBcdCompareTestsFailed = 0;
+
+    RAW_BCD_COMPARE_TEST( "3.141592654" , "314.15"      , -1 );
+    RAW_BCD_COMPARE_TEST( "314.15"      , "3.141592654" ,  1 );
+    RAW_BCD_COMPARE_TEST( "3.141592654" , "3.141592654" ,  0 );
+    RAW_BCD_COMPARE_TEST( "3.141592654" , "31.4159"     , -1 );
+    RAW_BCD_COMPARE_TEST( "31.4159"     , "3.141592654" ,  1 );
+    RAW_BCD_COMPARE_TEST( "31.4159"     , "31.4159"     ,  0 );
+    RAW_BCD_COMPARE_TEST( "314.15"      , "31.4159"     ,  1 );
+    RAW_BCD_COMPARE_TEST( "31.4159"     , "314.15"      , -1 );
+    RAW_BCD_COMPARE_TEST( "314.15"      , "314.15"      ,  0 );
+    RAW_BCD_COMPARE_TEST( "314.15"      , "300.0"       ,  1 );
+    RAW_BCD_COMPARE_TEST( "300"         , "314.15"      , -1 );
+    RAW_BCD_COMPARE_TEST( "300"         , "300.0"       ,  0 );
+    RAW_BCD_COMPARE_TEST( "3000"        , "300"         ,  1 );
+    RAW_BCD_COMPARE_TEST( "300"         , "3000"        , -1 );
+    RAW_BCD_COMPARE_TEST( "3000"        , "3000"        ,  0 );
+    RAW_BCD_COMPARE_TEST( "3000.00"     , "3000"        ,  0 );
+
+    cout << endl;
+
+    cout << "Failed " << totalRawBcdCompareTestsFailed << " BCD compare tests from total " << totalRawBcdCompareTests << endl;
+    if (!totalRawBcdCompareTestsFailed)
+        cout << "+++ All BCD compare tests passed"  << endl;
+
+    cout << "------------------------------" << endl << endl << endl;
+
+
+
+    unsigned totalRawBcdOpTests         = 0;
+    unsigned totalRawBcdOpTestsFailed   = 0;
+
+    RAW_BCD_OP_TEST( "3.141592654"   , "314.15"        , rawAddition       , "317.291592654"  ); // 3.141592654 + 314.15 = 317.291592654
+    RAW_BCD_OP_TEST( "3.141592654"   , "31.4159"       , rawAddition       , "34.557492654"   ); // 3.141592654+31.4159=34.557492654
+    RAW_BCD_OP_TEST( "3.141592654"   , "300"           , rawAddition       , "303.141592654"  ); // 3.141592654+300=303.141592654
+    RAW_BCD_OP_TEST( "3.141592654"   , "3000"          , rawAddition       , "3003.141592654" ); // 3.141592654+3000=3003.141592654
+    RAW_BCD_OP_TEST( "3.141592654"   , "0.003"         , rawAddition       , "3.144592654"    ); // 3.141592654+0.003=3.144592654
+    RAW_BCD_OP_TEST( ".141"          , ".141000"       , rawAddition       , "0.282"          ); // .141+.141000=0.282
+    RAW_BCD_OP_TEST( "25.000"        , ".141000"       , rawAddition       , "25.141"         ); // 25.000+.141000=25.141
+    RAW_BCD_OP_TEST( "025.000"       , ".141000"       , rawAddition       , "25.141"         ); // 025.000+.141000=25.141
+    //RAW_BCD_OP_TEST( ""      , "" , rawAddition   , "" ); // 
+
+    cout << endl;
+
+    RAW_BCD_OP_TEST( "314.15"        , "3.141592654"   , rawSubtraction    , "311.008407346"  ); // 314.15 - 3.141592654 = 311.008407346
+    RAW_BCD_OP_TEST( "31.4159"       , "3.141592654"   , rawSubtraction    , "28.274307346"   ); // 31.4159-3.141592654=28.274307346
+    RAW_BCD_OP_TEST( "300"           , "3.141592654"   , rawSubtraction    , "296.858407346"  ); // 300-3.141592654=296.858407346
+    RAW_BCD_OP_TEST( "3000"          , "3.141592654"   , rawSubtraction    , "2996.858407346" ); // 3000-3.141592654=2996.858407346
+    RAW_BCD_OP_TEST( "3.141592654"   , "0.003"         , rawSubtraction    , "3.138592654"    ); // 3.141592654-0.003=3.138592654
+    RAW_BCD_OP_TEST( ".141"          , ".141000"       , rawSubtraction    , "0"              ); // .141-.141000=0
+    RAW_BCD_OP_TEST( "25.000"        , ".141000"       , rawSubtraction    , "24.859"         ); // 25.000-.141000=24.859
+    RAW_BCD_OP_TEST( "025.000"       , ".141000"       , rawSubtraction    , "24.859"         ); // 025.000-.141000=24.859
+    //RAW_BCD_OP_TEST( ""      , "" , rawSubtraction, "" ); // 
+
+    cout << endl;
+
+    RAW_BCD_OP_TEST( "31.4159"       , "94500"         , rawMultiplication , "2968802.55"       ); // 31.4159*94500 = 2968802.55
+    RAW_BCD_OP_TEST( "314.15"        , "3.141592654"   , rawMultiplication , "986.9313322541"   ); // 314.15 * 3.141592654=986.9313322541
+    RAW_BCD_OP_TEST( "31.4159"       , "3.141592654"   , rawMultiplication , "98.6959606587986" ); // 31.4159*3.141592654=98.6959606587986
+    RAW_BCD_OP_TEST( "300"           , "3.141592654"   , rawMultiplication , "942.4777962"      ); // 300*3.141592654=942.4777962
+    RAW_BCD_OP_TEST( "3000"          , "3.141592654"   , rawMultiplication , "9424.777962"      ); // 3000*3.141592654=9424.777962
+    RAW_BCD_OP_TEST( "3.141592654"   , "0.003"         , rawMultiplication , "0.009424777962"   ); // 3.141592654*0.003=0.009424777962
+    RAW_BCD_OP_TEST( ".141"          , ".141000"       , rawMultiplication , "0.019881"         ); // .141*.141000=0.019881
+    RAW_BCD_OP_TEST( "25.000"        , ".141000"       , rawMultiplication , "3.525"            ); // 25.000*.141000=3.525
+    RAW_BCD_OP_TEST( "025.000"       , ".141000"       , rawMultiplication , "3.525"            ); // 025.000*.141000=3.525
+
+    cout << endl;
+
+    RAW_BCD_OP_TEST( "9450.005"      , "0.005"         , rawDivision , "1890001"                ); // 9450.005/0.005=1890001
+    RAW_BCD_OP_TEST( "0.94500"       , "0.500"         , rawDivision , "1.89"                   ); // 0.94500/0.500=1.89
+    RAW_BCD_OP_TEST( "94500"         , "500"           , rawDivision , "189"                    ); // 94500/500=189
+    RAW_BCD_OP_TEST( "94500"         , "50"            , rawDivision , "1890"                   ); // 94500/50=1890
+    RAW_BCD_OP_TEST( "94500"         , "5"             , rawDivision , "18900"                  ); // 94500/5=18900
+    RAW_BCD_OP_TEST( "94500"         , "0.5"           , rawDivision , "189000"                 ); // 94500/0.5=189000
+    RAW_BCD_OP_TEST( "94500"         , "0.05"          , rawDivision , "1890000"                ); // 94500/0.05=1890000
+    RAW_BCD_OP_TEST( "94500"         , "0.005"         , rawDivision , "18900000"               ); // 94500/0.005=18900000
+                                                                     // 3008.030965211883154708 28465840545710
+    RAW_BCD_OP_TEST( "94500"         , "31.4159"       , rawDivision , "3008.030965211883154708" ); // 94500/31.4159=3008.0309652118 8315470828 4658405457 1092981579 3913273215 1553831021
+                                                                     // 0.000000529152915291 005291005291005291005291005291005291005291
+    RAW_BCD_OP_TEST( "500"           , "94500"         , rawDivision , "0.005291005291005291" ); // 500/94500=0.0052910052 9100529100 5291005291 0052910052 9100529100 5291005291
+
+    
+    
+
+
+    cout << endl;
+
+    cout << "Failed " << totalRawBcdOpTestsFailed << " BCD operation tests from total " << totalRawBcdOpTests << endl;
+    if (!totalRawBcdOpTestsFailed)
+        cout << "+++ All BCD operation tests passed"  << endl;
+
+    cout << "------------------------------" << endl << endl << endl;
+
+
+
+    {
+        marty::bcd::raw_bcd_number_t bcdNumberRes, bcdNumber1, bcdNumber2, bcdNumber3, bcdNumber4, bcdNumber5;
+        int                          precisionRes, precision1, precision2, precision3, precision4, precision5;
+        char formatBufRes[256]; char formatBuf[256]; char formatBuf2[256]; char formatBuf3[256]; char formatBuf4[256]; char formatBuf5[256];
+
+        precision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, "3.141592654" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
 
         precision2 = marty::bcd::makeRawBcdNumber( bcdNumber2, "314.15" );
         cout << marty::bcd::formatRawBcdNumber( bcdNumber2, precision2, formatBuf2, sizeof(formatBuf2) ) << endl;
+        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber2, precision2 );
+        cout << "3.141592654+314.15=317.291592654, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
+        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber2, precision2, bcdNumber1, precision1 );
+        cout << "314.15-3.141592654=311.008407346, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
 
         precision3 = marty::bcd::makeRawBcdNumber( bcdNumber3, "31.4159" );
         cout << marty::bcd::formatRawBcdNumber( bcdNumber3, precision3, formatBuf3, sizeof(formatBuf3) ) << endl;
+        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber3, precision3 );
+        cout << "3.141592654+31.4159=34.557492654, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
+        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber3, precision3, bcdNumber1, precision1 );
+        cout << "31.4159-3.141592654=28.274307346, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
 
         precision4 = marty::bcd::makeRawBcdNumber( bcdNumber4, "3" ); precision4 = -2;
         cout << marty::bcd::formatRawBcdNumber( bcdNumber4, precision4, formatBuf4, sizeof(formatBuf4) ) << endl;
+        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber4, precision4 );
+        cout << "3.141592654+300=303.141592654, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
+        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber4, precision4, bcdNumber1, precision1 );
+        cout << "300-3.141592654=296.858407346, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
 
         precision5 = marty::bcd::makeRawBcdNumber( bcdNumber5, "3" ); precision5 = -3;
         cout << marty::bcd::formatRawBcdNumber( bcdNumber5, precision5, formatBuf5, sizeof(formatBuf5) ) << endl;
-
-        cout << "Compare 3.141592654 vs 314.15      : " << marty::bcd::compareRaws( bcdNumber , precision , bcdNumber2, precision2 ) << endl;
-        cout << "Compare 314.15 vs 3.141592654      : " << marty::bcd::compareRaws( bcdNumber2, precision2, bcdNumber , precision  ) << endl;
-        cout << "Compare 3.141592654 vs 3.141592654 : " << marty::bcd::compareRaws( bcdNumber , precision , bcdNumber , precision  ) << endl;
-
-        cout << "Compare 3.141592654 vs 31.4159     : " << marty::bcd::compareRaws( bcdNumber , precision , bcdNumber3, precision3 ) << endl;
-        cout << "Compare 31.4159 vs 3.141592654     : " << marty::bcd::compareRaws( bcdNumber3, precision3, bcdNumber , precision  ) << endl;
-
-        cout << "Compare 314.15 vs 31.4159          : " << marty::bcd::compareRaws( bcdNumber2, precision2, bcdNumber3, precision3 ) << endl;
-        cout << "Compare 31.4159 vs 314.15          : " << marty::bcd::compareRaws( bcdNumber3, precision3, bcdNumber2, precision2 ) << endl;
-
-        cout << "Compare 314.15 vs 300              : " << marty::bcd::compareRaws( bcdNumber2, precision2, bcdNumber4, precision4 ) << endl;
-        cout << "Compare 300 vs 314.15              : " << marty::bcd::compareRaws( bcdNumber4, precision4, bcdNumber2, precision2 ) << endl;
-
-        cout << "Compare 3000 vs 300                : " << marty::bcd::compareRaws( bcdNumber5, precision5, bcdNumber4, precision4 ) << endl;
-        cout << "Compare 300 vs 3000                : " << marty::bcd::compareRaws( bcdNumber4, precision4, bcdNumber5, precision5 ) << endl;
-
-        cout << "Compare 3000 vs 3000               : " << marty::bcd::compareRaws( bcdNumber5, precision5, bcdNumber5, precision5 ) << endl;
+        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber5, precision5 );
+        cout << "3.141592654+3000=3003.141592654, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
+        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber5, precision5, bcdNumber1, precision1 );
+        cout << "3000-3.141592654=2996.858407346, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
 
         precision4 = marty::bcd::makeRawBcdNumber( bcdNumber4, "0.003" );
         cout << marty::bcd::formatRawBcdNumber( bcdNumber4, precision4, formatBuf4, sizeof(formatBuf4) ) << endl;
+        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber4, precision4 );
+        cout << "3.141592654+0.003=3.144592654, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
+        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber1, precision1, bcdNumber4, precision4 );
+        cout << "3.141592654-0.003=3.138592654, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
 
         precision5 = marty::bcd::makeRawBcdNumber( bcdNumber5, "3" ); precision5 = 3;
         cout << marty::bcd::formatRawBcdNumber( bcdNumber5, precision5, formatBuf5, sizeof(formatBuf5) ) << endl;
 
-        cout << "Compare 0.003 vs 0.003             : " << marty::bcd::compareRaws( bcdNumber4, precision4, bcdNumber5, precision5 ) << endl;
+        precision5 = marty::bcd::makeRawBcdNumber( bcdNumber5, "945" ); precision5 = -2;
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber5, precision5, formatBuf5, sizeof(formatBuf5) ) << endl;
+
+        precision1 = marty::bcd::rawMultiplication( bcdNumber1, bcdNumber5, precision5, bcdNumber3, precision3 );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf5, sizeof(formatBuf5) ) << endl;
+
+        // 31.4159*94500 = 2968802.55
 
 
-        precision = marty::bcd::makeRawBcdNumber( bcdNumber, ".141" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+        precision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, ".141" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
 
-        precision = marty::bcd::makeRawBcdNumber( bcdNumber, ".141000" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+        precision2 = marty::bcd::makeRawBcdNumber( bcdNumber2, ".141000" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber2, precision2, formatBuf, sizeof(formatBuf) ) << endl;
+        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber2, precision2 );
+        cout << ".141+.141000=0.282, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
+        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber1, precision1, bcdNumber2, precision2 );
+        cout << ".141-.141000=0, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
 
-        precision = marty::bcd::reducePrecision( bcdNumber, precision );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+        precision1 = marty::bcd::reducePrecision( bcdNumber1, precision1 );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
+        
+        precision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, "25.000" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
+        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber2, precision2 );
+        cout << "25.000+.141000=25.141, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
+        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber2, precision2, bcdNumber1, precision1 );
+        cout << "25.000-.141000=24.859, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
 
-        precision = marty::bcd::makeRawBcdNumber( bcdNumber, "025.000" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+        precision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, "025.000" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
+        precisionRes = marty::bcd::rawAddition( bcdNumberRes, bcdNumber1, precision1, bcdNumber2, precision2 );
+        cout << "025.000+.141000=25.141, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
+        precisionRes = marty::bcd::rawSubtraction( bcdNumberRes, bcdNumber2, precision2, bcdNumber1, precision1 );
+        cout << "025.000-.141000=24.859, got: " << marty::bcd::formatRawBcdNumber( bcdNumberRes, precisionRes, formatBufRes, sizeof(formatBufRes) ) << endl;
 
-        precision = marty::bcd::reducePrecision( bcdNumber, precision );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+        precision1 = marty::bcd::reducePrecision( bcdNumber1, precision1 );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
 
-        precision = marty::bcd::reduceLeadingZeros( bcdNumber, precision );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+        precision1 = marty::bcd::reduceLeadingZeros( bcdNumber1, precision1 );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
 
-        precision = marty::bcd::extendPrecision( bcdNumber, precision, 9 );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+        precision1 = marty::bcd::extendPrecision( bcdNumber1, precision1, 9 );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
 
-        precision = marty::bcd::extendLeadings( bcdNumber, precision, 5 /* requestedLeadings */  );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
+        precision1 = marty::bcd::extendLeadings( bcdNumber1, precision1, 5 /* requestedLeadings */  );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
 
-        precision = marty::bcd::makeRawBcdNumber( bcdNumber, "0" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
-        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber) ? "true" : "false") << endl;
+        precision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, "0" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
+        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber1) ? "true" : "false") << endl;
 
-        precision = marty::bcd::makeRawBcdNumber( bcdNumber, "0.000" );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
-        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber) ? "true" : "false") << endl;
+        precision1 = marty::bcd::makeRawBcdNumber( bcdNumber1, "0.000" );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
+        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber1) ? "true" : "false") << endl;
 
-        precision = marty::bcd::extendPrecision( bcdNumber, precision, 9 );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
-        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber) ? "true" : "false") << endl;
+        precision1 = marty::bcd::extendPrecision( bcdNumber1, precision1, 9 );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
+        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber1) ? "true" : "false") << endl;
 
-        precision = marty::bcd::extendLeadings( bcdNumber, precision, 5 /* requestedLeadings */  );
-        cout << marty::bcd::formatRawBcdNumber( bcdNumber, precision, formatBuf, sizeof(formatBuf) ) << endl;
-        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber) ? "true" : "false") << endl;
+        precision1 = marty::bcd::extendLeadings( bcdNumber1, precision1, 5 /* requestedLeadings */  );
+        cout << marty::bcd::formatRawBcdNumber( bcdNumber1, precision1, formatBuf, sizeof(formatBuf) ) << endl;
+        cout << "Zero: " << (marty::bcd::checkForZero(bcdNumber1) ? "true" : "false") << endl;
         
     }
 
@@ -262,6 +570,9 @@ INVEST_OPENAPI_MAIN()
                     }                                                                       \
                     cout << endl;                                                           \
                                                                                             \
+                    if (!bGood)                                                             \
+                        THROW_ERROR();                                                      \
+                                                                                            \
                 } while(0)
 
     #define DECIMAL_CTOR_TEST_WITH_PREC( val, prec, strResForCompare )                      \
@@ -282,6 +593,9 @@ INVEST_OPENAPI_MAIN()
                         cout << " (expected '" << strResForCompare << "')";                 \
                     }                                                                       \
                     cout << endl;                                                           \
+                                                                                            \
+                    if (!bGood)                                                             \
+                        THROW_ERROR();                                                      \
                                                                                             \
                 } while(0)
 
@@ -310,7 +624,7 @@ INVEST_OPENAPI_MAIN()
     cout << "------------------------------" << endl;
     cout << endl;
 
-    cout << "Failed " << totalCtorTestsFailed << " CTOR tests from total " << totalCtorTestsFailed << endl;
+    cout << "Failed " << totalCtorTestsFailed << " CTOR tests from total " << totalCtorTests << endl;
     if (!totalCtorTestsFailed)
         cout << "+++ All CTOR tests passed"  << endl;
 
@@ -340,6 +654,9 @@ INVEST_OPENAPI_MAIN()
                     }                                                                       \
                     cout << endl;                                                           \
                                                                                             \
+                    if (!bGood)                                                             \
+                        THROW_ERROR();                                                      \
+                                                                                            \
                 } while(0)
 
 
@@ -363,7 +680,7 @@ INVEST_OPENAPI_MAIN()
     cout << "------------------------------" << endl;
     cout << endl;
 
-    cout << "Failed " << totalOpTestsFailed << " OP tests from total " << totalOpTestsFailed << endl;
+    cout << "Failed " << totalOpTestsFailed << " OP tests from total " << totalOpTests << endl;
     if (!totalOpTestsFailed)
         cout << "+++ All OP tests passed"  << endl;
 
@@ -428,6 +745,9 @@ INVEST_OPENAPI_MAIN()
                     }                                                                    \
                     cout << endl;                                                        \
                                                                                          \
+                    if (!bGood)                                                             \
+                        THROW_ERROR();                                                      \
+                                                                                            \
                 } while(0)
 
 

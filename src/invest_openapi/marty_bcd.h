@@ -15,6 +15,8 @@
 #include <cstring>
 #include <algorithm>
 #include <iterator>
+#include <string>
+#include <algorithm>
 
 //----------------------------------------------------------------------------
 
@@ -23,6 +25,14 @@
    и предназначены только для внутреннего использования
 
  */
+
+#ifdef min
+    #undef min
+#endif
+
+#ifdef max
+    #undef max
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -86,10 +96,23 @@ int makeRawBcdNumber( raw_bcd_number_t &bcdNumber
 
     bool processingFranctionalPart = false;
 
-    while(strSize!=0 && str[strSize-1]=='0') // "remove" trailing zeros
-        --strSize;
+    bool hasDecimalDot = false;
+    for(std::size_t i=0; i!=strSize; ++i)
+    {
+        if ( (str[i] == '.') || (str[i] == ',') )
+        {
+            hasDecimalDot = true;
+            break;
+        }
+    }
 
-    while( strSize!=0 && *str=='0') // "remove" leading zeros
+    if (hasDecimalDot)
+    {
+        while(strSize!=0 && str[strSize-1]=='0') // "remove" trailing zeros
+            --strSize;
+    }
+
+    while( strSize>1 && *str=='0') // "remove" leading zeros, but keep one
         { --strSize; ++str; }
 
     bcdNumber.reserve(strSize+1);
@@ -149,7 +172,7 @@ int makeRawBcdNumber( raw_bcd_number_t &bcdNumber
 }
 
 //----------------------------------------------------------------------------
-//! Обрезаем точность, если возможно (в хвосте одни нули)
+//! Обрезаем точность, если возможно (в хвосте есть нули) до десятичной точки
 //!!!
 inline
 int reducePrecision( raw_bcd_number_t &bcdNumber, int precision )
@@ -182,7 +205,36 @@ int reducePrecision( raw_bcd_number_t &bcdNumber, int precision )
     bcdNumber.erase( bcdNumber.begin(), eraseEnd );
 
     return precision - numberOfPositionsToReduce;
+}
 
+//----------------------------------------------------------------------------
+//! Обрезаем точность, если возможно (в хвосте есть нули), даже если пересекаем позицию десятичной точки
+//!!!
+inline
+int reducePrecisionFull( raw_bcd_number_t &bcdNumber, int precision )
+{
+    if (bcdNumber.size()<2)
+        return precision;
+
+    int i = 0, size = (int)bcdNumber.size();
+
+    for(; i!=(size-1); ++i)
+    {
+        if (bcdNumber[i]!=0)
+            break;
+    }
+
+    if (!i)
+        return precision;
+
+    std::size_t numberOfPositionsToReduce = i;
+
+    raw_bcd_number_t::iterator eraseEnd = bcdNumber.begin();
+    std::advance(eraseEnd, numberOfPositionsToReduce);
+
+    bcdNumber.erase( bcdNumber.begin(), eraseEnd );
+
+    return precision - numberOfPositionsToReduce;
 }
 
 //----------------------------------------------------------------------------
@@ -196,7 +248,23 @@ int reduceLeadingZeros( raw_bcd_number_t &bcdNumber, int precision )
     bool nbEmpty    = !bcdNumber.empty();
     bool backIsZero = 
     */
-    while( !bcdNumber.empty() && (bcdNumber.back()==0) && (bcdNumber.size() > (precision+1)) )
+    while( (bcdNumber.size()>0) && (bcdNumber.back()==0) && (bcdNumber.size() > (precision+1)) )
+    {
+        bcdNumber.pop_back();
+    }
+
+    return precision;
+}
+
+//----------------------------------------------------------------------------
+//! Обрезаем ведущие нули, включая те, которые после точки
+//!!!
+inline
+int reduceLeadingZerosFull( raw_bcd_number_t &bcdNumber, int precision )
+{
+    precision = reduceLeadingZeros( bcdNumber, precision );
+
+    while( (bcdNumber.size()>0) && (bcdNumber.back()==0) )
     {
         bcdNumber.pop_back();
     }
@@ -354,6 +422,37 @@ int getMinIntegerPartSize( const raw_bcd_number_t &bcdNumber1, int precision1
                         totalSize += maxPrecision;
 
 
+#define MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS_V2( bcdNumber1, precision1, bcdNumber2, precision2 )  \
+                int decOrderMin1 = -precision1;                                                                   \
+                int decOrderMax1 = decOrderMin1 + (int)bcdNumber1.size();                                         \
+                                                                                                                  \
+                int decOrderMin2 = -precision2;                                                                   \
+                int decOrderMax2 = decOrderMin2 + (int)bcdNumber2.size();                                         \
+                                                                                                                  \
+                int decOrderMin = std::min( decOrderMin1, decOrderMin2 );                                         \
+                int decOrderMax = std::max( decOrderMax1, decOrderMax2 );                                         \
+                                                                                                                  \
+                int maxPrecision = std::max( precision1, precision2 );                                            \
+                                                                                                                  \
+                int decOrderDelta = decOrderMax - decOrderMin;
+
+
+#define MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrderValue, bcdNumber1, bcdNumber2 )        \
+                                                                                                                  \
+                int idx1 = (decOrderValue) - decOrderMin1;                                                        \
+                int idx2 = (decOrderValue) - decOrderMin2;                                                        \
+                                                                                                                  \
+                decimal_digit_t d1 = 0;                                                                           \
+                decimal_digit_t d2 = 0;                                                                           \
+                                                                                                                  \
+                if (idx1>=0 && idx1<(int)bcdNumber1.size())                                                       \
+                    d1 = bcdNumber1[idx1];                                                                        \
+                                                                                                                  \
+                if (idx2>=0 && idx2<(int)bcdNumber2.size())                                                       \
+                    d2 = bcdNumber2[idx2];
+
+
+//----------------------------------------------------------------------------
 inline
 int compareRaws( const raw_bcd_number_t &bcdNumber1, int precision1
                , const raw_bcd_number_t &bcdNumber2, int precision2
@@ -370,41 +469,28 @@ int compareRaws( const raw_bcd_number_t &bcdNumber1, int precision1
     //    шаге будет смещение и проверки индексов.
     //    Зато не придётся лазать в кучу
 
-    MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS();
+    MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS_V2( bcdNumber1, precision1, bcdNumber2, precision2 )
 
-    for( int idxFromBegin=0; idxFromBegin!=totalSize; ++idxFromBegin)
+
+    // Сравнение начинаем со старших разрядов
+
+    for( int decOrder=decOrderMax; decOrder!=decOrderMin; --decOrder )
     {
-        int idx  = (int)idxFromBegin;
 
-        int idx1 = totalSize - idx - 1;
-        int idx2 = totalSize - idx - 1;
-
-        idx1 -= (int)maxPrecision - (int)precision1;
-        idx2 -= (int)maxPrecision - (int)precision2;
-
-
-        decimal_digit_t d1 = 0;
-        decimal_digit_t d2 = 0;
-
-        if (idx1>=0 && idx1<(int)bcdNumber1.size())
-            d1 = bcdNumber1[idx1];
-
-        if (idx2>=0 && idx2<(int)bcdNumber2.size())
-            d2 = bcdNumber2[idx2];
+        MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder-1, bcdNumber1, bcdNumber2 )
 
         if (d1<d2)
             return -1;
 
         if (d1>d2)
             return  1;
-
     }
 
     return 0;
 }
 
 //----------------------------------------------------------------------------
-//! Форматирование "сырого" BCD, форматируется в строку с заданной точностью
+//! Форматирование "сырого" BCD, форматируется в строку с полной точностью, без какого-либо усечения/округления
 inline
 const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision, char *pBuf, std::size_t bufSize, char sep = '.' )
 {
@@ -445,63 +531,342 @@ const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision
         if (idx1>=0 && idx1<(int)bcdNumber.size())
             d1 = bcdNumber[idx1];
 
-        if (precision>0)
-        {
-            //int dotIndex = idx1 - precision1 - 1;
-            //if (dotIndex==0) // dot pos found
-            {
-                //*pBuf++ = sep;
-                //digitsPrintedAfterDot = false;
-            }
-        }
-
         *pBuf++ = d1 + '0';
 
         if (precision>0 && idxFromBegin==(maxIpSize-1))
         {
             *pBuf++ = sep;
         }
-
         
     }
 
     *pBuf = 0;
 
-    //std::reverse(pBufBegin, pBuf);
-
     return pBufBegin;
 
-
-    /*
-    int i = 0, size = (int)bcdNumber.size();
-
-    char *pBufBegin = pBuf;
-
-    for(; i!=size; ++i, ++pBuf)
-    {
-        if (i!=0 && i==precision)
-        {
-            *pBuf++ = sep;
-        }
-
-        *pBuf = bcdNumber[i] + '0';
-    }
-
-    if (size==precision)
-    {
-        *pBuf++ = sep;
-        *pBuf++ = '0'; // add leading zero digit
-    }
-
-    *pBuf = 0;
-
-    std::reverse(pBufBegin, pBuf);
-
-    return pBufBegin;
-    */
 }
 
+//----------------------------------------------------------------------------
+inline
+std::string formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision, char sep = '.' )
+{
+    char buf[1024];
+    return formatRawBcdNumber( bcdNumber, precision, &buf[0], sizeof(buf), sep );
+}
 
+//----------------------------------------------------------------------------
+
+
+inline
+decimal_digit_t bcdCorrectOverflow( decimal_digit_t &d )
+{
+    // d must be >= 0
+    
+    decimal_digit_t res = d / 10;
+    d %= 10;
+    return res;
+}
+
+//----------------------------------------------------------------------------
+inline
+decimal_digit_t bcdCorrectCarry( decimal_digit_t &d )
+{
+    if (d>=0)
+        return 0;
+
+    d = -d;
+
+    d = ((decimal_digit_t)10) - d;
+    return 1;
+}
+
+//----------------------------------------------------------------------------
+//! Сложение "сырых" BCD чисел с "плавающей" точкой
+inline
+int rawAddition( raw_bcd_number_t &bcdRes
+               , const raw_bcd_number_t &bcdNumber1, int precision1
+               , const raw_bcd_number_t &bcdNumber2, int precision2
+               )
+{
+
+    MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS_V2( bcdNumber1, precision1, bcdNumber2, precision2 )
+
+    bcdRes.clear();
+    bcdRes.reserve(decOrderDelta+1);
+
+    decimal_digit_t dPrev = 0;
+
+    for( int decOrder=decOrderMin; decOrder!=decOrderMax; ++decOrder )
+    {
+        MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder, bcdNumber1, bcdNumber2 )
+
+        decimal_digit_t dCur = dPrev + d1 + d2;
+        dPrev = bcdCorrectOverflow(dCur);
+
+        bcdRes.push_back(dCur);
+
+    }
+
+    if (dPrev)
+        bcdRes.push_back(dPrev);
+
+    int resultPrecision = maxPrecision;
+
+    resultPrecision = reduceLeadingZeros( bcdRes, resultPrecision );
+    resultPrecision = reducePrecision   ( bcdRes, resultPrecision );
+
+    return resultPrecision;
+}
+
+//----------------------------------------------------------------------------
+//! Вычитание "сырых" BCD чисел с "плавающей" точкой. Уменьшаемое должно быть больше или равно вычитаемому
+inline
+int rawSubtraction( raw_bcd_number_t &bcdRes
+                  , const raw_bcd_number_t &bcdNumber1, int precision1
+                  , const raw_bcd_number_t &bcdNumber2, int precision2
+                  )
+{   /*
+    MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS();
+
+    bcdRes.clear();
+    bcdRes.reserve(totalSize+1);
+
+    decimal_digit_t dPrev = 0;
+
+    for( int idxFromBegin=0; idxFromBegin!=totalSize; ++idxFromBegin)
+    {
+        int idx  = (int)idxFromBegin;
+
+        int idx1 = idx - (int)maxPrecision;
+        int idx2 = idx - (int)maxPrecision;
+
+        idx1 += (int)precision1;
+        idx2 += (int)precision2;
+
+        decimal_digit_t d1 = 0;
+        decimal_digit_t d2 = 0;
+
+        if (idx1>=0 && idx1<(int)bcdNumber1.size())
+            d1 = bcdNumber1[idx1];
+
+        if (idx2>=0 && idx2<(int)bcdNumber2.size())
+            d2 = bcdNumber2[idx2];
+        */
+
+    MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS_V2( bcdNumber1, precision1, bcdNumber2, precision2 )
+
+    bcdRes.clear();
+    bcdRes.reserve(decOrderDelta+1);
+
+    decimal_digit_t dPrev = 0;
+
+    for( int decOrder=decOrderMin; decOrder!=decOrderMax; ++decOrder )
+    {
+        MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder, bcdNumber1, bcdNumber2 )
+
+        decimal_digit_t dCur = d1 - dPrev; // - d2;
+        dPrev = bcdCorrectCarry(dCur);
+
+        dCur = dCur - d2;
+        dPrev += bcdCorrectCarry(dCur);
+
+        bcdRes.push_back(dCur);
+
+    }
+
+    if (dPrev)
+        bcdRes.push_back(dPrev);
+
+    int resultPrecision = maxPrecision;
+
+    resultPrecision = reduceLeadingZeros( bcdRes, resultPrecision );
+    resultPrecision = reducePrecision   ( bcdRes, resultPrecision );
+
+    return resultPrecision;
+}
+
+//----------------------------------------------------------------------------
+inline
+raw_bcd_number_t rawBcdMakeZeroPrecisionFromNegative( const raw_bcd_number_t &bcdNumber, int precision )
+{
+    if (precision>=0)
+        return bcdNumber;
+
+    // precision < 0 here
+
+    precision = -precision;
+
+    raw_bcd_number_t res;
+    res.reserve( bcdNumber.size() + (std::size_t)precision );
+
+    res.insert( res.end(), (std::size_t)precision, 0 ); // extends with zeros on lowest positions
+    res.insert( res.end(), bcdNumber.begin(), bcdNumber.end() );
+
+    return res; // precision is zero here
+}
+
+//----------------------------------------------------------------------------
+//! Умножение "сырых" BCD чисел с "плавающей" точкой.
+/*! Тупое умножение в столбик.
+    Небольшая оптимизация - нулевые частичные суммы не вычисляем.
+    Чем больше нулей в числе - тем быстрее производится умножение.
+ */
+inline
+int rawMultiplication( raw_bcd_number_t &multRes
+                  , const raw_bcd_number_t &bcdNumberArg1, int precision1
+                  , const raw_bcd_number_t &bcdNumberArg2, int precision2
+                  )
+{
+    //MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS();
+
+    multRes.clear();
+
+    typedef const raw_bcd_number_t*  const_raw_bcd_number_ptr_t;
+
+    const_raw_bcd_number_ptr_t ptrBcdNumber1 = &bcdNumberArg1;
+    const_raw_bcd_number_ptr_t ptrBcdNumber2 = &bcdNumberArg2;
+
+    raw_bcd_number_t correctedBcdNumber1;
+    raw_bcd_number_t correctedBcdNumber2;
+
+    if (precision1<0)
+    {
+        correctedBcdNumber1 = rawBcdMakeZeroPrecisionFromNegative( bcdNumberArg1, precision1 );
+        precision1          = 0;
+        ptrBcdNumber1       = &correctedBcdNumber1;
+    }
+
+    if (precision2<0)
+    {
+        correctedBcdNumber2 = rawBcdMakeZeroPrecisionFromNegative( bcdNumberArg2, precision2 );
+        precision2          = 0;
+        ptrBcdNumber2       = &correctedBcdNumber2;
+    }
+
+    const raw_bcd_number_t &bcdNumber1 = *ptrBcdNumber1;
+    const raw_bcd_number_t &bcdNumber2 = *ptrBcdNumber2;
+
+
+    //raw_bcd_number_t multRes;
+    multRes.reserve( bcdNumber1.size() + bcdNumber2.size() );
+
+    raw_bcd_number_t partialMult;
+    partialMult.reserve( bcdNumber1.size() + bcdNumber2.size() );
+
+    raw_bcd_number_t tmpBcd;
+    tmpBcd.reserve(multRes.size());
+
+    decimal_digit_t digitHigh = 0;
+    decimal_digit_t digitCur  = 0;
+
+
+    for( std::size_t i=0; i!=bcdNumber1.size(); ++i)
+    {
+        auto d1   = bcdNumber1[i];
+        if (d1==0)
+            continue;
+
+        for( std::size_t j=0; j!=bcdNumber2.size(); ++j)
+        {
+            auto d2   = bcdNumber2[j];
+            if (d2==0)
+                continue;
+
+            digitCur  = d1*d2;
+
+            partialMult.clear();
+            partialMult.insert( partialMult.end(), i+j, 0 ); // extends with zeros on lowest positions
+
+            digitHigh = bcdCorrectOverflow(digitCur);
+
+            partialMult.insert( partialMult.end(), 1, digitCur  );
+            partialMult.insert( partialMult.end(), 1, digitHigh );
+
+            rawAddition( tmpBcd, multRes, 0, partialMult, 0 );
+
+            tmpBcd.swap(multRes);
+        }
+    }
+
+    int precisionRes = precision1+precision2;
+    return reducePrecision( multRes, precisionRes );
+}
+
+//----------------------------------------------------------------------------
+//! Деление "сырых" BCD чисел с "плавающей" точкой.
+inline
+int rawDivision( raw_bcd_number_t &quotient
+               , raw_bcd_number_t dividend, int dividendPrecision
+               , raw_bcd_number_t divisor , int divisorPrecision
+               )
+{
+    // Удаляем все нули справа от значащих цифр, до точки или после - не важно
+    dividendPrecision = reducePrecisionFull( dividend, dividendPrecision );
+    divisorPrecision  = reducePrecisionFull( divisor , divisorPrecision  );
+
+    dividendPrecision = reduceLeadingZerosFull( dividend, dividendPrecision );
+    divisorPrecision  = reduceLeadingZerosFull( divisor , divisorPrecision  );
+
+    // Нужно выровнять размеры
+    if (dividend.size() < divisor.size())
+    {
+        std::size_t delta = divisor.size() - dividend.size();
+        dividend.insert( dividend.begin(), delta, 0 );
+        dividendPrecision += (int)delta;
+    }
+    else if (dividend.size() > divisor.size())
+    {
+        std::size_t delta = dividend.size() - divisor.size();
+        divisor.insert( divisor.begin(), delta, 0 );
+        divisorPrecision += (int)delta;
+    }
+
+
+    //int resultPrecision = dividendPrecision - divisorPrecision;
+
+    quotient.clear();
+
+    // Делимое должно быть больше делителя, поэтому умножаем на 10 и инкрементируем показатель степени
+    // Но сравниваем так, как-будто степень у обоих чисел одинаковая - нулевая
+    //while( compareRaws( dividend, dividendPrecision, divisor , divisorPrecision ) < 0 )
+    /*
+    while( compareRaws( dividend,                 0, divisor ,                0 ) < 0 )
+    {
+        dividend.insert( dividend.begin(), 1, 0 );
+        ++dividendPrecision;
+    }
+    */
+
+    //quotient.reserve(decOrderDelta+1);
+
+    raw_bcd_number_t tmp;
+
+    while( (dividendPrecision - divisorPrecision) < 18 )
+    {
+        if (checkForZero( dividend ) )
+            break;
+
+        while( compareRaws( dividend,                 0, divisor ,                0 ) < 0 )
+        {
+            dividend.insert( dividend.begin(), 1, 0 );
+            ++dividendPrecision;
+        }
+
+        quotient.insert( quotient.begin(), 1, 0 );
+
+        while( compareRaws( dividend, 0, divisor , 0 ) >= 0 )
+        {
+            rawSubtraction( tmp, dividend, 0, divisor , 0 );
+            tmp.swap(dividend);
+            ++quotient[0];
+        }
+
+    }
+    
+    //return 0;
+
+    return dividendPrecision - divisorPrecision;
+}
 
 
 /* Шаблон перебора цифр от старших к младшим - сравнение, возможно - деление
