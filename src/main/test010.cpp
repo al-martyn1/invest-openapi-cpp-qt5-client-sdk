@@ -78,7 +78,7 @@ INVEST_OPENAPI_MAIN()
     // simple pretest
     {
 
-        std::uint32_t u1 = 213251u; // u1  = 0x00034103� ul1 = { 0x4103, 0x0003 }
+        std::uint32_t u1 = 213251u; // u1  = 0x00034103á ul1 = { 0x4103, 0x0003 }
         std::uint32_t u2 = 153754u; // u2  = 0x0002589a  ul2  = { 0x589a, 0x0002 }
         // 0x4103 * 0x589a = 377496526 // 0x168023CE
 
@@ -462,7 +462,7 @@ INVEST_OPENAPI_MAIN()
                 do                                                                          \
                 {                                                                           \
                     ++totalCtorTests;                                                       \
-                    Decimal     decimal    = Decimal(val, marty::DecimalPrecision(prec));   \
+                    Decimal     decimal    = Decimal(val,  /* marty::DecimalPrecision */ prec);   \
                     std::string strDecimal = decimal.toString( /* precision - auto */ );    \
                                                                                             \
                     bool bGood /* Johny */ = decimal.checkIsExact(strResForCompare);        \
@@ -483,6 +483,10 @@ INVEST_OPENAPI_MAIN()
                 } while(0)
 
 
+    cout << "double precision: " << std::numeric_limits<double>::digits10 << endl;
+    cout << "float precision : " << std::numeric_limits<float> ::digits10 << endl;
+    cout << endl;
+
     DECIMAL_CTOR_TEST( (std::uint64_t)3    ,       "3" );
     DECIMAL_CTOR_TEST( (std::int64_t )7    ,       "7" );
     DECIMAL_CTOR_TEST( (std::int64_t )-10  ,     "-10" );
@@ -493,7 +497,8 @@ INVEST_OPENAPI_MAIN()
     DECIMAL_CTOR_TEST( -3.1415             ,    "-3.1415" );
     DECIMAL_CTOR_TEST( -100.10101          ,  "-100.10101" );
     //DECIMAL_CTOR_TEST(  3.1415926535897932  ,  "3.1415926535897932" );
-    DECIMAL_CTOR_TEST(  3.1415926          ,  "3.141593" );
+    // DECIMAL_CTOR_TEST(  3.1415926          ,  "3.141593" ); // Для int реализации, там округление double 6 знаков
+    DECIMAL_CTOR_TEST(  3.1415926          ,  "3.1415926" ); // Для BCD реализации, там округление double 9 знаков
     // DECIMAL_CTOR_TEST();
 
     //Decimal decimal01    = Decimal(((std::uint64_t)3141592654ULL), marty::DecimalPrecision(9));
@@ -512,7 +517,6 @@ INVEST_OPENAPI_MAIN()
     cout << "------------------------------" << endl << endl << endl;
 
 
-    #if 0
 
     #define DECIMAL_OP_TEST( val1, op, val2, strResForCompare )                             \
                 do                                                                          \
@@ -544,8 +548,74 @@ INVEST_OPENAPI_MAIN()
     unsigned totalOpTests       = 0;
     unsigned totalOpTestsFailed = 0;
 
+    DECIMAL_OP_TEST(  10, + , - 2,  "8" );
+    DECIMAL_OP_TEST(   2, + , - 2,  "0" );
+    DECIMAL_OP_TEST(   2, + , -10, "-8" );
+    DECIMAL_OP_TEST(  10, + ,   2, "12" );
+    DECIMAL_OP_TEST(   2, + ,   2,  "4" );
+    DECIMAL_OP_TEST(   2, + ,  10, "12" );
+    DECIMAL_OP_TEST( -10, + ,   2, "-8" );
+    DECIMAL_OP_TEST( - 2, + ,   2,  "0" );
+    DECIMAL_OP_TEST( - 2, + ,  10,  "8" );
+    DECIMAL_OP_TEST(  10, + ,   2, "12" );
+    DECIMAL_OP_TEST(   2, + ,   2,  "4" );
+    DECIMAL_OP_TEST(   2, + ,  10, "12" );
+
+    cout << endl;
+
+    DECIMAL_OP_TEST(  10, - , - 2,  "12" );
+    DECIMAL_OP_TEST(   2, - , - 2,   "4" );
+    DECIMAL_OP_TEST(   2, - , -10,  "12" );
+    DECIMAL_OP_TEST(  10, - ,   2,   "8" );
+    DECIMAL_OP_TEST(   2, - ,   2,   "0" );
+    DECIMAL_OP_TEST(   2, - ,  10,  "-8" );
+    DECIMAL_OP_TEST( -10, - ,   2, "-12" );
+    DECIMAL_OP_TEST( - 2, - ,   2,  "-4" );
+    DECIMAL_OP_TEST( - 2, - ,  10, "-12" );
+    DECIMAL_OP_TEST(  10, - ,   2,   "8" );
+    DECIMAL_OP_TEST(   2, - ,   2,   "0" );
+    DECIMAL_OP_TEST(   2, - ,  10,  "-8" );
+
+    cout << endl;
+
+    DECIMAL_OP_TEST(   0, * , - 2,   "0" );
+    DECIMAL_OP_TEST(  10, * ,   0,   "0" );
+    DECIMAL_OP_TEST(  10, * , - 2, "-20" );
+    DECIMAL_OP_TEST(   2, * , - 2,  "-4" );
+    DECIMAL_OP_TEST(   2, * , -10, "-20" );
+    DECIMAL_OP_TEST(  10, * ,   2,  "20" );
+    DECIMAL_OP_TEST(   2, * ,   2,   "4" );
+    DECIMAL_OP_TEST(   2, * ,  10,  "20" );
+    DECIMAL_OP_TEST( -10, * ,   2, "-20" );
+    DECIMAL_OP_TEST( - 2, * ,   2,  "-4" );
+    DECIMAL_OP_TEST( - 2, * ,  10, "-20" );
+    DECIMAL_OP_TEST(  10, * ,   2,  "20" );
+    DECIMAL_OP_TEST(   2, * ,   2,   "4" );
+    DECIMAL_OP_TEST(   2, * ,  10,  "20" );
+
+    cout << endl;
+
+    DECIMAL_OP_TEST(   0, / , - 2,   "0" );
+    // DECIMAL_OP_TEST(  10, / ,   0,   "0" ); // throws "division by zero" std::runtime_error
+    DECIMAL_OP_TEST(  10, / , - 2,  "-5" );
+    DECIMAL_OP_TEST(   2, / , - 2,  "-1" );
+    DECIMAL_OP_TEST(   2, / , -10,"-0.2" );
+    DECIMAL_OP_TEST(  10, / ,   2,   "5" );
+    DECIMAL_OP_TEST(   2, / ,   2,   "1" );
+    DECIMAL_OP_TEST(   2, / ,  10, "0.2" );
+    DECIMAL_OP_TEST( -10, / ,   2,  "-5" );
+    DECIMAL_OP_TEST( - 2, / ,   2,  "-1" );
+    DECIMAL_OP_TEST( - 2, / ,  10,"-0.2" );
+    DECIMAL_OP_TEST(  10, / ,   2,   "5" );
+    DECIMAL_OP_TEST(   2, / ,   2,   "1" );
+    DECIMAL_OP_TEST(   2, / ,  10, "0.2" );
+
+    cout << endl;
+
     DECIMAL_OP_TEST( 3, + , 4.12, "7.12" );
     DECIMAL_OP_TEST( 35.64745, + , 89.253464, "124.900914" );
+
+    #if 0
     DECIMAL_OP_TEST( 3, - , 4.12, "-1.12" );
     DECIMAL_OP_TEST( 35.64745, - , 89.253464, "-53.606014" );
     DECIMAL_OP_TEST( 4.12, - , 3, "1.12" );
@@ -917,8 +987,6 @@ INVEST_OPENAPI_MAIN()
     ROUNDING_TEST(  -24.9  , "-25", 0, roundHalfToEven      );
     ROUNDING_TEST(  -24.99 , "-25", 0, roundHalfToEven      );
 
-    #endif
-
     /*
     cout << "------------------------------" << endl;
     ROUNDING_TEST(   23.5,  "23", 0, roundHalfToOdd       );
@@ -934,6 +1002,8 @@ INVEST_OPENAPI_MAIN()
         cout << "+++ All rounding tests passed"  << endl;
 
     cout << "------------------------------" << endl << endl << endl;
+    #endif
+
 
     return 0;
 }

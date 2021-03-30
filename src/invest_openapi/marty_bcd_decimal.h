@@ -1,8 +1,6 @@
 #pragma once
 
 
-#define MARTY_DECIMAL_H__079F0131_B01B_44ED_BF0F_8DFECAB67FD7__
-
 #include <string>
 #include <cstdint>
 #include <utility>
@@ -11,6 +9,13 @@
 #include <exception>
 #include <stdexcept>
 #include <cstdio>
+
+#define MARTY_DECIMAL_H__079F0131_B01B_44ED_BF0F_8DFECAB67FD7__
+
+
+#ifndef MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION
+    #define MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION   18
+#endif
 
 
 #include "marty_bcd.h"
@@ -98,7 +103,7 @@ protected:
     void assignFromIntImpl( std::int64_t  i, int precision = 0 );
     void assignFromIntImpl( std::uint64_t u, int precision = 0 );
 
-    void assignFromDoubleImpl( double d, int precision = 9 );
+    void assignFromDoubleImpl( double d, int precision = 15 );
 
 //----------------------------------------------------------------------------
 public:
@@ -116,12 +121,12 @@ public:
 
 
     //------------------------------
-    #define MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_FLOAT_METHODS( castType, floatType )                                                       \
-                  void assignFromFloat( floatType f, int precision = 9 )      { assignFromDoubleImpl( (castType)f, precision ); }             \
-                  static Decimal fromFloat( floatType f, int precision = 9 )  { Decimal res; res.assignFromFloat(f, precision);  return res; }
+    #define MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_FLOAT_METHODS( castType, floatType, defPrecision )                                          \
+                  void assignFromFloat( floatType f, int precision = defPrecision )      { assignFromDoubleImpl( (castType)f, precision ); }             \
+                  static Decimal fromFloat( floatType f, int precision = defPrecision )  { Decimal res; res.assignFromFloat(f, precision);  return res; }
 
-    MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_FLOAT_METHODS( double, double )
-    MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_FLOAT_METHODS( double, float  )
+    MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_FLOAT_METHODS( double, double, std::numeric_limits<double>::digits10 /* 15 */  )
+    MARTY_BCD_DECIMAL_CLASS_IMPLEMENT_FROM_FLOAT_METHODS( double, float , std::numeric_limits<float> ::digits10 /*  6 */  )
 
 
     //------------------------------
@@ -159,8 +164,11 @@ public:
     Decimal( std::int64_t   v, int precision = 0 ) { assignFromInt( v, precision ); }
     Decimal( std::uint64_t  v, int precision = 0 ) { assignFromInt( v, precision ); }
 
-    Decimal( double         d, int precision = 9 ) { assignFromFloat( d, precision ); }
+    Decimal( double         d, int precision = 12 ) { assignFromFloat( d, precision ); }
     Decimal( float          d, int precision = 6 ) { assignFromFloat( d, precision ); }
+
+    Decimal( const char        *pStr ) { assignFromString( pStr ); }
+    Decimal( const std::string &str  ) { assignFromString( str  ); }
 
     //------------------------------
 
@@ -171,7 +179,36 @@ public:
     int compare( const Decimal &rightOp ) const;
     MARTY_IMPLEMENT_RELATIONAL_OPERATORS_BY_COMPARE( Decimal )
 
+    //------------------------------
 
+    
+    
+    //------------------------------
+    void swap( Decimal &d2 );
+    Decimal& operator=( Decimal d2 );
+
+    //------------------------------
+
+
+
+    //------------------------------
+    Decimal& add( const Decimal &d );
+    Decimal& sub( const Decimal &d );
+    Decimal& mul( const Decimal &d );
+    Decimal& div( const Decimal &d, int precision = MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION );
+
+    Decimal operator + ( Decimal d2 ) const { Decimal res = *this; return res.add(d2); }
+    Decimal operator - ( Decimal d2 ) const { Decimal res = *this; return res.sub(d2); }
+    Decimal operator - (            ) const { Decimal res = *this; if (res.m_sign!=0) res.m_sign = -res.m_sign; return res; }
+    Decimal operator * ( Decimal d2 ) const { Decimal res = *this; return res.mul(d2); }
+    //Decimal divide( Decimal devider, precision_t resultPrecision ) const;
+    Decimal operator / ( Decimal d2 ) const { Decimal res = *this; return res.div(d2, MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION); }
+    // Decimal operator % ( Decimal d2 ) const;
+    Decimal& operator += ( Decimal d2 ) { return add(d2); }
+    Decimal& operator -= ( Decimal d2 ) { return sub(d2); }
+    Decimal& operator *= ( Decimal d2 ) { return mul(d2); }
+    Decimal& operator /= ( Decimal d2 ) { return div(d2, MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION); }
+    // Decimal& operator %= ( Decimal d2 );
 
 
 #if 0
@@ -187,15 +224,6 @@ public:
 
     Decimal( const std::string &strDecimal  ) : m_num(0), m_denum(0) { *this = fromString(strDecimal ); }
     Decimal( const char        *pStrDecimal ) : m_num(0), m_denum(0) { *this = fromString(pStrDecimal); }
-
-    //------------------------------
-
-
-
-    //------------------------------
-    void swap( Decimal &d2 );
-    Decimal& operator=( Decimal d2 );
-    int compare( Decimal d2 ) const;
 
     //------------------------------
 
@@ -341,6 +369,18 @@ public:
 
 #endif
 
+    //------------------------------
+
+    static int  getOutputPrecision()                   { return m_outputPrecision; }
+    static void setOutputPrecision( int p )            { m_outputPrecision = p; }
+    static void setOutputPrecisionToStreamPrecision( ) { setOutputPrecision(0); }
+    static void setOutputPrecisionToAuto( )            { setOutputPrecision(-1); }
+
+    int precision() const { return m_precision; }
+
+    //------------------------------
+
+
 protected:
 
 
@@ -369,6 +409,43 @@ protected:
 #include "marty_bcd_decimal_impl.h"
 
 //----------------------------------------------------------------------------
+
+
+
+inline
+std::ostream& operator<<( std::ostream& os, const Decimal &v )
+{
+    int precision = Decimal::getOutputPrecision();
+
+    if (precision==-1 || precision<0)
+    {
+        // Exact Decimal number precision will be used
+        precision = v.precision();
+        // if (precision > Decimal::maxPrecision())
+        //     precision = Decimal::maxPrecision();
+    }
+    else if (precision>0)
+    {
+        // Exact global output precision will be used
+        // if (precision > Decimal::maxPrecision())
+        //     precision = Decimal::maxPrecision();
+    }
+    else // precision==0
+    {
+        // Output stream precision will be used
+        precision = (int)os.width();
+        // if (precision > Decimal::maxPrecision())
+        //     precision = Decimal::maxPrecision();
+    }
+
+
+    //auto minPrecision = (Decimal::precision_t)os.precision();
+    //if (minPrecision<1)
+    //    minPrecision = 1;
+    os << v.toString(precision);
+    return os;
+}
+
 
 
 
