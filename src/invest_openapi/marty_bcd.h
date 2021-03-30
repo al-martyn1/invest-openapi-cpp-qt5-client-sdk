@@ -445,6 +445,9 @@ raw_bcd_number_t::size_type getMsdIndex( const raw_bcd_number_t &bcdNumber )
             return i-1;
     }
 
+    if (!bcdNumber.empty())
+        return 0;
+
     return (raw_bcd_number_t::size_type)-1;
 
 }
@@ -460,6 +463,9 @@ raw_bcd_number_t::size_type getLsdIndex( const raw_bcd_number_t &bcdNumber )
         if (bcdNumber[i]!=0)
             return i;
     }
+
+    if (!bcdNumber.empty())
+        return 0;
 
     return (raw_bcd_number_t::size_type)-1;
 }
@@ -516,10 +522,13 @@ raw_bcd_number_t::size_type getLsdIndex( const raw_bcd_number_t &bcdNumber )
 inline
 int getDecimalOrderByIndex( raw_bcd_number_t::size_type idx, const raw_bcd_number_t &bcdNumber, int precision )
 {
-    return ((int)idx) - precision;
-}
-//raw_bcd_number_t::size_type getMsdIndex( const raw_bcd_number_t &bcdNumber )
+    int order = 0;
 
+    if (idx!=(raw_bcd_number_t::size_type)-1)
+        order = ((int)idx) - precision;
+
+    return order;
+}
 
 //----------------------------------------------------------------------------
 inline
@@ -543,9 +552,10 @@ int compareRaws( const raw_bcd_number_t &bcdNumber1, int precision1
 
     // Сравнение начинаем со старших разрядов
 
-    for( int decOrder=decOrderMax; decOrder!=decOrderMin; --decOrder )
+    for( int decOrder=decOrderMax+1; decOrder!=decOrderMin; --decOrder )
     {
 
+        //MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder-1, bcdNumber1, bcdNumber2 )
         MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder-1, bcdNumber1, bcdNumber2 )
 
         if (d1<d2)
@@ -563,6 +573,93 @@ int compareRaws( const raw_bcd_number_t &bcdNumber1, int precision1
 inline
 const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision, char *pBuf, std::size_t bufSize, char sep = '.' )
 {
+    if (bufSize < 4 )
+        throw std::runtime_error("marty::bcd::formatRawBcdNumber: bufSize is not enough");
+
+    // bufSize must be enough for 0.0\0
+
+    --bufSize; // Reserve space for termination zero
+
+    std::size_t bufPos = 0;
+
+    
+    //int maxOrder = getDecimalOrderByIndex( getMsdIndex(bcdNumber), bcdNumber, precision );
+
+    int decOrderMin = -precision;
+    // int decOrderMax = decOrderMin + (int)bcdNumber.size();
+
+    // Тут мы точно находим максимальный значащий разряд, опуская возможные ведущие нули
+    // При операциях на них плевать, тем более что нули во всех операциях оптимизированы
+    // А при выводе ведущие нули, хз откуда выплывшие, нам не нужны
+    int decOrderMax = getDecimalOrderByIndex( getMsdIndex(bcdNumber), bcdNumber, precision ); 
+
+    //int maxPrecision = std::max( precision1, precision2 );
+
+    int decOrderDelta = decOrderMax - decOrderMin;
+
+    // Форматирование, как и сравение, начинаем со старших разрядов
+
+    for( int decOrder=decOrderMax+1; decOrder!=decOrderMin; --decOrder )
+    {
+        // Я просто выдрал код из макроса, который для двух чисел, decOrderValue там - параметр макроса.
+        // Чтобы было минимум расхождений с макросом.
+        // А у нас тут только одно число, и лишние дествия хоть и копеечны, но зачем?
+        // Теоретически, макросы для двух чисел можно переделать на макросы для одного числа, 
+        // и использовать дважды, но чёй-то лениво, и особо уже и незачем.
+        // Форматирование - единственная операция, где участвует одно число.
+        // Сравнение, сложение, вычитание, умножение и деление - там всё парнокопытно. И всё же отлажено и работает.
+        // Форматирование было написано прежде всего, но когда я пытался использовать код из ф-ии форматирования
+        // в арифм. операциях баги полезли сразу. А форматирование до последнего делало вид, что работает правильно.
+
+        const int decOrderValue = decOrder-1; 
+
+        int idx = (decOrderValue) - decOrderMin;
+
+        decimal_digit_t d = 0;
+
+        if (idx>=0 && idx<(int)bcdNumber.size())
+            d = bcdNumber[idx];
+
+        #if 0
+        if (decOrderValue==0 && bufPos!=0) // Добрались до первой цифры после точки
+        {
+            if (bufPos<bufSize)
+                pBuf[bufPos++] = sep;
+            //*pBuf++ = sep;
+        }
+        #endif
+
+        if (bufPos<bufSize)
+            pBuf[bufPos++] = d + '0';
+        // *pBuf++ = d1 + '0';
+
+        //if (precision>0 && idxFromBegin==(maxIpSize-1))
+        // if (decOrderValue==-1) // Добрались до первой цифры после точки. Но оно не работает. Вернее, работает, но не так
+        // if (decOrderValue==0) // Добрались до первой цифры после точки. Но тоже хуйня какая-то получилась
+
+        #if 1
+        if (decOrderValue==-1) // Добрались до первой цифры после точки
+        {
+            if (bufPos<bufSize)
+                pBuf[bufPos++] = sep;
+            //*pBuf++ = sep;
+        }
+        #endif
+
+    }
+
+    if (!bufPos) // место есть, спасибо проверке if (bufSize < 4 )
+    {
+        pBuf[bufPos++] = '0';
+    }
+
+    // А как оно вообще раньше работало???
+    pBuf[bufPos] = 0; // место есть, спасибо проверке if (bufSize < 4 )
+
+    return pBuf;
+
+
+    #if 0
     int ipSize1      = getIntegerPartSize( bcdNumber, precision );
                                                                     
     int maxIpSize    = ipSize1;   
@@ -625,6 +722,7 @@ const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision
     //return pBufBegin;
     return pBuf;
 
+    #endif
 }
 
 //----------------------------------------------------------------------------
@@ -912,6 +1010,9 @@ int rawDivision( raw_bcd_number_t &quotient
     // Удаляем все нули справа от значащих цифр, до точки или после - не важно
     dividendPrecision = reducePrecisionFull( dividend, dividendPrecision );
     divisorPrecision  = reducePrecisionFull( divisor , divisorPrecision  );
+    // Или, таки важно? А то чёй-то не так работает
+    // dividendPrecision = reducePrecision( dividend, dividendPrecision );
+    // divisorPrecision  = reducePrecision( divisor , divisorPrecision  );
 
     dividendPrecision = reduceLeadingZerosFull( dividend, dividendPrecision );
     divisorPrecision  = reduceLeadingZerosFull( divisor , divisorPrecision  );
@@ -1116,6 +1217,8 @@ int templateForOperation( const raw_bcd_number_t &bcdNumber1, int precision1
           Наверное, таки без копирования
 
 
+     Намётки, как чё
+     (уже неактуально, но пусть будет, покажет, если что, как блуждала моя мюсля)
 
      Сравнение
        сместить стартовые точки относительно заданной precision обоих векторов;
@@ -1127,11 +1230,11 @@ int templateForOperation( const raw_bcd_number_t &bcdNumber1, int precision1
 
      Операторы (функции) сравнения
         Необходимы для реализации вычитания.
-        Едионая  0 - провкрить н ноль обаслас гаемвх)
+        Едионая  0 - провкрить н ноль обаслас гаемвх) UPD - чего я тут хотел сказать? :)
 
      Сложение
      Вычитание
-       а) расширить точность до одинаковой (или сделать алгоритм сложнее без раширения)
+       а) расширить точность до одинаковой (или сделать алгоритм сложнее без расширения)
        б) сместить стартовые точки относительно заданной precision обоих векторов;
           если в одном из двух векторов idx выходит за пределы - то используем 0;
           диапазон индексов начинаем с наименьшего индекса с меньшей precision,
@@ -1148,13 +1251,28 @@ int templateForOperation( const raw_bcd_number_t &bcdNumber1, int precision1
 
      Деление.
        Тут жопа - тут только делал тыщу лет назад что-то похожее.
+       UPD Сделал тупо на вычитаниях и сдвигах - алгоритм практически тот же, что и при делении столбиком 
+           (который все в начальной школе изучали)
+           Просто при делении столбиком человек видит, что на что делится и надо ли сдвигать, и видит множитель, который
+           и пишет в частное, а компьютер тупой, поэтому он в цикле вычитает.
 
-     
+     UPD Умножение и деление. 
+         Нули в числах бывают, особенно в тех, которые задаёт человек (и тут очень и очень часто).
+         Для нулевых цифр в числе все шаги алгоритма пропускаются
 
 
      ЗЫ Дёрнул же меня чёрт писать Decimal самому
 
-     ЗUU наибольшегонесколько вереров есть чем занчься
+     ЗЗЫ На несколько вечеров есть чем заняться :)
+
+
+     //TODO: !!! Оптимизация умножения/деления на степень 10
+     // В 'том случае ващет достаточно подвинуть десятичную точку. 
+     // Поэтому надо проверять параметры, не являются ли они 10 в степени N.
+     // Для умножения - оба, для деления - только делитель.
+     // Проверка довольно копеечная, но если числа вида степень десяти очень редки,
+     // то минус копеечка набежит, а профита не будет.
+     // Надо будет сделать опционально.
  */
 
 

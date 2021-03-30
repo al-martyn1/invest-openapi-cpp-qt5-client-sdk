@@ -260,6 +260,7 @@ INVEST_OPENAPI_MAIN()
     unsigned totalRawBcdFromStringConvertTestsFailed  = 0;
 
 
+    RAW_BCD_FROM_STRING_TEST( "0"              , "0"               );
     RAW_BCD_FROM_STRING_TEST( "3.141592654"    , "3.141592654"     );
     RAW_BCD_FROM_STRING_TEST( "314.15"         , "314.15"          );
     RAW_BCD_FROM_STRING_TEST( "31.4159"        , "31.4159"         );
@@ -394,6 +395,7 @@ INVEST_OPENAPI_MAIN()
 
     cout << endl;
 
+    RAW_BCD_OP_TEST( "2"             , "10"            , rawDivision , "0.2"                    ); // 
     RAW_BCD_OP_TEST( "0.94500"       , "0.500"         , rawDivision , "1.89"                   ); // 0.94500/0.500 = 1.89
     RAW_BCD_OP_TEST( "9450.005"      , "0.005"         , rawDivision , "1890001"                ); // 9450.005/0.005 = 1890001
     RAW_BCD_OP_TEST( "94500"         , "500"           , rawDivision , "189"                    ); // 94500/500 = 189
