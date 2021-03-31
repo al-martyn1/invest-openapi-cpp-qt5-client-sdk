@@ -260,6 +260,8 @@ INVEST_OPENAPI_MAIN()
     unsigned totalRawBcdFromStringConvertTestsFailed  = 0;
 
 
+    RAW_BCD_FROM_STRING_TEST( "0.003"          , "0.003"           );
+    RAW_BCD_FROM_STRING_TEST( "300"            , "300"             );
     RAW_BCD_FROM_STRING_TEST( "0"              , "0"               );
     RAW_BCD_FROM_STRING_TEST( "3.141592654"    , "3.141592654"     );
     RAW_BCD_FROM_STRING_TEST( "314.15"         , "314.15"          );
@@ -272,7 +274,6 @@ INVEST_OPENAPI_MAIN()
     RAW_BCD_FROM_STRING_TEST( "296.858407346"  , "296.858407346"   );
     RAW_BCD_FROM_STRING_TEST( "3003.141592654" , "3003.141592654"  );
     RAW_BCD_FROM_STRING_TEST( "2996.858407346" , "2996.858407346"  );
-    RAW_BCD_FROM_STRING_TEST( "0.003"          , "0.003"           );
     RAW_BCD_FROM_STRING_TEST( ".141"           , "0.141"           );
     RAW_BCD_FROM_STRING_TEST( ".141000"        , "0.141"           );
     RAW_BCD_FROM_STRING_TEST( "25.141"         , "25.141"          );
@@ -617,15 +618,17 @@ INVEST_OPENAPI_MAIN()
     DECIMAL_OP_TEST( 3, + , 4.12, "7.12" );
     DECIMAL_OP_TEST( 35.64745, + , 89.253464, "124.900914" );
 
-    #if 0
     DECIMAL_OP_TEST( 3, - , 4.12, "-1.12" );
     DECIMAL_OP_TEST( 35.64745, - , 89.253464, "-53.606014" );
     DECIMAL_OP_TEST( 4.12, - , 3, "1.12" );
     DECIMAL_OP_TEST( 89.253464, - , 35.64745, "53.606014" );
     //DECIMAL_OP_TEST( 4.12, * , 3.457, "14.24284" );
-    DECIMAL_OP_TEST( 89.253464, * , 35.64745, "3181.659678575" );
+    DECIMAL_OP_TEST( 89.253464, * , 35.64745, "3181.6583952668" ); // 89.253464*35.64745 = 3181.6583952668
+    DECIMAL_OP_TEST( 89.253464, / , 35.64745, "2.503782570702813244" ); // 89.253464/35.64745 = 2.5037825707 0281324470 6143076152 712185584102088648697171887470211754276953891512576635916454052113124501191529828921844339496934563341837915
                                             // 3181.6583952668
                                             // 3181.653790004
+    // Это с округлением (для того, чтобы результат влезал в int64) перед умножением
+    // Сильно бьёт по точности
     // 89.253464 * 35.64745 = 3181.653790004 (expected '3181.659678575')
     // 89.25346 * 35.6474 = 3181.653790004 (expected '3181.659678575')
 
@@ -669,6 +672,7 @@ INVEST_OPENAPI_MAIN()
 
 
 
+    #if 0
 
     unsigned totalRoundingTests       = 0;
     unsigned totalRoundingTestsFailed = 0;

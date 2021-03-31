@@ -586,12 +586,20 @@ const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision
     //int maxOrder = getDecimalOrderByIndex( getMsdIndex(bcdNumber), bcdNumber, precision );
 
     int decOrderMin = -precision;
+    if (decOrderMin>0)
+        decOrderMin = 0; // Не гоже отрезать значащие нули справа от недробной части
+
+
     // int decOrderMax = decOrderMin + (int)bcdNumber.size();
 
     // Тут мы точно находим максимальный значащий разряд, опуская возможные ведущие нули
     // При операциях на них плевать, тем более что нули во всех операциях оптимизированы
     // А при выводе ведущие нули, хз откуда выплывшие, нам не нужны
     int decOrderMax = getDecimalOrderByIndex( getMsdIndex(bcdNumber), bcdNumber, precision ); 
+
+    // Но нам нужны ведущие нули, если целая часть числа равна нулю
+    if (decOrderMax<0)
+        decOrderMax = 0;
 
     //int maxPrecision = std::max( precision1, precision2 );
 
@@ -613,7 +621,7 @@ const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision
 
         const int decOrderValue = decOrder-1; 
 
-        int idx = (decOrderValue) - decOrderMin;
+        int idx = (decOrderValue) - (-precision); // decOrderMin;
 
         decimal_digit_t d = 0;
 
@@ -629,6 +637,16 @@ const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision
         }
         #endif
 
+        #if 1
+        if (decOrderValue==-1 && bufPos!=0) // Добрались до первой цифры после точки
+        {
+            if (bufPos<bufSize)
+                pBuf[bufPos++] = sep;
+            //*pBuf++ = sep;
+        }
+        #endif
+
+
         if (bufPos<bufSize)
             pBuf[bufPos++] = d + '0';
         // *pBuf++ = d1 + '0';
@@ -637,7 +655,7 @@ const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision
         // if (decOrderValue==-1) // Добрались до первой цифры после точки. Но оно не работает. Вернее, работает, но не так
         // if (decOrderValue==0) // Добрались до первой цифры после точки. Но тоже хуйня какая-то получилась
 
-        #if 1
+        #if 0
         if (decOrderValue==-1) // Добрались до первой цифры после точки
         {
             if (bufPos<bufSize)
@@ -775,7 +793,7 @@ int rawAddition( raw_bcd_number_t &bcdRes
 
     decimal_digit_t dPrev = 0;
 
-    for( int decOrder=decOrderMin; decOrder!=decOrderMax; ++decOrder )
+    for( int decOrder=decOrderMin; decOrder!=(decOrderMax+1); ++decOrder )
     {
         MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder, bcdNumber1, bcdNumber2 )
 
@@ -839,7 +857,7 @@ int rawSubtraction( raw_bcd_number_t &bcdRes
 
     decimal_digit_t dPrev = 0;
 
-    for( int decOrder=decOrderMin; decOrder!=decOrderMax; ++decOrder )
+    for( int decOrder=decOrderMin; decOrder!=(decOrderMax+1); ++decOrder )
     {
         MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder, bcdNumber1, bcdNumber2 )
 
