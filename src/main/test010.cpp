@@ -127,6 +127,86 @@ INVEST_OPENAPI_MAIN()
     cout << endl;
 
 
+    if (0)
+    {
+        cout << "Precision truncation calls for debug" << endl;
+        cout << endl;
+
+        marty::bcd::raw_bcd_number_t bcdNumber;
+        int bcdNumberPrecision = marty::bcd::makeRawBcdNumber( bcdNumber, "3.141592654" );
+        int lastDigit = 0;
+
+        cout << "Input BCD: " << marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << endl;
+        bcdNumberPrecision = marty::bcd::truncatePrecision( bcdNumber, bcdNumberPrecision, 3, &lastDigit );
+        cout << "Trunc BCD: "<< marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << ", last truncated digit: " << lastDigit << endl;
+        cout << endl;
+
+        marty::bcd::makeRawBcdNumber( bcdNumber, "3" ); bcdNumberPrecision = -3; // 3000
+        cout << "Input BCD: " << marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << endl;
+        bcdNumberPrecision = marty::bcd::truncatePrecision( bcdNumber, bcdNumberPrecision, 3, &lastDigit );
+        cout << "Trunc BCD: "<< marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << ", last truncated digit: " << lastDigit << endl;
+        cout << endl;
+
+        bcdNumberPrecision = marty::bcd::makeRawBcdNumber( bcdNumber, "3.1" );
+        cout << "Input BCD: " << marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << endl;
+        bcdNumberPrecision = marty::bcd::truncatePrecision( bcdNumber, bcdNumberPrecision, 3, &lastDigit );
+        cout << "Trunc BCD: "<< marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << ", last truncated digit: " << lastDigit << endl;
+        cout << endl;
+
+        bcdNumberPrecision = marty::bcd::makeRawBcdNumber( bcdNumber, "3.141" );
+        cout << "Input BCD: " << marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << endl;
+        bcdNumberPrecision = marty::bcd::truncatePrecision( bcdNumber, bcdNumberPrecision, 3, &lastDigit );
+        cout << "Trunc BCD: "<< marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << ", last truncated digit: " << lastDigit << endl;
+        cout << endl;
+
+
+        cout << endl;
+        cout << "------------------------------" << endl;
+        cout << endl;
+        
+    }
+
+
+    if (1)
+    {
+        cout << "Precision extention calls for debug" << endl;
+        cout << endl;
+
+        marty::bcd::raw_bcd_number_t bcdNumber;
+        int bcdNumberPrecision = marty::bcd::makeRawBcdNumber( bcdNumber, "3.141592654" );
+        int lastDigit = 0;
+
+        cout << "Input BCD: " << marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << endl;
+        bcdNumberPrecision = marty::bcd::extendPrecision( bcdNumber, bcdNumberPrecision, 3 );
+        cout << "Extnd BCD: "<< marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << endl;
+        cout << endl;
+
+        marty::bcd::makeRawBcdNumber( bcdNumber, "3" ); bcdNumberPrecision = -3; // 3000
+        cout << "Input BCD: " << marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << endl;
+        bcdNumberPrecision = marty::bcd::extendPrecision( bcdNumber, bcdNumberPrecision, 3 );
+        cout << "Extnd BCD: "<< marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << endl;
+        cout << endl;
+
+        bcdNumberPrecision = marty::bcd::makeRawBcdNumber( bcdNumber, "3.1" );
+        cout << "Input BCD: " << marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << endl;
+        bcdNumberPrecision = marty::bcd::extendPrecision( bcdNumber, bcdNumberPrecision, 3 );
+        cout << "Extnd BCD: "<< marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << endl;
+        cout << endl;
+
+        bcdNumberPrecision = marty::bcd::makeRawBcdNumber( bcdNumber, "3.141" );
+        cout << "Input BCD: " << marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << endl;
+        bcdNumberPrecision = marty::bcd::extendPrecision( bcdNumber, bcdNumberPrecision, 3 );
+        cout << "Extnd BCD: "<< marty::bcd::formatRawBcdNumber( bcdNumber, bcdNumberPrecision ) << endl;
+        cout << endl;
+
+
+        cout << endl;
+        cout << "------------------------------" << endl;
+        cout << endl;
+        
+    }
+
+
     #define RAW_BCD_FROM_STRING_TEST( strVal, strResForCompare )                            \
                 do                                                                          \
                 {                                                                           \

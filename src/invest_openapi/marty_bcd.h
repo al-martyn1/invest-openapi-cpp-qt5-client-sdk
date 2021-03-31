@@ -307,6 +307,9 @@ int reduceLeadingZerosFull( raw_bcd_number_t &bcdNumber, int precision )
 inline
 int extendPrecision( raw_bcd_number_t &bcdNumber, int curPrecision, int newPrecision )
 {
+    if (newPrecision<0) // Так низя
+        newPrecision = 0;
+
     if (newPrecision<=curPrecision) // Нет расширения
         return curPrecision;
 
@@ -519,6 +522,7 @@ raw_bcd_number_t::size_type getLsdIndex( const raw_bcd_number_t &bcdNumber )
                 if (idx2>=0 && idx2<(int)bcdNumber2.size())                                                       \
                     d2 = bcdNumber2[idx2];
 
+//----------------------------------------------------------------------------
 inline
 int getDecimalOrderByIndex( raw_bcd_number_t::size_type idx, const raw_bcd_number_t &bcdNumber, int precision )
 {
@@ -528,6 +532,53 @@ int getDecimalOrderByIndex( raw_bcd_number_t::size_type idx, const raw_bcd_numbe
         order = ((int)idx) - precision;
 
     return order;
+}
+
+//----------------------------------------------------------------------------
+inline
+int truncatePrecision( raw_bcd_number_t &bcdNumber, int precision, int newPrecision, int *pLastTruncatedDigit = 0 )
+{
+    if (newPrecision<0)
+        newPrecision = 0; // truncution of integer part is not allowed
+
+    if (newPrecision>=precision)
+    {
+        if (pLastTruncatedDigit)
+           *pLastTruncatedDigit = 0;
+        return precision; // newPrecision; // Nothing to do
+    }
+    // Realy need truncation
+
+    int requestedDecOrder = -newPrecision;
+
+    int lastTruncatedDigit = 0;
+
+    raw_bcd_number_t::size_type digitIndex = 0, bcdSize = bcdNumber.size();
+
+    for(; digitIndex!=bcdSize; ++digitIndex)
+    {
+        int decOrder = getDecimalOrderByIndex( digitIndex, bcdNumber, precision );
+
+        if (decOrder>=requestedDecOrder)
+        {
+            if (pLastTruncatedDigit)
+               *pLastTruncatedDigit = lastTruncatedDigit;
+
+            raw_bcd_number_t::iterator eraseEnd = bcdNumber.begin();
+            std::advance(eraseEnd, digitIndex);
+            bcdNumber.erase( bcdNumber.begin(), eraseEnd );
+
+            return newPrecision;
+        }
+
+        lastTruncatedDigit = bcdNumber[digitIndex];
+
+    }
+
+    if (pLastTruncatedDigit)
+       *pLastTruncatedDigit = 0; // lastTruncatedDigit;
+    
+    return precision;
 }
 
 //----------------------------------------------------------------------------
