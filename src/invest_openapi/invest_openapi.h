@@ -64,10 +64,7 @@ namespace invest_openapi
 {
 
 
-using marty::DecimalPrecision;
 using marty::Decimal         ;
-using marty::toString        ;
-using marty::fromString      ;
 
 
 enum class GenericError

@@ -360,7 +360,365 @@ Decimal& Decimal::div( const Decimal &d, int precision )
     return *this;
 }
 
+//----------------------------------------------------------------------------
+//! Всегда возвращает true
+inline
+bool Decimal::precisionExpandTo( int p )
+{
+    if (p<0)
+        p = 0;
+
+    if (p<=m_precision)
+    {
+        return true;
+    }
+
+    m_precision = bcd::extendPrecision( m_number, m_precision, p );
+
+    return true;
+}
+
+//----------------------------------------------------------------------------
+//! Возвращает true, если последняя обрезанная цифра была нулём
+inline
+bool Decimal::precisionShrinkTo( int p )
+{
+    if (p<0)
+        p = 0;
+
+    if (p>=m_precision)
+    {
+        return true;
+    }
+
+    int lastTruncatedDigit = 0;
+
+    m_precision = bcd::truncatePrecision( m_number, m_precision, p, &lastTruncatedDigit );
+
+    return lastTruncatedDigit==0;
+}
+
+//----------------------------------------------------------------------------
+//! Возвращает true, если последняя обрезанная цифра была нулём (если было обрезание), или true
+inline
+bool Decimal::precisionFitTo( int p )
+{
+    if (p<0)
+        p = 0;
+
+    if (p<m_precision)
+        return precisionExpandTo( p );
+    else
+        return precisionShrinkTo( p );
+
+}
+
+//----------------------------------------------------------------------------
+inline
+bool Decimal::isDigitEven( int d ) 
+{
+    switch(d)
+    {
+        case 0: case 2: case 4: case 6: case 8:
+        return true;
+    }
+    
+    return false;
+}
+
+//----------------------------------------------------------------------------
+//! Цифра нечётна?
+inline
+bool Decimal::isDigitOdd( int d ) 
+{
+    switch(d)
+    {
+        case 1: case 3: case 5: case 7: case 9:
+        return true;
+    }
+    
+    return false;
+}
+
+//----------------------------------------------------------------------------
+inline
+int Decimal::getLowestDecimalDigit() const
+{
+    return bcd::getLowestDigit( m_number, m_precision );
+}
+
+//----------------------------------------------------------------------------
+inline
+Decimal Decimal::makeMinimalPrecisionImplHelper( int val ) const
+{
+    // Используется при округлении (дробной части), поэтому точность всегда будет >=0
+    return Decimal( val, m_precision );
+}
+
+//----------------------------------------------------------------------------
+inline
+Decimal Decimal::makeMinimalPrecisionOne() const
+{
+    return makeMinimalPrecisionImplHelper(1);
+}
+
+//----------------------------------------------------------------------------
+inline
+Decimal Decimal::makeMinimalPrecisionTwo() const
+{
+    return makeMinimalPrecisionImplHelper(2);
+}
+
+//----------------------------------------------------------------------------
+inline
+Decimal Decimal::makeMinimalPrecisionFive() const
+{
+    return makeMinimalPrecisionImplHelper(5);
+}
+
+//----------------------------------------------------------------------------
+inline
+Decimal& Decimal::roundingImpl2( int requestedPrecision, RoundingMethod roundingMethod )
+{
+    int thisSign = sgn();
+    if (!thisSign)
+    {
+        precisionFitTo(requestedPrecision); // Усечение нуля рояли не играет
+        return *this;
+    }
+
+    if (thisSign<0)
+    {
+        // Для embed asert поставить
+        throw std::runtime_error("Decimal::roundingImpl2: negative decimals not allowed here");
+    }
+
+    bool   fitExact   = precisionFitTo(requestedPrecision + 1);
+    int    ldd        = getLowestDecimalDigit();
+
+    bool lddExactZero = (ldd==0) && fitExact;
+
+    if (lddExactZero)
+    {
+        // Ничего не отброшено, и младшая десятичная цифра равна нулю.
+        precisionShrinkTo( requestedPrecision ); // Ничего не делаем, просто обрезаем младший десятичный разряд (нулевой)
+        return *this;
+    }
+
+    bool lddExactFive = (ldd==5) && fitExact;
+
+    // Тут уже нет отрицательных значений.
+    // Тут уже нет чисел, у которых нечего отбрасывать, кроме незначащих нулей
+
+    switch(roundingMethod)
+    {
+        case RoundingMethod::roundTowardsInf:
+
+                 precisionShrinkTo( requestedPrecision );
+                 *this += makeMinimalPrecisionOne();
+                 return *this;
 
 
+        case RoundingMethod::roundTowardsZero:
 
+                 precisionShrinkTo( requestedPrecision );
+                 return *this;
+
+        case RoundingMethod::roundHalfTowardsZero :
+
+                 if (lddExactFive || ldd<5)
+                 {
+                     precisionShrinkTo( requestedPrecision );
+                 }
+                 else
+                 {
+                     precisionShrinkTo( requestedPrecision );
+                     *this += makeMinimalPrecisionOne();
+                 }
+
+                 return *this;
+
+
+        case RoundingMethod::roundHalfTowardsInf  :
+
+                 if (lddExactFive || ldd>=5)
+                 {
+                     precisionShrinkTo( requestedPrecision );
+                     *this += makeMinimalPrecisionOne();
+                 }
+                 else
+                 {
+                     precisionShrinkTo( requestedPrecision );
+                 }
+
+                 return *this;
+
+
+        case RoundingMethod::roundHalfToEven      :
+
+                 precisionShrinkTo( requestedPrecision );
+
+                 if (lddExactFive)
+                 {
+                     // Нужно найти остаток от деления на минимальную двойку
+                     // Если делится на два - число четное.
+                     // А если не делится - то нечётное.
+                     // Всё очень просто
+                     // Результат - либо минимальная единичка, если минимальная (последняя) цифра числа - нечётная,
+                     //             либо ноль, если минимальная (последняя) цифра числа - чётная,
+
+                     // Было:
+                     // Decimal thisMod2 = this->mod(makeMinimalPrecisionTwo());
+                     // *this = *this + thisMod2;
+
+                     // Стало:
+
+                     int lowestDigit = bcd::getLowestDigit( m_number, m_precision );
+
+                     Decimal thisModLowest2 = isDigitEven(lowestDigit) ? (Decimal(0)) : makeMinimalPrecisionOne();
+                     *this = *this + thisModLowest2;
+
+                 }
+                 else if (ldd<5)
+                 {
+                     // do nothing
+                 }
+                 else
+                 {
+                     *this += makeMinimalPrecisionOne();
+                 }
+
+                 return *this;
+
+
+        case RoundingMethod::roundHalfToOdd       :
+
+                 return *this;
+
+    }
+
+    throw std::runtime_error("Decimal::roundingImpl2: something goes wrong");
+
+
+}
+
+//----------------------------------------------------------------------------
+inline
+Decimal& Decimal::roundingImpl( int requestedPrecision, RoundingMethod roundingMethod )
+{
+    if (roundingMethod==RoundingMethod::roundingInvalid)
+    {
+        throw std::runtime_error("Decimal::roundingImpl: rounding method isInvalid");
+    }
+
+    if ( precision() <= requestedPrecision )
+        return *this;
+
+    switch(roundingMethod)
+    {
+        case RoundingMethod::roundDown: // roundFloor, roundTowardNegInf
+             if (sgn()>0)
+                 return roundingImpl2( requestedPrecision, RoundingMethod::roundTrunc ); // roundTowardsZero
+             else
+                 return negate().roundingImpl2( requestedPrecision, RoundingMethod::roundTowardsInf).negate();
+
+
+        case RoundingMethod::roundUp: // roundCeil, roundTowardsPosInf
+             if (sgn()>0)
+                 return roundingImpl2( requestedPrecision, RoundingMethod::roundTowardsInf );
+             else
+                 return negate().roundingImpl2( requestedPrecision, RoundingMethod::roundTrunc).negate(); // roundTowardsZero, roundAwayFromInf
+                   
+
+        case RoundingMethod::roundTowardsZero: // roundAwayFromInf, roundTrunc
+             if (sgn()>0)
+                 return roundingImpl2( requestedPrecision, roundingMethod );
+             else
+                 return negate().roundingImpl2( requestedPrecision, roundingMethod ).negate();
+
+
+        case RoundingMethod::roundTowardsInf: // roundAwayFromZero
+             if (sgn()>0)
+                 return roundingImpl2( requestedPrecision, roundingMethod );
+             else
+                 return negate().roundingImpl2( requestedPrecision, roundingMethod ).negate();
+
+
+        // Rounding to the nearest integer
+
+        case RoundingMethod::roundHalfUp          : // roundHalfTowardsPositiveInf
+             if (sgn()>0)
+                 return roundingImpl2( requestedPrecision, RoundingMethod::roundHalfTowardsInf );
+             else
+                 return negate().roundingImpl2( requestedPrecision, RoundingMethod::roundHalfTowardsZero ).negate();
+
+
+        case RoundingMethod::roundHalfDown        :
+             if (sgn()>0)
+                 return roundingImpl2( requestedPrecision, RoundingMethod::roundHalfTowardsZero );
+             else
+                 return negate().roundingImpl2( requestedPrecision, RoundingMethod::roundHalfTowardsInf ).negate();
+
+        case RoundingMethod::roundHalfTowardsZero :
+        case RoundingMethod::roundHalfTowardsInf  :
+        case RoundingMethod::roundHalfToEven      :
+        case RoundingMethod::roundHalfToOdd       :
+             if (sgn()>0)
+                 return roundingImpl2( requestedPrecision, roundingMethod );
+             else
+                 return negate().roundingImpl2( requestedPrecision, roundingMethod ).negate();
+
+    }
+
+    throw std::runtime_error("Decimal::roundingImpl: rounding method not implemented yet");
+
+    return *this;
+
+
+}
+
+//----------------------------------------------------------------------------
+inline
+Decimal Decimal::rounded( int precision, RoundingMethod roundingMethod ) const
+{
+    Decimal res = *this;
+    res.roundingImpl( precision, roundingMethod );
+    return res;
+}
+
+//----------------------------------------------------------------------------
+inline
+Decimal Decimal::getPercentOf( Decimal d ) const
+{
+    //UNDONE: !!! Need to make correct rounding
+    Decimal tmp = Decimal(100) * *this;
+    tmp.precisionExpandTo(2); // точнось - сотые доли процента
+    return tmp / d;
+}
+
+//----------------------------------------------------------------------------
+inline
+Decimal Decimal::getPermilleOf( Decimal d ) const
+{
+    //UNDONE: !!! Need to make correct rounding
+    Decimal tmp = Decimal(1000) * *this;
+    tmp.precisionExpandTo(2); // точнось - сотые доли промилле
+    return tmp / d;
+}
+
+//----------------------------------------------------------------------------
+inline
+double Decimal::toDouble() const
+{
+    return bcd::rawToDouble( m_number, m_precision );
+}
+
+/*
+    int                     m_sign;
+    int                     m_precision;
+    bcd::raw_bcd_number_t   m_number;
+
+    unsigned bcd::getLowestDigit( const raw_bcd_number_t &bcdNumber, int precision )
+
+*/
 

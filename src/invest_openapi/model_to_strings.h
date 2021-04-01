@@ -61,7 +61,7 @@ inline QVector<QString> modelToStrings( const QVector<QString> &v )
 //----------------------------------------------------------------------------
 inline QVector<QString> modelToStrings( const marty::Decimal &v )
 {
-    return modelToStrings( QString::fromStdString( marty::toString(v) ) );
+    return modelToStrings( QString::fromStdString( v.toString() ) );
 }
 
 //----------------------------------------------------------------------------

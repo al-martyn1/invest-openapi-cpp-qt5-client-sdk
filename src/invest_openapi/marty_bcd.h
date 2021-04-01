@@ -803,8 +803,116 @@ std::string formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision
 }
 
 //----------------------------------------------------------------------------
+inline
+int getLowestDigit( const raw_bcd_number_t &bcdNumber, int precision )
+{
+    const int decOrderMin   = -precision;
+    const int decOrderValue = decOrderMin; // decOrder-1; 
+
+    int idx = (decOrderValue) - (-precision); // decOrderMin;
+
+    decimal_digit_t d = 0;
+
+    if (idx>=0 && idx<(int)bcdNumber.size())
+        d = bcdNumber[idx];
+
+    return d;
+}
+
+//----------------------------------------------------------------------------
+//! Конвертация в целое
+inline
+std::uint64_t rawToInt( const raw_bcd_number_t &bcdNumber, int precision )
+{
+
+    int decOrderMin = -precision;
+    if (decOrderMin>0)
+        decOrderMin = 0; // Не гоже отрезать значащие нули справа от недробной части
 
 
+    int decOrderMax = getDecimalOrderByIndex( getMsdIndex(bcdNumber), bcdNumber, precision ); 
+
+    // Но нам нужны ведущие нули, если целая часть числа равна нулю
+    if (decOrderMax<0)
+        decOrderMax = 0;
+
+    int decOrderDelta = decOrderMax - decOrderMin;
+
+    std::uint64_t res = 0;
+
+    for( int decOrder=decOrderMax+1; decOrder!=decOrderMin; --decOrder )
+    {
+        const int decOrderValue = decOrder-1; 
+
+        int idx = (decOrderValue) - (-precision); // decOrderMin;
+
+        decimal_digit_t d = 0;
+
+        if (idx>=0 && idx<(int)bcdNumber.size())
+            d = bcdNumber[idx];
+
+        if (decOrderValue==-1) // Добрались до первой цифры после точки
+        {
+            return res;
+        }
+
+        res *= 10;
+        res += (unsigned)d;
+
+    }
+
+    return res;
+
+}
+
+//----------------------------------------------------------------------------
+//! Конвертация в целое
+inline
+double rawToDouble( const raw_bcd_number_t &bcdNumber, int precision )
+{
+
+    int decOrderMin = -precision;
+    if (decOrderMin>0)
+        decOrderMin = 0; // Не гоже отрезать значащие нули справа от недробной части
+
+
+    int decOrderMax = getDecimalOrderByIndex( getMsdIndex(bcdNumber), bcdNumber, precision ); 
+
+    // Но нам нужны ведущие нули, если целая часть числа равна нулю
+    if (decOrderMax<0)
+        decOrderMax = 0;
+
+    int decOrderDelta = decOrderMax - decOrderMin;
+
+    double res = 0;
+    double devider = 1;
+
+    for( int decOrder=decOrderMax+1; decOrder!=decOrderMin; --decOrder )
+    {
+        const int decOrderValue = decOrder-1; 
+
+        int idx = (decOrderValue) - (-precision); // decOrderMin;
+
+        decimal_digit_t d = 0;
+
+        if (idx>=0 && idx<(int)bcdNumber.size())
+            d = bcdNumber[idx];
+
+        if (decOrderValue<=-1) // Добрались до цифр после точки
+        {
+            devider *= 10;
+        }
+
+        res *= 10;
+        res += (unsigned)d;
+
+    }
+
+    return res/devider;
+
+}
+
+//----------------------------------------------------------------------------
 inline
 decimal_digit_t bcdCorrectOverflow( decimal_digit_t &d )
 {

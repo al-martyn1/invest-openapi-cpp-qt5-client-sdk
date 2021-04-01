@@ -37,8 +37,8 @@ template<> inline  double          toMonetary   <double         ,  QString      
 template<> inline  double          toMonetary   <double         ,  double         >  ( const double         &s )   { return s; }
 template<> inline  double          toMonetary   <double         ,  marty::Decimal >  ( const marty::Decimal &s )   { return (double)s; }
 
-template<> inline  marty::Decimal  toMonetary   <marty::Decimal ,  QVariant       >  ( const QVariant       &s )   { return marty::fromString(s.toString().toStdString()); }
-template<> inline  marty::Decimal  toMonetary   <marty::Decimal ,  QString        >  ( const QString        &s )   { return marty::fromString(s.toStdString()); }
+template<> inline  marty::Decimal  toMonetary   <marty::Decimal ,  QVariant       >  ( const QVariant       &s )   { return marty::Decimal::fromString(s.toString().toStdString()); }
+template<> inline  marty::Decimal  toMonetary   <marty::Decimal ,  QString        >  ( const QString        &s )   { return marty::Decimal::fromString(s.toStdString()); }
 template<> inline  marty::Decimal  toMonetary   <marty::Decimal ,  double         >  ( const double         &s )   { return marty::Decimal(s); }
 template<> inline  marty::Decimal  toMonetary   <marty::Decimal ,  marty::Decimal >  ( const marty::Decimal &s )   { return s; }
 
@@ -47,8 +47,10 @@ template<> inline  QString         fromMonetary <QString        ,  double       
 template<> inline  double          fromMonetary <double         ,  double         >  ( const double &m )           { return m; }
 template<> inline  marty::Decimal  fromMonetary <marty::Decimal ,  double         >  ( const double &m )           { return marty::Decimal(m); }
 
-template<> inline  QVariant        fromMonetary <QVariant       ,  marty::Decimal >  ( const marty::Decimal &m )   { return QVariant(QString::fromStdString(marty::toString(m))); }
-template<> inline  QString         fromMonetary <QString        ,  marty::Decimal >  ( const marty::Decimal &m )   { return QString::fromStdString(marty::toString(m)); }
+//template<> inline  QVariant        fromMonetary <QVariant       ,  marty::Decimal >  ( const marty::Decimal &m )   { return QVariant(QString::fromStdString(marty::Decimal::toString(m))); }
+template<> inline  QVariant        fromMonetary <QVariant       ,  marty::Decimal >  ( const marty::Decimal &m )   { return QVariant(QString::fromStdString(marty::Decimal(m).toString())); }
+//template<> inline  QString         fromMonetary <QString        ,  marty::Decimal >  ( const marty::Decimal &m )   { return QString::fromStdString(marty::Decimal::toString(m)); }
+template<> inline  QString         fromMonetary <QString        ,  marty::Decimal >  ( const marty::Decimal &m )   { return QString::fromStdString(marty::Decimal().toString()); }
 template<> inline  double          fromMonetary <double         ,  marty::Decimal >  ( const marty::Decimal &m )   { return (double)m; }
 template<> inline  marty::Decimal  fromMonetary <marty::Decimal ,  marty::Decimal >  ( const marty::Decimal &m )   { return m; }
 

@@ -14,6 +14,10 @@
 #include "yaml-cpp/eventhandler.h"
 #include "yaml-cpp/yaml.h"  // IWYU pragma: keep
 
+#include "qt_helpers.h"
+
+
+
 
 namespace invest_openapi
 {

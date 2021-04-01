@@ -167,7 +167,7 @@ INVEST_OPENAPI_MAIN()
     }
 
 
-    if (1)
+    if (0)
     {
         cout << "Precision extention calls for debug" << endl;
         cout << endl;
@@ -721,6 +721,81 @@ INVEST_OPENAPI_MAIN()
     cout << "------------------------------" << endl << endl << endl;
 
 
+
+    #define DECIMAL_MIN_PART_TEST( val, strMinOne, strMinTwo, strMinFive )                  \
+                do                                                                          \
+                {                                                                           \
+                    ++totalMinPartTests;                                                    \
+                    Decimal     d        = Decimal(val);                                    \
+                                                                                            \
+                    Decimal     min1     = d.makeMinimalPrecisionOne();                     \
+                    Decimal     min2     = d.makeMinimalPrecisionTwo();                     \
+                    Decimal     min5     = d.makeMinimalPrecisionFive();                    \
+                                                                                            \
+                    bool bGood /* Johny */ = min1.checkIsExact(strMinOne) && min2.checkIsExact(strMinTwo) && min5.checkIsExact(strMinFive);  \
+                    if (!bGood)                                                             \
+                       ++totalMinPartTestsFailed;                                                \
+                                                                                            \
+                                                                                            \
+                    cout << "[" << (bGood ? "+" : "-") << "]  " << d << " / " << min1 << " / " << min2 << " / " << min5 << ""; \
+                    if (!bGood)                                                             \
+                    {                                                                       \
+                        cout << " (expected " << strMinOne << " / " << strMinTwo << " / " << strMinFive << ")";                 \
+                    }                                                                       \
+                    cout << endl;                                                           \
+                                                                                            \
+                    if (!bGood)                                                             \
+                        THROW_ERROR();                                                      \
+                                                                                            \
+                } while(0)
+
+
+    unsigned totalMinPartTests       = 0;
+    unsigned totalMinPartTestsFailed = 0;
+
+    DECIMAL_MIN_PART_TEST(               "123.01",                  "0.01",                  "0.02",                  "0.05" );
+    DECIMAL_MIN_PART_TEST(               "13.101",                 "0.001",                 "0.002",                 "0.005" );
+    DECIMAL_MIN_PART_TEST(               "3.1415",                "0.0001",                "0.0002",                "0.0005" );
+    DECIMAL_MIN_PART_TEST(               "3.1415",                "0.0001",                "0.0002",                "0.0005" );
+    DECIMAL_MIN_PART_TEST(           "-100.10101",               "0.00001",               "0.00002",               "0.00005" );
+    DECIMAL_MIN_PART_TEST(   "3.1415926535897932",    "0.0000000000000001",    "0.0000000000000002",    "0.0000000000000005" );
+    DECIMAL_MIN_PART_TEST(             "3.141593",              "0.000001",              "0.000002",              "0.000005" );
+    DECIMAL_MIN_PART_TEST(            "3.1415926",             "0.0000001",             "0.0000002",             "0.0000005" );
+    DECIMAL_MIN_PART_TEST(           "2968802.55",                  "0.01",                  "0.02",                  "0.05" );
+    DECIMAL_MIN_PART_TEST(       "986.9313322541",          "0.0000000001",          "0.0000000002",          "0.0000000005" );
+    DECIMAL_MIN_PART_TEST(     "98.6959606587986",       "0.0000000000001",       "0.0000000000002",       "0.0000000000005" );
+    DECIMAL_MIN_PART_TEST(          "942.4777962",             "0.0000001",             "0.0000002",             "0.0000005" );
+    DECIMAL_MIN_PART_TEST(          "9424.777962",              "0.000001",              "0.000002",              "0.000005" );
+    DECIMAL_MIN_PART_TEST(       "0.009424777962",        "0.000000000001",        "0.000000000002",        "0.000000000005" );
+    DECIMAL_MIN_PART_TEST(             "0.019881",              "0.000001",              "0.000002",              "0.000005" );
+    DECIMAL_MIN_PART_TEST(                "3.525",                 "0.001",                 "0.002",                 "0.005" );
+    DECIMAL_MIN_PART_TEST(                  "0.2",                   "0.1",                   "0.2",                   "0.5" );
+    DECIMAL_MIN_PART_TEST(                 "1.89",                  "0.01",                  "0.02",                  "0.05" );
+    DECIMAL_MIN_PART_TEST( "8.030965211883154708",  "0.000000000000000001",  "0.000000000000000002",  "0.000000000000000005" );
+    DECIMAL_MIN_PART_TEST( "0.005291005291005291",  "0.000000000000000001",  "0.000000000000000002",  "0.000000000000000005" );
+    DECIMAL_MIN_PART_TEST( "0.000332443386243386",  "0.000000000000000001",  "0.000000000000000002",  "0.000000000000000005" );
+    DECIMAL_MIN_PART_TEST( "9.997050731580937803",  "0.000000000000000001",  "0.000000000000000002",  "0.000000000000000005" );
+    DECIMAL_MIN_PART_TEST( "9.999991552055621785",  "0.000000000000000001",  "0.000000000000000002",  "0.000000000000000005" );
+    DECIMAL_MIN_PART_TEST( "5.492965842668411077",  "0.000000000000000001",  "0.000000000000000002",  "0.000000000000000005" );
+    DECIMAL_MIN_PART_TEST( "4.929658426684110778",  "0.000000000000000001",  "0.000000000000000002",  "0.000000000000000005" );
+    DECIMAL_MIN_PART_TEST( "1047.197551333333333",     "0.000000000000001",     "0.000000000000002",     "0.000000000000005" );
+    DECIMAL_MIN_PART_TEST( "7.304964539007092198",  "0.000000000000000001",  "0.000000000000000002",  "0.000000000000000005" );
+    DECIMAL_MIN_PART_TEST( "2.301472254944911079",  "0.000000000000000001",  "0.000000000000000002",  "0.000000000000000005" );
+
+
+    // Decimal makeMinimalPrecisionOne() const;
+    // Decimal makeMinimalPrecisionTwo() const;
+    // Decimal makeMinimalPrecisionFive() const;
+
+
+    cout << endl;
+
+    cout << "Failed " << totalMinPartTestsFailed << " Min Part tests from total " << totalMinPartTests << endl;
+    if (!totalMinPartTestsFailed)
+        cout << "+++ All Min Part tests passed"  << endl;
+
+    cout << "------------------------------" << endl << endl << endl;
+
     /*
     #define PRINT( var ) cout << #var << ": "<< var << endl;
 
@@ -752,7 +827,7 @@ INVEST_OPENAPI_MAIN()
 
 
 
-    #if 0
+    #if 1
 
     unsigned totalRoundingTests       = 0;
     unsigned totalRoundingTestsFailed = 0;
@@ -1088,8 +1163,9 @@ INVEST_OPENAPI_MAIN()
         cout << "+++ All rounding tests passed"  << endl;
 
     cout << "------------------------------" << endl << endl << endl;
-    #endif
 
+
+    #endif
 
     return 0;
 }

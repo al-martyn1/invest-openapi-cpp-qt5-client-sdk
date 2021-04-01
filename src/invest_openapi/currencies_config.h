@@ -47,7 +47,7 @@ public:
         if (qv.isValid() && !qv.isNull())
         {
             m_isValid = true;
-            m_value   = marty::fromString(qv.toString().toStdString());
+            m_value   = marty::Decimal::fromString(qv.toString().toStdString());
             return isValid();
         }
         else

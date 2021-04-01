@@ -139,13 +139,47 @@ public:
     unsigned      toUnsigned() const                      { return (unsigned)(m_num/m_denum.denum()); }
     std::int64_t  toInt64() const                         { return (m_num/m_denum.denum()); }
     std::uint64_t toUnsigned64() const                    { return (std::uint64_t)(m_num/m_denum.denum()); }
-    float         toFloat() const                         { return (float)((double)m_num/(double)m_denum.denum()); }
-    double        toDouble() const                        { return ((double)m_num/(double)m_denum.denum()); }
     //------------------------------
 #endif
 
+    double        toDouble() const;
+    float         toFloat () const  { return (float)toDouble(); }
 
 
+//----------------------------------------------------------------------------
+protected:
+
+    template<typename IntType>
+    IntType toIntImpl() const
+    {
+        throw std::runtime_error("marty::Decimal::toInt: not implemented for this type");
+    }
+
+    std::uint64_t getAsUint64() const
+    {
+        return bcd::rawToInt( m_number, m_precision );
+    }
+
+    template<>
+    std::int64_t toIntImpl<std::int64_t>() const
+    {
+        if (m_sign==0)
+            return 0;
+        else if (m_sign>0)
+            return (std::int64_t)getAsUint64();
+        else 
+            return -(std::int64_t)getAsUint64();
+    }
+
+    template<>
+    std::uint64_t toIntImpl<std::uint64_t>() const
+    {
+        return (std::uint64_t)toIntImpl<std::int64_t>();
+    }
+
+
+//----------------------------------------------------------------------------
+public:
 
     //------------------------------
     bool checkIsExact( const std::string &strDecimal  ) const { return toString( -1 )==strDecimal; }
@@ -191,7 +225,7 @@ public:
 
 
 
-    //------------------------------
+    //----------------------------------------------------------------------------
     Decimal& add( const Decimal &d );
     Decimal& sub( const Decimal &d );
     Decimal& mul( const Decimal &d );
@@ -210,62 +244,20 @@ public:
     Decimal& operator /= ( Decimal d2 ) { return div(d2, MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION); }
     // Decimal& operator %= ( Decimal d2 );
 
-
-#if 0
-
-    //------------------------------
-    // 
-
-    //------------------------------
-    //
-    Decimal( float          f, int precision = 0 ) { }
-    Decimal( double         f, int precision = 0 ) { }
-    //------------------------------
-
-    Decimal( const std::string &strDecimal  ) : m_num(0), m_denum(0) { *this = fromString(strDecimal ); }
-    Decimal( const char        *pStrDecimal ) : m_num(0), m_denum(0) { *this = fromString(pStrDecimal); }
-
-    //------------------------------
-
-
-
-    //------------------------------
-    // операторы преобразования типа 
-    explicit operator int() const           { return toInt(); }
-    explicit operator unsigned() const      { return toUnsigned(); }
-    explicit operator std::int64_t() const  { return toInt64(); }
-    explicit operator std::uint64_t() const { return toUnsigned64(); }
-    explicit operator float() const         { return toFloat(); }
-    explicit operator double() const        { return toDouble(); }
-
-    //------------------------------
-    Decimal operator + ( Decimal d2 ) const;
-    Decimal operator - ( Decimal d2 ) const;
-    Decimal operator - ( ) const;
-    Decimal operator * ( Decimal d2 ) const;
-    Decimal divide( Decimal devider, precision_t resultPrecision ) const;
-    Decimal operator / ( Decimal d2 ) const;
-    Decimal operator % ( Decimal d2 ) const;
-    Decimal& operator += ( Decimal d2 );
-    Decimal& operator -= ( Decimal d2 );
-    Decimal& operator *= ( Decimal d2 );
-    Decimal& operator /= ( Decimal d2 );
-    Decimal& operator %= ( Decimal d2 );
-
-    //------------------------------
+    //----------------------------------------------------------------------------
     #define MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE( integralType )         \
                                                                                                     \
                 Decimal operator +   ( integralType i ) const { return operator+ ( Decimal(i) ); }  \
                 Decimal operator -   ( integralType i ) const { return operator- ( Decimal(i) ); }  \
                 Decimal operator *   ( integralType i ) const { return operator* ( Decimal(i) ); }  \
                 Decimal operator /   ( integralType i ) const { return operator/ ( Decimal(i) ); }  \
-                Decimal operator %   ( integralType i ) const { return operator% ( Decimal(i) ); }  \
+                /*Decimal operator %   ( integralType i ) const { return operator% ( Decimal(i) ); }*/  \
                                                                                                     \
                 Decimal& operator += ( integralType i )       { return operator+=( Decimal(i) ); }  \
                 Decimal& operator -= ( integralType i )       { return operator-=( Decimal(i) ); }  \
                 Decimal& operator *= ( integralType i )       { return operator*=( Decimal(i) ); }  \
                 Decimal& operator /= ( integralType i )       { return operator/=( Decimal(i) ); }  \
-                Decimal& operator %= ( integralType i )       { return operator%=( Decimal(i) ); }
+                /*Decimal& operator %= ( integralType i )       { return operator%=( Decimal(i) ); }*/
 
 
     MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE( int           )
@@ -275,10 +267,21 @@ public:
     MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE( float         )
     MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE( double        )
 
+
+
+    //------------------------------
+    // операторы преобразования типа 
+    explicit operator std::int64_t() const  { return           toIntImpl<std:: int64_t>(); }
+    explicit operator std::uint64_t() const { return           toIntImpl<std::uint64_t>(); }
+    explicit operator int() const           { return (int)     toIntImpl<std:: int64_t>(); }
+    explicit operator unsigned() const      { return (unsigned)toIntImpl<std::uint64_t>(); }
+    explicit operator float() const         { return           toFloat(); }
+    explicit operator double() const        { return           toDouble(); }
+
+
     //----------------------------------------------------------------------------
 
-    MARTY_IMPLEMENT_RELATIONAL_OPERATORS_BY_COMPARE( typeT2 )
-
+#if 0
 
 public:
 
@@ -308,58 +311,54 @@ public:
 
     //------------------------------
 
-    static precision_t getOutputPrecision()                   { return m_outputPrecision; }
-    static void        setOutputPrecision( precision_t p )    { m_outputPrecision = p; }
-    static void        setOutputPrecisionToStreamPrecision( ) { setOutputPrecision(0); }
-    static void        setOutputPrecisionToAuto( )            { setOutputPrecision((precision_t)-1); }
+#endif
 
-    //------------------------------
-    //------------------------------
-    int compare( num_t n ) const
-    {
-        if (m_num<n) return -1;
-        if (m_num>n) return  1;
-        return 0;
-    }
+    Decimal& negate() { m_sign *= -1; return *this; }
+    Decimal& invert() { return negate(); }
+
+    int      signum() const { return m_sign; }
+    int      sign  () const { return m_sign; }
+    int      sgn   () const { return m_sign; }
+    Decimal  abs   () const { Decimal res = *this; if (res.m_sign) res.m_sign = 1; return res; } 
+    //Decimal  mod   (  Decimal d2 ) const;
+    Decimal  neg   () const { Decimal res = *this; res.negate(); return res; }
+    Decimal  inv   () const { return neg(); }
+
+    bool     zer   () const { return m_sign==0; }
+    bool     zero  () const { return m_sign==0; }
+    bool     isZero() const { return m_sign==0; }
+
 
     //------------------------------
     //! Возвращает true, если обрезание/удлиннение прошло предельно точно и ничего лишнего не было задето, и все жизненно важные органы остались на месте
-    bool precisionExpandTo( precision_t p );
-    bool precisionShrinkTo( precision_t p );
-    bool precisionFitTo( precision_t p );
+    bool precisionExpandTo( int p ); //!< Всегда возвращает true
+    bool precisionShrinkTo( int p ); //!< Возвращает true, если последняя обрезанная цифра была нулём
+    bool precisionFitTo( int p );    //!< Возвращает true, если последняя обрезанная цифра была нулём (если было обрезание), или true
 
     //------------------------------
+    //! // Цифра чётна?
     static
-    bool isDigitEven( unum_t d ) // Чётно?
-    {
-        switch(d)
-        {
-            case 0: case 2: case 4: case 6: case 8:
-            return true;
-        }
-        
-        return false;
-    }
-    
-    //------------------------------
+    bool isDigitEven( int d );
+
+    //! Цифра нечётна?
     static
-    bool isDigitOdd( unum_t d ) // Нечётно?
-    {
-        switch(d)
-        {
-            case 1: case 3: case 5: case 7: case 9:
-            return true;
-        }
-        
-        return false;
-    }
+    bool isDigitOdd( int d );
 
     //------------------------------
-    Decimal& minimizePrecisionImpl();
-    unum_t getLowestDecimalDigit() const;
-    void replaceLowestDecimalDigit( unum_t d );
+    //Decimal& minimizePrecisionImpl();
+    int getLowestDecimalDigit() const;
+    //void replaceLowestDecimalDigit( unum_t d );
 
-    Decimal makeMinimalPrecisionImplHelper( num_t newNum ) const;
+
+//----------------------------------------------------------------------------
+protected:
+
+    Decimal makeMinimalPrecisionImplHelper( int newNum ) const;
+
+
+//----------------------------------------------------------------------------
+public:
+
     Decimal makeMinimalPrecisionOne() const;
     Decimal makeMinimalPrecisionTwo() const;
     Decimal makeMinimalPrecisionFive() const;
@@ -367,7 +366,6 @@ public:
     //------------------------------
 
 
-#endif
 
     //------------------------------
 
@@ -381,7 +379,19 @@ public:
     //------------------------------
 
 
+
+    //------------------------------
+    Decimal getPercentOf( Decimal d ) const;
+    Decimal getPermilleOf( Decimal d ) const;
+
+    Decimal rounded( int precision, RoundingMethod roundingMethod ) const;
+
+
+//----------------------------------------------------------------------------
 protected:
+
+    Decimal& roundingImpl2( int requestedPrecision, RoundingMethod roundingMethod );
+    Decimal& roundingImpl( int requestedPrecision, RoundingMethod roundingMethod );
 
 
     Decimal( int sign, int precision, bcd::raw_bcd_number_t number )
@@ -402,6 +412,8 @@ protected:
 
 }; // class Decimal
 
+//----------------------------------------------------------------------------
+
 
 
 //----------------------------------------------------------------------------
@@ -412,6 +424,7 @@ protected:
 
 
 
+//----------------------------------------------------------------------------
 inline
 std::ostream& operator<<( std::ostream& os, const Decimal &v )
 {
@@ -446,10 +459,36 @@ std::ostream& operator<<( std::ostream& os, const Decimal &v )
     return os;
 }
 
+//----------------------------------------------------------------------------
+#define MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE_FRIENDS( integralType )               \
+                                                                                                      \
+            inline Decimal operator +   ( integralType i, const Decimal d ) { return Decimal(i) + d; }  \
+            inline Decimal operator -   ( integralType i, const Decimal d ) { return Decimal(i) - d; }  \
+            inline Decimal operator *   ( integralType i, const Decimal d ) { return Decimal(i) * d; }  \
+            inline Decimal operator /   ( integralType i, const Decimal d ) { return Decimal(i) / d; }  \
+            /*Decimal operator %   ( integralType i ) { return operator% ( Decimal(i) ); }*/
+
+MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE_FRIENDS( int           )
+MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE_FRIENDS( unsigned      )
+MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE_FRIENDS( std::int64_t  )
+MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE_FRIENDS( std::uint64_t )
+MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE_FRIENDS( float         )
+MARTY_DECIMAL_IMPLEMENT_ARIPHMETICT_OVERLOADS_FOR_INTEGRAL_TYPE_FRIENDS( double        )
+
+
+// Obsilette
+//template<typename T>
+//Decimal fromString( const T &t ) { return Decimal::fromString(t); }
+
 
 
 
 } // namespace marty
+
+
+
+
+
 
 
 //----------------------------------------------------------------------------

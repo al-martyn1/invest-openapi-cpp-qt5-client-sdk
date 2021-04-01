@@ -30,6 +30,7 @@
 #include "invest_openapi/invest_openapi.h"
 #include "invest_openapi/utility.h"
 #include "invest_openapi/yaml_helpers.h"
+#include "invest_openapi/qt_helpers.h"
 
 #include "cpp/cpp.h"
 
