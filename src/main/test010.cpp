@@ -832,7 +832,33 @@ INVEST_OPENAPI_MAIN()
     unsigned totalRoundingTests       = 0;
     unsigned totalRoundingTestsFailed = 0;
 
+    auto roundingTest = [&totalRoundingTests, &totalRoundingTestsFailed]( double dblVal, const std::string &strResForCompare, int roundingPrecision, marty::Decimal::RoundingMethod roundingMethod )
+                        {
 
+                            ++totalRoundingTests;
+                            Decimal decimal    = Decimal(dblVal);
+                            Decimal roundedVal = decimal.rounded( roundingPrecision, roundingMethod );
+                            /*std::ostringstream os;*/
+                            std::string strRes = roundedVal.toString(roundingPrecision);
+
+                            bool bGood /* Johny */ = roundedVal /* decimal */ .checkIsExact(strResForCompare); // Блджад, а как это раньше работало?
+                            if (!bGood)
+                               ++totalRoundingTestsFailed;
+
+
+                            cout << "[" << (bGood ? "+" : "-") << "]  " << (decimal<0 ? "" : " ") << decimal.toString( /* roundingPrecision+1 */ ) << " rounded to " << roundingPrecision << " signs with " << marty::Decimal::getRoundingMethodName(roundingMethod) << " rounding method is " << strRes;
+                            if (!bGood)
+                            {
+                                cout << " (expected " << strResForCompare << ")";
+                            }
+                            cout << endl;
+
+                            if (!bGood)
+                                THROW_ERROR();
+                        
+                        };
+
+    #if 0
     #define ROUNDING_TEST( dblVal, strResForCompare, roundingPrecision, roundingMethod ) \
                 do                                                                       \
                 {                                                                        \
@@ -847,7 +873,7 @@ INVEST_OPENAPI_MAIN()
                        ++totalRoundingTestsFailed;                                       \
                                                                                          \
                                                                                          \
-                    cout << "[" << (bGood ? "+" : "-") << "]  " << (decimal<0 ? "" : " ") << decimal.toString(roundingPrecision+1) << " rounded to " << roundingPrecision << " signs with " << #roundingMethod << " rounding method is " << strRes; \
+                    cout << "[" << (bGood ? "+" : "-") << "]  " << (decimal<0 ? "" : " ") << decimal.toString( /* roundingPrecision+1 */ ) << " rounded to " << roundingPrecision << " signs with " << #roundingMethod << " rounding method is " << strRes; \
                     if (!bGood)                                                          \
                     {                                                                    \
                         cout << " (expected " << strResForCompare << ")";                \
@@ -859,6 +885,12 @@ INVEST_OPENAPI_MAIN()
                                                                                             \
                 } while(0)
 
+    #else
+
+    #define ROUNDING_TEST( dblVal, strResForCompare, roundingPrecision, roundingMethod ) \
+             roundingTest( dblVal, strResForCompare, roundingPrecision, marty::Decimal::RoundingMethod:: roundingMethod )
+
+    #endif
 
     // https://en.wikipedia.org/wiki/Rounding#Round_half_to_odd
 

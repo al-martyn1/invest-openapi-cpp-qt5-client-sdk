@@ -536,7 +536,7 @@ int getDecimalOrderByIndex( raw_bcd_number_t::size_type idx, const raw_bcd_numbe
 
 //----------------------------------------------------------------------------
 inline
-int truncatePrecision( raw_bcd_number_t &bcdNumber, int precision, int newPrecision, int *pLastTruncatedDigit = 0 )
+int truncatePrecision( raw_bcd_number_t &bcdNumber, int precision, int newPrecision, int *pLastTruncatedDigit = 0, bool *pAllTruncatedAreZeros = 0 )
 {
     if (newPrecision<0)
         newPrecision = 0; // truncution of integer part is not allowed
@@ -545,6 +545,10 @@ int truncatePrecision( raw_bcd_number_t &bcdNumber, int precision, int newPrecis
     {
         if (pLastTruncatedDigit)
            *pLastTruncatedDigit = 0;
+
+        if (pAllTruncatedAreZeros)
+           *pAllTruncatedAreZeros = true; // allTruncatedAreZeros;
+
         return precision; // newPrecision; // Nothing to do
     }
     // Realy need truncation
@@ -552,6 +556,7 @@ int truncatePrecision( raw_bcd_number_t &bcdNumber, int precision, int newPrecis
     int requestedDecOrder = -newPrecision;
 
     int lastTruncatedDigit = 0;
+    bool allTruncatedAreZeros = true;
 
     raw_bcd_number_t::size_type digitIndex = 0, bcdSize = bcdNumber.size();
 
@@ -564,20 +569,35 @@ int truncatePrecision( raw_bcd_number_t &bcdNumber, int precision, int newPrecis
             if (pLastTruncatedDigit)
                *pLastTruncatedDigit = lastTruncatedDigit;
 
+            if (pAllTruncatedAreZeros)
+               *pAllTruncatedAreZeros = allTruncatedAreZeros;
+
             raw_bcd_number_t::iterator eraseEnd = bcdNumber.begin();
             std::advance(eraseEnd, digitIndex);
+
+            for(raw_bcd_number_t::iterator it=bcdNumber.begin(); it!=eraseEnd; ++it )
+            {
+                if (*it!=0)
+                    allTruncatedAreZeros = false;
+            }
+
             bcdNumber.erase( bcdNumber.begin(), eraseEnd );
 
             return newPrecision;
         }
 
         lastTruncatedDigit = bcdNumber[digitIndex];
+        if (bcdNumber[digitIndex]!=0)
+            allTruncatedAreZeros = false;
 
     }
 
     if (pLastTruncatedDigit)
        *pLastTruncatedDigit = 0; // lastTruncatedDigit;
-    
+
+    if (pAllTruncatedAreZeros)
+       *pAllTruncatedAreZeros = true; // allTruncatedAreZeros;
+       
     return precision;
 }
 

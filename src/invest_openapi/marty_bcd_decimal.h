@@ -86,7 +86,10 @@ public:
     };
 
     //------------------------------
+    static
+    const char* getRoundingMethodName( RoundingMethod m );
 
+    
 
 
     //------------------------------
@@ -182,8 +185,8 @@ protected:
 public:
 
     //------------------------------
-    bool checkIsExact( const std::string &strDecimal  ) const { return toString( -1 )==strDecimal; }
-    bool checkIsExact( const char        *pStrDecimal ) const { return checkIsExact(std::string(pStrDecimal)); }
+    bool checkIsExact( const std::string &strDecimal  ) const;
+    bool checkIsExact( const char        *pStrDecimal ) const;
 
     //------------------------------
 
@@ -332,8 +335,8 @@ public:
     //------------------------------
     //! Возвращает true, если обрезание/удлиннение прошло предельно точно и ничего лишнего не было задето, и все жизненно важные органы остались на месте
     bool precisionExpandTo( int p ); //!< Всегда возвращает true
-    bool precisionShrinkTo( int p ); //!< Возвращает true, если последняя обрезанная цифра была нулём
-    bool precisionFitTo( int p );    //!< Возвращает true, если последняя обрезанная цифра была нулём (если было обрезание), или true
+    bool precisionShrinkTo( int p ); //!< Возвращает true, если все обрезанные цифры были нулём
+    bool precisionFitTo( int p );    //!< Возвращает true, если все обрезанные цифры были нулём (если было обрезание), или true
 
     //------------------------------
     //! // Цифра чётна?

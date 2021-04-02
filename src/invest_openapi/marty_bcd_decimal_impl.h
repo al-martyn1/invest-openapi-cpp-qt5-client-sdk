@@ -8,6 +8,41 @@
 
 //----------------------------------------------------------------------------
 inline
+bool Decimal::checkIsExact( const std::string &strDecimal  ) const 
+{
+    return toString( -1 )==strDecimal;
+}
+
+//----------------------------------------------------------------------------
+inline
+bool Decimal::checkIsExact( const char        *pStrDecimal ) const
+{
+    return checkIsExact(std::string(pStrDecimal));
+}
+
+//----------------------------------------------------------------------------
+inline
+const char* Decimal::getRoundingMethodName( RoundingMethod m )
+{
+    switch(m)
+    {
+        case RoundingMethod::roundingInvalid     : return "roundingInvalid";
+        case RoundingMethod::roundFloor          : return "roundFloor";
+        case RoundingMethod::roundCeil           : return "roundCeil";
+        case RoundingMethod::roundTowardsZero    : return "roundTowardsZero";
+        case RoundingMethod::roundTowardsInf     : return "roundTowardsInf";
+        case RoundingMethod::roundHalfUp         : return "roundHalfUp";
+        case RoundingMethod::roundHalfDown       : return "roundHalfDown";
+        case RoundingMethod::roundHalfTowardsZero: return "roundHalfTowardsZero";
+        case RoundingMethod::roundHalfTowardsInf : return "roundHalfTowardsInf";
+        case RoundingMethod::roundHalfToEven     : return "roundHalfToEven";
+        case RoundingMethod::roundHalfToOdd      : return "roundHalfToOdd";
+        default: return "UNKNOWN ROUNDING";
+    }
+}
+
+//----------------------------------------------------------------------------
+inline
 void Decimal::assignFromString( const char        *pStr )
 {
     const char *pStrOrg = pStr;
@@ -379,7 +414,7 @@ bool Decimal::precisionExpandTo( int p )
 }
 
 //----------------------------------------------------------------------------
-//! Возвращает true, если последняя обрезанная цифра была нулём
+//! Возвращает true, если все обрезанные цифры были нулём
 inline
 bool Decimal::precisionShrinkTo( int p )
 {
@@ -392,24 +427,27 @@ bool Decimal::precisionShrinkTo( int p )
     }
 
     int lastTruncatedDigit = 0;
+    bool allTruncatedAreZeros = true;
 
-    m_precision = bcd::truncatePrecision( m_number, m_precision, p, &lastTruncatedDigit );
+    m_precision = bcd::truncatePrecision( m_number, m_precision, p, &lastTruncatedDigit, &allTruncatedAreZeros );
 
-    return lastTruncatedDigit==0;
+    return allTruncatedAreZeros;
 }
 
 //----------------------------------------------------------------------------
-//! Возвращает true, если последняя обрезанная цифра была нулём (если было обрезание), или true
+//! Возвращает true, если все обрезанные цифры были нулём (если было обрезание), или true
 inline
 bool Decimal::precisionFitTo( int p )
 {
     if (p<0)
         p = 0;
 
-    if (p<m_precision)
+    if (p>m_precision)
         return precisionExpandTo( p );
-    else
+    else if (p<m_precision)
         return precisionShrinkTo( p );
+
+    return true;
 
 }
 
