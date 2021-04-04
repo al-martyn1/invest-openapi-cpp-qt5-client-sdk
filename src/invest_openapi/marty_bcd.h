@@ -56,7 +56,16 @@ namespace bcd
 typedef signed char     decimal_digit_t;
 typedef unsigned char   decimal_udigit_t;
 
-typedef std::vector<decimal_digit_t> raw_bcd_number_t; // without sign
+
+#ifndef MARTY_BCD_USE_VECTOR
+
+    typedef std::basic_string<decimal_digit_t> raw_bcd_number_t;
+
+#else
+
+    typedef std::vector<decimal_digit_t> raw_bcd_number_t;
+
+#endif
 
 //----------------------------------------------------------------------------
 
