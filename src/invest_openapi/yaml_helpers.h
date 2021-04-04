@@ -11,11 +11,26 @@
 #include <map>
 #include <vector>
 
+#include "ioa_ostream.h"
 #include "yaml-cpp/eventhandler.h"
 #include "yaml-cpp/yaml.h"  // IWYU pragma: keep
 
 #include "qt_helpers.h"
 
+
+inline
+std::string toString( YAML::NodeType::value v )
+{
+    switch(v)
+    {
+        case YAML::NodeType::Undefined: return "Undefined";
+        case YAML::NodeType::Null     : return "Null";
+        case YAML::NodeType::Scalar   : return "Scalar";
+        case YAML::NodeType::Sequence : return "Sequence";
+        case YAML::NodeType::Map      : return "Map";
+        default                       : return "Unknown";
+    }
+}
 
 
 

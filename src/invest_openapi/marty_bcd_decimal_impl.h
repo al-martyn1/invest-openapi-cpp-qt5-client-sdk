@@ -748,8 +748,9 @@ Decimal Decimal::getPermilleOf( Decimal d ) const
 inline
 double Decimal::toDouble() const
 {
-    return bcd::rawToDouble( m_number, m_precision );
+    return m_sign * bcd::rawToDouble( m_number, m_precision );
 }
+
 
 /*
     int                     m_sign;

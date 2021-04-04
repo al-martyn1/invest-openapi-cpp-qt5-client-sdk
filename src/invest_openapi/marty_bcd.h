@@ -699,119 +699,27 @@ const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision
         if (idx>=0 && idx<(int)bcdNumber.size())
             d = bcdNumber[idx];
 
-        #if 0
-        if (decOrderValue==0 && bufPos!=0) // Добрались до первой цифры после точки
-        {
-            if (bufPos<bufSize)
-                pBuf[bufPos++] = sep;
-            //*pBuf++ = sep;
-        }
-        #endif
-
-        #if 1
         if (decOrderValue==-1 && bufPos!=0) // Добрались до первой цифры после точки
         {
             if (bufPos<bufSize)
                 pBuf[bufPos++] = sep;
             //*pBuf++ = sep;
         }
-        #endif
-
 
         if (bufPos<bufSize)
             pBuf[bufPos++] = d + '0';
-        // *pBuf++ = d1 + '0';
-
-        //if (precision>0 && idxFromBegin==(maxIpSize-1))
-        // if (decOrderValue==-1) // Добрались до первой цифры после точки. Но оно не работает. Вернее, работает, но не так
-        // if (decOrderValue==0) // Добрались до первой цифры после точки. Но тоже хуйня какая-то получилась
-
-        #if 0
-        if (decOrderValue==-1) // Добрались до первой цифры после точки
-        {
-            if (bufPos<bufSize)
-                pBuf[bufPos++] = sep;
-            //*pBuf++ = sep;
-        }
-        #endif
-
     }
 
-    if (!bufPos) // место есть, спасибо проверке if (bufSize < 4 )
+    if (!bufPos) // место есть, спасибо --bufSize;
     {
         pBuf[bufPos++] = '0';
     }
 
-    // А как оно вообще раньше работало???
-    pBuf[bufPos] = 0; // место есть, спасибо проверке if (bufSize < 4 )
+    pBuf[bufPos] = 0; // место есть, спасибо --bufSize;
 
     return pBuf;
 
 
-    #if 0
-    int ipSize1      = getIntegerPartSize( bcdNumber, precision );
-                                                                    
-    int maxIpSize    = ipSize1;   
-
-    int precision1   = precision;
-                                                                    
-    int maxPrecision = getMaxPrecision( precision1, 0 );
-    int minPrecision = getMinPrecision( precision1, 0 );
-    int dtPrecision  = maxPrecision - minPrecision;                 
-                                                                    
-    int offset1      = maxPrecision - precision1;                   
-
-    int totalSize    = maxIpSize; /* virtual size */
-    if (maxPrecision>0)
-        totalSize += maxPrecision;
-
-    //if ((int)bufSize < (int)(totalSize+3) )
-    //    throw std::runtime_error("marty::formatRawBcdNumber: bufSize is not enough");
-
-    //char *pBufBegin = pBuf;
-
-    if (bufSize < 4 )
-        throw std::runtime_error("marty::bcd::formatRawBcdNumber: bufSize is not enough");
-
-    --bufSize;
-
-    //bool digitsPrintedAfterDot = false;
-
-    std::size_t bufPos = 0; // bufSize
-
-    for( int idxFromBegin=0; idxFromBegin!=totalSize; ++idxFromBegin)
-    {
-        int idx  = (int)idxFromBegin;
-
-        int idx1 = totalSize - idx - 1;
-
-        idx1 -= (int)maxPrecision - (int)precision1;
-
-        decimal_digit_t d1 = 0;
-
-        if (idx1>=0 && idx1<(int)bcdNumber.size())
-            d1 = bcdNumber[idx1];
-
-        if (bufPos<bufSize)
-            pBuf[bufPos++] = d1 + '0';
-        // *pBuf++ = d1 + '0';
-
-        if (precision>0 && idxFromBegin==(maxIpSize-1))
-        {
-            if (bufPos<bufSize)
-                pBuf[bufPos++] = sep;
-            //*pBuf++ = sep;
-        }
-        
-    }
-
-    //*pBuf = 0;
-    pBuf[bufPos] = 0;
-
-    //return pBufBegin;
-    return pBuf;
-
-    #endif
 }
 
 //----------------------------------------------------------------------------

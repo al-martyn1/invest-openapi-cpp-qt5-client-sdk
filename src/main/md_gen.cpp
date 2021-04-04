@@ -336,6 +336,7 @@ bool splitSqlFieldSpec( const std::string &sqlFieldSpec, std::string &fieldName,
 }
 
 //----------------------------------------------------------------------------
+#if 0
 inline
 std::string toString( YAML::NodeType::value v )
 {
@@ -349,7 +350,7 @@ std::string toString( YAML::NodeType::value v )
         default                       : return "Unknown";
     }
 }
-
+#endif
 //----------------------------------------------------------------------------
 bool isResponseType( const std::string &str )
 {

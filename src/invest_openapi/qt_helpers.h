@@ -8,18 +8,20 @@ QString toString( QNetworkReply &err)
     return err.errorString();
 }
 
-QString toString( YAML::NodeType &y)
+#if 0
+inline
+QString toString( YAML::NodeType::value y)
 {
     switch(y)
     {
-        case YAML::NodeType::value:Undefined  : return "Undefined";
-        case YAML::NodeType::value:Null       : return "Null";
-        case YAML::NodeType::value:Scalar     : return "Scalar";
-        case YAML::NodeType::value:Sequence   : return "Sequence";
-        case YAML::NodeType::value:Map        : return "Map";
+        case YAML::NodeType /* ::value */ ::Undefined  : return "Undefined";
+        case YAML::NodeType /* ::value */ ::Null       : return "Null";
+        case YAML::NodeType /* ::value */ ::Scalar     : return "Scalar";
+        case YAML::NodeType /* ::value */ ::Sequence   : return "Sequence";
+        case YAML::NodeType /* ::value */ ::Map        : return "Map";
     }
-    return std::string("toString( YAML::NodeType ): node type unknown");
+    return  QString /* std::string */ ("toString( YAML::NodeType ): node type unknown");
 }
-
+#endif
 
 
