@@ -239,12 +239,12 @@ public:
     Decimal operator - (            ) const { Decimal res = *this; if (res.m_sign!=0) res.m_sign = -res.m_sign; return res; }
     Decimal operator * ( Decimal d2 ) const { Decimal res = *this; return res.mul(d2); }
     //Decimal divide( Decimal devider, precision_t resultPrecision ) const;
-    Decimal operator / ( Decimal d2 ) const { Decimal res = *this; return res.div(d2, MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION); }
+    Decimal operator / ( Decimal d2 ) const { Decimal res = *this; return res.div(d2, m_divisionPrecision); }
     // Decimal operator % ( Decimal d2 ) const;
     Decimal& operator += ( Decimal d2 ) { return add(d2); }
     Decimal& operator -= ( Decimal d2 ) { return sub(d2); }
     Decimal& operator *= ( Decimal d2 ) { return mul(d2); }
-    Decimal& operator /= ( Decimal d2 ) { return div(d2, MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION); }
+    Decimal& operator /= ( Decimal d2 ) { return div(d2, m_divisionPrecision); }
     // Decimal& operator %= ( Decimal d2 );
 
     //----------------------------------------------------------------------------
@@ -380,6 +380,8 @@ public:
     int precision() const { return m_precision; }
 
     //------------------------------
+    static int  getDivisionPrecision()                                                  { return m_divisionPrecision; }
+    static void setDivisionPrecision( int p = MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION) { m_divisionPrecision = p; }
 
 
 
@@ -411,6 +413,8 @@ protected:
     // if ==  0  - Output stream precision will be used
     // if >   0  - Exact precision will be used
     inline static int       m_outputPrecision = -1;
+
+    inline static int       m_divisionPrecision = MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION;
 
 
 }; // class Decimal
