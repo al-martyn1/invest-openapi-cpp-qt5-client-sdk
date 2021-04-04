@@ -1,9 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <BOOST_ROOT>D:\boost_1_75_0</BOOST_ROOT>
-    <BOOST>$(BOOST_ROOT)</BOOST>
-    <BOOST_LIB>$(BOOST_ROOT)\stage\lib</BOOST_LIB>
+    <BOOST>$(TKF_IOA_BOOST_ROOT)</BOOST>
+    <BOOST_LIB>$(TKF_IOA_BOOST_ROOT)\stage\lib</BOOST_LIB>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <QTDIR>$(TKF_IOA_QTROOT)\msvc2017</QTDIR>
