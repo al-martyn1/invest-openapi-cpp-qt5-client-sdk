@@ -635,7 +635,6 @@ int compareRaws( const raw_bcd_number_t &bcdNumber1, int precision1
     for( int decOrder=decOrderMax+1; decOrder!=decOrderMin; --decOrder )
     {
 
-        //MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder-1, bcdNumber1, bcdNumber2 )
         MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder-1, bcdNumber1, bcdNumber2 )
 
         if (d1<d2)
@@ -1056,17 +1055,17 @@ int rawMultiplication( raw_bcd_number_t &multRes
 
     for( std::size_t i=0; i!=bcdNumber1.size(); ++i)
     {
-        auto d1   = bcdNumber1[i];
+        auto d1 = bcdNumber1[i];
         if (d1==0)
             continue;
 
         for( std::size_t j=0; j!=bcdNumber2.size(); ++j)
         {
-            auto d2   = bcdNumber2[j];
+            auto d2 = bcdNumber2[j];
             if (d2==0)
                 continue;
 
-            digitCur  = d1*d2;
+            digitCur = d1*d2;
 
             partialMult.clear();
             partialMult.insert( partialMult.end(), i+j, 0 ); // extends with zeros on lowest positions
@@ -1083,7 +1082,13 @@ int rawMultiplication( raw_bcd_number_t &multRes
     }
 
     int precisionRes = precision1+precision2;
-    return reducePrecision( multRes, precisionRes );
+
+    #ifdef MARTY_RAW_BCD_REDUCE_PRECISION_ALWAYS
+        return reducePrecision( multRes, precisionRes );
+    #else
+        return precisionRes;
+    #endif
+
 }
 
 //----------------------------------------------------------------------------
@@ -1225,7 +1230,9 @@ int rawDivision( raw_bcd_number_t &quotient
 
     int 
     resultPrecision = dividendPrecision - divisorPrecision;
-    resultPrecision = reducePrecisionFull( quotient, resultPrecision );
+    #ifdef MARTY_RAW_BCD_REDUCE_PRECISION_ALWAYS
+        resultPrecision = reducePrecisionFull( quotient, resultPrecision );
+    #endif
     resultPrecision = reduceLeadingZerosFull( quotient, resultPrecision );
 
     quotient.shrink_to_fit();
