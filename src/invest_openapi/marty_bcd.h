@@ -1013,6 +1013,7 @@ int rawMultiplication( raw_bcd_number_t &multRes
     //MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS();
 
     multRes.clear();
+    multRes.reserve(bcdNumberArg1.size()+bcdNumberArg2.size());
 
     typedef const raw_bcd_number_t*  const_raw_bcd_number_ptr_t;
 
@@ -1179,6 +1180,7 @@ int rawDivision( raw_bcd_number_t &quotient
     //int resultPrecision = dividendPrecision - divisorPrecision;
 
     quotient.clear();
+    quotient.reserve( dividend.size() );
 
     // Делимое должно быть больше делителя, поэтому умножаем на 10 и инкрементируем показатель степени
     // Но сравниваем так, как-будто степень у обоих чисел одинаковая - нулевая

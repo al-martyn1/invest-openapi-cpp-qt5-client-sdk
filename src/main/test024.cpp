@@ -3,6 +3,16 @@
 
  */
 
+#if defined(WIN32) || defined(_WIN32)
+
+    #include "windows.h"
+
+#else // Linups users
+
+
+#endif
+
+
 #include <iostream>
 #include <exception>
 #include <stdexcept>
@@ -13,34 +23,15 @@
 #include <set>
 #include <optional>
 #include <string>
+#include <ostream>
 
 #include <QCoreApplication>
-#include <QString>
-#include <QSettings>
-#include <QTest>
 #include <QDir>
-#include <QElapsedTimer>
 
-#include "invest_openapi/config_helpers.h"
-#include "invest_openapi/api_config.h"
-#include "invest_openapi/auth_config.h"
-#include "invest_openapi/currencies_config.h"
-#include "invest_openapi/balance_config.h"
+#include "invest_openapi/invest_openapi_safe_main.h"
 
-#include "invest_openapi/invest_openapi.h"
-#include "invest_openapi/factory.h"
-#include "invest_openapi/openapi_completable_future.h"
+#include "invest_openapi/marty_bcd_decimal.h"
 
-#include "invest_openapi/database_config.h"
-#include "invest_openapi/database_manager.h"
-#include "invest_openapi/qt_time_helpers.h"
-
-#include "invest_openapi/db_utils.h"
-#include "invest_openapi/ioa_utils.h"
-#include "invest_openapi/ioa_ostream.h"
-#include "invest_openapi/ioa_db_dictionaries.h"
-
-#include "invest_openapi/console_break_helper.h"
 
 
 
@@ -53,16 +44,16 @@
 
 #define NUM_OF_DATA_ITEMS        1000u
 
-#define NUM_OF_ADDITION_TEST_ITERATIONS            20000u
-#define NUM_OF_SUBTRACTION_TEST_ITERATIONS         20000u
-#define NUM_OF_MULTIPLICATION_ITERATIONS           2000u
-#define NUM_OF_DIVISION_ITERATIONS                 2000u
+#define NUM_OF_ADDITION_TEST_ITERATIONS            200000u
+#define NUM_OF_SUBTRACTION_TEST_ITERATIONS         200000u
+#define NUM_OF_MULTIPLICATION_ITERATIONS           20000u
+#define NUM_OF_DIVISION_ITERATIONS                 20000u
 
 // For long numbers test
-#define NUM_OF_LNT_ADDITION_TEST_ITERATIONS        200u
-#define NUM_OF_LNT_SUBTRACTION_TEST_ITERATIONS     200u
-#define NUM_OF_LNT_MULTIPLICATION_ITERATIONS       20u
-#define NUM_OF_LNT_DIVISION_ITERATIONS             20u
+#define NUM_OF_LNT_ADDITION_TEST_ITERATIONS        1000u
+#define NUM_OF_LNT_SUBTRACTION_TEST_ITERATIONS     1000u
+#define NUM_OF_LNT_MULTIPLICATION_ITERATIONS       50u
+#define NUM_OF_LNT_DIVISION_ITERATIONS             50u
 
 
 /*
@@ -274,7 +265,7 @@ std::vector< std::string > generateRealBigAriphmeticSources( FastRandomGenerator
         auto firstDigit = 1 + rnd.generate()%9; // не ноль
         str.push_back('0'+(char)firstDigit);
 
-        auto intPartSize = rnd.generate()%1000; // Еще от 0 до 1000 цифр до запятой
+        auto intPartSize = rnd.generate()%200; // 1000; // Еще от 0 до 1000 цифр до запятой - 1000 - многовато
 
         for( auto i=0u; i!=intPartSize; ++i)
         {
@@ -282,7 +273,7 @@ std::vector< std::string > generateRealBigAriphmeticSources( FastRandomGenerator
             str.push_back('0'+(char)digit);
         }
 
-        auto floatPartSize = rnd.generate()%1000; // Еще от 0 до 1000 цифр после запятой
+        auto floatPartSize = rnd.generate()%200; // 1000; // Еще от 0 до 1000 цифр после запятой
 
         if (floatPartSize!=0)
             str.push_back('.');
@@ -346,8 +337,109 @@ std::uint32_t getMillisecTick()
     #endif
 }
 
+//----------------------------------------------------------------------------
+template< typename VecSrcType, typename VecResType, typename OperationImpl>
+inline
+std::uint32_t performanceTest( const VecSrcType &src
+                             , VecResType       &dst
+                             //, const OperationImpl &operationImpl
+                             , OperationImpl operationImpl
+                             , std::size_t numIters
+                             , const char* title
+                             )
+{
+    using std::cout;
+    using std::endl;
+
+    FastRandomGenerator rnd;
 
 
+    std::uint32_t startTick = getMillisecTick();
+
+    for( auto i=0u; i!=numIters; ++i)
+    {
+        for( auto it=dst.begin(); it!=dst.end(); ++it )
+        {
+            auto idx1 = rnd.generate() % src.size();
+            auto idx2 = rnd.generate() % src.size();
+
+            *it = operationImpl(src[idx1], src[idx2]);
+        }
+    }
+
+    std::uint32_t endTick = getMillisecTick();
+
+    std::uint32_t deltaTick = endTick - startTick;
+
+    cout << title << " elapsed time: "
+         << (deltaTick) << endl;
+
+    cout << std::flush;
+
+    return deltaTick;
+}
+
+//----------------------------------------------------------------------------
+template< typename OperandType > inline
+OperandType plusOperationImpl( const OperandType &o1, const OperandType &o2 )
+{
+    return o1 + o2;
+}
+
+template< typename OperandType > inline
+OperandType minusOperationImpl( const OperandType &o1, const OperandType &o2 )
+{
+    return o1 - o2;
+}
+
+template< typename OperandType > inline
+OperandType mulOperationImpl( const OperandType &o1, const OperandType &o2 )
+{
+    return o1 * o2;
+}
+
+template< typename OperandType > inline
+OperandType divOperationImpl( const OperandType &o1, const OperandType &o2 )
+{
+    return o1 / o2;
+}
+
+//----------------------------------------------------------------------------
+inline
+marty::Decimal makePercentReverseRelatio( const marty::Decimal &d )
+{
+    if (d==0)
+        return 0;
+
+    return (marty::Decimal(100) / d).rounded( 2, marty::Decimal::RoundingMethod::roundMath );
+}
+
+//----------------------------------------------------------------------------
+inline
+void showPerformancePercents( std::uint32_t cppFloatTick
+                            , std::uint32_t decimalTick
+                            )
+{
+    using std::cout;
+    using std::endl;
+
+    if (!decimalTick || !cppFloatTick)
+    {
+        cout << "Performance too fast" << endl;
+        return;
+    }
+
+    marty::Decimal decimalTickDecimal  = decimalTick;
+
+    marty::Decimal cppFloatTickDecimal = cppFloatTick;
+
+    cout << "Performance log" << endl;
+    cout << "    cpp_dec_float : " << cppFloatTickDecimal.getPercentOf(decimalTickDecimal) << "%, x " << makePercentReverseRelatio(cppFloatTickDecimal.getPercentOf(decimalTickDecimal)) << endl;
+    cout << "    Decimal       : " << decimalTickDecimal .getPercentOf(decimalTickDecimal) << "%, x " << makePercentReverseRelatio(decimalTickDecimal .getPercentOf(decimalTickDecimal)) << endl;
+
+    cout << std::flush;
+
+}
 
 
 
@@ -508,6 +600,10 @@ INVEST_OPENAPI_MAIN()
     std::vector< cpp_float_long >   cppFloatLongRealBigNumbers     = convertToLongNumbersVector<cpp_float_long>(realBigNumbers   );
 
 
+
+
+    #if 0
+
     #define TEST_IMPL( src, dst, op, numIters, title )      \
                                                             \
     do                                                      \
@@ -534,61 +630,105 @@ INVEST_OPENAPI_MAIN()
                                                             \
     } while(0)
 
+    #endif
 
-    TEST_IMPL( decimalNormNormalNumbers   , decimalNormResultNumbers  , +, NUM_OF_ADDITION_TEST_ITERATIONS       ,     "Decimal   normal precision, normal numbers, + " );
-    TEST_IMPL( cppFloatNormResultNumbers  , cppFloatNormNormalNumbers , +, NUM_OF_ADDITION_TEST_ITERATIONS       ,     "Cpp Float normal precision, normal numbers, + " );
+    #define TEST_IMPL( src, dst, op, opType, numIters, title )                            \
+                                                                                  \
+                 performanceTest( src, dst, op##OperationImpl<opType>, numIters, title );
+
+
+    #if defined(MARTY_BCD_USE_VECTOR)
+
+        cout<<"BCD strorage type: std::vector" << endl << endl;
+
+    #else
+
+        cout<<"BCD strorage type: std::basic_string" << endl << endl;
+
+    #endif
+
+    std::uint32_t t1, t2;
+
+
+    // Возможно, относительно быстрое деление связано с тем, что по умолчанию при делении используется точность 18 знаков
+    marty::Decimal::setDivisionPrecision(50);
+
+
+    t1 = TEST_IMPL( cppFloatNormNormalNumbers      , cppFloatNormResultNumbers     , plus , cpp_float_normal , NUM_OF_ADDITION_TEST_ITERATIONS        , "Cpp Float normal precision, normal numbers, + " );
+    t2 = TEST_IMPL( decimalNormNormalNumbers       , decimalNormResultNumbers      , plus , decimal_normal   , NUM_OF_ADDITION_TEST_ITERATIONS        , "Decimal   normal precision, normal numbers, + " );
+    showPerformancePercents( t1, t2 );
     cout << endl;
 
-    TEST_IMPL( decimalNormNormalNumbers   , decimalNormResultNumbers  , -, NUM_OF_SUBTRACTION_TEST_ITERATIONS    ,     "Decimal   normal precision, normal numbers, - " );
-    TEST_IMPL( cppFloatNormResultNumbers  , cppFloatNormNormalNumbers , -, NUM_OF_SUBTRACTION_TEST_ITERATIONS    ,     "Cpp Float normal precision, normal numbers, - " );
+    t1 = TEST_IMPL( cppFloatNormNormalNumbers      , cppFloatNormResultNumbers     , minus, cpp_float_normal , NUM_OF_SUBTRACTION_TEST_ITERATIONS     , "Cpp Float normal precision, normal numbers, - " );
+    t2 = TEST_IMPL( decimalNormNormalNumbers       , decimalNormResultNumbers      , minus, decimal_normal   , NUM_OF_SUBTRACTION_TEST_ITERATIONS     , "Decimal   normal precision, normal numbers, - " );
+    showPerformancePercents( t1, t2 );
     cout << endl;
 
-    TEST_IMPL( decimalNormNormalNumbers   , decimalNormResultNumbers  , *, NUM_OF_MULTIPLICATION_ITERATIONS      ,     "Decimal   normal precision, normal numbers, * " );
-    TEST_IMPL( cppFloatNormResultNumbers  , cppFloatNormNormalNumbers , *, NUM_OF_MULTIPLICATION_ITERATIONS      ,     "Cpp Float normal precision, normal numbers, * " );
+    t1 = TEST_IMPL( cppFloatNormNormalNumbers      , cppFloatNormResultNumbers     , mul  , cpp_float_normal , NUM_OF_MULTIPLICATION_ITERATIONS       , "Cpp Float normal precision, normal numbers, * " );
+    t2 = TEST_IMPL( decimalNormNormalNumbers       , decimalNormResultNumbers      , mul  , decimal_normal   , NUM_OF_MULTIPLICATION_ITERATIONS       , "Decimal   normal precision, normal numbers, * " );
+    showPerformancePercents( t1, t2 );
     cout << endl;
 
-    TEST_IMPL( decimalNormNormalNumbers   , decimalNormResultNumbers  , /, NUM_OF_DIVISION_ITERATIONS            ,     "Decimal   normal precision, normal numbers, / " );
-    TEST_IMPL( cppFloatNormResultNumbers  , cppFloatNormNormalNumbers , /, NUM_OF_DIVISION_ITERATIONS            ,     "Cpp Float normal precision, normal numbers, / " );
+    t1 = TEST_IMPL( cppFloatNormNormalNumbers      , cppFloatNormResultNumbers     , div  , cpp_float_normal , NUM_OF_DIVISION_ITERATIONS             , "Cpp Float normal precision, normal numbers, / " );
+    t2 = TEST_IMPL( decimalNormNormalNumbers       , decimalNormResultNumbers      , div  , decimal_normal   , NUM_OF_DIVISION_ITERATIONS             , "Decimal   normal precision, normal numbers, / " );
+    showPerformancePercents( t1, t2 );
     cout << endl;
 
     cout << "------------------------------" << endl;
 
-    TEST_IMPL( decimalNormNormalNumbers   , decimalNormAccountingNumbers  , +, NUM_OF_ADDITION_TEST_ITERATIONS   ,     "Decimal   normal precision, accounting numbers, + " );
-    TEST_IMPL( cppFloatNormResultNumbers  , cppFloatNormAccountingNumbers , +, NUM_OF_ADDITION_TEST_ITERATIONS   ,     "Cpp Float normal precision, accounting numbers, + " );
+    t1 = TEST_IMPL( cppFloatNormAccountingNumbers  , cppFloatNormResultNumbers     , plus , cpp_float_normal , NUM_OF_ADDITION_TEST_ITERATIONS        , "Cpp Float normal precision, accounting numbers, + " );
+    t2 = TEST_IMPL( decimalNormAccountingNumbers   , decimalNormResultNumbers      , plus , decimal_normal   , NUM_OF_ADDITION_TEST_ITERATIONS        , "Decimal   normal precision, accounting numbers, + " );
+    showPerformancePercents( t1, t2 );
     cout << endl;
 
-    TEST_IMPL( decimalNormNormalNumbers   , decimalNormAccountingNumbers  , -, NUM_OF_SUBTRACTION_TEST_ITERATIONS,     "Decimal   normal precision, accounting numbers, - " );
-    TEST_IMPL( cppFloatNormResultNumbers  , cppFloatNormAccountingNumbers , -, NUM_OF_SUBTRACTION_TEST_ITERATIONS,     "Cpp Float normal precision, accounting numbers, - " );
+    t1 = TEST_IMPL( cppFloatNormAccountingNumbers  , cppFloatNormResultNumbers     , minus, cpp_float_normal , NUM_OF_SUBTRACTION_TEST_ITERATIONS     , "Cpp Float normal precision, accounting numbers, - " );
+    t2 = TEST_IMPL( decimalNormAccountingNumbers   , decimalNormResultNumbers      , minus, decimal_normal   , NUM_OF_SUBTRACTION_TEST_ITERATIONS     , "Decimal   normal precision, accounting numbers, - " );
+    showPerformancePercents( t1, t2 );
     cout << endl;
 
-    TEST_IMPL( decimalNormNormalNumbers   , decimalNormAccountingNumbers  , *, NUM_OF_MULTIPLICATION_ITERATIONS  ,     "Decimal   normal precision, accounting numbers, * " );
-    TEST_IMPL( cppFloatNormResultNumbers  , cppFloatNormAccountingNumbers , *, NUM_OF_MULTIPLICATION_ITERATIONS  ,     "Cpp Float normal precision, accounting numbers, * " );
+    t1 = TEST_IMPL( cppFloatNormAccountingNumbers  , cppFloatNormResultNumbers     , mul  , cpp_float_normal , NUM_OF_MULTIPLICATION_ITERATIONS       , "Cpp Float normal precision, accounting numbers, * " );
+    t2 = TEST_IMPL( decimalNormAccountingNumbers   , decimalNormResultNumbers      , mul  , decimal_normal   , NUM_OF_MULTIPLICATION_ITERATIONS       , "Decimal   normal precision, accounting numbers, * " );
+    showPerformancePercents( t1, t2 );
     cout << endl;
 
-    TEST_IMPL( decimalNormNormalNumbers   , decimalNormAccountingNumbers  , /, NUM_OF_DIVISION_ITERATIONS        ,     "Decimal   normal precision, accounting numbers, / " );
-    TEST_IMPL( cppFloatNormResultNumbers  , cppFloatNormAccountingNumbers , /, NUM_OF_DIVISION_ITERATIONS        ,     "Cpp Float normal precision, accounting numbers, / " );
+    t1 = TEST_IMPL( cppFloatNormAccountingNumbers  , cppFloatNormResultNumbers     , div  , cpp_float_normal , NUM_OF_DIVISION_ITERATIONS             , "Cpp Float normal precision, accounting numbers, / " );
+    t2 = TEST_IMPL( decimalNormAccountingNumbers   , decimalNormResultNumbers      , div  , decimal_normal   , NUM_OF_DIVISION_ITERATIONS             , "Decimal   normal precision, accounting numbers, / " );
+    showPerformancePercents( t1, t2 );
     cout << endl;
 
     cout << "------------------------------" << endl;
+
+
+    marty::Decimal::setDivisionPrecision(1000);
+
+    t1 = TEST_IMPL( cppFloatLongRealBigNumbers     , cppFloatLongResultNumbers     , plus , cpp_float_long   , NUM_OF_LNT_ADDITION_TEST_ITERATIONS    , "Cpp Float long precision, big numbers, + " );
+    t2 = TEST_IMPL( decimalLongRealBigNumbers      , decimalLongResultNumbers      , plus , decimal_long     , NUM_OF_LNT_ADDITION_TEST_ITERATIONS    , "Decimal   long precision, big numbers, + " );
+    showPerformancePercents( t1, t2 );
+    cout << endl;
+
+    t1 = TEST_IMPL( cppFloatLongRealBigNumbers     , cppFloatLongResultNumbers     , minus, cpp_float_long   , NUM_OF_SUBTRACTION_TEST_ITERATIONS     , "Cpp Float long precision, big numbers, - " );
+    t2 = TEST_IMPL( decimalLongRealBigNumbers      , decimalLongResultNumbers      , minus, decimal_long     , NUM_OF_LNT_SUBTRACTION_TEST_ITERATIONS , "Decimal   long precision, big numbers, - " );
+    showPerformancePercents( t1, t2 );
+    cout << endl;
+
+    t1 = TEST_IMPL( cppFloatLongRealBigNumbers     , cppFloatLongResultNumbers     , mul  , cpp_float_long   , NUM_OF_LNT_MULTIPLICATION_ITERATIONS   , "Cpp Float long precision, big numbers, * " );
+    t2 = TEST_IMPL( decimalLongRealBigNumbers      , decimalLongResultNumbers      , mul  , decimal_long     , NUM_OF_LNT_MULTIPLICATION_ITERATIONS   , "Decimal   long precision, big numbers, * " );
+    showPerformancePercents( t1, t2 );
+    cout << endl;
+
+    t1 = TEST_IMPL( cppFloatLongRealBigNumbers     , cppFloatLongResultNumbers     , div  , cpp_float_long   , NUM_OF_LNT_DIVISION_ITERATIONS         , "Cpp Float long precision, big numbers, / " );
+    t2 = TEST_IMPL( decimalLongRealBigNumbers      , decimalLongResultNumbers      , div  , decimal_long     , NUM_OF_LNT_DIVISION_ITERATIONS         , "Decimal   long precision, big numbers, / " );
+    showPerformancePercents( t1, t2 );
+    cout << endl;
+
+    cout << "------------------------------" << endl;
+
+
 
 /*
-    std::vector< decimal_normal >   decimalNormNormalNumbers       = convertToLongNumbersVector<decimal_normal>(normalNumbers    );
-    std::vector< decimal_normal >   decimalNormAccountingNumbers   = convertToLongNumbersVector<decimal_normal>(accountingNumbers);
-    std::vector< decimal_normal >   decimalNormRealBigNumbers      = convertToLongNumbersVector<decimal_normal>(realBigNumbers   );
 
-    std::vector< decimal_long >     decimalLongNormalNumbers       = convertToLongNumbersVector<decimal_long>(normalNumbers    );
-    std::vector< decimal_long >     decimalLongAccountingNumbers   = convertToLongNumbersVector<decimal_long>(accountingNumbers);
-    std::vector< decimal_long >     decimalLongRealBigNumbers      = convertToLongNumbersVector<decimal_long>(realBigNumbers   );
-
-
-    std::vector< cpp_float_normal > cppFloatNormNormalNumbers      = convertToLongNumbersVector<cpp_float_normal>(normalNumbers    );
-    std::vector< cpp_float_normal > cppFloatNormAccountingNumbers  = convertToLongNumbersVector<cpp_float_normal>(accountingNumbers);
-    std::vector< cpp_float_normal > cppFloatNormRealBigNumbers     = convertToLongNumbersVector<cpp_float_normal>(realBigNumbers   );
-
-    std::vector< cpp_float_long >   cppFloatLongNormalNumbers      = convertToLongNumbersVector<cpp_float_long>(normalNumbers    );
-    std::vector< cpp_float_long >   cppFloatLongAccountingNumbers  = convertToLongNumbersVector<cpp_float_long>(accountingNumbers);
-    std::vector< cpp_float_long >   cppFloatLongRealBigNumbers     = convertToLongNumbersVector<cpp_float_long>(realBigNumbers   );
 */
+
 
 
 /*

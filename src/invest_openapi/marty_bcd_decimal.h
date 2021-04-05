@@ -386,8 +386,8 @@ public:
 
 
     //------------------------------
-    Decimal getPercentOf( Decimal d ) const;
-    Decimal getPermilleOf( Decimal d ) const;
+    Decimal getPercentOf( const Decimal &d ) const;
+    Decimal getPermilleOf( const Decimal &d ) const;
 
     Decimal rounded( int precision, RoundingMethod roundingMethod ) const;
 

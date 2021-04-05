@@ -726,22 +726,22 @@ Decimal Decimal::rounded( int precision, RoundingMethod roundingMethod ) const
 
 //----------------------------------------------------------------------------
 inline
-Decimal Decimal::getPercentOf( Decimal d ) const
+Decimal Decimal::getPercentOf( const Decimal &d ) const
 {
     //UNDONE: !!! Need to make correct rounding
     Decimal tmp = Decimal(100) * *this;
-    tmp.precisionExpandTo(2); // точнось - сотые доли процента
-    return tmp / d;
+    //tmp.precisionExpandTo(2); // точнось - сотые доли процента
+    return (tmp / d).rounded( 2, RoundingMethod::roundMath );
 }
 
 //----------------------------------------------------------------------------
 inline
-Decimal Decimal::getPermilleOf( Decimal d ) const
+Decimal Decimal::getPermilleOf( const Decimal &d ) const
 {
     //UNDONE: !!! Need to make correct rounding
     Decimal tmp = Decimal(1000) * *this;
-    tmp.precisionExpandTo(2); // точнось - сотые доли промилле
-    return tmp / d;
+    //tmp.precisionExpandTo(2); // точнось - сотые доли промилле
+    return (tmp / d).rounded( 2, RoundingMethod::roundMath );
 }
 
 //----------------------------------------------------------------------------
