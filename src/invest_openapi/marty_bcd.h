@@ -39,6 +39,7 @@
 #if defined(_MSC_VER)
 
     #define MARTY_RAW_BCD_FORCE_INLINE( funcFullSignature ) __forceinline funcFullSignature
+    //#define MARTY_RAW_BCD_FORCE_INLINE( funcFullSignature ) inline funcFullSignature
 
 #else
 
@@ -66,8 +67,24 @@ namespace bcd
 
 //----------------------------------------------------------------------------
 
-typedef signed char     decimal_digit_t;
-typedef unsigned char   decimal_udigit_t;
+// #define MARTY_BCD_SEMI_COMPACT
+
+#if defined(MARTY_BCD_NOT_COMPACT)
+
+    typedef int                   decimal_digit_t;
+    typedef unsigned int          decimal_udigit_t;
+
+#elif defined(MARTY_BCD_SEMI_COMPACT)
+
+    typedef short int             decimal_digit_t;
+    typedef unsigned short int    decimal_udigit_t;
+
+#else
+
+    typedef signed char           decimal_digit_t;
+    typedef unsigned char         decimal_udigit_t;
+
+#endif
 
 
 #ifndef MARTY_BCD_USE_VECTOR
@@ -917,15 +934,58 @@ MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectOverflow( decimal_digit_t 
 }
 
 //----------------------------------------------------------------------------
+MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectOverflowAfterSummation( decimal_digit_t &d ) )
+//inline decimal_digit_t bcdCorrectOverflow( decimal_digit_t &d )
+{
+    /*
+         Коррекцию производим после суммирования одиночных разрядов.
+         Значит, у нас на входе может быть число от 0 до 18.
+         От нуля до девяти - ничего не делаем, возвращаем 0.
+         Если больше - отнимаем 10 от d и возвращаем 1.
+         Обходимся без делений.
+         Должно получиться лучше, чем с делением и взятием остатка.
+
+         Oo-o-ps. Слагаемых может быть три, так что диапазон на входе до 27ми
+     */
+
+    switch(d)
+    {
+        case 0 : case  1: case  2: case  3: case  4: case  5: case  6: case  7: case  8: case  9: 
+             return 0;
+
+        case 10: case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18: case 19:
+             d -= 10;
+             return 1;
+
+        case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: // case 18: case 19:
+             d -= 20;
+             return 2;
+
+        default: 
+             throw std::runtime_error("marty::bcd::bcdCorrectOverflowAfterSummation: something goes wrong");
+
+    }
+
+    return 0;
+}
+
+//----------------------------------------------------------------------------
 MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectCarry( decimal_digit_t &d ) )
 // inline decimal_digit_t bcdCorrectCarry( decimal_digit_t &d )
 {
     if (d>=0)
         return 0;
 
+    // Here d is less than zero
+    // Нафига нам тут такие вычисления?
+
+    /*
     d = -d;
 
     d = ((decimal_digit_t)10) - d;
+    */
+
+    d = ((decimal_digit_t)10) + d;
 
     return 1;
 }
@@ -946,8 +1006,16 @@ inline int rawAdditionImpl( raw_bcd_number_t &bcdRes
 
     MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS_V2( bcdNumber1, precision1, bcdNumber2, precision2 )
 
-    bcdRes.clear();
+    //bcdRes.clear();
     bcdRes.reserve(decOrderDelta+1);
+
+    //bcdRes.assign( (std::size_t)decOrderDelta, (decimal_digit_t)0 );
+
+    bcdRes.resize( (std::size_t)decOrderDelta, (decimal_digit_t)0 );
+    //std::size_t bcdResIdx = 0;
+
+    decimal_digit_t *pCurDigit = &bcdRes[0];
+
 
     decimal_digit_t dPrev = 0;
 
@@ -955,10 +1023,16 @@ inline int rawAdditionImpl( raw_bcd_number_t &bcdRes
     {
         MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder, bcdNumber1, bcdNumber2 )
 
-        decimal_digit_t dCur = dPrev + d1 + d2;
-        dPrev = bcdCorrectOverflow(dCur);
+        // decimal_digit_t dCur = dPrev + d1 + d2;
+        // //dPrev = bcdCorrectOverflow(dCur);
+        // dPrev = bcdCorrectOverflowAfterSummation(dCur);
+        //  
+        // //bcdRes.push_back(dCur);
+        // //bcdRes[bcdResIdx++] = dCur;
 
-        bcdRes.push_back(dCur);
+        *pCurDigit = dPrev + d1 + d2;
+        dPrev = bcdCorrectOverflowAfterSummation(*pCurDigit);
+        ++pCurDigit;
 
     }
 
@@ -1143,7 +1217,8 @@ int rawMultiplication( raw_bcd_number_t &multRes
             partialMult.insert( partialMult.end(), 1, digitCur  );
             partialMult.insert( partialMult.end(), 1, digitHigh );
 
-            rawAdditionImpl( tmpBcd, multRes, 0, partialMult, 0 );
+            //rawAdditionImpl( tmpBcd, multRes, 0, partialMult, 0 );
+            rawAddition( tmpBcd, multRes, 0, partialMult, 0 );
 
             tmpBcd.swap(multRes);
         }
@@ -1287,7 +1362,8 @@ int rawDivision( raw_bcd_number_t &quotient
 
         while( compareRaws( dividend, 0, divisor , 0 ) >= 0 )
         {
-            rawSubtractionImpl( tmp, dividend, 0, divisor , 0 );
+            //rawSubtractionImpl( tmp, dividend, 0, divisor , 0 );
+            rawSubtraction( tmp, dividend, 0, divisor , 0 );
             tmp.swap(dividend);
             ++quotient[0];
         }
