@@ -42,7 +42,7 @@
 #include <cstdlib>
 
 
-#define PROFILING
+// #define PROFILING
 
 
 
@@ -63,7 +63,7 @@
 
 #else
 
-    #define NUM_OF_DATA_ITEMS                          100u
+    #define NUM_OF_DATA_ITEMS                          1000u
    
     #define NUM_OF_ADDITION_TEST_ITERATIONS            50000u
     #define NUM_OF_SUBTRACTION_TEST_ITERATIONS         50000u
@@ -486,10 +486,10 @@ INVEST_OPENAPI_MAIN()
     using std::cout;
     using std::endl;
 
-    cout<<"Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
+    //cout<<"Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
 
-    cout << endl;
-    cout << endl;
+    //cout << endl;
+    //cout << endl;
 
     //cout << "RAND_MAX: " << RAND_MAX << endl;
 
@@ -659,15 +659,26 @@ INVEST_OPENAPI_MAIN()
                  performanceTest( src, dst, op##OperationImpl<opType>, numIters, title );
 
 
-    #if defined(MARTY_BCD_USE_VECTOR)
+    #if defined(WIN64) || defined(_WIN64)
 
-        cout<<"BCD strorage type: std::vector" << endl << endl;
+        cout<<"Platform: x64" << endl;
 
     #else
 
-        cout<<"BCD strorage type: std::basic_string" << endl << endl;
+        cout<<"Platform: x86" << endl;
 
     #endif
+
+    #if defined(MARTY_BCD_USE_VECTOR)
+
+        cout<<"BCD storage type: std::vector" << endl << endl;
+
+    #else
+
+        cout<<"BCD storage type: std::basic_string" << endl << endl;
+
+    #endif
+
 
     std::uint32_t t1, t2;
 
@@ -744,25 +755,25 @@ INVEST_OPENAPI_MAIN()
         showPerformancePercents( t1, t2 );
         cout << endl;
        
-        cout << "------------------------------" << endl;
+        cout << "------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
 
     #else
 
         t2 = TEST_IMPL( decimalNormNormalNumbers       , decimalNormResultNumbers      , plus , decimal_normal   , NUM_OF_ADDITION_TEST_ITERATIONS        , "Decimal   normal precision, normal numbers, + " );
         t2 = TEST_IMPL( decimalNormNormalNumbers       , decimalNormResultNumbers      , minus, decimal_normal   , NUM_OF_SUBTRACTION_TEST_ITERATIONS     , "Decimal   normal precision, normal numbers, - " );
-        t2 = TEST_IMPL( decimalNormNormalNumbers       , decimalNormResultNumbers      , mul  , decimal_normal   , NUM_OF_MULTIPLICATION_ITERATIONS       , "Decimal   normal precision, normal numbers, * " );
-        t2 = TEST_IMPL( decimalNormNormalNumbers       , decimalNormResultNumbers      , div  , decimal_normal   , NUM_OF_DIVISION_ITERATIONS             , "Decimal   normal precision, normal numbers, / " );
+        //t2 = TEST_IMPL( decimalNormNormalNumbers       , decimalNormResultNumbers      , mul  , decimal_normal   , NUM_OF_MULTIPLICATION_ITERATIONS       , "Decimal   normal precision, normal numbers, * " );
+        //t2 = TEST_IMPL( decimalNormNormalNumbers       , decimalNormResultNumbers      , div  , decimal_normal   , NUM_OF_DIVISION_ITERATIONS             , "Decimal   normal precision, normal numbers, / " );
         t2 = TEST_IMPL( decimalNormAccountingNumbers   , decimalNormResultNumbers      , plus , decimal_normal   , NUM_OF_ADDITION_TEST_ITERATIONS        , "Decimal   normal precision, accounting numbers, + " );
         t2 = TEST_IMPL( decimalNormAccountingNumbers   , decimalNormResultNumbers      , minus, decimal_normal   , NUM_OF_SUBTRACTION_TEST_ITERATIONS     , "Decimal   normal precision, accounting numbers, - " );
-        t2 = TEST_IMPL( decimalNormAccountingNumbers   , decimalNormResultNumbers      , mul  , decimal_normal   , NUM_OF_MULTIPLICATION_ITERATIONS       , "Decimal   normal precision, accounting numbers, * " );
-        t2 = TEST_IMPL( decimalNormAccountingNumbers   , decimalNormResultNumbers      , div  , decimal_normal   , NUM_OF_DIVISION_ITERATIONS             , "Decimal   normal precision, accounting numbers, / " );
+        //t2 = TEST_IMPL( decimalNormAccountingNumbers   , decimalNormResultNumbers      , mul  , decimal_normal   , NUM_OF_MULTIPLICATION_ITERATIONS       , "Decimal   normal precision, accounting numbers, * " );
+        //t2 = TEST_IMPL( decimalNormAccountingNumbers   , decimalNormResultNumbers      , div  , decimal_normal   , NUM_OF_DIVISION_ITERATIONS             , "Decimal   normal precision, accounting numbers, / " );
        
         marty::Decimal::setDivisionPrecision(1000);
        
         t2 = TEST_IMPL( decimalLongRealBigNumbers      , decimalLongResultNumbers      , plus , decimal_long     , NUM_OF_LNT_ADDITION_TEST_ITERATIONS    , "Decimal   long precision, big numbers, + " );
         t2 = TEST_IMPL( decimalLongRealBigNumbers      , decimalLongResultNumbers      , minus, decimal_long     , NUM_OF_LNT_SUBTRACTION_TEST_ITERATIONS , "Decimal   long precision, big numbers, - " );
-        t2 = TEST_IMPL( decimalLongRealBigNumbers      , decimalLongResultNumbers      , mul  , decimal_long     , NUM_OF_LNT_MULTIPLICATION_ITERATIONS   , "Decimal   long precision, big numbers, * " );
-        t2 = TEST_IMPL( decimalLongRealBigNumbers      , decimalLongResultNumbers      , div  , decimal_long     , NUM_OF_LNT_DIVISION_ITERATIONS         , "Decimal   long precision, big numbers, / " );
+        //t2 = TEST_IMPL( decimalLongRealBigNumbers      , decimalLongResultNumbers      , mul  , decimal_long     , NUM_OF_LNT_MULTIPLICATION_ITERATIONS   , "Decimal   long precision, big numbers, * " );
+        //t2 = TEST_IMPL( decimalLongRealBigNumbers      , decimalLongResultNumbers      , div  , decimal_long     , NUM_OF_LNT_DIVISION_ITERATIONS         , "Decimal   long precision, big numbers, / " );
 
     #endif
 
