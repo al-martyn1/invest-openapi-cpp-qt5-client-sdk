@@ -62,6 +62,33 @@ void martyLongIntSummTestHelper( IntType u1, IntType u2, IntType &res )
 }
 
 
+template <typename TParam, typename TResult = TParam> inline
+TResult quoteOnlyString( TParam p )
+{
+    return p;
+}
+
+template<> inline
+std::string quoteOnlyString<std::string, std::string>( std::string p )
+{
+    return std::string("\"") + p + std::string("\"");
+}
+
+template<> inline
+std::string quoteOnlyString< const char*, std::string >( const char* p )
+{
+    return quoteOnlyString< std::string, std::string >(p);
+}
+
+template < std::size_t N >
+inline
+std::string quoteOnlyString( const char( &str )[ N ] )
+{
+    return quoteOnlyString< std::string, std::string >(&str[0]);
+}
+
+
+
 
 
 INVEST_OPENAPI_MAIN()
@@ -74,6 +101,14 @@ INVEST_OPENAPI_MAIN()
     // using marty::toString;
     // using marty::fromString;
 
+    #define TEST_QUOTE_ONLY_STRING(param) \
+                 cout << #param << ": " << param << endl;
+
+    /*
+    TEST_QUOTE_ONLY_STRING( quoteOnlyString(7) );
+    TEST_QUOTE_ONLY_STRING( quoteOnlyString("7c") );
+    TEST_QUOTE_ONLY_STRING( quoteOnlyString(std::string("7s")) );
+    */
 
     // simple pretest
     {
@@ -339,6 +374,7 @@ INVEST_OPENAPI_MAIN()
     unsigned totalRawBcdFromStringConvertTests        = 0;
     unsigned totalRawBcdFromStringConvertTestsFailed  = 0;
 
+    cout << "RAW_BCD_FROM_STRING_TEST test suite" << endl;
 
     RAW_BCD_FROM_STRING_TEST( "0.003"          , "0.003"           );
     RAW_BCD_FROM_STRING_TEST( "300"            , "300"             );
@@ -372,6 +408,8 @@ INVEST_OPENAPI_MAIN()
 
     unsigned totalRawBcdZeroTests       = 0;
     unsigned totalRawBcdZeroTestsFailed = 0;
+
+    cout << "RAW_BCD_ZERO_TEST test suite" << endl;
 
     RAW_BCD_ZERO_TEST( "3.141592654"    , false );
     RAW_BCD_ZERO_TEST( "314.15"         , false );
@@ -410,6 +448,8 @@ INVEST_OPENAPI_MAIN()
     unsigned totalRawBcdCompareTests       = 0;
     unsigned totalRawBcdCompareTestsFailed = 0;
 
+    cout << "RAW_BCD_COMPARE_TEST test suite" << endl;
+
     RAW_BCD_COMPARE_TEST( "3.141592654" , "314.15"      , -1 );
     RAW_BCD_COMPARE_TEST( "314.15"      , "3.141592654" ,  1 );
     RAW_BCD_COMPARE_TEST( "3.141592654" , "3.141592654" ,  0 );
@@ -440,6 +480,8 @@ INVEST_OPENAPI_MAIN()
     unsigned totalRawBcdOpTests         = 0;
     unsigned totalRawBcdOpTestsFailed   = 0;
 
+    cout << "RAW_BCD_OP_TEST test suite" << endl;
+
     RAW_BCD_OP_TEST( "3.141592654"   , "314.15"        , rawAddition       , "317.291592654"  ); // 3.141592654 + 314.15 = 317.291592654
     RAW_BCD_OP_TEST( "3.141592654"   , "31.4159"       , rawAddition       , "34.557492654"   ); // 3.141592654+31.4159 = 34.557492654
     RAW_BCD_OP_TEST( "3.141592654"   , "300"           , rawAddition       , "303.141592654"  ); // 3.141592654+300 = 303.141592654
@@ -463,6 +505,12 @@ INVEST_OPENAPI_MAIN()
     //RAW_BCD_OP_TEST( ""      , "" , rawSubtraction, "" ); // 
 
     cout << endl;
+
+    RAW_BCD_OP_TEST( "12345"         , "5439876"       , rawMultiplication , "67155269220"      ); // 
+    RAW_BCD_OP_TEST( "123"           , "456"           , rawMultiplication , "56088"            ); // 
+
+    RAW_BCD_OP_TEST( "12.345"        , "5439.876"      , rawMultiplication , "67155.26922"      ); // 
+    RAW_BCD_OP_TEST( "12.3"          , "4.56"          , rawMultiplication , "56.088"           ); // 
 
     RAW_BCD_OP_TEST( "31.4159"       , "94500"         , rawMultiplication , "2968802.55"       ); // 31.4159*94500 = 2968802.55
     RAW_BCD_OP_TEST( "314.15"        , "3.141592654"   , rawMultiplication , "986.9313322541"   ); // 314.15 * 3.141592654 = 986.9313322541
@@ -511,10 +559,9 @@ INVEST_OPENAPI_MAIN()
     cout << "------------------------------" << endl << endl << endl;
 
 
-
-
     unsigned totalCtorTests       = 0;
     unsigned totalCtorTestsFailed = 0;
+
 
 
     #define DECIMAL_CTOR_TEST( val, strResForCompare )                                      \
@@ -529,7 +576,7 @@ INVEST_OPENAPI_MAIN()
                        ++totalCtorTestsFailed;                                              \
                                                                                             \
                                                                                             \
-                    cout << "[" << (bGood ? "+" : "-") << "]  " << (decimal<0 ? "" : " ") << val << " converted to Decimal is '" << strDecimal << "'"; \
+                    cout << "[" << (bGood ? "+" : "-") << "]  " << (decimal<0 ? "" : " ") << quoteOnlyString(val) << " converted to Decimal is \"" << strDecimal << "\""; \
                     if (!bGood)                                                             \
                     {                                                                       \
                         cout << " (expected '" << strResForCompare << "')";                 \
@@ -540,6 +587,7 @@ INVEST_OPENAPI_MAIN()
                         THROW_ERROR();                                                      \
                                                                                             \
                 } while(0)
+
 
     #define DECIMAL_CTOR_TEST_WITH_PREC( val, prec, strResForCompare )                      \
                 do                                                                          \
@@ -553,7 +601,7 @@ INVEST_OPENAPI_MAIN()
                        ++totalCtorTestsFailed;                                              \
                                                                                             \
                                                                                             \
-                    cout << "[" << (bGood ? "+" : "-") << "]  " << (decimal<0 ? "" : " ") << val << " converted to Decimal with precision " << prec << " is '" << strDecimal << "'"; \
+                    cout << "[" << (bGood ? "+" : "-") << "]  " << (decimal<0 ? "" : " ") << val << " converted to Decimal with precision " << prec << " is \"" << strDecimal << "\""; \
                     if (!bGood)                                                             \
                     {                                                                       \
                         cout << " (expected '" << strResForCompare << "')";                 \
@@ -569,6 +617,8 @@ INVEST_OPENAPI_MAIN()
     cout << "double precision: " << std::numeric_limits<double>::digits10 << endl;
     cout << "float precision : " << std::numeric_limits<float> ::digits10 << endl;
     cout << endl;
+
+    cout << "DECIMAL_CTOR_TEST test suite" << endl;
 
     DECIMAL_CTOR_TEST( (std::uint64_t)3    ,       "3" );
     DECIMAL_CTOR_TEST( (std::int64_t )7    ,       "7" );
@@ -631,6 +681,8 @@ INVEST_OPENAPI_MAIN()
     unsigned totalOpTests       = 0;
     unsigned totalOpTestsFailed = 0;
 
+    cout << "DECIMAL_OP_TEST test suite" << endl;
+
     DECIMAL_OP_TEST(  10, + , - 2,  "8" );
     DECIMAL_OP_TEST(   2, + , - 2,  "0" );
     DECIMAL_OP_TEST(   2, + , -10, "-8" );
@@ -660,6 +712,9 @@ INVEST_OPENAPI_MAIN()
     DECIMAL_OP_TEST(   2, - ,  10,  "-8" );
 
     cout << endl;
+
+    DECIMAL_OP_TEST( 12345, * , 5439876, "67155269220");
+    DECIMAL_OP_TEST( 123, * , 456, "56088");
 
     DECIMAL_OP_TEST(   0, * , - 2,   "0" );
     DECIMAL_OP_TEST(  10, * ,   0,   "0" );
@@ -753,6 +808,8 @@ INVEST_OPENAPI_MAIN()
     unsigned totalMinPartTests       = 0;
     unsigned totalMinPartTestsFailed = 0;
 
+    cout << "DECIMAL_MIN_PART_TEST test suite" << endl;
+
     DECIMAL_MIN_PART_TEST(               "123.01",                  "0.01",                  "0.02",                  "0.05" );
     DECIMAL_MIN_PART_TEST(               "13.101",                 "0.001",                 "0.002",                 "0.005" );
     DECIMAL_MIN_PART_TEST(               "3.1415",                "0.0001",                "0.0002",                "0.0005" );
@@ -817,15 +874,12 @@ INVEST_OPENAPI_MAIN()
     auto    d1_2_sum_plus_15_d = d1_2_sum + (unsigned     )(15); PRINT(d1_2_sum_plus_15_d);
     auto    d1_2_sum_plus_15_e = d1_2_sum + (double       )(15); PRINT(d1_2_sum_plus_15_e);
 
-
     Decimal divideD1   = Decimal( 100, DecimalPrecision(2) );
     Decimal divideD2   = Decimal(  25, DecimalPrecision(1) );
     Decimal divideRes  = divideD1.divide(divideD2, 6);
     
     cout << divideRes.toString() << endl;
     */
-
-
 
     #if 1
 
@@ -894,8 +948,11 @@ INVEST_OPENAPI_MAIN()
 
     // https://en.wikipedia.org/wiki/Rounding#Round_half_to_odd
 
-    cout << endl;
-    cout << "------------------------------" << endl;
+    //cout << endl;
+    //cout << "------------------------------" << endl;
+
+    cout << "ROUNDING_TEST test suite" << endl;
+
     ROUNDING_TEST(   23.0  ,  "23", 0, roundFloor           );
     ROUNDING_TEST(   23.01 ,  "23", 0, roundFloor           );
     ROUNDING_TEST(   23.001,  "23", 0, roundFloor           );

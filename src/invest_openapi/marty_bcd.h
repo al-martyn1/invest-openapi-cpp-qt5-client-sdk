@@ -35,6 +35,14 @@
 #endif
 
 
+#if defined(DEBUG) || defined(_DEBUG)
+
+    #if !defined(MARTY_BCD_USE_VECTOR)
+        #define MARTY_BCD_USE_VECTOR
+    #endif
+
+#endif
+
 
 #if defined(_MSC_VER)
 
@@ -921,6 +929,7 @@ double rawToDouble( const raw_bcd_number_t &bcdNumber, int precision )
 }
 
 //----------------------------------------------------------------------------
+/*
 MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectOverflow( decimal_digit_t &d ) )
 //inline decimal_digit_t bcdCorrectOverflow( decimal_digit_t &d )
 {
@@ -930,6 +939,16 @@ MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectOverflow( decimal_digit_t 
 
     d %= 10;
 
+    return res;
+}
+*/
+
+template< typename IntType >
+inline
+IntType bcdCorrectOverflow( IntType &d )
+{
+    IntType res = d / 10;
+    d %= 10;
     return res;
 }
 
@@ -1017,9 +1036,10 @@ inline int rawAdditionImpl( raw_bcd_number_t &bcdRes
     decimal_digit_t *pCurDigit = &bcdRes[0];
 
 
-    decimal_digit_t dPrev = 0;
+    decimal_digit_t dPrevOverflow = 0;
 
-    for( int decOrder=decOrderMin; decOrder!=(decOrderMax+1); ++decOrder )
+    //for( int decOrder=decOrderMin; decOrder!=(decOrderMax+1); ++decOrder )
+    for( int decOrder=decOrderMin; decOrder!=decOrderMax; ++decOrder )
     {
         MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder, bcdNumber1, bcdNumber2 )
 
@@ -1030,14 +1050,14 @@ inline int rawAdditionImpl( raw_bcd_number_t &bcdRes
         // //bcdRes.push_back(dCur);
         // //bcdRes[bcdResIdx++] = dCur;
 
-        *pCurDigit = dPrev + d1 + d2;
-        dPrev = bcdCorrectOverflowAfterSummation(*pCurDigit);
+        *pCurDigit = dPrevOverflow + d1 + d2;
+        dPrevOverflow = bcdCorrectOverflowAfterSummation(*pCurDigit);
         ++pCurDigit;
 
     }
 
-    if (dPrev)
-        bcdRes.push_back(dPrev);
+    if (dPrevOverflow)
+        bcdRes.push_back(dPrevOverflow);
 
     return maxPrecision;
 }
@@ -1081,7 +1101,8 @@ inline int rawSubtractionImpl( raw_bcd_number_t &bcdRes
 
     decimal_digit_t dPrev = 0;
 
-    for( int decOrder=decOrderMin; decOrder!=(decOrderMax+1); ++decOrder )
+    //for( int decOrder=decOrderMin; decOrder!=(decOrderMax+1); ++decOrder )
+    for( int decOrder=decOrderMin; decOrder!=decOrderMax; ++decOrder )
     {
         MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder, bcdNumber1, bcdNumber2 )
 
@@ -1153,9 +1174,6 @@ int rawMultiplication( raw_bcd_number_t &multRes
 {
     //MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS();
 
-    multRes.clear();
-    multRes.reserve(bcdNumberArg1.size()+bcdNumberArg2.size());
-
     typedef const raw_bcd_number_t*  const_raw_bcd_number_ptr_t;
 
     const_raw_bcd_number_ptr_t ptrBcdNumber1 = &bcdNumberArg1;
@@ -1182,8 +1200,82 @@ int rawMultiplication( raw_bcd_number_t &multRes
     const raw_bcd_number_t &bcdNumber2 = *ptrBcdNumber2;
 
 
-    //raw_bcd_number_t multRes;
+    multRes.clear();
     multRes.reserve( bcdNumber1.size() + bcdNumber2.size() );
+
+    // Алгоритм Фюрера - https://ru.wikipedia.org/wiki/%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_%D0%A4%D1%8E%D1%80%D0%B5%D1%80%D0%B0
+    // Интересно про свёртки
+
+    // Проверил на бамажке - вроде работает. А что самое прикольное - гораздо проще всратого умножения столбиком.
+    // В статье по ссылке - число маленькое, было интересно, когда элемент свертки перевалит за два разряда.
+    // Будет не лень - настучу свой пример.
+
+    // Используем basic_string - при небольших размерах она не лезет в динамическую память.
+    // А ведёт себя так же, как вектор
+    // Но с вектором отлаживаться удобнее - он красивше выглядит в отладчике
+
+    #if defined(MARTY_BCD_USE_VECTOR)
+
+        typedef std::vector<unsigned>       convolution_vector_t; 
+
+    #else
+
+        typedef std::basic_string<unsigned> convolution_vector_t; 
+
+    #endif
+
+    convolution_vector_t convolution = convolution_vector_t( bcdNumber1.size() + bcdNumber2.size(), 0 );
+
+
+    // Итак, младшие разряды у нас идут первыми
+
+    // Внешний цикл - по множителю (но на самом деле скорее всего пофик - но удобнее сравнивать с тем, что посчитано ручками)
+
+    for( std::size_t i=0; i!=bcdNumber2.size(); ++i)
+    {
+        for( std::size_t j=0; j!=bcdNumber1.size(); ++j)
+        {
+            convolution[i+j] += (((unsigned)bcdNumber2[i]) * ((unsigned)bcdNumber1[j]));
+        }
+    }
+
+    // Убираем ведущие нули - они могли появится, если на входе были числа с ведущими нулями, или, если старшие разяды были мелковаты 
+    // и из них некторыхбыло переноса
+    std::size_t convSize = convolution.size();
+    for(; convSize!=0; --convSize )
+    {
+        if (convolution[convSize-1]!=0)
+            break;
+    }
+
+    unsigned overflow = 0;
+
+    for( std::size_t i=0; i!=convSize; ++i )
+    {
+        convolution[i] += overflow;
+        overflow = bcdCorrectOverflow(convolution[i]);
+        multRes.push_back((decimal_digit_t)convolution[i]);
+    }
+
+    if (overflow)
+    {
+        multRes.push_back((decimal_digit_t)overflow);
+    }
+
+
+    // IntType bcdCorrectOverflow( IntType &d )
+
+
+    int precisionRes = precision1+precision2;
+
+    return reducePrecision( multRes, precisionRes );
+
+    #if 0
+
+    /* При оптимизациях чего-то сломалось.
+       Ну, а так как всё равно думал переписать, то закоментим.
+
+     */
 
     raw_bcd_number_t partialMult;
     partialMult.reserve( bcdNumber1.size() + bcdNumber2.size() );
@@ -1231,6 +1323,8 @@ int rawMultiplication( raw_bcd_number_t &multRes
     // #else
     //    return precisionRes;
     //#endif
+
+    #endif
 
 }
 
