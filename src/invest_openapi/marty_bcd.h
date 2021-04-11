@@ -129,6 +129,9 @@ void clearShrink( raw_bcd_number_t &bcdNumber )
     запись 1,546 в английской нотации обозначает одна тысяча пятьсот сорок шесть, а в русской — одна целая пятьсот сорок шесть тысячных).
     Поэтому, чтобы избежать неоднозначности, международные стандарты (ISO 31-0, Международное бюро мер и весов, ИЮПАК) рекомендуют 
     использовать для разделителя групп разрядов только неразрывный пробел (или тонкую шпацию при типографском наборе)
+
+    Пока разделители групп разрядов не реализованы.
+
  */
 
 typedef const char* const_char_ptr;
@@ -265,21 +268,12 @@ int reducePrecision( raw_bcd_number_t &bcdNumber, int precision )
             break;
     }
 
-    // std::size_t numberOfPositionsToReduce = i;
-    //  
-    // // if (numberOfPositionsToReduce > precision)
-    // //     numberOfPositionsToReduce = precision;
-    //  
-    // if (!numberOfPositionsToReduce)
-    //     return precision;
-
     raw_bcd_number_t::iterator eraseEnd = bcdNumber.begin();
-    //std::advance(eraseEnd, numberOfPositionsToReduce);
     std::advance(eraseEnd, (std::size_t)i);
 
     bcdNumber.erase( bcdNumber.begin(), eraseEnd );
 
-    return precision - i; // numberOfPositionsToReduce;
+    return precision - i;
 }
 
 //----------------------------------------------------------------------------
@@ -318,11 +312,6 @@ int reducePrecisionFull( raw_bcd_number_t &bcdNumber, int precision )
 inline
 int reduceLeadingZeros( raw_bcd_number_t &bcdNumber, int precision )
 {
-    /*
-    bool  bEmpty    =  bcdNumber.empty();
-    bool nbEmpty    = !bcdNumber.empty();
-    bool backIsZero = 
-    */
     while( (bcdNumber.size()>0) && (bcdNumber.back()==0) && (bcdNumber.size() > (precision+1)) )
     {
         bcdNumber.pop_back();
@@ -522,18 +511,6 @@ raw_bcd_number_t::size_type getLsdIndex( const raw_bcd_number_t &bcdNumber )
 MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t getDigitByIndex( const raw_bcd_number_t &bcdNumber, int idx ) )
 //inline decimal_digit_t getDigitByIndex( const raw_bcd_number_t &bcdNumber, int idx )
 {
-/*
-    if (idx<0)
-        return 0;
-
-    if (idx>=(int)bcdNumber.size())
-        return 0;
-
-    return bcdNumber[idx];
-*/
-
-    // More faster version
-
     return (((unsigned)idx) < bcdNumber.size()) ? bcdNumber[idx] : (decimal_digit_t)0;
 }
 
@@ -578,23 +555,6 @@ MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t getDigitByIndex( const raw_bcd_numbe
                 decimal_digit_t d1 = getDigitByIndex(bcdNumber1, (decOrderValue) - decOrderMin1 );                \
                 decimal_digit_t d2 = getDigitByIndex(bcdNumber2, (decOrderValue) - decOrderMin2 );
 
-#if 0
-
-                int idx1 = (decOrderValue) - decOrderMin1;                                                        \
-                int idx2 = (decOrderValue) - decOrderMin2;                                                        \
-                                                                                                                  \
-                decimal_digit_t d1 = 0;                                                                           \
-                decimal_digit_t d2 = 0;                                                                           \
-                                                                                                                  \
-                if (idx1>=0 && idx1<(int)bcdNumber1.size())                                                       \
-                    d1 = bcdNumber1[idx1];                                                                        \
-                                                                                                                  \
-                if (idx2>=0 && idx2<(int)bcdNumber2.size())                                                       \
-                    d2 = bcdNumber2[idx2];
-
-#endif
-
-// getDigitByIndex
 //----------------------------------------------------------------------------
 inline
 int getDecimalOrderByIndex( raw_bcd_number_t::size_type idx, const raw_bcd_number_t &bcdNumber, int precision )
@@ -726,14 +686,10 @@ const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision
     std::size_t bufPos = 0;
 
     
-    //int maxOrder = getDecimalOrderByIndex( getMsdIndex(bcdNumber), bcdNumber, precision );
-
     int decOrderMin = -precision;
     if (decOrderMin>0)
         decOrderMin = 0; // Не гоже отрезать значащие нули справа от недробной части
 
-
-    // int decOrderMax = decOrderMin + (int)bcdNumber.size();
 
     // Тут мы точно находим максимальный значащий разряд, опуская возможные ведущие нули
     // При операциях на них плевать, тем более что нули во всех операциях оптимизированы
@@ -764,15 +720,6 @@ const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision
 
         const int decOrderValue = decOrder-1; 
 
-        /*
-        int idx = (decOrderValue) - (-precision); // decOrderMin;
-
-        decimal_digit_t d = 0;
-
-        if (idx>=0 && idx<(int)bcdNumber.size())
-            d = bcdNumber[idx];
-        */
-
         decimal_digit_t d = getDigitByIndex( bcdNumber, (decOrderValue) - (-precision) );
 
         if (decOrderValue==-1 && bufPos!=0) // Добрались до первой цифры после точки
@@ -795,7 +742,6 @@ const char* formatRawBcdNumber( const raw_bcd_number_t &bcdNumber, int precision
 
     return pBuf;
 
-
 }
 
 //----------------------------------------------------------------------------
@@ -812,15 +758,6 @@ int getLowestDigit( const raw_bcd_number_t &bcdNumber, int precision )
 {
     const int decOrderMin   = -precision;
     const int decOrderValue = decOrderMin; // decOrder-1; 
-
-    /*
-    int idx = (decOrderValue) - (-precision); // decOrderMin;
-
-    decimal_digit_t d = 0;
-
-    if (idx>=0 && idx<(int)bcdNumber.size())
-        d = bcdNumber[idx];
-    */
 
     decimal_digit_t d = getDigitByIndex( bcdNumber, (decOrderValue) - (-precision) );
 
@@ -851,15 +788,6 @@ std::uint64_t rawToInt( const raw_bcd_number_t &bcdNumber, int precision )
     for( int decOrder=decOrderMax+1; decOrder!=decOrderMin; --decOrder )
     {
         const int decOrderValue = decOrder-1; 
-
-        /*
-        int idx = (decOrderValue) - (-precision); // decOrderMin;
-
-        decimal_digit_t d = 0;
-
-        if (idx>=0 && idx<(int)bcdNumber.size())
-            d = bcdNumber[idx];
-        */
 
         decimal_digit_t d = getDigitByIndex( bcdNumber, (decOrderValue) - (-precision) );
 
@@ -903,15 +831,6 @@ double rawToDouble( const raw_bcd_number_t &bcdNumber, int precision )
     {
         const int decOrderValue = decOrder-1; 
 
-        /*
-        int idx = (decOrderValue) - (-precision); // decOrderMin;
-
-        decimal_digit_t d = 0;
-
-        if (idx>=0 && idx<(int)bcdNumber.size())
-            d = bcdNumber[idx];
-        */
-
         decimal_digit_t d = getDigitByIndex( bcdNumber, (decOrderValue) - (-precision) );
 
         if (decOrderValue<=-1) // Добрались до цифр после точки
@@ -929,20 +848,6 @@ double rawToDouble( const raw_bcd_number_t &bcdNumber, int precision )
 }
 
 //----------------------------------------------------------------------------
-/*
-MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectOverflow( decimal_digit_t &d ) )
-//inline decimal_digit_t bcdCorrectOverflow( decimal_digit_t &d )
-{
-    // d must be >= 0
-    
-    decimal_digit_t res = d / 10;
-
-    d %= 10;
-
-    return res;
-}
-*/
-
 template< typename IntType >
 inline
 IntType bcdCorrectOverflow( IntType &d )
@@ -976,7 +881,7 @@ MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectOverflowAfterSummation( de
              d -= 10;
              return 1;
 
-        case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27: // case 18: case 19:
+        case 20: case 21: case 22: case 23: case 24: case 25: case 26: case 27:
              d -= 20;
              return 2;
 
@@ -996,13 +901,6 @@ MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectCarry( decimal_digit_t &d 
         return 0;
 
     // Here d is less than zero
-    // Нафига нам тут такие вычисления?
-
-    /*
-    d = -d;
-
-    d = ((decimal_digit_t)10) - d;
-    */
 
     d = ((decimal_digit_t)10) + d;
 
@@ -1025,30 +923,18 @@ inline int rawAdditionImpl( raw_bcd_number_t &bcdRes
 
     MARTY_BCD_DECLARE_PRECISION_VIRTUAL_ADJUSTMENT_VARS_V2( bcdNumber1, precision1, bcdNumber2, precision2 )
 
-    //bcdRes.clear();
     bcdRes.reserve(decOrderDelta+1);
 
-    //bcdRes.assign( (std::size_t)decOrderDelta, (decimal_digit_t)0 );
-
     bcdRes.resize( (std::size_t)decOrderDelta, (decimal_digit_t)0 );
-    //std::size_t bcdResIdx = 0;
 
     decimal_digit_t *pCurDigit = &bcdRes[0];
 
 
     decimal_digit_t dPrevOverflow = 0;
 
-    //for( int decOrder=decOrderMin; decOrder!=(decOrderMax+1); ++decOrder )
     for( int decOrder=decOrderMin; decOrder!=decOrderMax; ++decOrder )
     {
         MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder, bcdNumber1, bcdNumber2 )
-
-        // decimal_digit_t dCur = dPrev + d1 + d2;
-        // //dPrev = bcdCorrectOverflow(dCur);
-        // dPrev = bcdCorrectOverflowAfterSummation(dCur);
-        //  
-        // //bcdRes.push_back(dCur);
-        // //bcdRes[bcdResIdx++] = dCur;
 
         *pCurDigit = dPrevOverflow + d1 + d2;
         dPrevOverflow = bcdCorrectOverflowAfterSummation(*pCurDigit);
@@ -1101,7 +987,6 @@ inline int rawSubtractionImpl( raw_bcd_number_t &bcdRes
 
     decimal_digit_t dPrev = 0;
 
-    //for( int decOrder=decOrderMin; decOrder!=(decOrderMax+1); ++decOrder )
     for( int decOrder=decOrderMin; decOrder!=decOrderMax; ++decOrder )
     {
         MARTY_BCD_PRECISION_GET_DIGITS_BY_VIRTUAL_ADJUSTMENT_VARS( decOrder, bcdNumber1, bcdNumber2 )
@@ -1146,8 +1031,6 @@ raw_bcd_number_t rawBcdMakeZeroPrecisionFromNegative( const raw_bcd_number_t &bc
 {
     if (precision>=0)
         return bcdNumber;
-
-    // precision < 0 here
 
     precision = -precision;
 
@@ -1263,68 +1146,9 @@ int rawMultiplication( raw_bcd_number_t &multRes
     }
 
 
-    // IntType bcdCorrectOverflow( IntType &d )
-
-
     int precisionRes = precision1+precision2;
 
     return reducePrecision( multRes, precisionRes );
-
-    #if 0
-
-    /* При оптимизациях чего-то сломалось.
-       Ну, а так как всё равно думал переписать, то закоментим.
-
-     */
-
-    raw_bcd_number_t partialMult;
-    partialMult.reserve( bcdNumber1.size() + bcdNumber2.size() );
-
-    raw_bcd_number_t tmpBcd;
-    tmpBcd.reserve(multRes.size());
-
-    decimal_digit_t digitHigh = 0;
-    decimal_digit_t digitCur  = 0;
-
-
-    for( std::size_t i=0; i!=bcdNumber1.size(); ++i)
-    {
-        auto d1 = bcdNumber1[i];
-        if (d1==0)
-            continue;
-
-        for( std::size_t j=0; j!=bcdNumber2.size(); ++j)
-        {
-            auto d2 = bcdNumber2[j];
-            if (d2==0)
-                continue;
-
-            digitCur = d1*d2;
-
-            partialMult.clear();
-            partialMult.insert( partialMult.end(), i+j, 0 ); // extends with zeros on lowest positions
-
-            digitHigh = bcdCorrectOverflow(digitCur);
-
-            partialMult.insert( partialMult.end(), 1, digitCur  );
-            partialMult.insert( partialMult.end(), 1, digitHigh );
-
-            //rawAdditionImpl( tmpBcd, multRes, 0, partialMult, 0 );
-            rawAddition( tmpBcd, multRes, 0, partialMult, 0 );
-
-            tmpBcd.swap(multRes);
-        }
-    }
-
-    int precisionRes = precision1+precision2;
-
-    // #ifdef MARTY_RAW_BCD_REDUCE_PRECISION_ALWAYS
-        return reducePrecision( multRes, precisionRes );
-    // #else
-    //    return precisionRes;
-    //#endif
-
-    #endif
 
 }
 
@@ -1394,54 +1218,16 @@ int rawDivision( raw_bcd_number_t &quotient
     // Не размеры надо выровнять, а порядок старшей значащей цифры (вернее, положение в векторе, 
     // так как порядок далее везде берём нулевой при вычислениях)
 
-    /*
-    int dividendMsdOrder = getDecimalOrderByIndex( getMsdIndex(dividend), dividend, dividendPrecision );
-    int divisorMsdOrder  = getDecimalOrderByIndex( getMsdIndex(divisor ), divisor , divisorPrecision  );
-
-    if (dividendMsdOrder > divisorMsdOrder)
-    {
-        std::cout<<"NNN1" << std::endl;
-        int delta = dividendMsdOrder - divisorMsdOrder;
-        divisor.insert( divisor.begin(), delta, 0 );
-        divisorPrecision += (int)delta;
-    }
-    if (dividendMsdOrder < divisorMsdOrder)
-    {
-        std::cout<<"NNN2" << std::endl;
-        int delta = divisorMsdOrder - dividendMsdOrder;
-        dividend.insert( dividend.begin(), delta, 0 );
-        dividendPrecision += (int)delta;
-    }
-    */
-
-//int getDecimalOrderByIndex( raw_bcd_number_t::size_type idx, const raw_bcd_number_t &bcdNumber, int precision )
-//raw_bcd_number_t::size_type getMsdIndex( const raw_bcd_number_t &bcdNumber )
-
-
-
-    //int resultPrecision = dividendPrecision - divisorPrecision;
-
     quotient.clear();
     quotient.reserve( dividend.size() );
 
     // Делимое должно быть больше делителя, поэтому умножаем на 10 и инкрементируем показатель степени
     // Но сравниваем так, как-будто степень у обоих чисел одинаковая - нулевая
-    //while( compareRaws( dividend, dividendPrecision, divisor , divisorPrecision ) < 0 )
-    /*
-    while( compareRaws( dividend,                 0, divisor ,                0 ) < 0 )
-    {
-        dividend.insert( dividend.begin(), 1, 0 );
-        ++dividendPrecision;
-    }
-    */
-
-    //quotient.reserve(decOrderDelta+1);
 
     raw_bcd_number_t tmp;
 
     quotient.insert( quotient.begin(), 1, 0 );
 
-    //while( (dividendPrecision - divisorPrecision) < 18 )
     while( rawDivisionCheckContinueCondition( dividendPrecision, divisorPrecision, deltaCmp, relativeDelta ) )
     {
         if (checkForZero( dividend ) )
@@ -1456,7 +1242,6 @@ int rawDivision( raw_bcd_number_t &quotient
 
         while( compareRaws( dividend, 0, divisor , 0 ) >= 0 )
         {
-            //rawSubtractionImpl( tmp, dividend, 0, divisor , 0 );
             rawSubtraction( tmp, dividend, 0, divisor , 0 );
             tmp.swap(dividend);
             ++quotient[0];
@@ -1464,15 +1249,10 @@ int rawDivision( raw_bcd_number_t &quotient
 
     }
     
-    //return 0;
-
     int 
     resultPrecision = dividendPrecision - divisorPrecision;
-    //#ifdef MARTY_RAW_BCD_REDUCE_PRECISION_ALWAYS
-        //resultPrecision = reducePrecisionFull( quotient, resultPrecision );
-        resultPrecision = reducePrecision( quotient, resultPrecision );
-    //#endif
-    //resultPrecision = reduceLeadingZerosFull( quotient, resultPrecision );
+
+    resultPrecision = reducePrecision( quotient, resultPrecision );
     resultPrecision = reduceLeadingZeros( quotient, resultPrecision );
 
     //quotient.shrink_to_fit();
@@ -1630,7 +1410,7 @@ int templateForOperation( const raw_bcd_number_t &bcdNumber1, int precision1
 
 
      //TODO: !!! Оптимизация умножения/деления на степень 10
-     // В 'том случае ващет достаточно подвинуть десятичную точку. 
+     // В этом случае ващет достаточно подвинуть десятичную точку. 
      // Поэтому надо проверять параметры, не являются ли они 10 в степени N.
      // Для умножения - оба, для деления - только делитель.
      // Проверка довольно копеечная, но если числа вида степень десяти очень редки,

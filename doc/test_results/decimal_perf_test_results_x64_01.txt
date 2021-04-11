@@ -1,163 +1,157 @@
-Path to exe   : F:/_rtc/Projects/invest-openapi-cpp-qt5-client-sdk/_deploy/msvc2017/x64/Release
+Platform: x64
+BCD storage type: std::basic_string
 
-
-BCD strorage type: std::basic_string
-
-Cpp Float normal precision, normal numbers, +  elapsed time: 12703
-Decimal   normal precision, normal numbers, +  elapsed time: 26438
+Cpp Float normal precision, normal numbers, +  elapsed time: 11203
+Decimal   normal precision, normal numbers, +  elapsed time: 29781
 Performance log
-    cpp_dec_float : 48.05%, x 2.08
+    cpp_dec_float : 37.62%, x 2.66
     Decimal       : 100%, x 1
 
-Cpp Float normal precision, normal numbers, -  elapsed time: 12297
-Decimal   normal precision, normal numbers, -  elapsed time: 28906
+Cpp Float normal precision, normal numbers, -  elapsed time: 12610
+Decimal   normal precision, normal numbers, -  elapsed time: 31250
 Performance log
-    cpp_dec_float : 42.54%, x 2.35
+    cpp_dec_float : 40.35%, x 2.48
     Decimal       : 100%, x 1
 
-Cpp Float normal precision, normal numbers, *  elapsed time: 1516
-Decimal   normal precision, normal numbers, *  elapsed time: 60890
+Cpp Float normal precision, normal numbers, *  elapsed time: 1500
+Decimal   normal precision, normal numbers, *  elapsed time: 6765
 Performance log
-    cpp_dec_float : 2.49%, x 40.16
+    cpp_dec_float : 22.17%, x 4.51
     Decimal       : 100%, x 1
 
-Cpp Float normal precision, normal numbers, /  elapsed time: 11110
-Decimal   normal precision, normal numbers, /  elapsed time: 448640
+Cpp Float normal precision, normal numbers, /  elapsed time: 11485
+Decimal   normal precision, normal numbers, /  elapsed time: 300078
 Performance log
-    cpp_dec_float : 2.48%, x 40.32
-    Decimal       : 100%, x 1
-
-------------------------------
-Cpp Float normal precision, accounting numbers, +  elapsed time: 14063
-Decimal   normal precision, accounting numbers, +  elapsed time: 31078
-Performance log
-    cpp_dec_float : 45.25%, x 2.21
-    Decimal       : 100%, x 1
-
-Cpp Float normal precision, accounting numbers, -  elapsed time: 13500
-Decimal   normal precision, accounting numbers, -  elapsed time: 35515
-Performance log
-    cpp_dec_float : 38.01%, x 2.63
-    Decimal       : 100%, x 1
-
-Cpp Float normal precision, accounting numbers, *  elapsed time: 1922
-Decimal   normal precision, accounting numbers, *  elapsed time: 41625
-Performance log
-    cpp_dec_float : 4.62%, x 21.65
-    Decimal       : 100%, x 1
-
-Cpp Float normal precision, accounting numbers, /  elapsed time: 12266
-Decimal   normal precision, accounting numbers, /  elapsed time: 420937
-Performance log
-    cpp_dec_float : 2.91%, x 34.36
+    cpp_dec_float : 3.83%, x 26.11
     Decimal       : 100%, x 1
 
 ------------------------------
-Cpp Float long precision, big numbers, +  elapsed time: 422
-Decimal   long precision, big numbers, +  elapsed time: 1828
+Cpp Float normal precision, accounting numbers, +  elapsed time: 12437
+Decimal   normal precision, accounting numbers, +  elapsed time: 31454
 Performance log
-    cpp_dec_float : 23.09%, x 4.33
+    cpp_dec_float : 39.54%, x 2.53
     Decimal       : 100%, x 1
 
-Cpp Float long precision, big numbers, -  elapsed time: 72141
-Decimal   long precision, big numbers, -  elapsed time: 1766
+Cpp Float normal precision, accounting numbers, -  elapsed time: 12593
+Decimal   normal precision, accounting numbers, -  elapsed time: 32375
 Performance log
-    cpp_dec_float : 4084.99%, x 0.02
+    cpp_dec_float : 38.9%, x 2.57
     Decimal       : 100%, x 1
 
-Cpp Float long precision, big numbers, *  elapsed time: 312
-Decimal   long precision, big numbers, *  elapsed time: 1872547
+Cpp Float normal precision, accounting numbers, *  elapsed time: 1578
+Decimal   normal precision, accounting numbers, *  elapsed time: 11282
 Performance log
-    cpp_dec_float : 0.02%, x 5000
+    cpp_dec_float : 13.99%, x 7.15
     Decimal       : 100%, x 1
 
-Cpp Float long precision, big numbers, /  elapsed time: 1422
-Decimal   long precision, big numbers, /  elapsed time: 197969
-Performance log
-    cpp_dec_float : 0.72%, x 138.89
-    Decimal       : 100%, x 1
-
-------------------------------
------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
-Path to exe   : F:/_rtc/Projects/invest-openapi-cpp-qt5-client-sdk/_deploy/msvc2017/x64/Release
-
-
-BCD strorage type: std::vector
-
-Cpp Float normal precision, normal numbers, +  elapsed time: 11250
-Decimal   normal precision, normal numbers, +  elapsed time: 95406
-Performance log
-    cpp_dec_float : 11.79%, x 8.48
-    Decimal       : 100%, x 1
-
-Cpp Float normal precision, normal numbers, -  elapsed time: 12375
-Decimal   normal precision, normal numbers, -  elapsed time: 110063
-Performance log
-    cpp_dec_float : 11.24%, x 8.9
-    Decimal       : 100%, x 1
-
-Cpp Float normal precision, normal numbers, *  elapsed time: 1437
-Decimal   normal precision, normal numbers, *  elapsed time: 60031
-Performance log
-    cpp_dec_float : 2.39%, x 41.84
-    Decimal       : 100%, x 1
-
-Cpp Float normal precision, normal numbers, /  elapsed time: 10797
-Decimal   normal precision, normal numbers, /  elapsed time: 348985
-Performance log
-    cpp_dec_float : 3.09%, x 32.36
-    Decimal       : 100%, x 1
-
-------------------------------
-Cpp Float normal precision, accounting numbers, +  elapsed time: 12421
-Decimal   normal precision, accounting numbers, +  elapsed time: 96625
-Performance log
-    cpp_dec_float : 12.85%, x 7.78
-    Decimal       : 100%, x 1
-
-Cpp Float normal precision, accounting numbers, -  elapsed time: 12609
-Decimal   normal precision, accounting numbers, -  elapsed time: 113563
-Performance log
-    cpp_dec_float : 11.10%, x 9.01
-    Decimal       : 100%, x 1
-
-Cpp Float normal precision, accounting numbers, *  elapsed time: 1719
-Decimal   normal precision, accounting numbers, *  elapsed time: 47328
+Cpp Float normal precision, accounting numbers, /  elapsed time: 11109
+Decimal   normal precision, accounting numbers, /  elapsed time: 305938
 Performance log
     cpp_dec_float : 3.63%, x 27.55
     Decimal       : 100%, x 1
 
-Cpp Float normal precision, accounting numbers, /  elapsed time: 11016
-Decimal   normal precision, accounting numbers, /  elapsed time: 323453
+------------------------------
+Cpp Float long precision, big numbers, +  elapsed time: 328
+Decimal   long precision, big numbers, +  elapsed time: 1828
 Performance log
-    cpp_dec_float : 3.41%, x 29.33
+    cpp_dec_float : 17.94%, x 5.57
+    Decimal       : 100%, x 1
+
+Cpp Float long precision, big numbers, -  elapsed time: 68906
+Decimal   long precision, big numbers, -  elapsed time: 1922
+Performance log
+    cpp_dec_float : 3585.12%, x 0.03
+    Decimal       : 100%, x 1
+
+Cpp Float long precision, big numbers, *  elapsed time: 297
+Decimal   long precision, big numbers, *  elapsed time: 4469
+Performance log
+    cpp_dec_float : 6.65%, x 15.04
+    Decimal       : 100%, x 1
+
+Cpp Float long precision, big numbers, /  elapsed time: 1390
+Decimal   long precision, big numbers, /  elapsed time: 208344
+Performance log
+    cpp_dec_float : 0.67%, x 149.25
+    Decimal       : 100%, x 1
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Platform: x64
+BCD storage type: std::vector
+
+Cpp Float normal precision, normal numbers, +  elapsed time: 11437
+Decimal   normal precision, normal numbers, +  elapsed time: 94719
+Performance log
+    cpp_dec_float : 12.07%, x 8.29
+    Decimal       : 100%, x 1
+
+Cpp Float normal precision, normal numbers, -  elapsed time: 11937
+Decimal   normal precision, normal numbers, -  elapsed time: 109391
+Performance log
+    cpp_dec_float : 10.91%, x 9.17
+    Decimal       : 100%, x 1
+
+Cpp Float normal precision, normal numbers, *  elapsed time: 1656
+Decimal   normal precision, normal numbers, *  elapsed time: 11906
+Performance log
+    cpp_dec_float : 13.91%, x 7.19
+    Decimal       : 100%, x 1
+
+Cpp Float normal precision, normal numbers, /  elapsed time: 11954
+Decimal   normal precision, normal numbers, /  elapsed time: 352062
+Performance log
+    cpp_dec_float : 3.4%, x 29.41
     Decimal       : 100%, x 1
 
 ------------------------------
-Cpp Float long precision, big numbers, +  elapsed time: 375
-Decimal   long precision, big numbers, +  elapsed time: 1781
+Cpp Float normal precision, accounting numbers, +  elapsed time: 11703
+Decimal   normal precision, accounting numbers, +  elapsed time: 91141
 Performance log
-    cpp_dec_float : 21.06%, x 4.75
+    cpp_dec_float : 12.84%, x 7.79
     Decimal       : 100%, x 1
 
-Cpp Float long precision, big numbers, -  elapsed time: 68297
-Decimal   long precision, big numbers, -  elapsed time: 1844
+Cpp Float normal precision, accounting numbers, -  elapsed time: 12172
+Decimal   normal precision, accounting numbers, -  elapsed time: 105109
 Performance log
-    cpp_dec_float : 3703.74%, x 0.03
+    cpp_dec_float : 11.58%, x 8.64
+    Decimal       : 100%, x 1
+
+Cpp Float normal precision, accounting numbers, *  elapsed time: 1563
+Decimal   normal precision, accounting numbers, *  elapsed time: 11812
+Performance log
+    cpp_dec_float : 13.23%, x 7.56
+    Decimal       : 100%, x 1
+
+Cpp Float normal precision, accounting numbers, /  elapsed time: 10891
+Decimal   normal precision, accounting numbers, /  elapsed time: 333078
+Performance log
+    cpp_dec_float : 3.27%, x 30.58
+    Decimal       : 100%, x 1
+
+------------------------------
+Cpp Float long precision, big numbers, +  elapsed time: 313
+Decimal   long precision, big numbers, +  elapsed time: 2047
+Performance log
+    cpp_dec_float : 15.29%, x 6.54
+    Decimal       : 100%, x 1
+
+Cpp Float long precision, big numbers, -  elapsed time: 66422
+Decimal   long precision, big numbers, -  elapsed time: 2047
+Performance log
+    cpp_dec_float : 3244.85%, x 0.03
     Decimal       : 100%, x 1
 
 Cpp Float long precision, big numbers, *  elapsed time: 281
-Decimal   long precision, big numbers, *  elapsed time: 1799344
+Decimal   long precision, big numbers, *  elapsed time: 2187
 Performance log
-    cpp_dec_float : 0.02%, x 5000
+    cpp_dec_float : 12.85%, x 7.78
     Decimal       : 100%, x 1
 
-Cpp Float long precision, big numbers, /  elapsed time: 1406
-Decimal   long precision, big numbers, /  elapsed time: 333641
+Cpp Float long precision, big numbers, /  elapsed time: 1391
+Decimal   long precision, big numbers, /  elapsed time: 357516
 Performance log
-    cpp_dec_float : 0.42%, x 238.1
+    cpp_dec_float : 0.39%, x 256.41
     Decimal       : 100%, x 1
 
-------------------------------
------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
