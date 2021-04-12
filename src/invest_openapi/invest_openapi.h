@@ -186,6 +186,40 @@ struct IOpenApi
 */
 
     //------------------------------
+    // StreamingApi
+
+    virtual QNetworkRequest getStreamingApiNetworkRequest() = 0;
+
+    // https://tinkoffcreditsystems.github.io/invest-openapi/marketdata/
+
+    /*
+      orderbook:subscribe
+
+          {
+              "event": "orderbook:subscribe",
+              "figi": "{{FIGI}}",
+              "depth": {{DEPTH}}
+          }
+       
+
+      orderbook:unsubscribe
+
+          {
+              "event": "orderbook:unsubscribe",
+              "figi": "{{FIGI}}",
+              "depth": "{{DEPTH}}"
+          }
+
+      Глубина стакана макс 20
+          
+    */
+
+    virtual QString getStreamingApiOrderbookJsonSentenceSubscribe  ( const QString &figi, qint32 depth = 20 ) = 0;
+    virtual QString getStreamingApiOrderbookJsonSentenceUnsubscribe( const QString &figi, qint32 depth = -1 ) = 0; // Вот тут точно нужна глубина корзины?
+
+    
+
+    //------------------------------
     // Helpers
     virtual GenericError findInstrumentListingStartDate( const QString &figi, const QDate &dateStartLookupFrom, QDate &foundDate ) = 0;
 
@@ -300,6 +334,138 @@ public:
     virtual bool getResponsesDebug( )        override
     {
         return ::OpenAPI::getResponsesDebug(); // prevent self-calling by using full qualified name
+    }
+
+    //------------------------------
+
+
+
+    
+    //------------------------------
+    // StreamingApi
+    //------------------------------
+
+
+    //------------------------------
+
+protected:
+
+    static QByteArray makeByteArray( const std::string &s )
+    {
+        return QByteArray( s.data(), s.size() );
+    }
+
+    static QByteArray makeByteArray( const QString &s )
+    {
+        return makeByteArray( s.toStdString() );
+    }
+
+    static void setNetworkRequestRawHeader( QNetworkRequest &req, const QString &headerName, const QString &headerValue )
+    {
+        req.setRawHeader( makeByteArray(headerName), makeByteArray(headerValue) );
+    }
+
+    static QString makeJsonValue( const QString &s )
+    {
+        return QString("\"") + s + QString("\"");
+    }
+
+    static QString makeJsonValue( qint32 qi32 )
+    {
+        return QString::number(qi32);
+    }
+
+    static QString getStreamingApiOrderbookJsonSentenceHelper( const QString &sentence, const QString &figi, qint32 depth )
+    {
+        if (depth>20)
+            depth = 20;
+
+        QString eventStr = makeJsonValue( QStringLiteral("event" ) ) + QStringLiteral(": ") + makeJsonValue( sentence );
+        QString figiStr  = makeJsonValue( QStringLiteral("figi"  ) ) + QStringLiteral(": ") + makeJsonValue( figi  );
+
+        if (depth<0)
+        {
+            return QStringLiteral("{\r\n") + eventStr + QStringLiteral(",\r\n") + figiStr + QStringLiteral("\r\n}");
+        }
+        else
+        {
+            return QStringLiteral("{\r\n") + eventStr + QStringLiteral(",\r\n") + figiStr + QStringLiteral(",\r\n")
+                 + makeJsonValue( QStringLiteral("depth" ) ) + QStringLiteral(": ") + makeJsonValue( depth ) + QStringLiteral("\r\n}");
+        }
+    }
+
+
+public:
+
+    virtual QNetworkRequest getStreamingApiNetworkRequest() override
+    {
+        QNetworkRequest request;
+
+        request.setUrl( QUrl(m_apiConfig.urlStreaming) );
+
+        setNetworkRequestRawHeader( request, "User-Agent"     , "OpenAPI-Generator/1.0.0/cpp-qt5" );
+        setNetworkRequestRawHeader( request, "Authorization"  , QString("Bearer ") + m_authConfig.getToken() );
+        setNetworkRequestRawHeader( request, "Accept"         , "application/json" );
+
+        // "Content-Type" : "application/json"  /  "application/x-www-form-urlencoded"  /  "multipart/form-data; boundary=" + boundary
+
+        bool isRequestCompressionEnabled  = false;
+        bool isResponseCompressionEnabled = false;
+
+        if (isRequestCompressionEnabled)
+        {
+            setNetworkRequestRawHeader( request, "Content-Encoding", "gzip" );
+        }
+        else
+        {
+        }
+
+        if (isResponseCompressionEnabled)
+        {
+            setNetworkRequestRawHeader( request, "Accept-Encoding", "gzip" );
+        }
+        else
+        {
+            setNetworkRequestRawHeader( request, "Accept-Encoding", "identity" );
+        }
+
+        
+        // setNetworkRequestRawHeader( request, "", "" );
+
+        return request;
+    }
+
+
+    /*
+      orderbook:subscribe
+
+          {
+              "event": "orderbook:subscribe",
+              "figi": "{{FIGI}}",
+              "depth": {{DEPTH}}
+          }
+       
+
+      orderbook:unsubscribe
+
+          {
+              "event": "orderbook:unsubscribe",
+              "figi": "{{FIGI}}",
+              "depth": "{{DEPTH}}"
+          }
+
+      Глубина стакана макс 20
+          
+    */
+
+    virtual QString getStreamingApiOrderbookJsonSentenceSubscribe  ( const QString &figi, qint32 depth = 20    ) override
+    {
+        return getStreamingApiOrderbookJsonSentenceHelper( QStringLiteral("orderbook:subscribe"), figi, depth );
+    }
+
+    virtual QString getStreamingApiOrderbookJsonSentenceUnsubscribe( const QString &figi, qint32 depth = -1 ) override
+    {
+        return getStreamingApiOrderbookJsonSentenceHelper( QStringLiteral("orderbook:unsubscribe"), figi, depth );
     }
 
     //------------------------------
@@ -450,6 +616,8 @@ public:
     //------------------------------
 
 
+
+
     //------------------------------
     // UserApi
     //------------------------------
@@ -495,6 +663,8 @@ public:
     }
 
     //------------------------------
+
+
 
     
     //------------------------------
@@ -584,6 +754,8 @@ public:
     }
 
     //------------------------------
+
+
 
 
     //------------------------------
