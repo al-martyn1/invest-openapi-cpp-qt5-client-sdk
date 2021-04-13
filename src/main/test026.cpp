@@ -12,6 +12,7 @@
 #include <map>
 #include <set>
 #include <optional>
+#include <atomic>
 
 #include <QCoreApplication>
 #include <QString>
@@ -106,24 +107,58 @@ INVEST_OPENAPI_MAIN()
     console_helpers::SimpleHandleCtrlC ctrlC; // ctrlC.isBreaked()
 
 
+    std::vector< std::pair< QString,QString > > figis = { { "BBG000BN56Q9" , "DSKY" }
+                                                        , { "BBG000FWGSZ5" , "IRKT" }
+                                                        , { "BBG000NLCCM3" , "LSNGP" }
+                                                        , { "BBG000QQPXZ5" , "LNTA" }
+                                                        , { "BBG000RMWQD4" , "ENPG" }
+                                                        , { "BBG00178PGX3" , "MAIL" }
+                                                        , { "BBG004730N88" , "SBER" }
+                                                        , { "BBG004730RP0" , "GAZP" }
+                                                        , { "BBG004731354" , "ROSN" }
+                                                        , { "BBG0047315Y7" , "SBERP" }
+                                                        , { "BBG00475KKY8" , "NVTK" }
+                                                        , { "BBG004PYF2N3" , "POLY" }
+                                                        , { "BBG004S683W7" , "AFLT" }
+                                                        , { "BBG004S684M6" , "SIBN" }
+                                                        , { "BBG005D1WCQ1" , "QIWI" }
+                                                        , { "BBG006L8G4H1" , "YNDX" }
+                                                        , { "BBG00B8NN386" , "GRNT" }
+                                                        , { "BBG00JXPFBN0" , "FIVE" }
+                                                        , { "BBG00VPKLPX4" , "POGR" }
+                                                        , { "BBG00Y91R9T3" , "OZON" }
+                                                        , { "BBG0013HGFT4" , "USD000UTSTOM" }
+                                                        };
+
+    // https://habr.com/ru/post/517918/
+
+    // Запарюсь что ли с атомиками
+    // volatile bool connected = false;
+
+    std::atomic<bool> fConnected = false;
+
     auto onConnected = [&]()
             {
                 using std::cout;
                 using std::endl;
             
-                cout << "Streaming API Web socket connected" << endl;
+                cout << "*** Streaming API Web socket connected" << endl;
 
-                cout << "Sending test subscription to ROSN/BBG004731354 orderbook" << endl;
+                // cout << "Sending test subscription to ROSN/BBG004731354 orderbook" << endl;
 
                 // BBG004731354 - ROSN
-                QString subscriptionText = pOpenApi->getStreamingApiOrderbookJsonSentenceSubscribe( "BBG004731354" );
+                // QString subscriptionText = pOpenApi->getStreamingApiOrderbookJsonSentenceSubscribe( "BBG004731354" );
 
                 // BBG0047315Y7 - SBERP
                 // BBG004730N88 - SBER
 
-                cout << "Subscription text:" << endl;
-                cout << subscriptionText << endl;
-                webSocket.sendTextMessage( subscriptionText );
+                // cout << "Subscription text:" << endl;
+                // cout << subscriptionText << endl;
+                // webSocket.sendTextMessage( subscriptionText );
+
+                // connected = true;
+
+                fConnected.store( true, std::memory_order_seq_cst  );
 
             };
 
@@ -132,7 +167,7 @@ INVEST_OPENAPI_MAIN()
                 using std::cout;
                 using std::endl;
             
-                cout << "Streaming API Web socket disconnected" << endl;
+                cout << "*** Streaming API Web socket disconnected" << endl;
             };
 
     auto onMessage = [&]( QString msg )
@@ -140,7 +175,7 @@ INVEST_OPENAPI_MAIN()
                 using std::cout;
                 using std::endl;
             
-                cout << "Streaming API Web socket received message: " << msg << endl;
+                cout << "*** Streaming API Web socket received message: " << msg << endl;
             };
 
 
@@ -155,10 +190,31 @@ INVEST_OPENAPI_MAIN()
 
     cout << "Press Ctrl+C to break process" << endl;
 
+    std::vector< QString >::const_iterator figiIt  = figis.begin();
+    std::vector< QString >::const_iterator figiEnd = figis.end  ();
+
+    QElapsedTimer stopTimer   ;  stopTimer   .start();
+    QElapsedTimer requestTimer;  requestTimer.start();
 
     while(!ctrlC.isBreaked())
     {
         QTest::qWait(1);
+
+        if (requestTimer.elapsed()>1000)
+        {
+            if (figiIt!=figiEnd)
+            {
+                QString figi             = figiIt->first ;
+                QString tiker            = figiIt->second;
+                QString subscriptionText = pOpenApi->getStreamingApiOrderbookJsonSentenceSubscribe( figi );
+
+                cout << "Try to subscribe to - FIGI: " << figi << ", TICKER: " << ticker << endl;
+                cout << "Subscription text:" << endl;
+                cout << subscriptionText << endl << "--------" << endl << endl;
+
+            }
+        }
+
     }
     
 
