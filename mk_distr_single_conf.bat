@@ -10,7 +10,7 @@
 echo call VC bat confuguration file
 call "%~dp0\bat\setup-toolset-vars-%TOOLSET%-%PLATFORM%.bat"
 
-@set WINDEPLOYQT_MODULES=--compiler-runtime --network --sql
+@set WINDEPLOYQT_MODULES=--compiler-runtime --network --websockets --sql
 
 @echo Executing %WINDEPLOYQT% %WINDEPLOYQT_MODULES% "%DEPLOY_PATH%"
 @rem if exist "%DEPLOY_PATH%\*.exe" 
