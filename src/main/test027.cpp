@@ -47,7 +47,7 @@
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("test026");
+    QCoreApplication::setApplicationName("test027");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");
@@ -112,70 +112,12 @@ INVEST_OPENAPI_MAIN()
     typedef std::pair< QString,QString >  figi_info_pair_t;
 
     std::vector< figi_info_pair_t > figis = { { "BBG000BN56Q9" ,   "DSKY"           }
-                                            , { "BBG000FWGSZ5" ,   "IRKT"           }
-                                            , { "BBG000NLCCM3" ,   "LSNGP"          }
-                                            , { "BBG000QQPXZ5" ,   "LNTA"           }
-                                            , { "BBG000RMWQD4" ,   "ENPG"           }
-                                            , { "BBG00178PGX3" ,   "MAIL"           }
-                                            , { "BBG004730N88" ,   "SBER"           }
-                                            , { "BBG004730RP0" ,   "GAZP"           }
                                             , { "BBG004731354" ,   "ROSN"           }
-                                            , { "BBG0047315Y7" ,   "SBERP"          }
-                                            , { "BBG00475KKY8" ,   "NVTK"           }
-                                            , { "BBG004PYF2N3" ,   "POLY"           }
-                                            , { "BBG004S683W7" ,   "AFLT"           }
-                                            , { "BBG004S684M6" ,   "SIBN"           }
-                                            , { "BBG005D1WCQ1" ,   "QIWI"           }
-                                            , { "BBG006L8G4H1" ,   "YNDX"           }
-                                            , { "BBG00B8NN386" ,   "GRNT"           }
-                                            , { "BBG00JXPFBN0" ,   "FIVE"           }
-                                            , { "BBG00VPKLPX4" ,   "POGR"           }
-                                            , { "BBG00Y91R9T3" ,   "OZON"           }
-                                            , { "BBG0013HGFT4" ,   "USD000UTSTOM"   }
-                                            , { "BBG000HLJ7M4" ,   "IDCC"           }
-                                            , { "BBG002293PJ4" ,   "RH"             }
-                                            , { "BBG000BPL8G3" ,   "MTSC"           }
-                                            , { "BBG000CTQBF3" ,   "SBUX"           }
-                                            , { "BBG000BH0FR6" ,   "SGEN"           }
-                                            , { "BBG004S68758" ,   "BANE"           }
-                                            , { "BBG004MN1R41" ,   "NAVI"           }
-                                            , { "BBG000BPNP00" ,   "MXIM"           }
-                                            , { "BBG000BWS3F3" ,   "WGO"            }
-                                            , { "BBG000BF0K17" ,   "CAT"            }
-                                            , { "BBG00172J7S9" ,   "OKEY"           }
-                                            , { "BBG000BTGKK9" ,   "TREX"           }
-                                            , { "BBG000CZ4KF3" ,   "STMP"           }
-                                            , { "BBG000BZJQL8" ,   "IART"           }
-                                            , { "BBG000BS9HN3" ,   "ROG"            }
-                                            , { "BBG000BS5DR2" ,   "RHI"            }
-                                            , { "BBG000BDHD29" ,   "UNVR"           }
-                                            , { "BBG0077VNXV6" ,   "PYPL"           }
-                                            , { "BBG001R72SR9" ,   "UI"             }
-                                            , { "BBG001JZPSQ2" ,   "SONO"           }
-                                            , { "BBG000FV1Z23" ,   "CCI"            }
-                                            , { "BBG000BFDLV8" ,   "CERN"           }
-                                            , { "BBG000BGXZB5" ,   "AEO"            }
-                                            , { "BBG002WMH2F2" ,   "TMX"            }
-                                            , { "BBG000BMWKC5" ,   "KMT"            }
-                                            , { "BBG000DZJVH0" ,   "NXST"           }
-                                            , { "BBG000BQHGR6" ,   "OKE"            }
-                                            , { "BBG000BNSZP1" ,   "MCD"            }
-                                            , { "BBG000BHJSC4" ,   "BBSI"           }
-                                            , { "BBG000BGRY34" ,   "CVS"            }
-                                            , { "BBG000VMWHH5" ,   "DISCK"          }
-                                            , { "BBG000BKH263" ,   "NEO"            }
-                                            , { "BBG000QW7VC1" ,   "HCA"            }
-                                            , { "BBG005YHY0Q7" ,   "JD"             }
-                                            , { "BBG000C6GN04" ,   "QDEL"           }
-                                            , { "BBG00FH3FM15" ,   "TCRR"           }
-                                            , { "BBG000NLCCM3" ,   "LSNGP"          } // дубль, посмотрим
-                                            , { "BBG000C41023" ,   "UDR"            }
+                                            , { "BBG004731354" ,   "ROSN"           }
                                             };
 
     // https://habr.com/ru/post/517918/
 
-    // Запарюсь что ли с атомиками
-    // volatile bool connected = false;
 
     std::atomic<bool> fConnected = false;
 
@@ -187,20 +129,6 @@ INVEST_OPENAPI_MAIN()
                 fConnected.store( true, std::memory_order_seq_cst  );
 
                 cout << "*** Streaming API Web socket connected" << endl;
-
-                // cout << "Sending test subscription to ROSN/BBG004731354 orderbook" << endl;
-
-                // BBG004731354 - ROSN
-                // QString subscriptionText = pOpenApi->getStreamingApiOrderbookJsonSentenceSubscribe( "BBG004731354" );
-
-                // BBG0047315Y7 - SBERP
-                // BBG004730N88 - SBER
-
-                // cout << "Subscription text:" << endl;
-                // cout << subscriptionText << endl;
-                // webSocket.sendTextMessage( subscriptionText );
-
-                // connected = true;
 
             };
 
@@ -246,13 +174,14 @@ INVEST_OPENAPI_MAIN()
 
     enum State
     {
-        stateRequestFigis,
+        stateSubscribeFigis,
+        stateUnsubscribeFigis,
         stateFinal
 
     };
 
 
-    State state = stateRequestFigis;
+    State state = stateSubscribeFigis;
 
 
     while(!ctrlC.isBreaked())
@@ -266,10 +195,11 @@ INVEST_OPENAPI_MAIN()
 
             switch(state)
             {
-                case stateRequestFigis:
+                case stateSubscribeFigis:
                      if (figiIt==figiEnd)
                      {
-                         state = (State)(state+1);
+                         figiIt = figis.begin();
+                         state  = (State)(state+1);
                          requestTimer.restart();
 
                          //NOTE: no break here - we immediately go to the next case
@@ -282,6 +212,32 @@ INVEST_OPENAPI_MAIN()
                     
                          cout << "!!! Try to subscribe to - FIGI: " << figi << ", TICKER: " << ticker << endl;
                          cout << "Subscription text:" << endl;
+                         cout << subscriptionText << endl << "--------" << endl << endl;
+                         webSocket.sendTextMessage( subscriptionText );
+
+                         ++figiIt;
+                         requestTimer.restart();
+
+                         break;
+                     }
+                     
+                case stateUnsubscribeFigis:
+                     if (figiIt==figiEnd)
+                     {
+                         figiIt = figis.begin();
+                         state  = (State)(state+1);
+                         requestTimer.restart();
+
+                         //NOTE: no break here - we immediately go to the next case
+                     }
+                     else
+                     {
+                         QString figi             = figiIt->first ;
+                         QString ticker           = figiIt->second;
+                         QString subscriptionText = pOpenApi->getStreamingApiOrderbookJsonSentenceUnsubscribe( figi );
+                    
+                         cout << "!!! Try to unsubscribe to - FIGI: " << figi << ", TICKER: " << ticker << endl;
+                         cout << "Unsubscription text:" << endl;
                          cout << subscriptionText << endl << "--------" << endl << endl;
                          webSocket.sendTextMessage( subscriptionText );
 
