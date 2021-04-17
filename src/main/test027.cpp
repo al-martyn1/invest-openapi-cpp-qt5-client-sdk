@@ -1,5 +1,5 @@
 /*! \file
-    \brief Configs lookup test
+    \brief Тест Тинькофф Streaming API - подписка на стакан, на второй стакан, потом дубль подписки, и отписка отпискастаканов в том же порядке
 
  */
 
@@ -120,6 +120,7 @@ INVEST_OPENAPI_MAIN()
 
 
     std::atomic<bool> fConnected = false;
+    std::atomic<bool> jobDone    = false;
 
     auto onConnected = [&]()
             {
@@ -129,6 +130,7 @@ INVEST_OPENAPI_MAIN()
                 fConnected.store( true, std::memory_order_seq_cst  );
 
                 cout << "*** Streaming API Web socket connected" << endl;
+                cout << endl;
 
             };
 
@@ -140,7 +142,7 @@ INVEST_OPENAPI_MAIN()
                 fConnected.store( false, std::memory_order_seq_cst  );
 
                 cout << "*** Streaming API Web socket disconnected" << endl;
-
+                cout << endl;
 
             };
 
@@ -161,7 +163,12 @@ INVEST_OPENAPI_MAIN()
 
     webSocket.open( pOpenApi->getStreamingApiNetworkRequest() );
 
+
+    cout << endl;
+    cout << endl;
     cout << "Press Ctrl+C to break process" << endl;
+    cout << endl;
+
 
     std::vector< figi_info_pair_t >::const_iterator figiIt  = figis.begin();
     std::vector< figi_info_pair_t >::const_iterator figiEnd = figis.end  ();
@@ -169,8 +176,8 @@ INVEST_OPENAPI_MAIN()
     QElapsedTimer stopTimer   ;  stopTimer   .start();
     QElapsedTimer requestTimer;  requestTimer.start();
 
-    const std::uint64_t requestAdditionDelta = 3000; // ms
-    const std::uint64_t stopTimeout = figis.size()*requestAdditionDelta + 60*1000; // Ждём минуту после того, как закончатся фиги для добавления, и выходим 
+    const std::uint64_t requestAdditionDelta = 5000; // ms
+    const std::uint64_t stopTimeout = figis.size()*requestAdditionDelta + 60*1000; // Ждём 60 сек после того, как закончатся фиги туда-сюда
 
     enum State
     {
@@ -244,11 +251,15 @@ INVEST_OPENAPI_MAIN()
                          ++figiIt;
                          requestTimer.restart();
 
+
+                         stopTimer.restart();
+
                          break;
                      }
                      
 
                 default:
+                         jobDone.store( true, std::memory_order_seq_cst  );
                          break;
 
             
@@ -256,6 +267,7 @@ INVEST_OPENAPI_MAIN()
 
         } // if (requestTimer.elapsed()>1000)
 
+        // stopTimer.restart();
 
         if (stopTimer.elapsed() > stopTimeout)
         {

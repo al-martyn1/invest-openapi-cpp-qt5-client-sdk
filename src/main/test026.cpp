@@ -1,5 +1,5 @@
 /*! \file
-    \brief Configs lookup test
+    \brief Тест Тинькофф Streaming API - подписка на несколько десятков стаканов
 
  */
 
@@ -178,6 +178,7 @@ INVEST_OPENAPI_MAIN()
     // volatile bool connected = false;
 
     std::atomic<bool> fConnected = false;
+    std::atomic<bool> jobDone    = false;
 
     auto onConnected = [&]()
             {
@@ -187,6 +188,7 @@ INVEST_OPENAPI_MAIN()
                 fConnected.store( true, std::memory_order_seq_cst  );
 
                 cout << "*** Streaming API Web socket connected" << endl;
+                cout << endl;
 
                 // cout << "Sending test subscription to ROSN/BBG004731354 orderbook" << endl;
 
@@ -212,7 +214,7 @@ INVEST_OPENAPI_MAIN()
                 fConnected.store( false, std::memory_order_seq_cst  );
 
                 cout << "*** Streaming API Web socket disconnected" << endl;
-
+                cout << endl;
 
             };
 
@@ -222,6 +224,7 @@ INVEST_OPENAPI_MAIN()
                 using std::endl;
             
                 cout << "*** Streaming API Web socket received message: " << endl<< msg << endl << "--------" << endl << endl;
+                
             };
 
 
@@ -233,7 +236,12 @@ INVEST_OPENAPI_MAIN()
 
     webSocket.open( pOpenApi->getStreamingApiNetworkRequest() );
 
+
+    cout << endl;
+    cout << endl;
     cout << "Press Ctrl+C to break process" << endl;
+    cout << endl;
+
 
     std::vector< figi_info_pair_t >::const_iterator figiIt  = figis.begin();
     std::vector< figi_info_pair_t >::const_iterator figiEnd = figis.end  ();
@@ -288,11 +296,15 @@ INVEST_OPENAPI_MAIN()
                          ++figiIt;
                          requestTimer.restart();
 
+
+                         stopTimer.restart();
+
                          break;
                      }
                      
 
                 default:
+                         jobDone.store( true, std::memory_order_seq_cst  );
                          break;
 
             

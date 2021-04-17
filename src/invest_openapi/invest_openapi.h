@@ -215,7 +215,7 @@ struct IOpenApi
     */
 
     virtual QString getStreamingApiOrderbookJsonSentenceSubscribe  ( const QString &figi, qint32 depth = 20 ) = 0;
-    virtual QString getStreamingApiOrderbookJsonSentenceUnsubscribe( const QString &figi, qint32 depth = -1 ) = 0; // Вот тут точно нужна глубина корзины?
+    virtual QString getStreamingApiOrderbookJsonSentenceUnsubscribe( const QString &figi, qint32 depth = 20 ) = 0; // Вот тут точно нужна глубина корзины? Ага, нужна, бля
 
     
 
@@ -458,12 +458,22 @@ public:
           
     */
 
+    //! Формирует JSON-посылку для подписки на стакан по streaming API
     virtual QString getStreamingApiOrderbookJsonSentenceSubscribe  ( const QString &figi, qint32 depth = 20    ) override
     {
         return getStreamingApiOrderbookJsonSentenceHelper( QStringLiteral("orderbook:subscribe"), figi, depth );
     }
 
-    virtual QString getStreamingApiOrderbookJsonSentenceUnsubscribe( const QString &figi, qint32 depth = -1 ) override
+    //! Формирует JSON-посылку для подписки на стакан по streaming API
+    /*! Какого-то хуя при отписке нужно указывать глубину стакана.
+        Лень проверять, но вероятно на серваке это выглядит, как абсолютно разные подписки, 
+        и сервак будет слать две посылки с разной глубиной стакана.
+        Как-то тупо, но хрен с ними, шо маемо, то маемо.
+
+        Если depth при отписке задать в -1, то глубина стакана вообще не появится в запросе на отписку (на отписку, Карл),
+        и сервакешлёт ошибку.
+     */
+    virtual QString getStreamingApiOrderbookJsonSentenceUnsubscribe( const QString &figi, qint32 depth = 20 ) override
     {
         return getStreamingApiOrderbookJsonSentenceHelper( QStringLiteral("orderbook:unsubscribe"), figi, depth );
     }
