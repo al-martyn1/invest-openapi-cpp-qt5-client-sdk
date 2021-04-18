@@ -75,6 +75,10 @@
 #include "models/client/UserAccountsResponse.h"
 #include "models/client/UserApi.h"
 
+#include "streaming_models/GenericStreamingResponse.h"
+#include "streaming_models/StreamingOrderbook.h"
+#include "streaming_models/StreamingOrderbookResponse.h"
+
 
 // #undef private
 

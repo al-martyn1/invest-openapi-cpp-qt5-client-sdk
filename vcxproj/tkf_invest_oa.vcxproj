@@ -253,6 +253,11 @@
     <ClCompile Include="..\src\invest_openapi\models\client\UserApi.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\invest_openapi\streaming_models\GenericStreamingResponse.cpp" />
+    <ClCompile Include="..\src\invest_openapi\streaming_models\StreamingOrderbook.cpp" />
+    <ClCompile Include="..\src\invest_openapi\streaming_models\StreamingOrderbookResponse.cpp" />
+  </ItemGroup>
+  <ItemGroup>
     <QtMoc Include="..\src\invest_openapi\models\client\BrokerAccountType.h" />
     <QtMoc Include="..\src\invest_openapi\models\client\Candle.h" />
     <QtMoc Include="..\src\invest_openapi\models\client\CandleResolution.h" />
@@ -321,6 +326,11 @@
   <ItemGroup>
     <QtMoc Include="..\src\invest_openapi\openapi_completable_future.h" />
     <QtMoc Include="..\src\invest_openapi\openapi_completable_future_base.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="..\src\invest_openapi\streaming_models\GenericStreamingResponse.h" />
+    <QtMoc Include="..\src\invest_openapi\streaming_models\StreamingOrderbook.h" />
+    <QtMoc Include="..\src\invest_openapi\streaming_models\StreamingOrderbookResponse.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
