@@ -8,7 +8,7 @@
 #include <QJsonDocument>
 #include <QObject>
 
-#include "..\models\client\Helpers.h"
+#include "../models/client/Helpers.h"
 
 namespace OpenAPI {
 
@@ -117,10 +117,10 @@ bool StreamingOrderbook::is_depth_Valid() const{
     return m_depth_isValid;
 }
 
-QList<OrderResponse> StreamingOrderbook::getBids() const {
+QList< QList<marty::Decimal> > StreamingOrderbook::getBids() const {
     return bids;
 }
-void StreamingOrderbook::setBids(const QList<OrderResponse> &bids) {
+void StreamingOrderbook::setBids(const QList< QList<marty::Decimal> > &bids) {
     this->bids = bids;
     this->m_bids_isSet = true;
 }
@@ -133,10 +133,10 @@ bool StreamingOrderbook::is_bids_Valid() const{
     return m_bids_isValid;
 }
 
-QList<OrderResponse> StreamingOrderbook::getAsks() const {
+QList< QList<marty::Decimal> > StreamingOrderbook::getAsks() const {
     return asks;
 }
-void StreamingOrderbook::setAsks(const QList<OrderResponse> &asks) {
+void StreamingOrderbook::setAsks(const QList< QList<marty::Decimal> > &asks) {
     this->asks = asks;
     this->m_asks_isSet = true;
 }

@@ -137,19 +137,21 @@ INVEST_OPENAPI_MAIN()
     cout << "FIGI  : " << streamingOrderbook.getFigi()  << endl;
     cout << "Depth : " << streamingOrderbook.getDepth() << endl;
 
-    QList<tkf::OrderResponse> bids = streamingOrderbook.getBids();
-    QList<tkf::OrderResponse> asks = streamingOrderbook.getAsks();
+    QList< QList<marty::Decimal> > bids = streamingOrderbook.getBids();
+    QList< QList<marty::Decimal> > asks = streamingOrderbook.getAsks();
 
     cout << "Bids:" << endl;
     for( auto bid : bids )
     {
-        cout << "    " << bid.getQuantity() << " by " << bid.getPrice() << endl;
+        if (bid.size()>=2)
+           cout << "    " << bid[0] << " by " << bid[1] << endl;
     }
 
     cout << "Asks:" << endl;
     for( auto ask : asks )
     {
-        cout << "    " << ask.getQuantity() << " by " << ask.getPrice() << endl;
+        if (ask.size()>=2)
+           cout << "    " << ask[0] << " by " << ask[1] << endl;
     }
 
 

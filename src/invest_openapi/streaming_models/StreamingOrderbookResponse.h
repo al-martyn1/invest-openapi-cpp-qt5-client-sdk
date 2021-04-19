@@ -16,8 +16,8 @@
 #include <QString>
 #include <QDateTime>
 
-#include "..\models\client\Enum.h"
-#include "..\models\client\Object.h"
+#include "../models/client/Enum.h"
+#include "../models/client/Object.h"
 
 namespace OpenAPI {
 

@@ -8,7 +8,7 @@
 #include <QJsonDocument>
 #include <QObject>
 
-#include "..\models\client\Helpers.h"
+#include "../models/client/Helpers.h"
 
 namespace OpenAPI {
 

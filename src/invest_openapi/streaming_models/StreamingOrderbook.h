@@ -12,12 +12,12 @@
 
 #include <QJsonObject>
 
-#include "..\models\client\OrderResponse.h"
+#include "StreamingOrderResponse.h"
 #include <QList>
 #include <QString>
 
-#include "..\models\client\Enum.h"
-#include "..\models\client\Object.h"
+#include "../models/client/Enum.h"
+#include "../models/client/Object.h"
 
 #include "../marty_decimal.h"
 
@@ -45,13 +45,17 @@ public:
     bool is_depth_Set() const;
     bool is_depth_Valid() const;
 
-    QList<OrderResponse> getBids() const;
-    void setBids(const QList<OrderResponse> &bids);
+    //QList<StreamingOrderResponse> getBids() const;
+    //void setBids(const QList<StreamingOrderResponse> &bids);
+    QList< QList<marty::Decimal> > getBids() const;
+    void setBids(const QList< QList<marty::Decimal> > &bids);
     bool is_bids_Set() const;
     bool is_bids_Valid() const;
 
-    QList<OrderResponse> getAsks() const;
-    void setAsks(const QList<OrderResponse> &asks);
+    //QList<StreamingOrderResponse> getAsks() const;
+    //void setAsks(const QList<StreamingOrderResponse> &asks);
+    QList< QList<marty::Decimal> > getAsks() const;
+    void setAsks(const QList< QList<marty::Decimal> > &asks);
     bool is_asks_Set() const;
     bool is_asks_Valid() const;
 
@@ -69,11 +73,11 @@ private:
     bool m_depth_isSet;
     bool m_depth_isValid;
 
-    QList<OrderResponse> bids;
+    QList< QList<marty::Decimal> > bids;
     bool m_bids_isSet;
     bool m_bids_isValid;
 
-    QList<OrderResponse> asks;
+    QList< QList<marty::Decimal> > asks;
     bool m_asks_isSet;
     bool m_asks_isValid;
 
