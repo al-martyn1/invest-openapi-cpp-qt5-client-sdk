@@ -12,6 +12,7 @@
 #include "StreamingOrderResponse.h"
 
 
+namespace OpenAPI {
 
 
 struct StreamingOrderbookItem
@@ -44,6 +45,9 @@ struct StreamingOrderbookItem
     }
 
 };
+
+
+} // namespace OpenAPI
 
 
 #endif // StreamingOrderbookItem_H

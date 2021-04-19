@@ -39,14 +39,23 @@
    {
        "event": "orderbook:unsubscribe",
        "figi": "{{FIGI}}",
-       "depth": "{{DEPTH}}"
+       "depth": {{DEPTH}}
    }
 
    ---------------------------------
 
    instrument_info:subscribe
-   instrument_info:unsubscribe
+   {
+       "event": "instrument_info:subscribe",
+       "figi": "{{FIGI}}"
+   }
 
+   instrument_info:unsubscribe
+   {
+       "event": "instrument_info:unsubscribe",
+       "figi": "{{FIGI}}"
+   }
+      
    Пример ответа:
    {
        "event": "instrument_info",

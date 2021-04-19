@@ -256,6 +256,8 @@
     <ClCompile Include="..\src\invest_openapi\streaming_models\GenericStreamingResponse.cpp" />
     <ClCompile Include="..\src\invest_openapi\streaming_models\StreamingOrderbook.cpp" />
     <ClCompile Include="..\src\invest_openapi\streaming_models\StreamingOrderbookResponse.cpp" />
+    <ClCompile Include="..\src\invest_openapi\streaming_models\StreamingError_payload.cpp" />
+    <ClCompile Include="..\src\invest_openapi\streaming_models\StreamingError.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="..\src\invest_openapi\models\client\BrokerAccountType.h" />
@@ -331,6 +333,8 @@
     <QtMoc Include="..\src\invest_openapi\streaming_models\GenericStreamingResponse.h" />
     <QtMoc Include="..\src\invest_openapi\streaming_models\StreamingOrderbook.h" />
     <QtMoc Include="..\src\invest_openapi\streaming_models\StreamingOrderbookResponse.h" />
+    <QtMoc Include="..\src\invest_openapi\streaming_models\StreamingError_payload.h" />
+    <QtMoc Include="..\src\invest_openapi\streaming_models\StreamingError.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

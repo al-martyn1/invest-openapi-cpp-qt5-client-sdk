@@ -190,19 +190,13 @@ INVEST_OPENAPI_MAIN()
                 cout << "*** Streaming API Web socket connected" << endl;
                 cout << endl;
 
-                // cout << "Sending test subscription to ROSN/BBG004731354 orderbook" << endl;
 
-                // BBG004731354 - ROSN
-                // QString subscriptionText = pOpenApi->getStreamingApiOrderbookJsonSentenceSubscribe( "BBG004731354" );
-
-                // BBG0047315Y7 - SBERP
-                // BBG004730N88 - SBER
-
-                // cout << "Subscription text:" << endl;
-                // cout << subscriptionText << endl;
-                // webSocket.sendTextMessage( subscriptionText );
-
-                // connected = true;
+                QString subscriptionText = pOpenApi->getStreamingApiOrderbookSubscribeJson( "BBG004731354", -1 );
+                
+                cout << "!!! Try to subscribe to - FIGI: " << "BBG004731354" << ", TICKER: " << "ROSN" << endl;
+                cout << "Subscription text:" << endl;
+                cout << subscriptionText << endl << "--------" << endl << endl;
+                webSocket.sendTextMessage( subscriptionText );
 
             };
 
@@ -286,7 +280,7 @@ INVEST_OPENAPI_MAIN()
                      {
                          QString figi             = figiIt->first ;
                          QString ticker           = figiIt->second;
-                         QString subscriptionText = pOpenApi->getStreamingApiOrderbookJsonSentenceSubscribe( figi );
+                         QString subscriptionText = pOpenApi->getStreamingApiOrderbookSubscribeJson( figi );
                     
                          cout << "!!! Try to subscribe to - FIGI: " << figi << ", TICKER: " << ticker << endl;
                          cout << "Subscription text:" << endl;

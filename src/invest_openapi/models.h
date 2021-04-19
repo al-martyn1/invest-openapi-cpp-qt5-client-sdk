@@ -76,8 +76,12 @@
 #include "models/client/UserApi.h"
 
 #include "streaming_models/GenericStreamingResponse.h"
+#include "streaming_models/StreamingError.h"
 #include "streaming_models/StreamingOrderbook.h"
 #include "streaming_models/StreamingOrderbookResponse.h"
+
+#include "streaming_models/StreamingOrderbookItem.h"
+
 
 
 // #undef private

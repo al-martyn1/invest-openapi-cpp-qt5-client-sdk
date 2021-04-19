@@ -214,10 +214,23 @@ struct IOpenApi
           
     */
 
-    virtual QString getStreamingApiOrderbookJsonSentenceSubscribe  ( const QString &figi, qint32 depth = 20 ) = 0;
-    virtual QString getStreamingApiOrderbookJsonSentenceUnsubscribe( const QString &figi, qint32 depth = 20 ) = 0; // Вот тут точно нужна глубина корзины? Ага, нужна, бля
+    virtual QString getStreamingApiOrderbookSubscribeJson  ( const QString &figi, qint32 depth = 20 ) = 0;
+    virtual QString getStreamingApiOrderbookUnsubscribeJson( const QString &figi, qint32 depth = 20 ) = 0; // Вот тут точно нужна глубина корзины? Ага, нужна, бля
 
-    
+
+    virtual QString getStreamingApiInstrumentInfoSubscribeJson  ( const QString &figi ) = 0;
+    virtual QString getStreamingApiInstrumentInfoUnsubscribeJson( const QString &figi ) = 0;
+
+
+    virtual QString getStreamingApiCandleSubscribeJson  ( const QString &figi, const CandleResolution &interval             ) = 0;
+    virtual QString getStreamingApiCandleSubscribeJson  ( const QString &figi, CandleResolution::eCandleResolution interval ) = 0;
+    virtual QString getStreamingApiCandleSubscribeJson  ( const QString &figi, const QString &interval                      ) = 0;
+
+    virtual QString getStreamingApiCandleUnsubscribeJson( const QString &figi, const CandleResolution &interval             ) = 0;
+    virtual QString getStreamingApiCandleUnsubscribeJson( const QString &figi, CandleResolution::eCandleResolution interval ) = 0;
+    virtual QString getStreamingApiCandleUnsubscribeJson( const QString &figi, const QString &interval                      ) = 0;
+
+
 
     //------------------------------
     // Helpers
@@ -365,35 +378,6 @@ protected:
         req.setRawHeader( makeByteArray(headerName), makeByteArray(headerValue) );
     }
 
-    static QString makeJsonValue( const QString &s )
-    {
-        return QString("\"") + s + QString("\"");
-    }
-
-    static QString makeJsonValue( qint32 qi32 )
-    {
-        return QString::number(qi32);
-    }
-
-    static QString getStreamingApiOrderbookJsonSentenceHelper( const QString &sentence, const QString &figi, qint32 depth )
-    {
-        if (depth>20)
-            depth = 20;
-
-        QString eventStr = makeJsonValue( QStringLiteral("event" ) ) + QStringLiteral(": ") + makeJsonValue( sentence );
-        QString figiStr  = makeJsonValue( QStringLiteral("figi"  ) ) + QStringLiteral(": ") + makeJsonValue( figi  );
-
-        if (depth<0)
-        {
-            return QStringLiteral("{\r\n") + eventStr + QStringLiteral(",\r\n") + figiStr + QStringLiteral("\r\n}");
-        }
-        else
-        {
-            return QStringLiteral("{\r\n") + eventStr + QStringLiteral(",\r\n") + figiStr + QStringLiteral(",\r\n")
-                 + makeJsonValue( QStringLiteral("depth" ) ) + QStringLiteral(": ") + makeJsonValue( depth ) + QStringLiteral("\r\n}");
-        }
-    }
-
 
 public:
 
@@ -435,31 +419,58 @@ public:
         return request;
     }
 
+protected:
 
-    /*
-      orderbook:subscribe
+    static QString makeJsonValue( const QString &s )
+    {
+        return QString("\"") + s + QString("\"");
+    }
 
-          {
-              "event": "orderbook:subscribe",
-              "figi": "{{FIGI}}",
-              "depth": {{DEPTH}}
-          }
-       
+    static QString makeJsonValue( qint32 qi32 )
+    {
+        return QString::number(qi32);
+    }
 
-      orderbook:unsubscribe
+    static QString getStreamingApiOrderbookJsonSentenceHelper( const QString &sentence, const QString &figi, qint32 depth )
+    {
+        if (depth>20)
+            depth = 20;
 
-          {
-              "event": "orderbook:unsubscribe",
-              "figi": "{{FIGI}}",
-              "depth": "{{DEPTH}}"
-          }
+        QString eventStr = makeJsonValue( QStringLiteral("event" ) ) + QStringLiteral(": ") + makeJsonValue( sentence );
+        QString figiStr  = makeJsonValue( QStringLiteral("figi"  ) ) + QStringLiteral(": ") + makeJsonValue( figi  );
 
-      Глубина стакана макс 20
-          
-    */
+        if (depth<0)
+        {
+            return QStringLiteral("{\r\n") + eventStr + QStringLiteral(",\r\n") + figiStr + QStringLiteral("\r\n}");
+        }
+        else
+        {
+            return QStringLiteral("{\r\n") + eventStr + QStringLiteral(",\r\n") + figiStr + QStringLiteral(",\r\n")
+                 + makeJsonValue( QStringLiteral("depth" ) ) + QStringLiteral(": ") + makeJsonValue( depth ) + QStringLiteral("\r\n}");
+        }
+    }
 
-    //! Формирует JSON-посылку для подписки на стакан по streaming API
-    virtual QString getStreamingApiOrderbookJsonSentenceSubscribe  ( const QString &figi, qint32 depth = 20    ) override
+    static QString getStreamingApiInstrumentInfoJsonSentenceHelper( const QString &sentence, const QString &figi )
+    {
+        QString eventStr = makeJsonValue( QStringLiteral("event" ) ) + QStringLiteral(": ") + makeJsonValue( sentence );
+        QString figiStr  = makeJsonValue( QStringLiteral("figi"  ) ) + QStringLiteral(": ") + makeJsonValue( figi  );
+
+        return QStringLiteral("{\r\n") + eventStr + QStringLiteral(",\r\n") + figiStr + QStringLiteral("\r\n}");
+    }
+
+    static QString getStreamingApiCandleJsonSentenceHelper( const QString &sentence, const QString &figi, const QString &candleInterval )
+    {
+        QString eventStr    = makeJsonValue( QStringLiteral("event" ) )     + QStringLiteral(": ") + makeJsonValue( sentence );
+        QString figiStr     = makeJsonValue( QStringLiteral("figi"  ) )     + QStringLiteral(": ") + makeJsonValue( figi  );
+        QString intervalStr = makeJsonValue( QStringLiteral("interval"  ) ) + QStringLiteral(": ") + makeJsonValue( candleInterval );
+
+        return QStringLiteral("{\r\n") + eventStr + QStringLiteral(",\r\n") + figiStr + QStringLiteral(",\r\n") + intervalStr + QStringLiteral("\r\n}");
+    }
+
+public:
+
+    //! Формирует JSON-посылку для подписки на стакан по streaming API. Глубина стакана макс 20
+    virtual QString getStreamingApiOrderbookSubscribeJson  ( const QString &figi, qint32 depth = 20    ) override
     {
         return getStreamingApiOrderbookJsonSentenceHelper( QStringLiteral("orderbook:subscribe"), figi, depth );
     }
@@ -471,12 +482,56 @@ public:
         Как-то тупо, но хрен с ними, шо маемо, то маемо.
 
         Если depth при отписке задать в -1, то глубина стакана вообще не появится в запросе на отписку (на отписку, Карл),
-        и сервакешлёт ошибку.
+        и серваке шлёт ошибку (просто хотел проверить).
      */
-    virtual QString getStreamingApiOrderbookJsonSentenceUnsubscribe( const QString &figi, qint32 depth = 20 ) override
+    virtual QString getStreamingApiOrderbookUnsubscribeJson( const QString &figi, qint32 depth = 20 ) override
     {
         return getStreamingApiOrderbookJsonSentenceHelper( QStringLiteral("orderbook:unsubscribe"), figi, depth );
     }
+
+
+    virtual QString getStreamingApiInstrumentInfoSubscribeJson  ( const QString &figi ) override
+    {
+        return getStreamingApiInstrumentInfoJsonSentenceHelper( "instrument_info:subscribe", figi );
+    }
+
+    virtual QString getStreamingApiInstrumentInfoUnsubscribeJson( const QString &figi ) override
+    {
+        return getStreamingApiInstrumentInfoJsonSentenceHelper( "instrument_info:unsubscribe", figi );
+    }
+
+
+    virtual QString getStreamingApiCandleSubscribeJson  ( const QString &figi, const CandleResolution &interval             ) override
+    {
+        return getStreamingApiCandleJsonSentenceHelper( "candle:subscribe", figi, interval.asJson() );
+    }
+
+    virtual QString getStreamingApiCandleSubscribeJson  ( const QString &figi, CandleResolution::eCandleResolution interval ) override
+    {
+        return getStreamingApiCandleSubscribeJson( figi, toCandleResolution(interval) );
+    }
+
+    virtual QString getStreamingApiCandleSubscribeJson  ( const QString &figi, const QString &interval                      ) override
+    {
+        return getStreamingApiCandleSubscribeJson( figi, toCandleResolution(interval) );
+    }
+
+
+    virtual QString getStreamingApiCandleUnsubscribeJson( const QString &figi, const CandleResolution &interval             ) override
+    {
+        return getStreamingApiCandleJsonSentenceHelper( "candle:unsubscribe", figi, interval.asJson() );
+    }
+
+    virtual QString getStreamingApiCandleUnsubscribeJson( const QString &figi, CandleResolution::eCandleResolution interval ) override
+    {
+        return getStreamingApiCandleUnsubscribeJson( figi, toCandleResolution(interval) );
+    }
+
+    virtual QString getStreamingApiCandleUnsubscribeJson( const QString &figi, const QString &interval                      ) override
+    {
+        return getStreamingApiCandleUnsubscribeJson( figi, toCandleResolution(interval) );
+    }
+
 
     //------------------------------
 

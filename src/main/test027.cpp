@@ -1,5 +1,5 @@
 /*! \file
-    \brief Тест Тинькофф Streaming API - подписка на стакан, на второй стакан, потом дубль подписки, и отписка отпискастаканов в том же порядке
+    \brief Тест Тинькофф Streaming API - подписка на стакан, на второй стакан, потом дубль подписки, и отписка от стаканов в том же порядке
 
  */
 
@@ -215,7 +215,7 @@ INVEST_OPENAPI_MAIN()
                      {
                          QString figi             = figiIt->first ;
                          QString ticker           = figiIt->second;
-                         QString subscriptionText = pOpenApi->getStreamingApiOrderbookJsonSentenceSubscribe( figi );
+                         QString subscriptionText = pOpenApi->getStreamingApiOrderbookSubscribeJson( figi );
                     
                          cout << "!!! Try to subscribe to - FIGI: " << figi << ", TICKER: " << ticker << endl;
                          cout << "Subscription text:" << endl;
@@ -241,7 +241,7 @@ INVEST_OPENAPI_MAIN()
                      {
                          QString figi             = figiIt->first ;
                          QString ticker           = figiIt->second;
-                         QString subscriptionText = pOpenApi->getStreamingApiOrderbookJsonSentenceUnsubscribe( figi );
+                         QString subscriptionText = pOpenApi->getStreamingApiOrderbookUnsubscribeJson( figi );
                     
                          cout << "!!! Try to unsubscribe to - FIGI: " << figi << ", TICKER: " << ticker << endl;
                          cout << "Unsubscription text:" << endl;
