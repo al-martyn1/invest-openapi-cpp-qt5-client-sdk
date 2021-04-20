@@ -184,6 +184,13 @@ INVEST_OPENAPI_MAIN()
 
                     cout << "!!! Streaming event: candle" << endl;
                 }
+                else if (streamingEvent=="instrument_info")
+                {
+                    tkf::StreamingMarketInstrumentResponse  streamingMarketInstrumentResponse;
+                    streamingMarketInstrumentResponse.fromJson(msg);
+
+                    cout << "!!! Streaming event: instrument_info" << endl;
+                }
                 else
                 {
                     cout << "??? Unknown streaming event: " << genericStreamingResponse.getEvent() << endl << "Message:" << endl << msg << endl;

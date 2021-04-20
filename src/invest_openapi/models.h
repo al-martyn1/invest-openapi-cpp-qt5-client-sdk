@@ -81,6 +81,10 @@
 #include "streaming_models/StreamingOrderbookResponse.h"
 #include "streaming_models/StreamingCandleResponse.h"
 
+#include "streaming_models/StreamingTradeStatus.h"
+#include "streaming_models/StreamingMarketInstrument.h"
+#include "streaming_models/StreamingMarketInstrumentResponse.h"
+
 #include "streaming_models/StreamingOrderbookItem.h"
 
 

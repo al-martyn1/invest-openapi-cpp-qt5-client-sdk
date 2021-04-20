@@ -250,6 +250,28 @@ INVEST_OPENAPI_MAIN()
     cout << "StreamingCandleResponse Time  : " << streamingCandleResponse.getTime() << endl;
     cout << "StreamingCandleResponse Candle: " << tkf::modelToStrings( streamingCandleResponse.getPayload() ) << endl;
     cout << endl << endl;
+
+
+    tkf::StreamingMarketInstrumentResponse  streamingMarketInstrumentResponse;
+    streamingMarketInstrumentResponse.fromJson(jsonInstrumentInfoSample);
+    cout << "StreamingMarketInstrumentResponse test" << endl;
+    cout << "StreamingMarketInstrumentResponse Event : " << streamingMarketInstrumentResponse.getEvent() << endl;
+    cout << "StreamingMarketInstrumentResponse Time  : " << streamingMarketInstrumentResponse.getTime() << endl;
+    
+
+    // streamingMarketInstrument представляется как QVector, потому что срабатывает 
+    // перегрузка modelToStrings( const Object &v ) - потому, что реализации modelToStrings нет для 
+    // типа StreamingMarketInstrument - и срабатывает каст к базовому классу - tkf::Object
+    // А modelToStrings возвращает вектор из QString, а в том QString уже отформатированный JSON
+
+    // inline QVector<QString> modelToStrings( const Object &v )
+    auto streamingMarketInstrument = streamingMarketInstrumentResponse.getPayload();
+    cout << "StreamingMarketInstrumentResponse Info: " << tkf::modelToStrings( streamingMarketInstrument ) << endl;
+    cout << endl << endl;
+
+
+    //StreamingMarketInstrumentResponse.cpp
+    //QString jsonInstrumentInfoSample
     
 
 
