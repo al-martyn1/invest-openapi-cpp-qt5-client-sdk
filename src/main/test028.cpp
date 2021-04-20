@@ -99,6 +99,19 @@ INVEST_OPENAPI_MAIN()
         pOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
     }
 
+    QString jsonInstrumentInfoSample
+                             = 
+                            "{"
+                              "\"payload\":"
+                                "{"
+                                    "\"figi\":\"BBG000BN56Q9\","
+                                    "\"trade_status\":\"normal_trading\","
+                                    "\"min_price_increment\":0.02,"
+                                    "\"lot\":10"
+                                "},"
+                              "\"event\":\"instrument_info\","
+                              "\"time\":\"2021-04-20T17:35:39.683432674Z\""
+                            "}";
 
     QString jsonCandleSample = 
                             "{"
