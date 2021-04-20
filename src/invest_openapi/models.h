@@ -79,6 +79,7 @@
 #include "streaming_models/StreamingError.h"
 #include "streaming_models/StreamingOrderbook.h"
 #include "streaming_models/StreamingOrderbookResponse.h"
+#include "streaming_models/StreamingCandleResponse.h"
 
 #include "streaming_models/StreamingOrderbookItem.h"
 

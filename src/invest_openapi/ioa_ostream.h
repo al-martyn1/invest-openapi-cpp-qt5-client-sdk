@@ -115,6 +115,54 @@ std::ostream& operator<<( std::ostream& os, const QTime &v )
 }
 
 //----------------------------------------------------------------------------
+template<typename T>
+inline
+std::ostream& operator<<( std::ostream& os, const QVector<T> &v )
+{
+    os << "QVector{ ";
+
+    bool bFirst = true;
+
+    for( const auto &value : v )
+    {
+        if (bFirst)
+            bFirst = false;
+        else
+            os << ", ";
+
+        os << value;
+    }
+
+    os << " }";
+
+    return os;
+}
+
+//----------------------------------------------------------------------------
+template<typename T>
+inline
+std::ostream& operator<<( std::ostream& os, const QList<T> &v )
+{
+    os << "QList{ ";
+
+    bool bFirst = true;
+
+    for( const auto &value : v )
+    {
+        if (bFirst)
+            bFirst = false;
+        else
+            os << ", ";
+
+        os << value;
+    }
+
+    os << " }";
+
+    return os;
+}
+
+//----------------------------------------------------------------------------
 
 
 

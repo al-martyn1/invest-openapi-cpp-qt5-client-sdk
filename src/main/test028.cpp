@@ -100,6 +100,22 @@ INVEST_OPENAPI_MAIN()
     }
 
 
+    QString jsonCandleSample = 
+                            "{"
+                              "\"payload\":"
+                                "{"
+                                    "\"o\":154.58,"
+                                    "\"c\":154.6,"
+                                    "\"h\":154.6,"
+                                    "\"l\":154.58,"
+                                    "\"v\":326,"
+                                    "\"time\":\"2021-04-20T13:55:00Z\","
+                                    "\"interval\":\"1min\","
+                                    "\"figi\":\"BBG000BN56Q9\""
+                                "},"
+                              "\"event\":\"candle\","
+                              "\"time\":\"2021-04-20T13:55:39.717311393Z\""
+                            "}";
 
     QString jsonErrSample = "{"
                               "\"payload\":"
@@ -212,6 +228,16 @@ INVEST_OPENAPI_MAIN()
     cout << "StreamingError Time : " << streamingError.getTime() << endl;
     cout << "StreamingError Text : " << streamingError.getPayload().getMessage() << endl;
     cout << endl << endl;
+
+
+    tkf::StreamingCandleResponse  streamingCandleResponse;
+    streamingCandleResponse.fromJson(jsonCandleSample);
+    cout << "StreamingCandleResponse test" << endl;
+    cout << "StreamingCandleResponse Event : " << streamingCandleResponse.getEvent() << endl;
+    cout << "StreamingCandleResponse Time  : " << streamingCandleResponse.getTime() << endl;
+    cout << "StreamingCandleResponse Candle: " << tkf::modelToStrings( streamingCandleResponse.getPayload() ) << endl;
+    cout << endl << endl;
+    
 
 
     auto showJsonWithTitle = []( const QString &title, const QString &json )
