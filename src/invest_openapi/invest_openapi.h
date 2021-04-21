@@ -98,6 +98,9 @@ class OpenApiFactory;
 //----------------------------------------------------------------------------
 struct IOpenApi
 {
+
+    virtual ~IOpenApi() {};
+
     virtual void    setBrokerAccountId( const QString &id ) = 0;
     virtual QString getBrokerAccountId()                    = 0;
 
@@ -237,7 +240,6 @@ struct IOpenApi
     virtual GenericError findInstrumentListingStartDate( const QString &figi, const QDate &dateStartLookupFrom, QDate &foundDate ) = 0;
 
 
-    virtual ~IOpenApi() {};
 }; // struct IOpenApi
 
 //----------------------------------------------------------------------------
@@ -248,6 +250,8 @@ struct IOpenApi
 //----------------------------------------------------------------------------
 struct ISanboxOpenApi // : public IOpenApi
 {
+    virtual ~ISanboxOpenApi() {};
+
     virtual void    setBrokerAccountId( const QString &id ) = 0;
     virtual QString getBrokerAccountId()                    = 0;
 
