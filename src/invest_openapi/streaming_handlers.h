@@ -15,6 +15,8 @@
 #include <iostream>
 #include <exception>
 #include <stdexcept>
+#include <memory>
+#include <map>
 
 #include "models.h"
 
@@ -139,6 +141,210 @@ struct BasicStreamingOrderbookResponseHandler : public IStreamingEventHandler
 
 
 
+
+
+//----------------------------------------------------------------------------
+class StreamingResponseDispatcher
+{
+
+public:
+
+    typedef std::shared_ptr< IStreamingEventHandler >     handler_smart_ptr;
+    typedef std::map< QString, handler_smart_ptr >        handlers_map_type;
+
+
+protected:
+
+    handlers_map_type     m_handlers;
+
+
+public:
+
+
+    //!
+    /*
+        //NOTE: pHandler must be dynamically allocated
+     */
+
+    void addHandler( const QString &eventId, IStreamingEventHandler *pHandler )
+    {
+        m_handlers[eventId] = handler_smart_ptr(pHandler);
+    }
+
+    void addHandler( const QString &eventId, handler_smart_ptr pHandler )
+    {
+        m_handlers[eventId] = pHandler;
+    }
+
+    void removeHandler( const QString &eventId )
+    {
+        handlers_map_type::iterator it = m_handlers.find(eventId);
+        if (it == m_handlers.end())
+            return;
+
+        m_handlers.erase(it);
+    }
+
+
+    //! Dispatches streaming event data to appropriate handler/
+    /* \returns true if event handled
+     */
+    bool dispatchStreamingEvent( const QString &streamingData, const QString &eventId ) const
+    {
+        handlers_map_type::const_iterator it = m_handlers.find(eventId);
+        if (it == m_handlers.end())
+            return false;
+    
+        handler_smart_ptr handlerPtr = it->second;
+
+        handlerPtr->handleEvent( eventId, streamingData );
+
+        return true;
+    }
+
+
+    bool dispatchStreamingEvent( const QString &streamingData ) const
+    {
+        OpenAPI::GenericStreamingResponse genericStreamingResponse;
+        genericStreamingResponse.fromJson(streamingData);
+
+        return dispatchStreamingEvent( streamingData, genericStreamingResponse.getEvent() );
+    }
+
+
+}; // class StreamingResponseDispatcher
+
+
+
+
+
+//----------------------------------------------------------------------------
+/*
+template< typename HandlerType >
+struct LambdaDrivenStreamingErrorHandler : public BasicStreamingErrorHandler
+{
+
+protected:
+
+    HandlerType     handler;
+
+
+public:
+
+    LambdaDrivenStreamingErrorHandler( const HandlerType &h ) : handler(h) {}
+
+    virtual void handleError( const OpenAPI::StreamingError &err ) override
+    {
+        handler(err);
+    }
+
+};
+
+//---
+
+template< typename HandlerType >
+struct ParamHandlerTypeName : public ParamBaseClass
+{
+
+protected:
+
+    HandlerType     handler;
+
+
+public:
+
+    ParamHandlerTypeName( const HandlerType &h ) : handler(h) {}
+
+    virtual void ParamHandlerMemberHandler( const OpenAPI :: ParamHandlerHadledType &streamingObj ) override
+    {
+        handler(err);
+    }
+
+};
+
+
+template< typename RealHandlerType >
+inline
+std::shared_ptr< IStreamingEventHandler > make ## ParamHandlerTypeName( const RealHandlerType &h )
+{
+    return std::make_shared< ParamHandlerTypeName >( h );
+}
+
+
+*/
+
+#define TKF_IOA_DECLARE_SIMPLE_STREAMING_HANDLER_IMPL( ParamHandlerTypeName, ParamBaseClass, ParamHandlerMemberHandler, ParamHandlerHadledType ) \
+                                                                                                    \
+template< typename RealHandlerType >                                                                \
+struct ParamHandlerTypeName : public ParamBaseClass                                                 \
+{                                                                                                   \
+                                                                                                    \
+protected:                                                                                          \
+                                                                                                    \
+    RealHandlerType     handler;                                                                    \
+                                                                                                    \
+                                                                                                    \
+public:                                                                                             \
+                                                                                                    \
+    ParamHandlerTypeName( const RealHandlerType &h ) : handler(h) {}                                \
+                                                                                                    \
+    virtual void                                                                                    \
+    ParamHandlerMemberHandler( const OpenAPI :: ParamHandlerHadledType &streamingObj )              \
+    override                                                                                        \
+    {                                                                                               \
+        handler(err);                                                                               \
+    }                                                                                               \
+                                                                                                    \
+};                                                                                                  \
+                                                                                                    \
+template< typename RealHandlerType >                                                                \
+inline                                                                                              \
+std::shared_ptr< IStreamingEventHandler > make ## ParamHandlerTypeName( const RealHandlerType &h )  \
+{                                                                                                   \
+    return std::make_shared< ParamHandlerTypeName >( ParamHandlerTypeName(h) );                                             \
+}
+
+
+TKF_IOA_DECLARE_SIMPLE_STREAMING_HANDLER_IMPL( SimpleStreamingErrorHandler                    , BasicStreamingErrorHandler                    , handleError                    , StreamingError                    )
+TKF_IOA_DECLARE_SIMPLE_STREAMING_HANDLER_IMPL( SimpleStreamingCandleResponseHandler           , BasicStreamingCandleResponseHandler           , handleCandleResponse           , StreamingCandleResponse           )
+TKF_IOA_DECLARE_SIMPLE_STREAMING_HANDLER_IMPL( SimpleStreamingMarketInstrumentResponseHandler , BasicStreamingMarketInstrumentResponseHandler , handleMarketInstrumentResponse , StreamingMarketInstrumentResponse )
+TKF_IOA_DECLARE_SIMPLE_STREAMING_HANDLER_IMPL( SimpleStreamingOrderbookResponseHandler        , BasicStreamingOrderbookResponseHandler        , handleOrderbookResponse        , StreamingOrderbookResponse        )
+
+/*
+ use 
+ makeSimpleStreamingErrorHandler                   
+ makeSimpleStreamingCandleResponseHandler          
+ makeSimpleStreamingMarketInstrumentResponseHandler
+ makeSimpleStreamingOrderbookResponseHandler       
+
+
+/*
+    std::shared_ptr< IStreamingEventHandler > make ## ParamHandlerTypeName( const RealHandlerType &h )  \
+
+ */
+
+
+
+// std::shared_ptr< IStreamingEventHandler > make
+
+/*
+struct SimpleStreamingErrorHandler
+struct SimpleStreamingCandleResponseHandler
+struct SimpleStreamingMarketInstrumentResponseHandler
+struct SimpleStreamingOrderbookResponseHandler
+
+struct BasicStreamingErrorHandler
+struct BasicStreamingCandleResponseHandler
+struct BasicStreamingMarketInstrumentResponseHandler
+struct BasicStreamingOrderbookResponseHandler
+
+
+    virtual void handleError( const OpenAPI::StreamingError &err )
+    virtual void handleCandleResponse( const OpenAPI::StreamingCandleResponse &candleResponse ) = 0;
+    virtual void handleMarketInstrumentResponse( const OpenAPI::StreamingMarketInstrumentResponse &marketInstrumentResponse ) = 0;
+    virtual void handleOrderbookResponse( const OpenAPI::StreamingOrderbookResponse &orderbookResponse ) = 0;
+
+*/
 
 
 //----------------------------------------------------------------------------

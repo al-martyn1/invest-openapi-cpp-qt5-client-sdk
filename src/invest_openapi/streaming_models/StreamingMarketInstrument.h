@@ -16,7 +16,7 @@
 //#include "InstrumentType.h"
 #include <QString>
 
-#include "StreamingTradeStatus.h"
+#include "../models/client/TradeStatus.h"
 
 #include "../models/client/Enum.h"
 #include "../models/client/Object.h"
@@ -42,8 +42,8 @@ public:
     bool is_figi_Set() const;
     bool is_figi_Valid() const;
 
-    StreamingTradeStatus getTradeStatus() const;
-    void setTradeStatus(const StreamingTradeStatus &trade_status);
+    TradeStatus getTradeStatus() const;
+    void setTradeStatus(const TradeStatus &trade_status);
     bool is_trade_status_Set() const;
     bool is_trade_status_Valid() const;
 
@@ -67,7 +67,7 @@ private:
     bool m_figi_isSet;
     bool m_figi_isValid;
 
-    StreamingTradeStatus trade_status;
+    TradeStatus trade_status;
     bool m_trade_status_isSet;
     bool m_trade_status_isValid;
 

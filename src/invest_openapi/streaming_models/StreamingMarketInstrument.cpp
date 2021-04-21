@@ -100,10 +100,10 @@ bool StreamingMarketInstrument::is_figi_Valid() const{
     return m_figi_isValid;
 }
 
-StreamingTradeStatus StreamingMarketInstrument::getTradeStatus() const {
+TradeStatus StreamingMarketInstrument::getTradeStatus() const {
     return trade_status;
 }
-void StreamingMarketInstrument::setTradeStatus(const StreamingTradeStatus &trade_status) {
+void StreamingMarketInstrument::setTradeStatus(const TradeStatus &trade_status) {
     this->trade_status = trade_status;
     this->m_trade_status_isSet = true;
 }

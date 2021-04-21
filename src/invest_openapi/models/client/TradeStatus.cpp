@@ -41,11 +41,11 @@ void TradeStatus::initializeModel() {
 
 void TradeStatus::fromJson(QString jsonString) {
     
-    if ( jsonString.compare("NormalTrading", Qt::CaseInsensitive) == 0) {
+    if ( jsonString.compare("NormalTrading", Qt::CaseInsensitive) == 0 || jsonString.compare("normal_trading", Qt::CaseInsensitive) == 0) {
         m_value = eTradeStatus::NORMALTRADING;
         m_value_isSet = m_value_isValid = true;
     }
-    else if ( jsonString.compare("NotAvailableForTrading", Qt::CaseInsensitive) == 0) {
+    else if ( jsonString.compare("NotAvailableForTrading", Qt::CaseInsensitive) == 0 || jsonString.compare("not_available_for_trading", Qt::CaseInsensitive) == 0) {
         m_value = eTradeStatus::NOTAVAILABLEFORTRADING;
         m_value_isSet = m_value_isValid = true;
     }
