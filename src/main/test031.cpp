@@ -132,11 +132,37 @@ INVEST_OPENAPI_MAIN()
 
     streamingResponseDispatcher
              .addHandler( "error"
-                        , tkf::makeSimpleStreamingErrorHandler( [&]( tkf::StreamingError err )
+                        , tkf::makeSimpleStreamingErrorHandler( [&]( const tkf::StreamingError &err )
                                                                    {
-                                                                    qDebug() << "Streaming error: " << err.getPayload().getMessage();
-                                                                    qDebug() << "             at: " << err.getTime();
-                                                                   
+                                                                       qDebug() << "Streaming error: " << err.getPayload().getMessage();
+                                                                       qDebug() << "             at: " << err.getTime();
+                                                                   }
+                                                              )
+                        );
+
+    streamingResponseDispatcher
+             .addHandler( "candle"
+                        , tkf::makeSimpleStreamingCandleResponseHandler( [&]( const tkf::StreamingCandleResponse &candleResponse )
+                                                                   {
+                                                                       cout << "!!! Candle streaming event" << endl;
+                                                                   }
+                                                              )
+                        );
+
+    streamingResponseDispatcher
+             .addHandler( "instrument_info"
+                        , tkf::makeSimpleStreamingInstrumentInfoResponseHandler( [&]( const tkf::StreamingInstrumentInfoResponse &instrumentInfoResponse )
+                                                                   {
+                                                                       cout << "!!! Instrument Info streaming event" << endl;
+                                                                   }
+                                                              )
+                        );
+
+    streamingResponseDispatcher
+             .addHandler( "orderbook"
+                        , tkf::makeSimpleStreamingOrderbookResponseHandler( [&]( const tkf::StreamingOrderbookResponse &orderbookResponse )
+                                                                   {
+                                                                       cout << "!!! Orderbook streaming event" << endl;
                                                                    }
                                                               )
                         );
@@ -179,7 +205,11 @@ INVEST_OPENAPI_MAIN()
                 using std::cout;
                 using std::endl;
             
-                streamingResponseDispatcher.dispatchStreamingEvent(msg);
+                if (!streamingResponseDispatcher.dispatchStreamingEvent(msg))
+                {
+                    cout << "Streaming event no handled. Event data: " << endl;
+                    cout << msg << endl;
+                }
             };
 
 

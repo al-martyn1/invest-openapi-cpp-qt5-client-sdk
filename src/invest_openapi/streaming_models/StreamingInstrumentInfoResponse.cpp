@@ -1,7 +1,7 @@
 /**
  */
 
-#include "StreamingMarketInstrumentResponse.h"
+#include "StreamingInstrumentInfoResponse.h"
 
 #include <QDebug>
 #include <QJsonArray>
@@ -12,18 +12,18 @@
 
 namespace OpenAPI {
 
-StreamingMarketInstrumentResponse::StreamingMarketInstrumentResponse(QString json) {
+StreamingInstrumentInfoResponse::StreamingInstrumentInfoResponse(QString json) {
     this->initializeModel();
     this->fromJson(json);
 }
 
-StreamingMarketInstrumentResponse::StreamingMarketInstrumentResponse() {
+StreamingInstrumentInfoResponse::StreamingInstrumentInfoResponse() {
     this->initializeModel();
 }
 
-StreamingMarketInstrumentResponse::~StreamingMarketInstrumentResponse() {}
+StreamingInstrumentInfoResponse::~StreamingInstrumentInfoResponse() {}
 
-void StreamingMarketInstrumentResponse::initializeModel() {
+void StreamingInstrumentInfoResponse::initializeModel() {
 
     m_event_isSet = false;
     m_event_isValid = false;
@@ -35,14 +35,14 @@ void StreamingMarketInstrumentResponse::initializeModel() {
     m_payload_isValid = false;
 }
 
-void StreamingMarketInstrumentResponse::fromJson(QString jsonString) {
+void StreamingInstrumentInfoResponse::fromJson(QString jsonString) {
     QByteArray array(jsonString.toStdString().c_str());
     QJsonDocument doc = QJsonDocument::fromJson(array);
     QJsonObject jsonObject = doc.object();
     this->fromJsonObject(jsonObject);
 }
 
-void StreamingMarketInstrumentResponse::fromJsonObject(QJsonObject json) {
+void StreamingInstrumentInfoResponse::fromJsonObject(QJsonObject json) {
 
     m_event_isValid = ::OpenAPI::fromJsonValue(event, json[QString("event")]);
     m_event_isSet = !json[QString("event")].isNull() && m_event_isValid;
@@ -54,14 +54,14 @@ void StreamingMarketInstrumentResponse::fromJsonObject(QJsonObject json) {
     m_payload_isSet = !json[QString("payload")].isNull() && m_payload_isValid;
 }
 
-QString StreamingMarketInstrumentResponse::asJson() const {
+QString StreamingInstrumentInfoResponse::asJson() const {
     QJsonObject obj = this->asJsonObject();
     QJsonDocument doc(obj);
     QByteArray bytes = doc.toJson();
     return QString(bytes);
 }
 
-QJsonObject StreamingMarketInstrumentResponse::asJsonObject() const {
+QJsonObject StreamingInstrumentInfoResponse::asJsonObject() const {
     QJsonObject obj;
     if (m_event_isSet) {
         obj.insert(QString("event"), ::OpenAPI::toJsonValue(event));
@@ -75,56 +75,56 @@ QJsonObject StreamingMarketInstrumentResponse::asJsonObject() const {
     return obj;
 }
 
-QString StreamingMarketInstrumentResponse::getEvent() const {
+QString StreamingInstrumentInfoResponse::getEvent() const {
     return event;
 }
-void StreamingMarketInstrumentResponse::setEvent(const QString &event) {
+void StreamingInstrumentInfoResponse::setEvent(const QString &event) {
     this->event = event;
     this->m_event_isSet = true;
 }
 
-bool StreamingMarketInstrumentResponse::is_event_Set() const{
+bool StreamingInstrumentInfoResponse::is_event_Set() const{
     return m_event_isSet;
 }
 
-bool StreamingMarketInstrumentResponse::is_event_Valid() const{
+bool StreamingInstrumentInfoResponse::is_event_Valid() const{
     return m_event_isValid;
 }
 
 
-QDateTime StreamingMarketInstrumentResponse::getTime() const {
+QDateTime StreamingInstrumentInfoResponse::getTime() const {
     return time;
 }
-void StreamingMarketInstrumentResponse::setTime(const QDateTime &time) {
+void StreamingInstrumentInfoResponse::setTime(const QDateTime &time) {
     this->time = time;
     this->m_time_isSet = true;
 }
 
-bool StreamingMarketInstrumentResponse::is_time_Set() const{
+bool StreamingInstrumentInfoResponse::is_time_Set() const{
     return m_time_isSet;
 }
 
-bool StreamingMarketInstrumentResponse::is_time_Valid() const{
+bool StreamingInstrumentInfoResponse::is_time_Valid() const{
     return m_time_isValid;
 }
 
-StreamingMarketInstrument StreamingMarketInstrumentResponse::getPayload() const {
+StreamingInstrumentInfo StreamingInstrumentInfoResponse::getPayload() const {
     return payload;
 }
-void StreamingMarketInstrumentResponse::setPayload(const StreamingMarketInstrument &payload) {
+void StreamingInstrumentInfoResponse::setPayload(const StreamingInstrumentInfo &payload) {
     this->payload = payload;
     this->m_payload_isSet = true;
 }
 
-bool StreamingMarketInstrumentResponse::is_payload_Set() const{
+bool StreamingInstrumentInfoResponse::is_payload_Set() const{
     return m_payload_isSet;
 }
 
-bool StreamingMarketInstrumentResponse::is_payload_Valid() const{
+bool StreamingInstrumentInfoResponse::is_payload_Valid() const{
     return m_payload_isValid;
 }
 
-bool StreamingMarketInstrumentResponse::isSet() const {
+bool StreamingInstrumentInfoResponse::isSet() const {
     bool isObjectUpdated = false;
     do {
         if (m_event_isSet) {
@@ -145,7 +145,7 @@ bool StreamingMarketInstrumentResponse::isSet() const {
     return isObjectUpdated;
 }
 
-bool StreamingMarketInstrumentResponse::isValid() const {
+bool StreamingInstrumentInfoResponse::isValid() const {
     // only required properties are required for the object to be considered valid
     return m_event_isValid && m_time_isValid && m_payload_isValid && true;
 }

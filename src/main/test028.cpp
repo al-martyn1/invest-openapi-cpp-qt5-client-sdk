@@ -252,11 +252,11 @@ INVEST_OPENAPI_MAIN()
     cout << endl << endl;
 
 
-    tkf::StreamingMarketInstrumentResponse  streamingMarketInstrumentResponse;
-    streamingMarketInstrumentResponse.fromJson(jsonInstrumentInfoSample);
-    cout << "StreamingMarketInstrumentResponse test" << endl;
-    cout << "StreamingMarketInstrumentResponse Event : " << streamingMarketInstrumentResponse.getEvent() << endl;
-    cout << "StreamingMarketInstrumentResponse Time  : " << streamingMarketInstrumentResponse.getTime() << endl;
+    tkf::StreamingInstrumentInfoResponse  streamingInstrumentInfoResponse;
+    streamingInstrumentInfoResponse.fromJson(jsonInstrumentInfoSample);
+    cout << "StreamingInstrumentInfoResponse test" << endl;
+    cout << "StreamingInstrumentInfoResponse Event : " << streamingInstrumentInfoResponse.getEvent() << endl;
+    cout << "StreamingInstrumentInfoResponse Time  : " << streamingInstrumentInfoResponse.getTime() << endl;
     
 
     // streamingMarketInstrument представляется как QVector, потому что срабатывает 
@@ -265,8 +265,8 @@ INVEST_OPENAPI_MAIN()
     // А modelToStrings возвращает вектор из QString, а в том QString уже отформатированный JSON
 
     // inline QVector<QString> modelToStrings( const Object &v )
-    auto streamingMarketInstrument = streamingMarketInstrumentResponse.getPayload();
-    cout << "StreamingMarketInstrumentResponse Info: " << tkf::modelToStrings( streamingMarketInstrument ) << endl;
+    auto streamingInstrumentInfo = streamingInstrumentInfoResponse.getPayload();
+    cout << "StreamingInstrumentInfoResponse Info: " << tkf::modelToStrings( streamingInstrumentInfo ) << endl;
     cout << endl << endl;
 
 

@@ -186,8 +186,8 @@ INVEST_OPENAPI_MAIN()
                 }
                 else if (streamingEvent=="instrument_info")
                 {
-                    tkf::StreamingMarketInstrumentResponse  streamingMarketInstrumentResponse;
-                    streamingMarketInstrumentResponse.fromJson(msg);
+                    tkf::StreamingInstrumentInfoResponse  streamingInstrumentInfoResponse;
+                    streamingInstrumentInfoResponse.fromJson(msg);
 
                     cout << "!!! Streaming event: instrument_info" << endl;
                 }

@@ -102,19 +102,19 @@ struct BasicStreamingCandleResponseHandler : public IStreamingEventHandler
 
 
 //----------------------------------------------------------------------------
-struct BasicStreamingMarketInstrumentResponseHandler : public IStreamingEventHandler
+struct BasicStreamingInstrumentInfoResponseHandler : public IStreamingEventHandler
 {
 
-    virtual void handleMarketInstrumentResponse( const OpenAPI::StreamingMarketInstrumentResponse &marketInstrumentResponse ) = 0;
+    virtual void handleInstrumentInfoResponse( const OpenAPI::StreamingInstrumentInfoResponse &instrumentInfoResponse ) = 0;
 
     virtual void handleEvent( const QString &eventId, const QString &eventData ) override
     {
-        OpenAPI::StreamingMarketInstrumentResponse data;
+        OpenAPI::StreamingInstrumentInfoResponse data;
         data.fromJson(eventData);
-        handleMarketInstrumentResponse(data);
+        handleInstrumentInfoResponse(data);
     }
 
-}; // struct BasicStreamingMarketInstrumentResponseHandler
+}; // struct BasicStreamingInstrumentInfoResponseHandler
 
 //----------------------------------------------------------------------------
 
@@ -292,7 +292,7 @@ public:                                                                         
     ParamHandlerMemberHandler( const OpenAPI :: ParamHandlerHadledType &streamingObj )              \
     override                                                                                        \
     {                                                                                               \
-        handler(err);                                                                               \
+        handler(streamingObj);                                                                      \
     }                                                                                               \
                                                                                                     \
 };                                                                                                  \
@@ -301,50 +301,19 @@ template< typename RealHandlerType >                                            
 inline                                                                                              \
 std::shared_ptr< IStreamingEventHandler > make ## ParamHandlerTypeName( const RealHandlerType &h )  \
 {                                                                                                   \
-    return std::make_shared< ParamHandlerTypeName >( ParamHandlerTypeName(h) );                                             \
+    std::shared_ptr< ParamHandlerTypeName< RealHandlerType > > ptr = std::make_shared< ParamHandlerTypeName< RealHandlerType > >( h ); \
+                                                                                                               \
+    std::shared_ptr< IStreamingEventHandler > resPtr = std::dynamic_pointer_cast<IStreamingEventHandler>(ptr); \
+                                                                                                               \
+    return resPtr;                                                                                             \
 }
 
 
 TKF_IOA_DECLARE_SIMPLE_STREAMING_HANDLER_IMPL( SimpleStreamingErrorHandler                    , BasicStreamingErrorHandler                    , handleError                    , StreamingError                    )
 TKF_IOA_DECLARE_SIMPLE_STREAMING_HANDLER_IMPL( SimpleStreamingCandleResponseHandler           , BasicStreamingCandleResponseHandler           , handleCandleResponse           , StreamingCandleResponse           )
-TKF_IOA_DECLARE_SIMPLE_STREAMING_HANDLER_IMPL( SimpleStreamingMarketInstrumentResponseHandler , BasicStreamingMarketInstrumentResponseHandler , handleMarketInstrumentResponse , StreamingMarketInstrumentResponse )
+TKF_IOA_DECLARE_SIMPLE_STREAMING_HANDLER_IMPL( SimpleStreamingInstrumentInfoResponseHandler   , BasicStreamingInstrumentInfoResponseHandler   , handleInstrumentInfoResponse   , StreamingInstrumentInfoResponse   )
 TKF_IOA_DECLARE_SIMPLE_STREAMING_HANDLER_IMPL( SimpleStreamingOrderbookResponseHandler        , BasicStreamingOrderbookResponseHandler        , handleOrderbookResponse        , StreamingOrderbookResponse        )
 
-/*
- use 
- makeSimpleStreamingErrorHandler                   
- makeSimpleStreamingCandleResponseHandler          
- makeSimpleStreamingMarketInstrumentResponseHandler
- makeSimpleStreamingOrderbookResponseHandler       
-
-
-/*
-    std::shared_ptr< IStreamingEventHandler > make ## ParamHandlerTypeName( const RealHandlerType &h )  \
-
- */
-
-
-
-// std::shared_ptr< IStreamingEventHandler > make
-
-/*
-struct SimpleStreamingErrorHandler
-struct SimpleStreamingCandleResponseHandler
-struct SimpleStreamingMarketInstrumentResponseHandler
-struct SimpleStreamingOrderbookResponseHandler
-
-struct BasicStreamingErrorHandler
-struct BasicStreamingCandleResponseHandler
-struct BasicStreamingMarketInstrumentResponseHandler
-struct BasicStreamingOrderbookResponseHandler
-
-
-    virtual void handleError( const OpenAPI::StreamingError &err )
-    virtual void handleCandleResponse( const OpenAPI::StreamingCandleResponse &candleResponse ) = 0;
-    virtual void handleMarketInstrumentResponse( const OpenAPI::StreamingMarketInstrumentResponse &marketInstrumentResponse ) = 0;
-    virtual void handleOrderbookResponse( const OpenAPI::StreamingOrderbookResponse &orderbookResponse ) = 0;
-
-*/
 
 
 //----------------------------------------------------------------------------

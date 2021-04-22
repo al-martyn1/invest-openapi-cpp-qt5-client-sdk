@@ -1,7 +1,7 @@
 /**
  */
 
-#include "StreamingMarketInstrument.h"
+#include "StreamingInstrumentInfo.h"
 
 #include <QDebug>
 #include <QJsonArray>
@@ -12,18 +12,18 @@
 
 namespace OpenAPI {
 
-StreamingMarketInstrument::StreamingMarketInstrument(QString json) {
+StreamingInstrumentInfo::StreamingInstrumentInfo(QString json) {
     this->initializeModel();
     this->fromJson(json);
 }
 
-StreamingMarketInstrument::StreamingMarketInstrument() {
+StreamingInstrumentInfo::StreamingInstrumentInfo() {
     this->initializeModel();
 }
 
-StreamingMarketInstrument::~StreamingMarketInstrument() {}
+StreamingInstrumentInfo::~StreamingInstrumentInfo() {}
 
-void StreamingMarketInstrument::initializeModel() {
+void StreamingInstrumentInfo::initializeModel() {
 
     m_figi_isSet = false;
     m_figi_isValid = false;
@@ -38,14 +38,14 @@ void StreamingMarketInstrument::initializeModel() {
     m_lot_isValid = false;
 }
 
-void StreamingMarketInstrument::fromJson(QString jsonString) {
+void StreamingInstrumentInfo::fromJson(QString jsonString) {
     QByteArray array(jsonString.toStdString().c_str());
     QJsonDocument doc = QJsonDocument::fromJson(array);
     QJsonObject jsonObject = doc.object();
     this->fromJsonObject(jsonObject);
 }
 
-void StreamingMarketInstrument::fromJsonObject(QJsonObject json) {
+void StreamingInstrumentInfo::fromJsonObject(QJsonObject json) {
 
     m_figi_isValid = ::OpenAPI::fromJsonValue(figi, json[QString("figi")]);
     m_figi_isSet = !json[QString("figi")].isNull() && m_figi_isValid;
@@ -60,14 +60,14 @@ void StreamingMarketInstrument::fromJsonObject(QJsonObject json) {
     m_lot_isSet = !json[QString("lot")].isNull() && m_lot_isValid;
 }
 
-QString StreamingMarketInstrument::asJson() const {
+QString StreamingInstrumentInfo::asJson() const {
     QJsonObject obj = this->asJsonObject();
     QJsonDocument doc(obj);
     QByteArray bytes = doc.toJson();
     return QString(bytes);
 }
 
-QJsonObject StreamingMarketInstrument::asJsonObject() const {
+QJsonObject StreamingInstrumentInfo::asJsonObject() const {
     QJsonObject obj;
     if (m_figi_isSet) {
         obj.insert(QString("figi"), ::OpenAPI::toJsonValue(figi));
@@ -84,71 +84,71 @@ QJsonObject StreamingMarketInstrument::asJsonObject() const {
     return obj;
 }
 
-QString StreamingMarketInstrument::getFigi() const {
+QString StreamingInstrumentInfo::getFigi() const {
     return figi;
 }
-void StreamingMarketInstrument::setFigi(const QString &figi) {
+void StreamingInstrumentInfo::setFigi(const QString &figi) {
     this->figi = figi;
     this->m_figi_isSet = true;
 }
 
-bool StreamingMarketInstrument::is_figi_Set() const{
+bool StreamingInstrumentInfo::is_figi_Set() const{
     return m_figi_isSet;
 }
 
-bool StreamingMarketInstrument::is_figi_Valid() const{
+bool StreamingInstrumentInfo::is_figi_Valid() const{
     return m_figi_isValid;
 }
 
-TradeStatus StreamingMarketInstrument::getTradeStatus() const {
+TradeStatus StreamingInstrumentInfo::getTradeStatus() const {
     return trade_status;
 }
-void StreamingMarketInstrument::setTradeStatus(const TradeStatus &trade_status) {
+void StreamingInstrumentInfo::setTradeStatus(const TradeStatus &trade_status) {
     this->trade_status = trade_status;
     this->m_trade_status_isSet = true;
 }
 
-bool StreamingMarketInstrument::is_trade_status_Set() const{
+bool StreamingInstrumentInfo::is_trade_status_Set() const{
     return m_trade_status_isSet;
 }
 
-bool StreamingMarketInstrument::is_trade_status_Valid() const{
+bool StreamingInstrumentInfo::is_trade_status_Valid() const{
     return m_trade_status_isValid;
 }
 
-marty::Decimal StreamingMarketInstrument::getMinPriceIncrement() const {
+marty::Decimal StreamingInstrumentInfo::getMinPriceIncrement() const {
     return min_price_increment;
 }
-void StreamingMarketInstrument::setMinPriceIncrement(const marty::Decimal &min_price_increment) {
+void StreamingInstrumentInfo::setMinPriceIncrement(const marty::Decimal &min_price_increment) {
     this->min_price_increment = min_price_increment;
     this->m_min_price_increment_isSet = true;
 }
 
-bool StreamingMarketInstrument::is_min_price_increment_Set() const{
+bool StreamingInstrumentInfo::is_min_price_increment_Set() const{
     return m_min_price_increment_isSet;
 }
 
-bool StreamingMarketInstrument::is_min_price_increment_Valid() const{
+bool StreamingInstrumentInfo::is_min_price_increment_Valid() const{
     return m_min_price_increment_isValid;
 }
 
-qint32 StreamingMarketInstrument::getLot() const {
+qint32 StreamingInstrumentInfo::getLot() const {
     return lot;
 }
-void StreamingMarketInstrument::setLot(const qint32 &lot) {
+void StreamingInstrumentInfo::setLot(const qint32 &lot) {
     this->lot = lot;
     this->m_lot_isSet = true;
 }
 
-bool StreamingMarketInstrument::is_lot_Set() const{
+bool StreamingInstrumentInfo::is_lot_Set() const{
     return m_lot_isSet;
 }
 
-bool StreamingMarketInstrument::is_lot_Valid() const{
+bool StreamingInstrumentInfo::is_lot_Valid() const{
     return m_lot_isValid;
 }
 
-bool StreamingMarketInstrument::isSet() const {
+bool StreamingInstrumentInfo::isSet() const {
     bool isObjectUpdated = false;
     do {
         if (m_figi_isSet) {
@@ -169,7 +169,7 @@ bool StreamingMarketInstrument::isSet() const {
     return isObjectUpdated;
 }
 
-bool StreamingMarketInstrument::isValid() const {
+bool StreamingInstrumentInfo::isValid() const {
     // only required properties are required for the object to be considered valid
     return m_figi_isValid && m_trade_status_isValid && m_min_price_increment_isValid && m_lot_isValid && true;
 }

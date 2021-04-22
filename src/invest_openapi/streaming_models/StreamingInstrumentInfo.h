@@ -2,13 +2,13 @@
  */
 
 /*
- * StreamingMarketInstrument.h
+ * StreamingInstrumentInfo.h
  *
  * 
  */
 
-#ifndef StreamingMarketInstrument_H
-#define StreamingMarketInstrument_H
+#ifndef StreamingInstrumentInfo_H
+#define StreamingInstrumentInfo_H
 
 #include <QJsonObject>
 
@@ -26,11 +26,11 @@
 
 namespace OpenAPI {
 
-class StreamingMarketInstrument : public Object {
+class StreamingInstrumentInfo : public Object {
 public:
-    StreamingMarketInstrument();
-    StreamingMarketInstrument(QString json);
-    ~StreamingMarketInstrument() override;
+    StreamingInstrumentInfo();
+    StreamingInstrumentInfo(QString json);
+    ~StreamingInstrumentInfo() override;
 
     QString asJson() const override;
     QJsonObject asJsonObject() const override;
@@ -83,6 +83,6 @@ private:
 
 } // namespace OpenAPI
 
-Q_DECLARE_METATYPE(OpenAPI::StreamingMarketInstrument)
+Q_DECLARE_METATYPE(OpenAPI::StreamingInstrumentInfo)
 
-#endif // StreamingMarketInstrument_H
+#endif // StreamingInstrumentInfo_H

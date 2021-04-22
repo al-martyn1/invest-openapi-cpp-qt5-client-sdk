@@ -2,17 +2,17 @@
  */
 
 /*
- * StreamingMarketInstrumentResponse.h
+ * StreamingInstrumentInfoResponse.h
  *
  * 
  */
 
-#ifndef StreamingMarketInstrumentResponse_H
-#define StreamingMarketInstrumentResponse_H
+#ifndef StreamingInstrumentInfoResponse_H
+#define StreamingInstrumentInfoResponse_H
 
 #include <QJsonObject>
 
-#include "StreamingMarketInstrument.h"
+#include "StreamingInstrumentInfo.h"
 #include <QString>
 #include <QDateTime>
 
@@ -23,11 +23,11 @@
 
 namespace OpenAPI {
 
-class StreamingMarketInstrumentResponse : public Object {
+class StreamingInstrumentInfoResponse : public Object {
 public:
-    StreamingMarketInstrumentResponse();
-    StreamingMarketInstrumentResponse(QString json);
-    ~StreamingMarketInstrumentResponse() override;
+    StreamingInstrumentInfoResponse();
+    StreamingInstrumentInfoResponse(QString json);
+    ~StreamingInstrumentInfoResponse() override;
 
     QString asJson() const override;
     QJsonObject asJsonObject() const override;
@@ -44,8 +44,8 @@ public:
     bool is_time_Set() const;
     bool is_time_Valid() const;
 
-    StreamingMarketInstrument getPayload() const;
-    void setPayload(const StreamingMarketInstrument &payload);
+    StreamingInstrumentInfo getPayload() const;
+    void setPayload(const StreamingInstrumentInfo &payload);
     bool is_payload_Set() const;
     bool is_payload_Valid() const;
 
@@ -63,13 +63,13 @@ private:
     bool m_time_isSet;
     bool m_time_isValid;
 
-    StreamingMarketInstrument payload;
+    StreamingInstrumentInfo payload;
     bool m_payload_isSet;
     bool m_payload_isValid;
 };
 
 } // namespace OpenAPI
 
-Q_DECLARE_METATYPE(OpenAPI::StreamingMarketInstrumentResponse)
+Q_DECLARE_METATYPE(OpenAPI::StreamingInstrumentInfoResponse)
 
-#endif // StreamingMarketInstrumentResponse_H
+#endif // StreamingInstrumentInfoResponse_H
