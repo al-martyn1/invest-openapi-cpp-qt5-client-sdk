@@ -52,7 +52,7 @@
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("test031");
+    QCoreApplication::setApplicationName("test032");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");
@@ -61,7 +61,7 @@ INVEST_OPENAPI_MAIN()
     using std::cout;
     using std::endl;
 
-    cout<<"Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
+    cout<<"# Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
 
     cout << endl;
 
@@ -71,15 +71,15 @@ INVEST_OPENAPI_MAIN()
 
     QStringList lookupConfSubfolders = QString("conf;config").split( ';', Qt::SkipEmptyParts );
 
-
     auto logConfigFullFileName     = lookupForConfigFile( "logging.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto apiConfigFullFileName     = lookupForConfigFile( "config.properties"  , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto authConfigFullFileName    = lookupForConfigFile( "auth.properties"    , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
-    //auto balanceConfigFullFileName = lookupForConfigFile( "balance.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
+    auto test032FullFileName       = lookupForConfigFile( "test032.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
 
-    qDebug().nospace().noquote() << "Log  Config File: "<< logConfigFullFileName  ;
-    qDebug().nospace().noquote() << "API  Config File: "<< apiConfigFullFileName  ;
-    qDebug().nospace().noquote() << "Auth Config File: "<< authConfigFullFileName ;
+    qDebug().nospace().noquote() << "# Log  Config File: "<< logConfigFullFileName  ;
+    qDebug().nospace().noquote() << "# API  Config File: "<< apiConfigFullFileName  ;
+    qDebug().nospace().noquote() << "# Auth Config File: "<< authConfigFullFileName ;
+    qDebug().nospace().noquote() << "# Test032 Cfg File: "<< test032FullFileName    ;
 
     auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
     auto authConfig    = tkf::AuthConfig   ( authConfigFullFileName );
@@ -107,107 +107,44 @@ INVEST_OPENAPI_MAIN()
     // wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws
     // c, _, err := websocket.DefaultDialer.Dial(*addr, http.Header{"Authorization": {"Bearer " + *token}})
 
-    qDebug().nospace().noquote()<<"";
-    qDebug().nospace().noquote()<<"";
+    qDebug().nospace().noquote()<<"#";
+    qDebug().nospace().noquote()<<"#";
 
     QWebSocket webSocket;
     console_helpers::SimpleHandleCtrlC ctrlC; // ctrlC.isBreaked()
 
 
-    typedef std::pair< QString,QString >  figi_info_pair_t;
-
-    std::vector< figi_info_pair_t > figis = { { "BBG000BN56Q9" ,   "DSKY"           }
-                                            , { "BBG004731354" ,   "ROSN"           }
-                                            , { "BBG004731354" ,   "ROSN"           }
-                                            , { "BBG0047315Y7" ,   "SBERP"          }
-                                            };
-
-    // https://habr.com/ru/post/517918/
-
-
     std::atomic<bool> fConnected = false;
-    std::atomic<bool> jobDone    = false;
-
-    tkf::StreamingResponseDispatcher streamingResponseDispatcher;
-
-    streamingResponseDispatcher
-             .addHandler( "error"
-                        , tkf::makeSimpleStreamingErrorHandler( [&]( const tkf::StreamingError &err )
-                                                                   {
-                                                                       qDebug() << "Streaming error: " << err.getPayload().getMessage();
-                                                                       qDebug() << "             at: " << err.getTime();
-                                                                   }
-                                                              )
-                        );
-
-    streamingResponseDispatcher
-             .addHandler( "candle"
-                        , tkf::makeSimpleStreamingCandleResponseHandler( [&]( const tkf::StreamingCandleResponse &candleResponse )
-                                                                   {
-                                                                       cout << "!!! Candle streaming event" << endl;
-                                                                   }
-                                                              )
-                        );
-
-    streamingResponseDispatcher
-             .addHandler( "instrument_info"
-                        , tkf::makeSimpleStreamingInstrumentInfoResponseHandler( [&]( const tkf::StreamingInstrumentInfoResponse &instrumentInfoResponse )
-                                                                   {
-                                                                       cout << "!!! Instrument Info streaming event" << endl;
-                                                                   }
-                                                              )
-                        );
-
-    streamingResponseDispatcher
-             .addHandler( "orderbook"
-                        , tkf::makeSimpleStreamingOrderbookResponseHandler( [&]( const tkf::StreamingOrderbookResponse &orderbookResponse )
-                                                                   {
-                                                                       cout << "!!! Orderbook streaming event" << endl;
-                                                                   }
-                                                              )
-                        );
-
 
 
     auto onConnected = [&]()
             {
-                using std::cout;
-                using std::endl;
+                using std::cout;  using std::endl;
             
                 fConnected.store( true, std::memory_order_seq_cst  );
 
-                cout << "*** Streaming API Web socket connected" << endl;
-                cout << endl;
-
-                QString figi = "BBG000BN56Q9", ticker = "DSKY";
-                QString subscriptionText = pOpenApi->getStreamingApiOrderbookSubscribeJson( figi, -1 ); // Generate
-                
-                cout << "/// Try to subscribe to orderbook with error in request" << endl;
-                cout << "Subscription text:" << endl << subscriptionText << endl << "--------" << endl << endl;
-                webSocket.sendTextMessage( subscriptionText );
+                cout << "# Streaming API Web socket connected" << endl;
 
             };
 
     auto onDisconnected = [&]()
             {
-                using std::cout;
-                using std::endl;
+                using std::cout;  using std::endl;
             
                 fConnected.store( false, std::memory_order_seq_cst  );
 
-                cout << "*** Streaming API Web socket disconnected" << endl;
-                cout << endl;
+                cout << "# Streaming API Web socket disconnected" << endl;
+
+                webSocket.open( pOpenApi->getStreamingApiNetworkRequest() );
 
             };
 
     auto onMessage = [&]( QString msg )
             {
-                using std::cout;
-                using std::endl;
+                using std::cout;  using std::endl;
             
                 if (!streamingResponseDispatcher.dispatchStreamingEvent(msg))
                 {
-                    cout << "Streaming event no handled. Event data: " << endl;
                     cout << msg << endl;
                 }
             };
@@ -222,186 +159,20 @@ INVEST_OPENAPI_MAIN()
     webSocket.open( pOpenApi->getStreamingApiNetworkRequest() );
 
 
-    cout << endl;
-    cout << endl;
-    cout << "Press Ctrl+C to break process" << endl;
-    cout << endl;
+    cout << "# Press Ctrl+C to break process" << endl;
 
 
     std::vector< figi_info_pair_t >::const_iterator figiIt  = figis.begin();
     std::vector< figi_info_pair_t >::const_iterator figiEnd = figis.end  ();
 
-    QElapsedTimer stopTimer   ;  stopTimer   .start();
-    QElapsedTimer requestTimer;  requestTimer.start();
-
     const std::uint64_t requestPeriod = 3000; // ms
     const std::uint64_t stopTimeout =  /* figis.size()*5*requestPeriod + */  60*1000; // Ждём 60 сек после того, как закончатся фиги туда-сюда
 
-    #define IF_FIGI_ITERATOR_NOT_END()                               \
-                 if (requestTimer.elapsed() < requestPeriod)         \
-                     break;                                          \
-                                                                     \
-                 if (figiIt==figiEnd)                                \
-                 {                                                   \
-                     figiIt = figis.begin();                         \
-                     state  = (State)(state+1);                      \
-                     requestTimer.restart();                         \
-                     break;                                          \
-                 }                                                   \
-                 else
-
-    #define CASE_STATE( st ) case st : IF_FIGI_ITERATOR_NOT_END()
-
-    #define CASE_BREAK()                     \
-                     ++figiIt;               \
-                     requestTimer.restart(); \
-                     break
-
-
-    enum State
-    {
-        stateSubscribeFigis,
-        stateSubscribeCandles1min,
-        stateSubscribeCandles5min,
-        stateSubscribeInstrumentInfo,
-        statePause,
-        stateUnsubscribeFigis,
-        stateUnsubscribeCandles1min,
-        stateUnsubscribeCandles5min,
-        stateUnsubscribeInstrumentInfo,
-        stateFinal
-
-    };
-
-
-    State state = stateSubscribeFigis;
 
 
     while(!ctrlC.isBreaked())
     {
         QTest::qWait(1);
-
-        switch(state)
-        {
-            CASE_STATE(stateSubscribeFigis)
-                 {
-                     QString figi = figiIt->first, ticker = figiIt->second;
-                     QString subscriptionText = pOpenApi->getStreamingApiOrderbookSubscribeJson( figi );
-                
-                     cout << "/// Try to subscribe to orderbook for - FIGI: " << figi << ", TICKER: " << ticker << endl;
-                     cout << "Subscription text:" << endl << subscriptionText << endl << "--------" << endl << endl;
-                     webSocket.sendTextMessage( subscriptionText );
-
-                     CASE_BREAK();
-                 }
-                 
-            CASE_STATE(stateSubscribeCandles1min)
-                 {
-                     QString figi = figiIt->first, ticker = figiIt->second;
-                     QString subscriptionText = pOpenApi->getStreamingApiCandleSubscribeJson( figi, "1MIN" );
-                
-                     cout << "/// Try to subscribe to 1 min candles for - FIGI: " << figi << ", TICKER: " << ticker << endl;
-                     cout << "Subscription text:" << endl << subscriptionText << endl << "--------" << endl << endl;
-                     webSocket.sendTextMessage( subscriptionText );
-
-                     CASE_BREAK();
-                 }
-                 
-            CASE_STATE(stateSubscribeCandles5min)
-                 {
-                     QString figi = figiIt->first, ticker = figiIt->second;
-                     QString subscriptionText = pOpenApi->getStreamingApiCandleSubscribeJson( figi, "5MIN" );
-                
-                     cout << "/// Try to subscribe to 5 min candles for - FIGI: " << figi << ", TICKER: " << ticker << endl;
-                     cout << "Subscription text:" << endl << subscriptionText << endl << "--------" << endl << endl;
-                     webSocket.sendTextMessage( subscriptionText );
-
-                     CASE_BREAK();
-                 }
-
-            CASE_STATE(stateSubscribeInstrumentInfo)
-                 {
-                     QString figi = figiIt->first, ticker = figiIt->second;
-                     QString subscriptionText = pOpenApi->getStreamingApiInstrumentInfoSubscribeJson( figi );
-                
-                     cout << "/// Try to subscribe to instrument info for - FIGI: " << figi << ", TICKER: " << ticker << endl;
-                     cout << "Subscription text:" << endl << subscriptionText << endl << "--------" << endl << endl;
-                     webSocket.sendTextMessage( subscriptionText );
-
-                     CASE_BREAK();
-                 }
-
-            CASE_STATE(statePause)
-                 {
-                     // do nothing with FIGIs
-                     CASE_BREAK();
-                 }
-                 
-            CASE_STATE(stateUnsubscribeFigis)
-                 {
-                     QString figi = figiIt->first, ticker = figiIt->second;
-                     QString subscriptionText = pOpenApi->getStreamingApiOrderbookUnsubscribeJson( figi );
-                
-                     cout << "/// Try to unsubscribe to orderbook for - FIGI: " << figi << ", TICKER: " << ticker << endl;
-                     cout << "Unsubscription text:" << endl << subscriptionText << endl << "--------" << endl << endl;
-                     webSocket.sendTextMessage( subscriptionText );
-
-                     CASE_BREAK();
-                 }
-                 
-            CASE_STATE(stateUnsubscribeCandles1min)
-                 {
-                     QString figi = figiIt->first, ticker = figiIt->second;
-                     QString subscriptionText = pOpenApi->getStreamingApiCandleUnsubscribeJson( figi, "1MIN" );
-                
-                     cout << "/// Try to unsubscribe to 1 min candles for - FIGI: " << figi << ", TICKER: " << ticker << endl;
-                     cout << "Unsubscription text:" << endl << subscriptionText << endl << "--------" << endl << endl;
-                     webSocket.sendTextMessage( subscriptionText );
-
-                     CASE_BREAK();
-                 }
-                 
-            CASE_STATE(stateUnsubscribeCandles5min)
-                 {
-                     QString figi = figiIt->first, ticker = figiIt->second;
-                     QString subscriptionText = pOpenApi->getStreamingApiCandleUnsubscribeJson( figi, "5MIN" );
-                
-                     cout << "/// Try to unsubscribe to 5 min candles for - FIGI: " << figi << ", TICKER: " << ticker << endl;
-                     cout << "Unsubscription text:" << endl << subscriptionText << endl << "--------" << endl << endl;
-                     webSocket.sendTextMessage( subscriptionText );
-
-                     CASE_BREAK();
-                 }
-
-            CASE_STATE(stateUnsubscribeInstrumentInfo)
-                 {
-                     QString figi = figiIt->first, ticker = figiIt->second;
-                     QString subscriptionText = pOpenApi->getStreamingApiInstrumentInfoUnsubscribeJson( figi );
-                
-                     cout << "/// Try to Unsubscribe to instrument info for - FIGI: " << figi << ", TICKER: " << ticker << endl;
-                     cout << "Unsubscription text:" << endl << subscriptionText << endl << "--------" << endl << endl;
-                     webSocket.sendTextMessage( subscriptionText );
-
-                     CASE_BREAK();
-                 }
-
-            default:
-                     if (jobDone.load()==false)
-                     {
-                         stopTimer.restart();
-                         jobDone.store( true, std::memory_order_seq_cst  );
-                     }
-
-                     break;
-        
-        };
-
-
-        if (jobDone.load()==true && stopTimer.elapsed()>stopTimeout)
-        {
-            cout << "--- Exiting due stop timeout" << endl;
-            break;
-        }
 
     }
 
