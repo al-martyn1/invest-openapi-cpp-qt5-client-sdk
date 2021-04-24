@@ -63,7 +63,7 @@ INVEST_OPENAPI_MAIN()
 
     cout<<"# Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
 
-    cout << endl;
+    cout << "#" << endl;
 
     namespace tkf=invest_openapi;
     using tkf::config_helpers::lookupForConfigFile;
@@ -74,18 +74,42 @@ INVEST_OPENAPI_MAIN()
     auto logConfigFullFileName     = lookupForConfigFile( "logging.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto apiConfigFullFileName     = lookupForConfigFile( "config.properties"  , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto authConfigFullFileName    = lookupForConfigFile( "auth.properties"    , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
+    auto dbConfigFullFileName      = lookupForConfigFile( "database.properties", lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto test032FullFileName       = lookupForConfigFile( "test032.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
 
-    qDebug().nospace().noquote() << "# Log  Config File: "<< logConfigFullFileName  ;
-    qDebug().nospace().noquote() << "# API  Config File: "<< apiConfigFullFileName  ;
-    qDebug().nospace().noquote() << "# Auth Config File: "<< authConfigFullFileName ;
-    qDebug().nospace().noquote() << "# Test032 Cfg File: "<< test032FullFileName    ;
+    cout << "# Log  Config File: "<< logConfigFullFileName   << endl;
+    cout << "# API  Config File: "<< apiConfigFullFileName   << endl;
+    cout << "# Auth Config File: "<< authConfigFullFileName  << endl;
+    cout << "# Test032 Cfg File: "<< test032FullFileName     << endl;
 
     auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
     auto authConfig    = tkf::AuthConfig   ( authConfigFullFileName );
 
+    QSharedPointer<tkf::DatabaseConfig> pDatabaseConfig = QSharedPointer<tkf::DatabaseConfig>( new tkf::DatabaseConfig(dbConfigFullFileName, tkf::DatabasePlacementStrategyDefault()) );
+
     QSharedPointer<tkf::LoggingConfig>  pLoggingConfig  = QSharedPointer<tkf::LoggingConfig> ( new tkf::LoggingConfig(logConfigFullFileName) );
+
+    pLoggingConfig->debugSqlQueries = false;
+
     auto loggingConfig = *pLoggingConfig;
+
+
+
+    cout << "# DB name: " << pDatabaseConfig->dbFilename << endl;
+
+    QSharedPointer<QSqlDatabase> pSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
+    pSqlDb->setDatabaseName( pDatabaseConfig->dbFilename );
+
+    if (!pSqlDb->open())
+    {
+      //qDebug() 
+      cout << pSqlDb->lastError().text() << endl;
+      return 0;
+    }
+
+    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
+
+    pDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
 
 
 
@@ -102,13 +126,21 @@ INVEST_OPENAPI_MAIN()
         pOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
     }
 
-    // https://tinkoffcreditsystems.github.io/invest-openapi/marketdata/
-    // wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws
-    // wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws
-    // c, _, err := websocket.DefaultDialer.Dial(*addr, http.Header{"Authorization": {"Bearer " + *token}})
 
-    qDebug().nospace().noquote()<<"#";
-    qDebug().nospace().noquote()<<"#";
+    QStringList instrumentList;
+    {
+        QSettings settings(test032FullFileName, QSettings::IniFormat);
+        instrumentList = settings.value("instruments" ).toStringList();
+    }
+
+    
+
+    //QStringList   figis;
+
+    tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pDbMan);
+
+
+    cout<<"#" << endl;
 
     QWebSocket webSocket;
     console_helpers::SimpleHandleCtrlC ctrlC; // ctrlC.isBreaked()
@@ -124,6 +156,40 @@ INVEST_OPENAPI_MAIN()
                 fConnected.store( true, std::memory_order_seq_cst  );
 
                 cout << "# Streaming API Web socket connected" << endl;
+
+                for( const auto instrument : instrumentList )
+                {
+
+                    QString figi = dicts.findFigiByAnyIdString(instrument);
+
+                    if (figi.isEmpty())
+                    {
+                        std::set<QString> foundFigis = dicts.findFigisByName( instrument ); 
+                        if ( foundFigis.empty() )
+                        {
+                            throw std::runtime_error( std::string("Instrument ") + instrument.toStdString() + std::string(" - not found all") );
+                        }
+                        if ( foundFigis.size()>1 )
+                        {
+                            throw std::runtime_error( std::string("Instrument ") + instrument.toStdString() + std::string(" - multiple variants was found") );
+                        }
+                    }
+
+                    QString ticker = dicts.getTickerByFigiChecked(figi);
+
+                    QString orderBookSubscriptionText      = pOpenApi->getStreamingApiOrderbookSubscribeJson( figi );
+                    QString instrumentInfoSubscriptionText = pOpenApi->getStreamingApiInstrumentInfoSubscribeJson( figi );
+
+                    cout << "# Subscribe to orderbook for " << ticker << " (" << figi << ")" << endl;
+                    QTest::qWait(5);
+                    webSocket.sendTextMessage( orderBookSubscriptionText );
+
+                    cout << "# Subscribe to instrument info for " << ticker << " (" << figi << ")" << endl;
+                    QTest::qWait(5);
+                    webSocket.sendTextMessage( instrumentInfoSubscriptionText );
+
+                }
+
 
             };
 
@@ -142,15 +208,25 @@ INVEST_OPENAPI_MAIN()
     auto onMessage = [&]( QString msg )
             {
                 using std::cout;  using std::endl;
-            
-                if (!streamingResponseDispatcher.dispatchStreamingEvent(msg))
+
+                tkf::GenericStreamingResponse genericStreamingResponse;
+                genericStreamingResponse.fromJson(msg);
+
+                if (genericStreamingResponse.getEvent()=="error")
+                {
+                    tkf::StreamingError streamingError;
+                    streamingError.fromJson(msg);
+
+                    cout << "# !!! Streaming error: " << streamingError.getPayload().getMessage() << endl;
+                }
+
+                else
                 {
                     cout << msg << endl;
                 }
+
             };
 
-
-    // https://wiki.qt.io/New_Signal_Slot_Syntax
 
     webSocket.connect( &webSocket, &QWebSocket::connected             , onConnected    );
     webSocket.connect( &webSocket, &QWebSocket::disconnected          , onDisconnected );
@@ -161,13 +237,7 @@ INVEST_OPENAPI_MAIN()
 
     cout << "# Press Ctrl+C to break process" << endl;
 
-
-    std::vector< figi_info_pair_t >::const_iterator figiIt  = figis.begin();
-    std::vector< figi_info_pair_t >::const_iterator figiEnd = figis.end  ();
-
-    const std::uint64_t requestPeriod = 3000; // ms
-    const std::uint64_t stopTimeout =  /* figis.size()*5*requestPeriod + */  60*1000; // Ждём 60 сек после того, как закончатся фиги туда-сюда
-
+    cout<<"#" << endl;
 
 
     while(!ctrlC.isBreaked())
@@ -179,7 +249,7 @@ INVEST_OPENAPI_MAIN()
     if (fConnected.load()!=false)
     {
 
-       cout << "WebSocket forced closing" << endl;
+       cout << "# WebSocket forced closing" << endl;
 
        webSocket.close();
 
@@ -188,7 +258,7 @@ INVEST_OPENAPI_MAIN()
            QTest::qWait(1);
        }
 
-       cout << "WebSocket closed" << endl;
+       cout << "# WebSocket closed" << endl;
 
     }
 

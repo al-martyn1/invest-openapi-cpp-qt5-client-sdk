@@ -136,6 +136,109 @@ protected:
     }
 
     //------------------------------
+protected:
+
+    enum HowToLikeLookup
+    {
+        lookupUnknown    ,
+        lookupExact      ,
+        lookupStartsWith ,
+        lookupEndsWith   ,
+        lookupWith
+    };
+
+    static
+    HowToLikeLookup prepareLikeLookupCriteria( QString &likeStr )
+    {
+        if (likeStr.isEmpty())
+            return lookupUnknown;
+
+        bool endsNoMean   = false;
+        bool startsNoMean = false;
+
+        if (likeStr.endsWith("*") || likeStr.endsWith("%"))
+        {
+            likeStr.chop(1);
+            endsNoMean = true;
+        }
+
+        if (likeStr.isEmpty())
+            return lookupUnknown;
+
+        if (likeStr.startsWith("*") || likeStr.startsWith("%"))
+        {
+            likeStr.remove(0,1);
+            startsNoMean = true;
+        }
+
+        if (likeStr.isEmpty())
+            return lookupUnknown;
+
+        if (startsNoMean && endsNoMean)
+            return lookupWith;
+
+        else if (!startsNoMean && endsNoMean)
+            return lookupStartsWith;
+
+        else if (startsNoMean && !endsNoMean)
+            return lookupEndsWith;
+
+        else if (!startsNoMean && !endsNoMean)
+            return lookupExact;
+
+        return lookupUnknown;
+
+    }
+
+    //! Compares str with likeStr using HowToLikeLookup htl criteria and case sensitivity cs parameter. Parameter cs is optional and set to Qt::CaseInsensitive by default.
+    /*! This function named isStringLike cause classic compare returns int - (-1, 0, 1) as compare result.
+        isStringLike, instead, returns true or false, if str matches likeStr or not.
+
+        This function is not ready to be sort predicate.
+
+        \returns true if str==likeStr
+     */
+    static
+    bool isStringLike( const QString &str, const QString &likeStr, HowToLikeLookup htl, Qt::CaseSensitivity cs = Qt::CaseInsensitive )
+    {
+        switch(htl)
+        {
+            case lookupExact     : return str.compare(likeStr, cs) == 0;
+
+            case lookupStartsWith: return str.startsWith(likeStr, cs);
+
+            case lookupEndsWith  : return str.endsWith(likeStr, cs);
+
+            case lookupWith      : return str.indexOf(likeStr, cs) >= 0;
+
+            default              : return false;
+
+        };
+
+    }
+
+    template<typename ValueType>
+    std::set<QString> findKeyInMapLike( const std::map<QString, ValueType> &m, QString likeStr,  Qt::CaseSensitivity cs = Qt::CaseInsensitive ) const
+    {
+        std::set<QString> resSet;
+
+        HowToLikeLookup htl = prepareLikeLookupCriteria(likeStr);
+
+        if (htl==lookupUnknown)
+            return resSet;
+
+
+        std::map<QString, ValueType>::const_iterator it = m.begin();
+        for(; it!=m.end(); ++it)
+        {
+            if (isStringLike( it->first, likeStr, htl, cs ))
+                resSet.insert(it->first);
+        }
+
+        return resSet;
+    }
+
+    //------------------------------
     static QString reverseCommaSeparatedString( const QString &s )
     {
         QStringList      lst = s.split( (QChar)',', Qt::KeepEmptyParts );
@@ -276,12 +379,36 @@ public:
         if (findInMap( tickerToFigi, idStr, figi ))
             return figi;
 
-        if (findInMap( isinToFigi, idStr, figi ))
-            return figi;
-
         int figiKey = 0;
         if (findInMap( figiToId, idStr, figiKey ))
             return idStr; // FIGI taken itself
+
+        if (findInMap( isinToFigi, idStr, figi ))
+            return figi;
+
+
+
+        if (idStr.indexOf("*")<0 && idStr.indexOf("%")<0)
+            idStr += "*";
+
+        std::set<QString> likes = findKeyInMapLike( tickerToFigi, idStr );
+        if (likes.size()==1)
+        {
+            if (findInMap( tickerToFigi, *(likes.begin()), figi ))
+                return figi;
+        }
+
+        likes = findKeyInMapLike( figiToId, idStr );
+        if (likes.size()==1)
+            return *(likes.begin());
+
+        likes = findKeyInMapLike( isinToFigi, idStr );
+        if (likes.size()==1)
+        {
+            if (findInMap( isinToFigi, *(likes.begin()), figi ))
+                return figi;
+        }
+
 
         // Not any valid ID
         return QString();
