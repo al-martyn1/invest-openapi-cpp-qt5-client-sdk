@@ -50,6 +50,8 @@ void StreamingOrderbookResponse::fromJsonObject(QJsonObject json) {
     m_time_isValid = ::OpenAPI::fromJsonValue(time, json[QString("time")]);
     m_time_isSet = !json[QString("time")].isNull() && m_time_isValid;
 
+    ::OpenAPI::fromJsonValue(timeString, json[QString("time")]);
+
     m_payload_isValid = ::OpenAPI::fromJsonValue(payload, json[QString("payload")]);
     m_payload_isSet = !json[QString("payload")].isNull() && m_payload_isValid;
 }
@@ -106,6 +108,11 @@ bool StreamingOrderbookResponse::is_time_Set() const{
 
 bool StreamingOrderbookResponse::is_time_Valid() const{
     return m_time_isValid;
+}
+
+QString StreamingOrderbookResponse::getTimeAsString() const
+{
+    return timeString;
 }
 
 StreamingOrderbook StreamingOrderbookResponse::getPayload() const {

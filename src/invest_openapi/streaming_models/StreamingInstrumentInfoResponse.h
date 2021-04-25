@@ -44,6 +44,8 @@ public:
     bool is_time_Set() const;
     bool is_time_Valid() const;
 
+    QString getTimeAsString() const;
+
     StreamingInstrumentInfo getPayload() const;
     void setPayload(const StreamingInstrumentInfo &payload);
     bool is_payload_Set() const;
@@ -62,6 +64,8 @@ private:
     QDateTime time;
     bool m_time_isSet;
     bool m_time_isValid;
+
+    QString timeString;
 
     StreamingInstrumentInfo payload;
     bool m_payload_isSet;

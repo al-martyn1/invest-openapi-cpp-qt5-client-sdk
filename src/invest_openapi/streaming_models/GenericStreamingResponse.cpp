@@ -55,6 +55,8 @@ void GenericStreamingResponse::fromJsonObject(QJsonObject json) {
 
     m_time_isValid = ::OpenAPI::fromJsonValue(time, json[QString("time")]);
     m_time_isSet = !json[QString("time")].isNull() && m_time_isValid;
+
+    ::OpenAPI::fromJsonValue(timeString, json[QString("time")]);
 }
 
 QJsonObject GenericStreamingResponse::asJsonObject() const {
@@ -99,6 +101,11 @@ bool GenericStreamingResponse::is_time_Set() const{
 
 bool GenericStreamingResponse::is_time_Valid() const{
     return m_time_isValid;
+}
+
+QString GenericStreamingResponse::getTimeAsString() const
+{
+    return timeString;
 }
 
 bool GenericStreamingResponse::isSet() const {

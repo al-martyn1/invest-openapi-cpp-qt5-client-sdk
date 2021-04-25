@@ -43,6 +43,8 @@ public:
     bool is_time_Set() const;
     bool is_time_Valid() const;
 
+    QString getTimeAsString() const;
+
     //------------------------------
 
     virtual bool isSet() const override;
@@ -60,6 +62,8 @@ private:
     QDateTime time;
     bool m_time_isSet;
     bool m_time_isValid;
+
+    QString timeString;
 
     //------------------------------
 
