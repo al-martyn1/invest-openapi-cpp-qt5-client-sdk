@@ -315,6 +315,103 @@ protected:
         return insertTo( "_META_COLUMNS", splitString(bulkText, ";", ",.:;"), tableGetColumnsFromDb("_META_COLUMNS") /* "TABLE_NAME;DISPLAY_NAME;DESCRIPTION" */  );
     }
 
+    //------------------------------
+    virtual const QMap<QString,QVector<QString> >& getAdditionalUniques() const = 0;
+    virtual const QMap<QString,QString>& getTableSchemas() const = 0;
+
+    //------------------------------
+    QVector<QString> tableGetAdditionalUniques  ( const QString &tableName    ) const override
+    {
+        const QMap<QString,QVector<QString> >& additionalUniques = getAdditionalUniques();
+
+        auto it = additionalUniques.find(tableName);
+
+        if (it==additionalUniques.end())
+            return QVector<QString>();
+
+        QVector<QString> uList = *it;
+
+        QVector<QString> res;
+
+        for( auto u : uList)
+        {
+            res.push_back( QString("UNIQUE(%1)").arg(u) );
+        }
+
+        return res;
+        //return *it;
+
+    }
+
+    //------------------------------
+    virtual QVector<QString> tableGetColumnsFromDb( const QString &tableName ) const override
+    {
+        return tableGetColumnsFromDbInternal( tableMapName(tableName) );
+    }
+
+    //------------------------------
+    virtual QVector<QString> tableGetColumnsFromSchema  ( const QString &tableName ) const override
+    {
+        static QMap<QString, QVector<QString> > tableColumns;
+
+        if (tableColumns.empty())
+        {
+            const QMap<QString,QString>& tableSchemas = getTableSchemas();
+            QList<QString> keys = tableSchemas.keys();
+
+            for( const auto &k : keys)
+            {
+                tableColumns[k] = getColumnNamesFromTableSqlSchema(tableSchemas[k]);
+            } // for
+
+        } // if
+
+        auto it = tableColumns.find(tableName);
+
+        if (it==tableColumns.end())
+            return QVector<QString>();
+
+        return *it;
+
+    }
+    
+    //------------------------------
+    virtual QString tableGetSchema      ( const QString &tableName  ) const override
+    {
+        // tableName = tableMapName(tableName)
+
+        // https://sqlite.org/lang_createtable.html
+        // https://www.tutorialspoint.com/sqlite/sqlite_data_types.htm
+        // https://sqlite.org/datatype3.html
+        // https://www.programmersought.com/article/1613993309/
+
+        const QMap<QString,QString>& tableSchemas = getTableSchemas();
+
+        auto it = tableSchemas.find(tableName);
+
+        if (it==tableSchemas.end())
+            return QString();
+
+        return *it;
+        
+    }
+
+
+protected:
+
+    //------------------------------
+    bool exec( const QString & querySqlText, QSqlQuery &query ) const
+    {
+        RETURN_IOA_SQL_EXEC_QUERY( query, querySqlText );
+    }
+
+    //------------------------------
+    bool exec( const QString & querySqlText ) const
+    {
+        QSqlQuery query(*m_pDb);
+        return exec( querySqlText, query );
+    }
+
 
 
 }; // DatabaseManagerSQLiteImplBase

@@ -51,29 +51,9 @@ protected:
     : DatabaseManagerSQLiteImplBase(pDb, pDatabaseConfig, pLoggingConfig)
     {}
 
-    //------------------------------
-    bool exec( const QString & querySqlText, QSqlQuery &query ) const
-    {
-        RETURN_IOA_SQL_EXEC_QUERY( query, querySqlText );
-    }
-
-    //------------------------------
-    bool exec( const QString & querySqlText ) const
-    {
-        QSqlQuery query(*m_pDb);
-        return exec( querySqlText, query );
-    }
-
-
     //----------------------------------------------------------------------------
     // IDatabaseManager
 
-
-    //------------------------------
-    virtual QVector<QString> tableGetColumnsFromDb( const QString &tableName ) const override
-    {
-        return tableGetColumnsFromDbInternal( tableMapName(tableName) );
-    }
 
     //------------------------------
     virtual QSet<QString> tableGetTableNamesForCreation( int creationLevel ) const override
@@ -132,7 +112,7 @@ protected:
 
     }
 
-    const QMap<QString,QVector<QString> >& getAdditionalUniques() const
+    virtual const QMap<QString,QVector<QString> >& getAdditionalUniques() const override
     {
         static QMap<QString,QVector<QString> > m;
         if (!m.empty())
@@ -145,31 +125,9 @@ protected:
         return m;
     }
 
-    QVector<QString> tableGetAdditionalUniques  ( const QString &tableName    ) const override
-    {
-        const QMap<QString,QVector<QString> >& additionalUniques = getAdditionalUniques();
-
-        auto it = additionalUniques.find(tableName);
-
-        if (it==additionalUniques.end())
-            return QVector<QString>();
-
-        QVector<QString> uList = *it;
-
-        QVector<QString> res;
-
-        for( auto u : uList)
-        {
-            res.push_back( QString("UNIQUE(%1)").arg(u) );
-        }
-
-        return res;
-        //return *it;
-
-    }
 
 
-    const QMap<QString,QString>& getTableSchemas() const
+    virtual const QMap<QString,QString>& getTableSchemas() const override
     {
         static bool schemasInitialized = false;
         
@@ -250,185 +208,12 @@ protected:
                                                      "COMMISSION            DECIMAL(18,8)"
                                                       ;
 
-
-            /*
-            tableSchemas[QString("INSTRUMENT_CANDLES" )] = "OPERATION_ID          VARCHAR(24) NOT NULL UNIQUE,"            + lf() +
-                                                           "OPERATION_TYPE_ID     INTEGER REFERENCES OPERATION_TYPE_WITH_COMMISSION," + lf() +
-                                                           "OPERATION_STATUS_ID   INTEGER REFERENCES OPERATION_STATUS"     + lf() +
-                                                           "CANDLE_RESOLUTION_ID  INTEGER REFERENCES CANDLE_RESOLUTION,"   + lf() +
-                                                           "CANDLE_DATE_TIME      VARCHAR(24) NOT NULL,"                   + lf() +
-                                                           "OPEN_PRICE            DECIMAL(18,8) NOT NULL,"                 + lf() +
-                                                           "CLOSE_PRICE           DECIMAL(18,8) NOT NULL,"                 + lf() +
-                                                           "HIGH_PRICE            DECIMAL(18,8) NOT NULL,"                 + lf() +
-                                                           "LOW_PRICE             DECIMAL(18,8) NOT NULL,"                 + lf() +
-                                                           "VOLUME                DECIMAL(18,8) NOT NULL"
-                                                         ;
-
-            */
-
-            // ISO8601 YYYY-MM-DD HH:MM:SS.SSS
-            // YYYY-MM-DD               - 4-2-2       - 4+1+2+1+2      - 10 chars
-            // HH:MM:SS.SSS             - 2:2:2.3     - 2+1+2+1+2+1+3  - 12 chars
-            // YYYY-MM-DD HH:MM:SS.SSS  - 10 [SP] 12  - 10+1+12        - 23 chars
-            //
-            /*
-            tableSchemas[QString("STOCK_EXCHANGE_LIST")] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                                           "NAME             VARCHAR(12) NOT NULL UNIQUE,"
-                                                           "FOUNDATION_DATE"
-
-            */
-            //yyyy-MM-dd
-
-
-            // Moskovskaya Birzha MMVB-RTS PAO
-            // Moscow Exchange
-            // Moscow Exchange was established on 19 December 2011 by merging the two largest Moscow-based exchanges, the Moscow Interbank Currency Exchange (MICEX) and the Russian Trading System (RTS)
-            //tableSchemas[QString("STOCK_EXCHANGE_LIST"         )] = 
-
-            /*
-            tableSchemas[QString("_META_TABLES"       )] = lf()    + QString("TABLE_NAME")            + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
-                                                         + lf(',') + QString("DISPLAY_NAME")          + tab() + QString("TEXT")
-                                                         + lf(',') + QString("DESCRIPTION")           + tab() + QString("TEXT")
-                                                         ;
-
-            tableSchemas[QString("_META_COLUMNS"      )] = lf()    + QString("TABLE_NAME")            + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
-                                                         + lf(',') + QString("COLUMN_NAME")           + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
-                                                         + lf(',') + QString("DISPLAY_NAME")          + tab() + QString("TEXT")
-                                                         + lf(',') + QString("DESCRIPTION")           + tab() + QString("TEXT")
-                                                         ;
-            */
-            //tableSchemas[QString("")] = 
-
         }
 
         return tableSchemas;
     
     }
 
-    virtual QVector<QString> tableGetColumnsFromSchema  ( const QString &tableName ) const override
-    {
-        static QMap<QString, QVector<QString> > tableColumns;
-
-        if (tableColumns.empty())
-        {
-            const QMap<QString,QString>& tableSchemas = getTableSchemas();
-            QList<QString> keys = tableSchemas.keys();
-
-            for( const auto &k : keys)
-            {
-                tableColumns[k] = getColumnNamesFromTableSqlSchema(tableSchemas[k]);
-            } // for
-
-        } // if
-
-        auto it = tableColumns.find(tableName);
-
-        if (it==tableColumns.end())
-            return QVector<QString>();
-
-        return *it;
-
-    }
-    
-    virtual QString tableGetSchema      ( const QString &tableName  ) const override
-    {
-        // tableName = tableMapName(tableName)
-
-        // https://sqlite.org/lang_createtable.html
-        // https://www.tutorialspoint.com/sqlite/sqlite_data_types.htm
-        // https://sqlite.org/datatype3.html
-        // https://www.programmersought.com/article/1613993309/
-
-        const QMap<QString,QString>& tableSchemas = getTableSchemas();
-
-        auto it = tableSchemas.find(tableName);
-
-        if (it==tableSchemas.end())
-            return QString();
-
-        return *it;
-
-        /*
-        if (tableName.toUpper()=="INSTRUMENTS")
-        {
-            return lf()    + QString("ID")                  + tab() + QString("INTEGER NOT NULL UNIQUE") 
-                 + lf(',') + QString("FIGI")                + tab() + QString("VARCHAR(12) NOT NULL UNIQUE")
-                 + lf(',') + QString("ISIN")                + tab() + QString("VARCHAR(12) UNIQUE")
-                 + lf(',') + QString("TICKER")              + tab() + QString("VARCHAR(12) NOT NULL UNIQUE")
-                 + lf(',') + QString("PROCE_INCREMENT")     + tab() + defDecimal()
-                 + lf(',') + QString("FACE_VALUE")          + tab() + defDecimal()
-                 + lf(',') + QString("LOT_SIZE_LIMIT")      + tab() + QString("INTEGER") 
-                 + lf(',') + QString("LOT_SIZE_MARKET")     + tab() + QString("INTEGER") 
-                 + lf(',') + QString("MIN_QUANTITY")        + tab() + QString("INTEGER") 
-                 + lf(',') + QString("CURRENCY_ID")         + tab() + QString("INTEGER") 
-                 + lf(',') + QString("CURRENCY")            + tab() + QString("VARCHAR(4)")
-                 + lf(',') + QString("INSTRUMENT_TYPE_ID")  + tab() + QString("INTEGER") 
-                 + lf(',') + QString("INSTRUMENT_TYPE")     + tab() + QString("VARCHAR(4)")
-                 + lf(',') + QString("NAME")                + tab() + QString("TEXT")
-                 + lf(',') + QString("PRIMARY KEY(ID AUTOINCREMENT)")
-                 + lf(',') + QString("FOREIGN KEY(CURRENCY_ID) REFERENCES CURRENCIES(ID)")
-                 + lf(',') + QString("FOREIGN KEY(INSTRUMENT_TYPE_ID) REFERENCES INSTRUMENT_TYPES(ID)")
-                 ;
-        }
-        else if (tableName.toUpper()=="CURRENCIES")
-        {
-            // CURRENCY - RUB/USD/EUR/GBP/HKD/CHF/JPY/CNY/TRY
-            return lf()    + QString("ID")                  + tab() + QString("INTEGER NOT NULL UNIQUE") 
-                 + lf(',') + QString("CURRENCY")            + tab() + QString("VARCHAR(4) NOT NULL UNIQUE")
-                 + lf(',') + QString("DESCRIPTION")         + tab() + QString("TEXT")
-                 + lf(',') + QString("PRIMARY KEY(ID)")
-                 ;
-        }
-        else if (tableName.toUpper()=="INSTRUMENT_TYPES")
-        {
-            return lf()    + QString("ID")                    + tab() + QString("INTEGER NOT NULL UNIQUE") 
-                 + lf(',') + QString("INSTRUMENT_TYPE")       + tab() + QString("VARCHAR(8) NOT NULL UNIQUE")
-                 + lf(',') + QString("DESCRIPTION")           + tab() + QString("TEXT")
-                 + lf(',') + QString("PRIMARY KEY(ID)")
-                 ;
-        }
-        else if (tableName.toUpper()=="_META_TABLES")
-        {
-            return lf()    + QString("TABLE_NAME")            + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
-                 + lf(',') + QString("DISPLAY_NAME")          + tab() + QString("TEXT")
-                 + lf(',') + QString("DESCRIPTION")           + tab() + QString("TEXT")
-                 ;
-        }
-        else if (tableName.toUpper()=="_META_COLUMNS")
-        {
-            return lf()    + QString("TABLE_NAME")            + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
-                 + lf(',') + QString("COLUMN_NAME")           + tab() + QString("VARCHAR(64) NOT NULL UNIQUE") 
-                 + lf(',') + QString("DISPLAY_NAME")          + tab() + QString("TEXT")
-                 + lf(',') + QString("DESCRIPTION")           + tab() + QString("TEXT")
-                 ;
-        }
-        else if (tableName.toUpper()=="TEST")
-        {
-            return lf()    + QString("DECIMAL_12_3")        + tab() + QString("DECIMAL(12,3)") 
-                 + lf(',') + QString("DECIMAL_18_6_NN")     + tab() + QString("DECIMAL(18,6) NOT NULL")
-                 + lf(',') + QString("CHAR_12")             + tab() + QString("CHAR(12)")
-                 + lf(',') + QString("CHAR_12_NN")          + tab() + QString("CHAR(12) NOT NULL")
-                 + lf(',') + QString("DEF_DEC_111_1")       + tab() + defDecimal(111, 1)
-                 + lf(',') + QString("DEF_DEC")             + tab() + defDecimal()
-                 //+ QString("")    +        QString("")        +      QString("")
-                 ;
-        }
-
-        return QString();
-        */
-
-        /*
-        CREATE TABLE "TEST01" (
-        "Field1" NUMERIC UNIQUE,
-        "Field2" TEXT,
-        "Field3" REAL NOT NULL,
-        "Field4" BLOB,
-        "Field5" INTEGER,
-        PRIMARY KEY("Field5" AUTOINCREMENT)
-        );
-        */
-        
-    }
 
     //------------------------------
     //const QMap<QString,QString>& getTableInitialDataMap() const
@@ -587,26 +372,6 @@ protected:
         
         } // if (tableName=="TIMEZONE")
 
-
-
-
-
-
-        
-#if 0
-
-            tableSchemas[QString("TIMEZONE"           )] = //"ID               INTEGER PRIMARY KEY AUTOINCREMENT," + lf() +
-                                                           "NAME             VARCHAR(64) NOT NULL UNIQUE,"       + lf() +
-                                                           "DESCRIPTION      VARCHAR(255)"
-                                                         ;
-            tableSchemas[QString("STOCK_EXCHANGE_LIST")] = "ID               INTEGER PRIMARY KEY AUTOINCREMENT," + lf() +
-                                                           "NAME             VARCHAR(32) NOT NULL UNIQUE,"       + lf() +
-                                                           "FOUNDATION_DATE  VARCHAR(10),"                       + lf() +
-                                                           "TIMEZONE         VARCHAR(64) REFERENCES TIMEZONE,"   + lf() +
-                                                           "DESCRIPTION      VARCHAR(255)"
-                                                         ;
-
-#endif
 
         return QString();
     }
