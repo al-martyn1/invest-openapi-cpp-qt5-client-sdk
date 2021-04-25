@@ -37,17 +37,17 @@ namespace invest_openapi
 
 
 //----------------------------------------------------------------------------
-class DatabaseManagerSQLiteImpl : public DatabaseManagerSQLiteImplBase
+class MainDatabaseManagerSQLiteImpl : public DatabaseManagerSQLiteImplBase
 {
 
 protected:
 
     //------------------------------
-    friend QSharedPointer<IDatabaseManager> createDatabaseManager( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig );
+    friend QSharedPointer<IDatabaseManager> createMainDatabaseManager( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig );
 
 
     //------------------------------
-    DatabaseManagerSQLiteImpl( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig )
+    MainDatabaseManagerSQLiteImpl( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig )
     : DatabaseManagerSQLiteImplBase(pDb, pDatabaseConfig, pLoggingConfig)
     {}
 
@@ -380,7 +380,7 @@ protected:
 
 
 
-}; // DatabaseManagerSQLiteImpl
+}; // MainDatabaseManagerSQLiteImpl
 
 //----------------------------------------------------------------------------
 

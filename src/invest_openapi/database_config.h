@@ -37,7 +37,7 @@ struct DatabasePlacementStrategyDefault
 class DatabaseConfig;
 class IDatabaseManager;
 QSharedPointer<IDatabaseManager> 
-createDatabaseManager( QSharedPointer<QSqlDatabase> pDb
+createMainDatabaseManager( QSharedPointer<QSqlDatabase> pDb
                      , QSharedPointer<DatabaseConfig> pDatabaseConfig
                      , QSharedPointer<LoggingConfig> pLoggingConfig 
                      );
@@ -69,7 +69,7 @@ struct DatabaseConfig
     QString     tableNameInstruments;
 
 
-    friend QSharedPointer<IDatabaseManager> createDatabaseManager( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig );
+    friend QSharedPointer<IDatabaseManager> createMainDatabaseManager( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig );
 
 
 

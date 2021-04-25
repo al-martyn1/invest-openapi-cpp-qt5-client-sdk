@@ -73,7 +73,7 @@ INVEST_OPENAPI_MAIN()
       return 0;
     }
 
-    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
+    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createMainDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
 
     //pDbMan->setDefaultDecimalFormat(18,8);
     pDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
