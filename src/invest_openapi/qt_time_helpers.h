@@ -74,6 +74,77 @@ QString timeToDbString( const QTime &dt )
 
 
 
+//----------------------------------------------------------------------------
+inline
+std::uint64_t nanosecFromRfc3339NanoString( QString str, QDateTime *pDtSecs = 0 )
+{
+    //QString strDt  ; strDt.reserve(str);
+    //QString strNano; strNano.reserve(10);
+
+    //std::string strNano; strNano.reserve(10);
+
+    std::uint64_t ns = 0;
+
+    int tPos = str.indexOf("T");
+    if (tPos>=0 && tPos<16) // Not in Timezone name
+        str[tPos] = ' ';
+
+    int dotPos   = str.indexOf(".");
+    int nanoSize = 0;
+
+    const std::uint64_t m = 1000ull*1000ull*1000ull;
+
+    std::uint64_t extraScale = m;
+
+    if (dotPos>=0)
+    {
+        ++nanoSize; // skip dot
+
+        while(true)
+        {
+            int pos = dotPos+nanoSize;
+            if (pos>=str.size())
+                break;
+
+            char ch = str[pos].toLatin1();
+            if (ch<'0' || ch>'9')
+                break;
+
+            ++nanoSize;
+            if (nanoSize>10)
+                continue;
+            
+            ns *= 10;
+            ns += (unsigned char)(ch-'0');
+            extraScale /= 10;
+        }
+
+        ns *= extraScale;
+    }
+
+    if (nanoSize)
+    {
+        str.remove( dotPos, nanoSize );
+    }
+
+    QDateTime dt = QDateTime::fromString( str, Qt::ISODate /* Qt::ISODateWithMs */ );
+    if (!dt.isValid() || dt.isNull())
+        return 0;
+
+    if (pDtSecs)
+       *pDtSecs = dt;
+
+    std::uint64_t res = dt.toSecsSinceEpoch();
+    res *= m;
+    res += ns;
+
+    return res;
+}
+
+//----------------------------------------------------------------------------
+
+
+
 
 //----------------------------------------------------------------------------
 enum class TimeIntervalScale

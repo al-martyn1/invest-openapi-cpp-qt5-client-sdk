@@ -12,6 +12,7 @@
 #include <map>
 #include <set>
 #include <optional>
+#include <iomanip>
 
 #include <QCoreApplication>
 #include <QString>
@@ -62,65 +63,69 @@ INVEST_OPENAPI_MAIN()
     using tkf::config_helpers::lookupForConfigFile;
     using tkf::config_helpers::FileReadable;
 
-    QStringList lookupConfSubfolders = QString("conf;config").split( ';', Qt::SkipEmptyParts );
 
 
-    auto logConfigFullFileName     = lookupForConfigFile( "logging.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
-    auto apiConfigFullFileName     = lookupForConfigFile( "config.properties"  , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
-    auto authConfigFullFileName    = lookupForConfigFile( "auth.properties"    , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
-    auto dbConfigFullFileName      = lookupForConfigFile( "database.properties", lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
-    //auto balanceConfigFullFileName = lookupForConfigFile( "balance.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
+    QDateTime dtNow = QDateTime::currentDateTime();
 
-    qDebug().nospace().noquote() << "Log  Config File: "<< logConfigFullFileName  ;
-    qDebug().nospace().noquote() << "API  Config File: "<< apiConfigFullFileName  ;
-    qDebug().nospace().noquote() << "Auth Config File: "<< authConfigFullFileName ;
-    qDebug().nospace().noquote() << "DB   Config     : "<< dbConfigFullFileName   ;
-    //qDebug().nospace().noquote() << "Balance Config  : "<< balanceConfigFullFileName;
+    std::uint64_t msecs     = dtNow.toMSecsSinceEpoch();
+    std::string   msecsStr  = std::to_string(msecs);
+    cout << "msecs: " << msecsStr << ", size: " << msecsStr.size() << endl;
 
-    auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
-    auto authConfig    = tkf::AuthConfig   ( authConfigFullFileName );
-    //auto balanceConfig = tkf::BalanceConfig( balanceConfigFullFileName );
-    //auto balance_config.h
+    //  1 619 373 122 400 000 000 - 0x 1679 2B46 6777 9800
+    // 18 446 744 073 709 551 615 - 0x FFFF FFFF FFFF FFFF
+    //              4 294 967 295 - 0x FFFF FFFF
 
+    // Запас есть, можно не парится особо
 
-    QSharedPointer<tkf::DatabaseConfig> pDatabaseConfig = QSharedPointer<tkf::DatabaseConfig>( new tkf::DatabaseConfig(dbConfigFullFileName, tkf::DatabasePlacementStrategyDefault()) );
-    QSharedPointer<tkf::LoggingConfig>  pLoggingConfig  = QSharedPointer<tkf::LoggingConfig> ( new tkf::LoggingConfig(logConfigFullFileName) );
-    auto loggingConfig = *pLoggingConfig;
+    std::uint64_t nsecs = msecs*1000*1000;           
+    std::string   nsecsStr  = std::to_string(nsecs);
+    cout << "nsecs: " << nsecsStr << ", size: " << nsecsStr.size() << endl;
 
 
-    qDebug().nospace().noquote() << "DB name: " << pDatabaseConfig->dbFilename;
+    std::uint64_t nsPrev = 0;
+    //nsecs = qt_helpers::nanosecFromRfc3339NanoString( QString str )
 
-    QSharedPointer<QSqlDatabase> pSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
-    pSqlDb->setDatabaseName( pDatabaseConfig->dbFilename );
+    std::vector< QString > times = { "2021-04-23T20:49:58.271483332Z" 
+                                   , "2021-04-23T20:49:58.27475194Z"  
+                                   , "2021-04-23T20:49:58.294388887Z" 
+                                   , "2021-04-23T20:49:58.301856135Z" 
+                                   , "2021-04-23T20:49:58.303532501Z" 
+                                   , "2021-04-23T20:49:58.317959664Z" 
+                                   , "2021-04-23T20:49:58.580628049Z"
+                                   , "2021-04-23T20:49:58.584247997Z"
+                                   , "2021-04-23T20:49:58.921135665Z"
+                                   , "2021-04-23T20:49:58.923220281Z"
+                                   };
 
-    if (!pSqlDb->open())
+    for( auto strTime : times )
     {
-      qDebug() << pSqlDb->lastError().text();
-      return 0;
+        std::uint64_t ns = qt_helpers::nanosecFromRfc3339NanoString( strTime );
+        if (!ns)
+        {
+            cout << "Time string not parsed, str: " << strTime << endl;
+        }
+        else
+        {
+            cout << "Nsec value: " << ns;
+            if (nsPrev)
+            {
+                if (nsPrev>ns)
+                {
+                    cout << ", delta: invalid";
+                }
+                else
+                {
+                    std::uint64_t delta = ns - nsPrev;
+                    cout << ", delta: " << std::setw(9) << delta;
+                }
+            }
+
+            cout << endl;
+
+            nsPrev = ns;
+
+        }
     }
-
-    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
-
-    pDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
-
-
-
-    QSharedPointer<tkf::IOpenApi> pOpenApi = tkf::createOpenApi( apiConfig, authConfig, loggingConfig );
-
-    tkf::ISanboxOpenApi* pSandboxOpenApi = tkf::getSandboxApi(pOpenApi);
-
-    if (pSandboxOpenApi)
-    {
-        pSandboxOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
-    }
-    else
-    {
-        pOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
-    }
-
-
-    tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pDbMan);
-
 
     
     return 0;
