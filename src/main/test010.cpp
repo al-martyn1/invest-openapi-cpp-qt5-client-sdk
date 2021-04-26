@@ -1284,8 +1284,8 @@ INVEST_OPENAPI_MAIN()
         typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<50> >    cpp_float_normal;
         typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<200> >   cpp_float_long  ; // Стандартно есть только cpp_dec_float_100
 
-        std::uint32_t cppFloatT1     = mullersRecurrenceFunctionTest<cpp_float_normal>( 100, "cpp_float_normal" ); 
-        std::uint32_t cppFloatT2     = mullersRecurrenceFunctionTest<cpp_float_long>  ( 200, "cpp_float_long" ); 
+        std::uint32_t cppFloatT1     = mullersRecurrenceFunctionTest<cpp_float_normal>( 64, "cpp_float_normal" ); 
+        std::uint32_t cppFloatT2     = mullersRecurrenceFunctionTest<cpp_float_long>  ( 176, "cpp_float_long" ); 
 
     #endif
 
