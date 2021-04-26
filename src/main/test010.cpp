@@ -17,6 +17,16 @@
 #include "invest_openapi/marty_bcd.h"
 
 
+// #define MARTY_DECIMAL_MULLER_TEST_NO_BOOST
+
+
+#if !defined(MARTY_DECIMAL_MULLER_TEST_NO_BOOST)
+
+    #include <boost/multiprecision/cpp_dec_float.hpp>
+
+#endif
+
+
 
 #define THROW_ERROR() do{ throw std::runtime_error("Test failed"); } while(0)
 //#define THROW_ERROR() do{ } while(0)
@@ -1269,7 +1279,15 @@ INVEST_OPENAPI_MAIN()
     
     // return marty::for_decimal_tests::getMillisecTick();
 
+    #if !defined(MARTY_DECIMAL_MULLER_TEST_NO_BOOST)
 
+        typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<50> >    cpp_float_normal;
+        typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<200> >   cpp_float_long  ; // Стандартно есть только cpp_dec_float_100
+
+        std::uint32_t cppFloatT1     = mullersRecurrenceFunctionTest<cpp_float_normal>( 100, "cpp_float_normal" ); 
+        std::uint32_t cppFloatT2     = mullersRecurrenceFunctionTest<cpp_float_long>  ( 200, "cpp_float_long" ); 
+
+    #endif
 
     // Достаточно 20 итераций, и процесс сходится в ошибочной точке
     // В расколбас же активно начинает сваливаться на 15ом шаге
@@ -1309,6 +1327,12 @@ INVEST_OPENAPI_MAIN()
     marty::Decimal::setDivisionPrecision(200);
     std::uint32_t decimalT200 = mullersRecurrenceFunctionTest<marty::Decimal>( 170, "marty::Decimal with precision 200" );
 
+    #if !defined(MARTY_DECIMAL_MULLER_TEST_NO_BOOST)
+
+        cout << "Elapsed for cpp_float_normal   : " << cppFloatT1 << endl;
+        cout << "Elapsed for cpp_float_long     : " << cppFloatT2 << endl;
+
+    #endif
     
     cout << "Elapsed for double             : " << doubleT     << endl;
     cout << "Elapsed for marty::Decimal(3)  : " << decimalT3   << endl;
