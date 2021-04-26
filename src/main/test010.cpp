@@ -7,6 +7,7 @@
 #include <exception>
 #include <stdexcept>
 #include <sstream>
+#include <iomanip>
 
 #define MARTY_NO_QT
 
@@ -87,6 +88,11 @@ std::string quoteOnlyString( const char( &str )[ N ] )
     return quoteOnlyString< std::string, std::string >(&str[0]);
 }
 
+
+
+
+template< typename SomeFloatingType >
+std::uint32_t mullersRecurrenceFunctionTest( std::size_t testSize, const char *testTitle );
 
 
 
@@ -1251,12 +1257,129 @@ INVEST_OPENAPI_MAIN()
     if (!totalRoundingTestsFailed)
         cout << "+++ All rounding tests passed"  << endl;
 
+    cout << "------------------------------" << endl << endl << endl << endl << endl;
+
+
+    #endif // Rounding tests
+
+    cout << "***********************" << endl;
+    cout << "* For sweet" << endl;
+    cout << "***********************" << endl;
+    cout << endl << endl << endl;
+    
+    // return marty::for_decimal_tests::getMillisecTick();
+
+
+
+    // Достаточно 20 итераций, и процесс сходится в ошибочной точке
+    // В расколбас же активно начинает сваливаться на 15ом шаге
+    std::uint32_t doubleT     = mullersRecurrenceFunctionTest<double>( 24, "double" ); 
+
+    // marty::Decimal::setDivisionPrecision(50); // 18 - default
+    // Достаточно 20 итераций (99.48), и процесс начинает сходится в ошибочную точку, самое годное - на 14-15 (4.997662  - 5.003854)
+    std::uint32_t decimalT18  = mullersRecurrenceFunctionTest<marty::Decimal>( 42, "marty::Decimal with precision 18" ); // 
+
+    marty::Decimal::setDivisionPrecision(16); // 16 - примерно как у double
+    std::uint32_t decimalT16  = mullersRecurrenceFunctionTest<marty::Decimal>( 20, "marty::Decimal with precision 16" ); // 
+
+    marty::Decimal::setDivisionPrecision(15); // 15 - примерно как у double
+    std::uint32_t decimalT15  = mullersRecurrenceFunctionTest<marty::Decimal>( 20, "marty::Decimal with precision 15" ); // 
+
+    marty::Decimal::setDivisionPrecision(12); // 12 - хуже, чем у double
+    std::uint32_t decimalT12  = mullersRecurrenceFunctionTest<marty::Decimal>( 20, "marty::Decimal with precision 12" ); // 
+
+    marty::Decimal::setDivisionPrecision(9); // 9 - хуже, чем у double
+    std::uint32_t decimalT9  = mullersRecurrenceFunctionTest<marty::Decimal>( 20, "marty::Decimal with precision 9" ); // 
+
+    marty::Decimal::setDivisionPrecision(6); // 6 - совсем хуже, чем у double
+    std::uint32_t decimalT6  = mullersRecurrenceFunctionTest<marty::Decimal>( 20, "marty::Decimal with precision 6" ); // 
+
+    marty::Decimal::setDivisionPrecision(3); // 3 - ваще хуже, чем у double
+    std::uint32_t decimalT3  = mullersRecurrenceFunctionTest<marty::Decimal>( 20, "marty::Decimal with precision 3" ); // 
+
+    // Начиная с 41 итераций процесс уходит от правильной точки и на 46ой - 99.992  , самое годное - на 35-36 (4.9999999 - 5.0000000)
+    marty::Decimal::setDivisionPrecision(50);
+    std::uint32_t decimalT50  = mullersRecurrenceFunctionTest<marty::Decimal>( 50, "marty::Decimal with precision 50" );
+
+    // Начиная с 79 итераций процесс уходит от правильной точки и на 84ой - 99.79   , самое годное - на 69-70 (4.999999999999999681 - 5.000000000000025473)
+    marty::Decimal::setDivisionPrecision(100);
+    std::uint32_t decimalT100 = mullersRecurrenceFunctionTest<marty::Decimal>( 90, "marty::Decimal with precision 100" );
+
+    // Начиная со 156 итераций процесс уходит от правильной точки и на 161ой - 99.96, самое годное - на 134-135 (4.999999999999999999999999999995 - 5.000000000000000000000000000034)
+    marty::Decimal::setDivisionPrecision(200);
+    std::uint32_t decimalT200 = mullersRecurrenceFunctionTest<marty::Decimal>( 170, "marty::Decimal with precision 200" );
+
+    
+    cout << "Elapsed for double             : " << doubleT     << endl;
+    cout << "Elapsed for marty::Decimal(3)  : " << decimalT3   << endl;
+    cout << "Elapsed for marty::Decimal(6)  : " << decimalT6   << endl;
+    cout << "Elapsed for marty::Decimal(9)  : " << decimalT9   << endl;
+    cout << "Elapsed for marty::Decimal(12) : " << decimalT12  << endl;
+    cout << "Elapsed for marty::Decimal(15) : " << decimalT15  << endl;
+    cout << "Elapsed for marty::Decimal(16) : " << decimalT16  << endl;
+    cout << "Elapsed for marty::Decimal(18) : " << decimalT18  << endl;
+    cout << "Elapsed for marty::Decimal(50) : " << decimalT50  << endl;
+    cout << "Elapsed for marty::Decimal(100): " << decimalT100 << endl;
+    cout << "Elapsed for marty::Decimal(200): " << decimalT200 << endl;
+
     cout << "------------------------------" << endl << endl << endl;
 
 
-    #endif	
-
     return 0;
+}
+
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
+template< typename SomeFloatingType > inline
+std::uint32_t mullersRecurrenceFunctionTest( std::size_t testSize, const char *testTitle )
+{
+    std::vector< SomeFloatingType >  testResults  = std::vector< SomeFloatingType > ( (std::size_t)testSize, SomeFloatingType(0.0) );
+
+    std::uint32_t startTick = marty::for_decimal_tests::getMillisecTick();
+
+        bool isPerformed = marty::for_decimal_tests::mullersRecurrenceFunctionTest( testResults );
+
+    std::uint32_t endTick   = marty::for_decimal_tests::getMillisecTick();
+
+    std::uint32_t deltaTick = endTick - startTick;
+
+
+    using std::cout;
+    using std::endl;
+
+
+    cout << "------------------------------" << endl;
+    cout << "Muller's Recurrence Test for " << testTitle << endl;
+
+    cout << "Execution time: " << deltaTick << " ms" << endl << endl;
+
+    if (isPerformed)
+    {
+        cout << "Test results:" << endl << endl;
+
+        std::size_t i = 0;
+
+        auto fmtWidth = cout.width();
+
+        for( const auto &v : testResults )
+        {
+            ++i;
+            cout << "    " << std::setw(3) << i << std::setw(fmtWidth) << ": " << v << endl;
+        }
+    }
+    else
+    {
+        cout << "!!! Test not performed" << endl;
+    }
+
+    cout << endl << endl << endl;
+
+
+    return deltaTick;
+
 }
 
 
