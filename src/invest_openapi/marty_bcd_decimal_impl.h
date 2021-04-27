@@ -726,6 +726,31 @@ Decimal Decimal::rounded( int precision, RoundingMethod roundingMethod ) const
 
 //----------------------------------------------------------------------------
 inline
+Decimal  Decimal::reciprocated( int precision ) const
+{
+    if (isZero())
+        throw std::runtime_error("marty::Decimal::reciprocated: Zero value can't be reciprocated");
+    Decimal d1 = 1u;
+    return  d1.div( *this, precision );
+
+}
+
+//----------------------------------------------------------------------------
+inline
+Decimal& Decimal::reciprocate( int precision )
+{
+    auto rcprt = reciprocated( precision );
+    swap(rcprt);
+    return *this;
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+inline
 Decimal Decimal::getPercentOf( const Decimal &d ) const
 {
     //UNDONE: !!! Need to make correct rounding

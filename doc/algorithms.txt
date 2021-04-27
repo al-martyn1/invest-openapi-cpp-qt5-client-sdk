@@ -4,4 +4,7 @@
 Рекуррентное соотношение Мюллера: проблемы с округлением чисел с плавающей точкой - https://habr.com/ru/post/258483/
 Muller's Recurrence - https://latkin.org/blog/2014/11/22/mullers-recurrence-roundoff-gone-wrong/
 
-https://www.dcc.uchile.cl/TR/2007/TR_DCC-2007-009.pdf
+Fast inverse for big numbers: Picarte’s iteration - https://www.dcc.uchile.cl/TR/2007/TR_DCC-2007-009.pdf
+reciprocate, reciprocated, Multiplicative inverse - https://en.wikipedia.org/wiki/Multiplicative_inverse
+
+Куда ж без него - https://en.wikipedia.org/wiki/Fast_inverse_square_root

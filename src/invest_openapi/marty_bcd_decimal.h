@@ -234,6 +234,11 @@ public:
     Decimal& mul( const Decimal &d );
     Decimal& div( const Decimal &d, int precision = MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION );
 
+    //----------------------------------------------------------------------------
+
+    
+    
+    //----------------------------------------------------------------------------
     Decimal operator + ( Decimal d2 ) const { Decimal res = *this; return res.add(d2); }
     Decimal operator - ( Decimal d2 ) const { Decimal res = *this; return res.sub(d2); }
     Decimal operator - (            ) const { Decimal res = *this; if (res.m_sign!=0) res.m_sign = -res.m_sign; return res; }
@@ -284,40 +289,12 @@ public:
 
     //----------------------------------------------------------------------------
 
-#if 0
-
-public:
-
-    //------------------------------
-    Decimal minimizePrecision() const;
-    Decimal& minimizePrecisionInplace();
-    Decimal expantPrecisionTo( precision_t p ) const;
-    Decimal shrinkPrecisionTo( precision_t p ) const;
-    Decimal fitPrecisionTo   ( precision_t p ) const;
+    Decimal& zerate()   { m_sign  =  0; return *this; } //!< Zerate Mazerate ;) makes this zero valued
+    Decimal& negate()   { m_sign *= -1; return *this; }
+    Decimal& invert()   { return negate(); }
+    Decimal& reciprocate( int precision = MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION ); //!< multiplicative inverse this: *this = 1/(*this) \returns *this
 
     //------------------------------
-    Decimal& negate();
-    Decimal& invert() { return negate(); }
-
-    int     sign() const;
-    int     sgn () const { return sign(); }
-    Decimal abs () const;
-    Decimal mod (  Decimal d2 ) const;
-    Decimal neg () const;
-    Decimal inv () const { return neg(); }
-
-    //------------------------------
-    Decimal getPercentOf( Decimal d ) const;
-    Decimal getPermilleOf( Decimal d ) const;
-
-    Decimal rounded( precision_t precision, RoundingMethod roundingMethod ) const;
-
-    //------------------------------
-
-#endif
-
-    Decimal& negate() { m_sign *= -1; return *this; }
-    Decimal& invert() { return negate(); }
 
     int      signum() const { return m_sign; }
     int      sign  () const { return m_sign; }
@@ -327,19 +304,32 @@ public:
     Decimal  neg   () const { Decimal res = *this; res.negate(); return res; }
     Decimal  inv   () const { return neg(); }
 
+    //------------------------------
+    Decimal  zerated()  const { return Decimal(0u); }
+    Decimal  negated()  const { return neg(); }
+    Decimal  inverted() const { return inv(); }
+
+    //! return multiplicative inverse - 1/(*this)
+    Decimal  reciprocated( int precision = MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION ) const;
+
+    //------------------------------
     bool     zer   () const { return m_sign==0; }
     bool     zero  () const { return m_sign==0; }
     bool     isZero() const { return m_sign==0; }
+    bool     zeq   () const { return m_sign==0; } //!< zeq means "Zero equal" - ==0. Also this is russian joke - зек (ЗК) - means a prisoner
+
+    //------------------------------
+
 
 
     //------------------------------
-    //! Возвращает true, если обрезание/удлиннение прошло предельно точно и ничего лишнего не было задето, и все жизненно важные органы остались на месте
+    //! Возвращает true, если обрезание/удлинение прошло предельно точно и ничего лишнего не было задето, и все жизненно важные органы остались на месте
     bool precisionExpandTo( int p ); //!< Всегда возвращает true
     bool precisionShrinkTo( int p ); //!< Возвращает true, если все обрезанные цифры были нулём
-    bool precisionFitTo( int p );    //!< Возвращает true, если все обрезанные цифры были нулём (если было обрезание), или true
+    bool precisionFitTo( int p );    //!< Возвращает true, если все обрезанные цифры были нулём (если было обрезание), или true (если было расширение или ничего)
 
     //------------------------------
-    //! // Цифра чётна?
+    //! Цифра чётна?
     static
     bool isDigitEven( int d );
 

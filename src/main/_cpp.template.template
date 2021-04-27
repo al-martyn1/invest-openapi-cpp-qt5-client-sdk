@@ -4,6 +4,7 @@
  */
 
 #include <iostream>
+#include <iomanip>
 #include <exception>
 #include <stdexcept>
 #include <vector>
