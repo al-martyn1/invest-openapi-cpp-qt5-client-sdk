@@ -54,13 +54,6 @@ INVEST_OPENAPI_MAIN()
     using std::cout;
     using std::endl;
 
-    // Нахождение 1/N - https://habr.com/ru/company/xakep/blog/257897/
-    // Что-то недотумкал пока, как это
-
-    // Рекуррентное соотношение Мюллера: проблемы с округлением чисел с плавающей точкой - https://habr.com/ru/post/258483/
-    // Muller's Recurrence - https://latkin.org/blog/2014/11/22/mullers-recurrence-roundoff-gone-wrong/
-
-    // https://www.dcc.uchile.cl/TR/2007/TR_DCC-2007-009.pdf
 
     
     return 0;
