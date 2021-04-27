@@ -30,7 +30,8 @@
 
 #include "invest_openapi/invest_openapi_safe_main.h"
 
-#include "invest_openapi/marty_bcd_decimal.h"
+// #include "invest_openapi/marty_bcd_decimal.h"
+#include "invest_openapi/marty_decimal.h"
 
 
 
