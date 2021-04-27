@@ -289,7 +289,8 @@ public:
 
     //----------------------------------------------------------------------------
 
-    Decimal& zerate()   { m_sign  =  0; return *this; } //!< Zerate Mazerate ;) makes this zero valued
+    Decimal& zerate()   { m_sign  =  0; return *this; } //!< Zerate-Mazerate ;) makes *this zero valued
+    Decimal& zeroise()  { m_sign  =  0; return *this; }
     Decimal& negate()   { m_sign *= -1; return *this; }
     Decimal& invert()   { return negate(); }
     Decimal& reciprocate( int precision = MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION ); //!< multiplicative inverse this: *this = 1/(*this) \returns *this
@@ -305,9 +306,11 @@ public:
     Decimal  inv   () const { return neg(); }
 
     //------------------------------
-    Decimal  zerated()  const { return Decimal(0u); }
-    Decimal  negated()  const { return neg(); }
-    Decimal  inverted() const { return inv(); }
+    Decimal  zerated()   const { return Decimal(0u); }
+    Decimal  zeroised()  const { return Decimal(0u); }
+    Decimal  negated()   const { return neg(); }
+    Decimal  inverted()  const { return inv(); }
+    
 
     //! return multiplicative inverse - 1/(*this)
     Decimal  reciprocated( int precision = MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION ) const;
@@ -316,7 +319,7 @@ public:
     bool     zer   () const { return m_sign==0; }
     bool     zero  () const { return m_sign==0; }
     bool     isZero() const { return m_sign==0; }
-    bool     zeq   () const { return m_sign==0; } //!< zeq means "Zero equal" - ==0. Also this is russian joke - зек (ЗК) - means a prisoner
+    bool     zeq   () const { return m_sign==0; } //!< zeq means "Zero EQual" - ==0. Also this is the russian joke - зек (ЗК) - means a prisoner
 
     //------------------------------
 
