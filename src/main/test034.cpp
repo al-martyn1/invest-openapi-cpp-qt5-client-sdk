@@ -88,7 +88,7 @@ std::string makeDiffMarkerString( int strDiffRes, char marker = '|' )
 
 //----------------------------------------------------------------------------
 inline
-void printDiffPair( const std::string &v1, const std::string &v2, std::string indend, bool printExMarker = true )
+int printDiffPair( const std::string &v1, const std::string &v2, std::string indend, bool printExMarker = true )
 {
     using std::cout;
     using std::endl;
@@ -122,16 +122,80 @@ void printDiffPair( const std::string &v1, const std::string &v2, std::string in
     cout << mrkIndend << mrkLine << mrkPosStr << endl;
     cout << indend    << v2 << endl;
 
+    return mrkPos;
 }
 
 //----------------------------------------------------------------------------
 inline
-void printDiffPair( const marty::Decimal &v1, const marty::Decimal &v2, std::string indend, bool printExMarker = true )
+int printDiffPair( const marty::Decimal &v1, const marty::Decimal &v2, std::string indend, bool printExMarker = true )
 {
-    printDiffPair( v1.toString(), v2.toString(), indend, printExMarker );
+    return printDiffPair( v1.toString(), v2.toString(), indend, printExMarker );
 }
 
 //----------------------------------------------------------------------------
+inline
+void testReciprocatedMultiplying( const marty::Decimal &testVal, int reciprocatedPrecision, std::string indend, bool printExMarker = true )
+{
+    using std::cout;
+    using std::endl;
+
+    auto fmtWidth = cout.width();
+
+    cout << endl;
+    cout << "------------------------------" << endl;
+    cout << endl;
+    cout << "Testing precision: " << reciprocatedPrecision << endl << endl;
+    cout << "  Direct divided is first in pair" << endl; // quotient?
+
+    cout << endl;
+    cout << endl;
+
+
+    int diffPosSum = 0;
+
+    for( auto i=1; i<=100; ++i )
+    {
+        auto reciprocated  = marty::Decimal(i).reciprocated(reciprocatedPrecision);
+
+        auto directDivided = testVal;
+        directDivided.div( marty::Decimal(i), reciprocatedPrecision );
+
+        auto reciprocatedDivided = testVal;
+        reciprocatedDivided.mul(reciprocated);
+
+        // cout << indend << "  N = " << i << ", Recipocated:" << endl;
+        // cout << indend << "  " << reciprocated << endl << endl;
+
+        cout << indend << "  N = " << i << ", Recipocated: " << reciprocated << endl << endl;
+
+        int diffPos = printDiffPair( directDivided, reciprocatedDivided, indend, printExMarker );
+
+        if (diffPos<0)
+        {
+            diffPosSum += 1000; // Если различий нет, то ошибка где-то далеко от меня, за пеленой другого дня
+            // С учетом того, что тестироваться будут точности гораздо меньшие 1К цифр, то 1К - почти бесконечность
+        }
+        else
+        {
+            diffPosSum += diffPos;
+        }
+
+        cout << endl;
+        cout << endl;
+
+    }
+
+    cout << "!!!" << (diffPosSum/99) << endl;
+
+    cout << endl;
+    cout << endl;
+
+}
+
+
+
+
+
 
 
 
@@ -153,11 +217,17 @@ INVEST_OPENAPI_MAIN()
     auto fmtWidth = cout.width();
 
 
-    const std::string testValStr    = "317860096764605239302343.916106517608230092939884907517544912278778303586057323950081374211073655936951665940766";
-    const std::string testValStrBad = "317860016764605239302343.916106517608230092939884907517544912278778303586057323950081374211073655936951665940766";
+    // const std::string testValStr    = "317860096764605239302343.916106517608230092939884907517544912278778303586057323950081374211073655936951665940766";
+    // const std::string testValStrBad = "317860016764605239302343.916106517608230092939884907517544912278778303586057323950081374211073655936951665940766";
+
+    const std::string testValStr    = "3338011574421368375801601726669216196016109644926816443113348.916106517608230092939884907517544912278778303586057323950081374211073655936951665940766";
+    const std::string testValStrBad = "3338011574421368375801601726669216196016209644926816443113348.916106517608230092939884907517544912278778303586057323950081374211073655936951665940766";
+
 
     marty::Decimal dGood = testValStr;
     marty::Decimal dBad  = testValStrBad;
+
+    marty::Decimal testVal = dGood;
 
 
     // Simple shows reciprocates
@@ -178,7 +248,6 @@ INVEST_OPENAPI_MAIN()
 
 
     // Difference test
-    #if 0
 
     cout << "String difference marker test 1" << endl << endl;
     auto mrkPos = getFirstDiffPos( testValStr, testValStrBad );
@@ -194,8 +263,6 @@ INVEST_OPENAPI_MAIN()
     cout << endl;
     cout << endl;
 
-    #endif
-
     cout << "String difference marker test 3" << endl << endl;
     printDiffPair( dGood, dBad, "  " );
     cout << endl;
@@ -208,20 +275,10 @@ INVEST_OPENAPI_MAIN()
 
 
 
-    // makeDiffMarkerString( int strDiffRes, char marker = 0 )
-    // getFirstDiffPos( const std::string &v1, const std::string &v2 )
+    testReciprocatedMultiplying( testVal, 18, "  " );
 
-/*
 
-    Decimal& add( const Decimal &d );
-    Decimal& sub( const Decimal &d );
-    Decimal& mul( const Decimal &d );
-    Decimal& div( const Decimal &d, int precision = MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION );
 
-    std::string toString( int precision = -1 ) const;
-
-*/
-    
     return 0;
 }
 
