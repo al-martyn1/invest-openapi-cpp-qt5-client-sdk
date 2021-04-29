@@ -323,7 +323,6 @@ int reduceLeadingZeros( raw_bcd_number_t &bcdNumber, int precision )
 
 //----------------------------------------------------------------------------
 //! Обрезаем ведущие нули, включая те, которые после точки
-//!!!
 inline
 int reduceLeadingZerosFull( raw_bcd_number_t &bcdNumber, int precision )
 {
@@ -359,7 +358,8 @@ int extendPrecision( raw_bcd_number_t &bcdNumber, int curPrecision, int newPreci
 
 //----------------------------------------------------------------------------
 //! Расширяем перед точкой
-//!!!
+//!!! Оно не нужно
+/*
 inline
 int extendLeadings( raw_bcd_number_t &bcdNumber, int precision, int requestedLeadings )
 {
@@ -382,7 +382,7 @@ int extendLeadings( raw_bcd_number_t &bcdNumber, int precision, int requestedLea
 
     return precision;
 }
-
+*/
 //----------------------------------------------------------------------------
 //! Проверка на ноль
 inline
@@ -1198,6 +1198,7 @@ int rawDivision( raw_bcd_number_t &quotient
 
     dividendPrecision = reduceLeadingZerosFull( dividend, dividendPrecision );
     divisorPrecision  = reduceLeadingZerosFull( divisor , divisorPrecision  );
+
 
     // Нужно выровнять размеры
     if (dividend.size() < divisor.size())
