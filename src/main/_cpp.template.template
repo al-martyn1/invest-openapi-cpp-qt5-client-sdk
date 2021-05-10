@@ -43,6 +43,9 @@
 
 #include "invest_openapi/console_break_helper.h"
 
+#include "invest_openapi/undef_min_max.h"
+
+
 
 INVEST_OPENAPI_MAIN()
 {

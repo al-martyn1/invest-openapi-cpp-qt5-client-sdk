@@ -495,12 +495,20 @@ void showPerformancePercents( std::uint32_t builtinFloatTick
         builtinFloatTickDecimal = cppFloatTick;
     #endif
 
+    marty::Decimal perfRating = 0;
+
     cout << "Performance log" << endl << flush;
+
     #if !defined(EXCLUDE_BUILTIN_FROM_COMPARIZON)
-    cout << "    builtin_dec_float : " << builtinFloatTickDecimal.getPercentOf(decimalTickDecimal) << "%, x " << makePercentReverseRelatio(builtinFloatTickDecimal.getPercentOf(decimalTickDecimal)) << endl << flush;
+    perfRating = makePercentReverseRelatio(builtinFloatTickDecimal.getPercentOf(decimalTickDecimal));
+    cout << "    builtin_dec_float : " << builtinFloatTickDecimal .getPercentOf(decimalTickDecimal) << "%, x " << perfRating << endl << flush;
     #endif
-    cout << "    cpp_dec_float     : " << cppFloatTickDecimal    .getPercentOf(decimalTickDecimal) << "%, x " << makePercentReverseRelatio(cppFloatTickDecimal    .getPercentOf(decimalTickDecimal)) << endl << flush;
-    cout << "    Decimal           : " << decimalTickDecimal     .getPercentOf(decimalTickDecimal) << "%, x " << makePercentReverseRelatio(decimalTickDecimal     .getPercentOf(decimalTickDecimal)) << endl << flush;
+
+    perfRating = makePercentReverseRelatio(cppFloatTickDecimal   .getPercentOf(decimalTickDecimal));
+    cout << "    cpp_dec_float     : " << cppFloatTickDecimal    .getPercentOf(decimalTickDecimal) << "%, x " << perfRating << endl << flush;
+
+    perfRating = makePercentReverseRelatio(decimalTickDecimal    .getPercentOf(decimalTickDecimal));
+    cout << "    Decimal           : " << decimalTickDecimal     .getPercentOf(decimalTickDecimal) << "%, x " << perfRating << endl << flush;
 
     //cout << std::flush;
 

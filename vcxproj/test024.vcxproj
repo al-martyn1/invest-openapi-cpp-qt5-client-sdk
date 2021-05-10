@@ -95,6 +95,7 @@
       <AdditionalIncludeDirectories>$(BOOST);.;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -121,6 +122,7 @@
       <AdditionalIncludeDirectories>$(BOOST);.;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -169,12 +171,12 @@
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>UMBA_USE_QT;USE_LOUT;UNICODE;_UNICODE;WIN32;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_SERIALPORT_LIB;QT_TESTLIB_LIB;QT_SERIALBUS_LIB;QT_WEBSOCKETS_LIB;QT_NETWORK_LIB;QT_NETWORKAUTH_LIB;QT_UITOOLS_LIB;QT_SQL_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(BOOST);.;$(QTDIR)\include;$(SolutionDir)\_tmp\$(SolutionName)\$(ProjectName)\$(PlatformShortName)\$(ConfigurationName);%(AdditionalIncludeDirectories);$(SolutionDir)\..\..;$(SolutionDir)\xlibs;$(SolutionDir)\src;$(SolutionDir)\xlibs\sfmt\inc;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtSerialPort;$(QTDIR)\include\QtTest;$(QTDIR)\include\QtSerialBus;$(QTDIR)\include\QtWebSockets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtNetworkAuth;$(QTDIR)\include\QtUiTools;$(QTDIR)\include\QtSql</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

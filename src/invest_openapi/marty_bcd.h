@@ -525,8 +525,8 @@ MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t getDigitByIndex( const raw_bcd_numbe
                     /*std::size_t minIpSize    = getMinIntegerPartSize( ipSize1, ipSize2 );*/  \
                                                                                                \
                     int maxPrecision = getMaxPrecision( precision1, precision2 );              \
-                    int minPrecision = getMinPrecision( precision1, precision2 );              \
-                    int dtPrecision  = maxPrecision - minPrecision;                            \
+                    /*int minPrecision = getMinPrecision( precision1, precision2 );*/          \
+                    /*int dtPrecision  = maxPrecision - minPrecision; */                       \
                                                                                                \
                     int offset1      = maxPrecision - precision1;                              \
                     int offset2      = maxPrecision - precision2;                              \
@@ -859,8 +859,8 @@ IntType bcdCorrectOverflow( IntType &d )
 }
 
 //----------------------------------------------------------------------------
-MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectOverflowAfterSummation( decimal_digit_t &d ) )
-//inline decimal_digit_t bcdCorrectOverflow( decimal_digit_t &d )
+//MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectOverflowAfterSummation( decimal_digit_t &d ) )
+inline decimal_digit_t bcdCorrectOverflowAfterSummation( decimal_digit_t &d )
 {
     /*
          Коррекцию производим после суммирования одиночных разрядов.
@@ -871,8 +871,12 @@ MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectOverflowAfterSummation( de
          Должно получиться лучше, чем с делением и взятием остатка.
 
          Oo-o-ps. Слагаемых может быть три, так что диапазон на входе до 27ми
+
+         Oo-o-ps #2. Одно из слагаемых - результат предыдущей коррекции - 0 или 1.
+         Значит, у нас на входе может быть число от 0 до 19.
      */
 
+    /*
     switch(d)
     {
         case 0 : case  1: case  2: case  3: case  4: case  5: case  6: case  7: case  8: case  9: 
@@ -890,14 +894,69 @@ MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectOverflowAfterSummation( de
              throw std::runtime_error("marty::bcd::bcdCorrectOverflowAfterSummation: something goes wrong");
 
     }
+    */
 
-    return 0;
+    /*
+    if (d<10)
+    {
+        return 0;
+    }
+    else if (d<20)
+    {
+        d -= 10;
+        return 1;
+    }
+    else if (d<28)
+    {
+        d -= 20;
+        return 2;
+    }
+    else
+    {
+        throw std::runtime_error("marty::bcd::bcdCorrectOverflowAfterSummation: something goes wrong");
+    }
+    */
+
+    /*
+    decimal_digit_t res = 0;
+
+    while(d>9)
+    {
+        ++res;
+        d -= 10;
+    }
+
+    return res;
+    */
+
+    // 
+
+    static 
+    const
+    int correctedDs[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+                        , 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+                        , 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF // на тестах должно вылететь, если что-то не так
+                        };
+
+    static 
+    const
+    int results    [] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                        , 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+                        , 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF // на тестах должно вылететь, если что-то не так
+                        };
+    
+    int res = results[d];
+
+    d = (decimal_digit_t)correctedDs[d];
+
+    return res;
 }
 
 //----------------------------------------------------------------------------
 MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectCarry( decimal_digit_t &d ) )
 // inline decimal_digit_t bcdCorrectCarry( decimal_digit_t &d )
 {
+    /*
     if (d>=0)
         return 0;
 
@@ -906,6 +965,15 @@ MARTY_RAW_BCD_FORCE_INLINE( decimal_digit_t bcdCorrectCarry( decimal_digit_t &d 
     d = ((decimal_digit_t)10) + d;
 
     return 1;
+    */
+
+    if (d<0)
+    {
+        d = ((decimal_digit_t)10) + d;
+        return 1;
+    }
+
+    return 0;
 }
 
 //----------------------------------------------------------------------------

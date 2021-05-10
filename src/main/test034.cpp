@@ -44,6 +44,9 @@
 
 #include "invest_openapi/marty_decimal.h"
 
+#include "invest_openapi/undef_min_max.h"
+
+
 
 #include "cpp/cpp.h"
 // std::string  cpp::expandAtFront( const char    * pStr, std::size_t expandToSize, char    ch =  ' ' )
@@ -58,6 +61,9 @@ int getFirstDiffPos( const std::string &v1, const std::string &v2 )
     std::string::size_type i = 0;
     // std::string::size_type sz = std::min( v1.size(), v2.size() );
     std::string::size_type sz = v1.size() < v2.size() ? v1.size() : v2.size();
+
+    if (!sz)
+        return 0;
 
     for(; i!=sz; ++i )
     {
@@ -94,6 +100,12 @@ int printDiffPair( const std::string &v1, const std::string &v2, std::string ind
     using std::endl;
 
     auto mrkPos  = getFirstDiffPos( v1, v2 );
+
+    if (mrkPos<0 && v1.size()!=v2.size())
+    {
+        mrkPos = std::min(v1.size(),v2.size());
+    }
+
     auto mrkLine = makeDiffMarkerString(mrkPos);
 
     std::string mrkPosStr;
