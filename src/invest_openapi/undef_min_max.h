@@ -1,11 +1,6 @@
 #pragma once
 
-#if defined(min)
-    #undef min
-#endif
+#include "../../zulibs/marty_decimal/undef_min_max.h"
 
-#if defined(max)
-    #undef max
-#endif
 
 
