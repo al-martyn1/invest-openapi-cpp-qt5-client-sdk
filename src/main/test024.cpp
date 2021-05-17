@@ -449,6 +449,67 @@ OperandType cmpOperationImpl( const OperandType &o1, const OperandType &o2 )
 }
 
 //----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+template< typename OperandType >
+bool isZero( const OperandType &v ) //!< Must be specialized. \returns true if v can't be divider (to prevent divisions by zero)
+{
+    throw std::runtime_error("isZero not implemented for this type");
+    return true;
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+template< typename OperandType > inline
+OperandType reciprocateZero()
+{
+    return OperandType(88888888);
+}
+
+//----------------------------------------------------------------------------
+template< typename OperandType > inline
+OperandType reciprocate( const OperandType &v ) //!< Must be specialized.
+{
+    throw std::runtime_error("reciprocate not implemented for this type");
+    return reciprocateZero<OperandType>();
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+template< typename OperandType > inline
+OperandType reciprocateOperationImpl( const OperandType &o1, const OperandType &o2 )
+{
+    if ( !isZero(o1) )
+    {
+        return reciprocate(o1);
+    }
+
+    if ( !isZero(o2) )
+    {
+        return reciprocate(o2);
+    }
+
+    return reciprocateZero<OperandType>();
+}
+
+
+
+
+
+
+
+//----------------------------------------------------------------------------
 inline
 marty::Decimal makePercentReverseRelatio( const marty::Decimal &d )
 {

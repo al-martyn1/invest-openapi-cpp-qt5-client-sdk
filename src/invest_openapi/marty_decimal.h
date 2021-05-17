@@ -33,7 +33,7 @@ std::uint32_t getMillisecTick()
 
         return (std::uint32_t)GetTickCount();
 
-    #else // Linups users can add native millisec conter getter or new std fns
+    #else // Linups users can add native millisec counter getter or new std chrono fns
 
         return 0;
 
