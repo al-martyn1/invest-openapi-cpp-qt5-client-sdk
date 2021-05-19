@@ -235,7 +235,7 @@ public:
     Decimal& add( const Decimal &d );
     Decimal& sub( const Decimal &d );
     Decimal& mul( const Decimal &d );
-    Decimal& div( const Decimal &d, int precision = MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION );
+    Decimal& div( const Decimal &d, int precision = -1, unsigned numSignificantDigits = (unsigned)-1 );
 
     //----------------------------------------------------------------------------
 
@@ -326,6 +326,11 @@ public:
 
     //------------------------------
 
+    int      msp   () const { return getMostSignificantDigitPower(); } //!< return Most Significant digit Power 
+
+    //------------------------------
+
+
 
 
     //------------------------------
@@ -347,6 +352,8 @@ public:
     //Decimal& minimizePrecisionImpl();
     int getLowestDecimalDigit() const;
     //void replaceLowestDecimalDigit( unum_t d );
+
+    int getMostSignificantDigitPower() const;
 
 
 //----------------------------------------------------------------------------
@@ -379,13 +386,30 @@ public:
     static int  getDivisionPrecision()                                                  { return m_divisionPrecision; }
     static void setDivisionPrecision( int p = MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION) { m_divisionPrecision = p; }
 
+    static unsigned  getDivisionNumberOfSignificantDigits()             { return m_divisionNumberOfSignificantDigits; }
+    static void      setDivisionNumberOfSignificantDigits( unsigned n ) { m_divisionNumberOfSignificantDigits    = n; }
 
 
     //------------------------------
-    Decimal getPercentOf( const Decimal &d ) const;
-    Decimal getPermilleOf( const Decimal &d ) const;
+    //! Return what part of d is *this (in percents/permilles) - d is 100%
+    Decimal  getPercentOf ( const Decimal &d ) const;
+    Decimal  getPermilleOf( const Decimal &d ) const;
 
-    Decimal rounded( int precision, RoundingMethod roundingMethod ) const;
+    Decimal  getExPercentOf ( const Decimal &d, int precision, unsigned numSignificantDigits ) const;
+    Decimal  getExPermilleOf( const Decimal &d, int precision, unsigned numSignificantDigits ) const;
+
+
+    //! Return what part of *this is d (in percents/permilles) - *this is 100%
+    Decimal  getPercent   ( const Decimal &d ) const { return d.getPercentOf (*this); }
+    Decimal  getPermille  ( const Decimal &d ) const { return d.getPermilleOf(*this); }
+
+    Decimal  getExPercent ( const Decimal &d, int precision, unsigned numSignificantDigits ) const { return d.getExPercentOf (*this, precision, numSignificantDigits); }
+    Decimal  getExPermille( const Decimal &d, int precision, unsigned numSignificantDigits ) const { return d.getExPermilleOf(*this, precision, numSignificantDigits); }
+
+
+    //------------------------------
+    Decimal& round  ( int precision, RoundingMethod roundingMethod );
+    Decimal  rounded( int precision, RoundingMethod roundingMethod ) const;
 
 
 //----------------------------------------------------------------------------
@@ -394,6 +418,9 @@ protected:
     Decimal& roundingImpl2( int requestedPrecision, RoundingMethod roundingMethod );
     Decimal& roundingImpl1( int requestedPrecision, RoundingMethod roundingMethod );
     Decimal& roundingImpl ( int requestedPrecision, RoundingMethod roundingMethod );
+
+    Decimal implGetPercentOf ( const Decimal &scale, const Decimal &d ) const;
+    Decimal implGetExPercentOf ( const Decimal &scale, const Decimal &d, int precision, unsigned numSignificantDigits ) const;
 
 
     Decimal( int sign, int precision, bcd::raw_bcd_number_t number )
@@ -411,7 +438,8 @@ protected:
     // if >   0  - Exact precision will be used
     inline static int       m_outputPrecision = -1;
 
-    inline static int       m_divisionPrecision = MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION;
+    inline static int       m_divisionPrecision          = MARTY_DECIMAL_DEFAULT_DIVISION_PRECISION;
+    inline static unsigned  m_divisionNumberOfSignificantDigits = 3;
 
 
 }; // class Decimal

@@ -53,8 +53,8 @@ INVEST_OPENAPI_MAIN()
     QVector<QString> qn2 = invest_openapi::getColumnNamesFromTableSqlSchema( q2 );
 
 
-    std::set<cpp::NameStyle> allNameStyles = cpp::makeAllNameStyles();
-    std::set<cpp::NameStyle> testedNameStyles;
+    cpp::NameStyleSet  /* std::set<cpp::NameStyle> */  allNameStyles = cpp::makeAllNameStyles();
+    cpp::NameStyleSet  /* std::set<cpp::NameStyle> */  testedNameStyles;
 
     const char *testNames[] = 
     {   ""

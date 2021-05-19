@@ -79,17 +79,26 @@ INVEST_OPENAPI_MAIN()
     auto authConfigFullFileName    = lookupForConfigFile( "auth.properties"    , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto dbConfigFullFileName      = lookupForConfigFile( "database.properties", lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto balanceConfigFullFileName = lookupForConfigFile( "balance.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
+    auto test022FullFileName       = lookupForConfigFile( "test022.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
 
     qDebug().nospace().noquote() << "Log  Config File: "<< logConfigFullFileName  ;
     qDebug().nospace().noquote() << "API  Config File: "<< apiConfigFullFileName  ;
     qDebug().nospace().noquote() << "Auth Config File: "<< authConfigFullFileName ;
     qDebug().nospace().noquote() << "DB   Config     : "<< dbConfigFullFileName   ;
     qDebug().nospace().noquote() << "Balance Config  : "<< balanceConfigFullFileName;
+    qDebug().nospace().noquote() << "Test022 Cfg File: "<< test022FullFileName    ;
 
     auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
     auto authConfig    = tkf::AuthConfig   ( authConfigFullFileName );
     auto balanceConfig = tkf::BalanceConfig( balanceConfigFullFileName );
     //auto balance_config.h
+
+    bool slowMode = false;
+    {
+        QSettings settings(test022FullFileName, QSettings::IniFormat);
+        slowMode = settings.value("slow-mode" ).toBool();
+    }
+
 
 
     QSharedPointer<tkf::DatabaseConfig> pDatabaseConfig = QSharedPointer<tkf::DatabaseConfig>( new tkf::DatabaseConfig(dbConfigFullFileName, tkf::DatabasePlacementStrategyDefault()) );
@@ -269,10 +278,13 @@ INVEST_OPENAPI_MAIN()
        
                 // 1 запрос - 0.2 секунды (примерно, на практике), всего 3 секунды чистого времени
                 // Притормаживаем на 0.3 секунды, чтобы уложиться в лимит 120 запросов в минуту
-                //QTest::qWait(300);
-                QTest::qWait(5000); // У нас паралелльно идёт закачка свеч, чтобы не сломать её
-       
                 // Итого 7.5 секунды на инструмент
+
+                if (slowMode)
+                    QTest::qWait(5000); // У нас паралелльно идёт закачка свеч, чтобы не сломать её
+                else
+                    QTest::qWait(375);
+                
             }
        
             // Сортируем по убыванию - первая свечка - самая последняя по дате
@@ -381,7 +393,11 @@ INVEST_OPENAPI_MAIN()
 
         } // for( const auto &op : operations )
 
-        QTest::qWait(5000);
+        if (slowMode)
+            QTest::qWait(5000);
+        else
+            QTest::qWait(1000);
+
 
     } // for( auto figi : balanceConfig.figis ) 
 
