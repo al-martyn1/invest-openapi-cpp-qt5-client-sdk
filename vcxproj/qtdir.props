@@ -1,0 +1,14 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <QTDIR>$(TKF_IOA_QTROOT)\msvc2017</QTDIR>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <QTDIR>$(TKF_IOA_QTROOT)\msvc2017</QTDIR>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <QTDIR>$(TKF_IOA_QTROOT)\msvc2017_64</QTDIR>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <QTDIR>$(TKF_IOA_QTROOT)\msvc2017_64</QTDIR>
+  </PropertyGroup>
+</Project>
