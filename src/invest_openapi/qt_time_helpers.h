@@ -364,6 +364,20 @@ QDateTime dtAddTimeInterval( const QDateTime &dt, QString intervalStr, int force
 
 //----------------------------------------------------------------------------
 inline
+QDateTime dtAddTimeInterval( unsigned howManyAdds, const QDateTime &dt, QString intervalStr, int forceSign = 0 /* 0 - use default */ )
+{
+    QDateTime res = dt;
+
+    for( auto i = 0u; i!=howManyAdds; ++i )
+    {
+        res = dtAddTimeInterval( res, intervalStr, forceSign );
+    }
+
+    return res;
+}
+
+//----------------------------------------------------------------------------
+inline
 QDate addYearsNotGreaterThanDate( QDate dateAddTo, int nYears, QDate dateLimit )
 {
     if (nYears<0)

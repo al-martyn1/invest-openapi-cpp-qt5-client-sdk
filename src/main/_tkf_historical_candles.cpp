@@ -69,13 +69,16 @@ INVEST_OPENAPI_MAIN()
     auto apiConfigFullFileName     = lookupForConfigFile( "config.properties"  , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto authConfigFullFileName    = lookupForConfigFile( "auth.properties"    , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto dbConfigFullFileName      = lookupForConfigFile( "database.properties", lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
+    auto histCandlesFullFileName   = lookupForConfigFile( "historical_candles.properties", lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     //auto balanceConfigFullFileName = lookupForConfigFile( "balance.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
 
-    qDebug().nospace().noquote() << "Log  Config File: "<< logConfigFullFileName  ;
-    qDebug().nospace().noquote() << "API  Config File: "<< apiConfigFullFileName  ;
-    qDebug().nospace().noquote() << "Auth Config File: "<< authConfigFullFileName ;
-    qDebug().nospace().noquote() << "DB   Config     : "<< dbConfigFullFileName   ;
+    qDebug().nospace().noquote() << "Log  Config File  : "<< logConfigFullFileName   ;
+    qDebug().nospace().noquote() << "API  Config File  : "<< apiConfigFullFileName   ;
+    qDebug().nospace().noquote() << "Auth Config File  : "<< authConfigFullFileName  ;
+    qDebug().nospace().noquote() << "DB   Config       : "<< dbConfigFullFileName    ;
+    qDebug().nospace().noquote() << "HistCndl Cfg File : "<< histCandlesFullFileName ;
     //qDebug().nospace().noquote() << "Balance Config  : "<< balanceConfigFullFileName;
+
 
     auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
     auto authConfig    = tkf::AuthConfig   ( authConfigFullFileName );
@@ -123,8 +126,24 @@ INVEST_OPENAPI_MAIN()
 
     int stockExchangeId = dicts.getStockExangeListIdChecked("moex");
 
-    int instrumentId     = dicts.getInstrumentIdBegin( );
-    int instrumentIdEnd  = dicts.getInstrumentIdEnd( );
+
+
+    std::set<QString> explicitFigisForUpdate;
+    {
+        QSettings settings(histCandlesFullFileName, QSettings::IniFormat);
+        auto instrumentList = settings.value("historical-candles-update-list" ).toStringList();
+
+        for( const auto instrument : instrumentList )
+        {
+            QString figi = dicts.findFigiByAnyIdString(instrument);
+            if (figi.isEmpty())
+                continue;
+
+            explicitFigisForUpdate.insert(figi);
+        }
+    }
+
+
 
     auto instrumentCandlesTableFields = QString("INSTRUMENT_ID,STOCK_EXCHANGE_ID,CANDLE_RESOLUTION_ID,CANDLE_DATE_TIME,CURRENCY_ID,OPEN_PRICE,CLOSE_PRICE,HIGH_PRICE,LOW_PRICE,VOLUME");
     auto instrumentCandlesTableFieldsVec = tkf::convertToQVectorOfQStrings(instrumentCandlesTableFields);
@@ -132,7 +151,12 @@ INVEST_OPENAPI_MAIN()
 
     console_helpers::SimpleHandleCtrlC ctrlC;
 
+    /*
+        Какая нужна статистика по инструменту?
 
+        Время, затраченное на получение данных - слишком большое время говорит о том, что с инструментом что-то не ладно
+    
+    */
 
     QElapsedTimer instrumentCandlesTimer;
 
@@ -141,15 +165,49 @@ INVEST_OPENAPI_MAIN()
 
     unsigned singleRequestElapsedTime = 0;
 
+    std::set<QString> discontinuedFigis;
+    std::set<QString> erroneousFigis;
+    std::map<QString, std::uint64_t> figiTimes;
+
+
+    int instrumentId     = dicts.getInstrumentIdBegin( );
+    int instrumentIdEnd  = dicts.getInstrumentIdEnd( );
 
     for( ; instrumentId!=instrumentIdEnd && !ctrlC.isBreaked(); ++instrumentId )
     {
         if (!dicts.isValidId(instrumentId))
             continue;
 
+        // QElapsedTimer instrumentTimer;
+        // instrumentTimer.start();
+        // auto instrumentTimeSummary = instrumentTimer.elapsed();
+
+
         QString figi = dicts.getInstrumentById( instrumentId );
         if (figi.isEmpty())
             continue; // There is a GAP found in instruments enumeration
+
+
+        // Check for exact taken figis
+        if (!explicitFigisForUpdate.empty())
+        {
+            if (explicitFigisForUpdate.find(figi)==explicitFigisForUpdate.end())
+                continue; // Not found in explicitly taken list
+        }
+
+
+        if (discontinuedFigis.find(figi)!=discontinuedFigis.end())
+        {
+            cout << "!<>! FIGI is delisted" << endl;
+            continue;
+        }
+
+        if (erroneousFigis.find(figi)!=erroneousFigis.end())
+        {
+            cout << "!<>! FIGI is erroneous" << endl;
+            continue;
+        }
+
 
         QString ticker         = dicts.getTickerByFigiChecked(figi);
         QString instrumentName = dicts.getNameByFigiChecked(figi);
@@ -196,9 +254,24 @@ INVEST_OPENAPI_MAIN()
            ; candleResolutionId!=candleResolutionREndId && !ctrlC.isBreaked()
            ; --candleResolutionId)
         {
+
+            if (discontinuedFigis.find(figi)!=discontinuedFigis.end())
+                break;
+           
+            if (erroneousFigis.find(figi)!=erroneousFigis.end())
+                break;
+
+
             QString candleResolution = dicts.getCandleResolutionById(candleResolutionId);
             if (!dicts.isValidId(candleResolution))
                continue;
+
+            if (discontinuedFigis.find(figi)!=discontinuedFigis.end())
+            {
+                cout << "!<>! FIGI is delisted (detected in inner loop)" << endl;
+                break;;
+            }
+
 
             QString candleIntervalMin = dicts.getCandleResolutionIntervalMinById(candleResolutionId);
             QString candleIntervalMax = dicts.getCandleResolutionIntervalMaxById(candleResolutionId);
@@ -214,6 +287,8 @@ INVEST_OPENAPI_MAIN()
             candleLastDateLookupTimer.start();
 
             bool atLeastOneCandleFound = false;
+
+            bool foundInDb = false;
 
 
             // Нужно найти дату последней имеющейся свечи данного интервала
@@ -245,6 +320,40 @@ INVEST_OPENAPI_MAIN()
                 dtLastCandleDate = qt_helpers::dateTimeFromDbString( resVec.front() );
                 cout << "/// Starting date found in INSTRUMENT_CANDLES: " << dtLastCandleDate << endl;
 
+                foundInDb = true;
+
+                // Чисто теоретически, у нас мог бы быть очень длительный интервал, когда мы не обновляли базу
+                // И тогда мы тут зафейлимся. Но я пока хоть раз в месяц, да обновляю её
+
+                // Поэтому, если в базе последние данные старше 3 месяцев - тогоэто какая-то проблема.
+                // И этот инструмент больше не пробуем.
+
+                // Но надо будет а) где-то добавить опцию, чтобы данной проверки не делалось
+                //               б) завести таблицу delisted инструментов, и из неё брать признак - 
+                //                  нужно ли пытаться обновлять свечи по инструменту
+
+
+                QDateTime dtNow = QDateTime::currentDateTime();
+                dtNow = dtNow.toUTC();
+
+                QDateTime dtAgeLim = qt_helpers::dtAddTimeInterval( 3 /* howManyAdds */, dtNow, QString("-1MONTH") );
+                //QDateTime dtAgeLim = dtNow;
+                cout << "/// Age limit is : " << dtAgeLim << endl;
+
+                if (dtLastCandleDate < dtAgeLim)
+                {
+                    // cout << "!<>! FIGI is delisted" << endl;
+                    cout << "!!<>!! Mark FIGI as delisted" << endl;
+                    discontinuedFigis.insert(figi);
+                    break;
+                }
+                else
+                {
+                    cout << "Instrument allowed for update" << endl;
+                }
+
+                // std::set<QString> discontinuedFigis;
+
                 // К найденному значению надо прибавить значение интервала свечи, чтобы не искать с того же интервала
                 //dtLastCandleDate = qt_helpers::dtAddTimeInterval( dtLastCandleDate, candleResolution );
 
@@ -256,8 +365,10 @@ INVEST_OPENAPI_MAIN()
                 // На всякий отступаем на два минимальных интервала.
                 QString adjustmentStr = "-" + candleIntervalMin;
                 cout << "    Adjustment                               : " << adjustmentStr << endl;
-                dtLastCandleDate = qt_helpers::dtAddTimeInterval( dtLastCandleDate, adjustmentStr );
-                dtLastCandleDate = qt_helpers::dtAddTimeInterval( dtLastCandleDate, adjustmentStr );
+                //dtLastCandleDate = qt_helpers::dtAddTimeInterval( dtLastCandleDate, adjustmentStr );
+                //dtLastCandleDate = qt_helpers::dtAddTimeInterval( dtLastCandleDate, adjustmentStr );
+
+                dtLastCandleDate = qt_helpers::dtAddTimeInterval( 2 /* howManyAdds */, dtLastCandleDate, adjustmentStr );
 
                 cout << "    Starting date adjusted                   : " << dtLastCandleDate << endl;
 
@@ -580,17 +691,76 @@ INVEST_OPENAPI_MAIN()
                 candlesRes = pOpenApi->marketCandles( figi, candleIntervalStartDateTime, candleIntervalEndDateTime, candleResolution );
                 
                
-                candlesRes->join();
+                // candlesRes->join();
+                //  
+                // if (candlesRes->isCompletionError())
 
-                if (candlesRes->isCompletionError())
+                if (candlesRes->join().isCompletionError())
                 {
                     cout << endl
                          << "*** Error: (HTTP/Server error) failed to get " << candleResolution 
                          << " candles for " << figi << " (" << ticker << ") on interval: " 
                          << candleIntervalStartDateTime << " - " << candleIntervalEndDateTime << endl
                          << "    Error message: " << candlesRes->getErrorMessage() << endl
-                         << endl;
+                         ;
+
+                    bool erroneous = false;
+
+                    // Error message: Message: Error transferring https://api-invest.tinkoff.ru/openapi/market/candles?figi=BBG00GXQKMJ9&from=2020-01-01T00%3A00%3A00.000000
+                    // {"trackingId":"f08b8b3c4f9ec987","payload":{"message":"[figi]: Instrument not found by figi=BBG00GXQKMJ9","code":"VALIDATION_ERROR"},"status":"Error"}B00%3A00&to=2021-05-20T16%3A14%3A35.455000{"trackingId":"f08b8b3c4f9ec987","payload":{"message":"[figi]: Instrument not found by figi=BBG00GXQKMJ9","code":"VALIDATION_ERROR"},"status":"Error"}B00%3A00&interval=month - server replied: Internal Server Error, {"trackingId":"f08b8b3c4f9ec987","payload":{"message":"[figi]: Instrument not found by figi=BBG00GXQKMJ9","code":"VALIDATION_ERROR"},"status":"Error"}
+                    // Error with this figi
+
+                    static std::vector<QString> errCheckList1 = std::vector<QString>{ QString("Instrument not found by figi")
+                                                                                    , QString("\"code\":\"VALIDATION_ERROR\"")
+                                                                                    , QString("\"status\":\"Error\"")
+                                                                                    };
+                    static std::vector<QString> errCheckList2 = std::vector<QString>{ QString("Status: Error")
+                                                                                    , QString("Code: VALIDATION_ERROR")
+                                                                                    , QString("Instrument not found by figi")
+                                                                                    };
+
+                    if ( candlesRes->checkErrorMessageFor( Qt::CaseInsensitive, errCheckList1 )
+                      || candlesRes->checkErrorMessageFor( Qt::CaseInsensitive, errCheckList2 )
+                       )
+                    {
+                        // erroneousFigis.insert(figi);
+                        erroneous = true;
+                        cout << "*** Error detected by checkErrorMessageFor" << endl;
+                    }
+
+                    OpenAPI::Error oaErr = candlesRes->getErrorAsObject();
+                    QString oaErrStatus  = oaErr.getStatus();
+
+                    OpenAPI::Error_payload oaErrData = oaErr.getPayload();
+                    QString oaErrCode = oaErrData.getCode();
+
+                    if (oaErrStatus.compare(QString("Error"), Qt::CaseInsensitive)==0 && oaErrCode.compare(QString("VALIDATION_ERROR"), Qt::CaseInsensitive)==0)
+                    {
+                        // erroneousFigis.insert(figi);
+                        erroneous = true;
+                        cout << "*** Error detected by ErrStatus and ErrCode" << endl;
+                    }
+
+                    cout << endl;
+
+                    if (erroneous)
+                    {
+                        erroneousFigis.insert(figi);
+                    }
+
                     continue;
+
+
+                    // [figi]: Instrument not found by figi
+                    // "code":"VALIDATION_ERROR"
+                    // "status":"Error"
+
+                    // OpenAPI::Error getErrorAsObject() const
+                    // QString getStatus()
+                    // Error_payload getPayload()
+                    //    QString getMessage() const;
+                    //    QString getCode() const;
+
                 }
 
                 QElapsedTimer dbInsertionsTimer;
@@ -675,7 +845,7 @@ INVEST_OPENAPI_MAIN()
                     if (allCurCandleDates.find(compressedCandleDtStr) != allCurCandleDates.end())
                     {
                          cout
-                         << "Candles for " << figi << " (" << ticker << "), resolution: " << candleResolution 
+                         << "    Candles for " << figi << " (" << ticker << "), resolution: " << candleResolution 
                          << " started at : " 
                          << candleDtStr /* candleIntervalStartDateTime */  << " - already exist in DB" << endl;
 
@@ -766,11 +936,107 @@ INVEST_OPENAPI_MAIN()
 
         } // for(; candleResolutionId!=candleResolutionIdEnd && !ctrlC.isBreaked(); ++candleResolutionId)
 
-        cout << "Get instrument " << figi << " (" << ticker << ") candles completed in " << (unsigned)instrumentCandlesTimer.elapsed() << "ms" << endl;
+        auto figiElapsedTime = instrumentCandlesTimer.elapsed();
+        cout << "Get instrument " << figi << " (" << ticker << ") candles completed in " << (unsigned)figiElapsedTime << "ms" << endl;
+
+        //std::map<QString, std::uint64_t> 
+        figiTimes[figi] = figiElapsedTime;
 
     } // for( ; instrumentId!=instrumentIdEnd && !ctrlC.isBreaked(); ++instrumentId )
 
 
+    cout << endl << endl << "-----------------"
+         << endl << " Instruments update statistic:" << endl;
+
+    std::set<QString> allBadFigis = tkf::merge(discontinuedFigis, erroneousFigis);
+
+    for( auto badFigi : allBadFigis )
+    {
+
+        QString ticker         = dicts.getTickerByFigiChecked(badFigi);
+        QString instrumentName = dicts.getNameByFigiChecked(badFigi);
+
+        if (discontinuedFigis.find(badFigi)!=discontinuedFigis.end())
+        {
+            cout << "FIGI: " << badFigi << " is delisted. Ticker: " << ticker << ", name - " << instrumentName << endl;
+            continue;
+        }
+
+        if (erroneousFigis.find(badFigi)!=erroneousFigis.end())
+        {
+            cout << "FIGI: " << badFigi << " is erroneous. Ticker: " << ticker << ", name - " << instrumentName << endl;
+            continue;
+        }
+
+        cout << "FIGI: " << badFigi << " is blocked by unknown reason"  << endl;
+
+    } // for( ; instrumentId!=instrumentIdEnd && !ctrlC.isBreaked(); ++instrumentId )
+
+
+
+    struct FigiTimes
+    {
+        QString              figi;
+        std::uint64_t        totalCandlesTime;
+    };
+
+    auto figiCandleTimeLess = []( const FigiTimes &ft1, const FigiTimes &ft2 )
+    {
+        return ft1.totalCandlesTime < ft2.totalCandlesTime;
+    };
+
+    auto figiCandleTimeGreater = []( const FigiTimes &ft1, const FigiTimes &ft2 )
+    {
+        return ft1.totalCandlesTime > ft2.totalCandlesTime;
+    };
+
+
+    std::vector<FigiTimes> sortedFigiTimeByCandleGetTime;
+
+    std::map<QString, std::uint64_t>::const_iterator figiCandleTimeIt = figiTimes.begin();
+    for(; figiCandleTimeIt!=figiTimes.end(); ++figiCandleTimeIt)
+    {
+        sortedFigiTimeByCandleGetTime.push_back( FigiTimes{ figiCandleTimeIt->first, figiCandleTimeIt->second } );
+    }
+
+    std::sort( sortedFigiTimeByCandleGetTime.begin(), sortedFigiTimeByCandleGetTime.end(), figiCandleTimeLess );
+
+
+    std::vector<FigiTimes>::const_iterator ftIt = sortedFigiTimeByCandleGetTime.begin();
+    for(; ftIt != sortedFigiTimeByCandleGetTime.end(); ++ftIt)
+    {
+        QString figi = ftIt->figi;
+        std::uint64_t et = ftIt->totalCandlesTime;
+
+        QString ticker         = dicts.getTickerByFigiChecked(figi);
+        QString instrumentName = dicts.getNameByFigiChecked(figi);
+
+        cout << figi << ": " << (unsigned)et << ", " << ticker << " - " << instrumentName << endl;
+    
+    }
+
+
+    /*
+    instrumentId     = dicts.getInstrumentIdBegin( );
+    //instrumentIdEnd  = dicts.getInstrumentIdEnd( );
+
+    for( ; instrumentId!=instrumentIdEnd && !ctrlC.isBreaked(); ++instrumentId )
+    {
+        if (!dicts.isValidId(instrumentId))
+            continue;
+
+        QString figi = dicts.getInstrumentById( instrumentId );
+        if (figi.isEmpty())
+            continue; // There is a GAP found in instruments enumeration
+    }
+    */
+/*
+
+    std::set<QString> discontinuedFigis;
+    std::set<QString> erroneousFigis;
+    std::map<QString, std::uint64_t> figiTimes;
+
+*/
     
     return 0;
 }

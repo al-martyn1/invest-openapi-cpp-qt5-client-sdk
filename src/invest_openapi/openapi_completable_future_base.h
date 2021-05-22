@@ -113,7 +113,7 @@ public:
     {
         QString fullMsg = getErrorMessageInternal();
 
-        static const QString errStart  = ",\"payload\":{\"message\":\"[to]: ";
+        static const QString errStart  = ",\"payload\":{\"message\":";
         static const QString codeStart = "\",\"code\":\"";
                                       // ","code":"
         //static const QString codeEnd   = "\"},\"status\"";
@@ -201,6 +201,28 @@ public:
         return QString("(") + codeStr + QString(") - ") + msgStr;
         */
     }
+
+    // crutch/crotch
+    bool checkErrorMessageFor( Qt::CaseSensitivity cs, const std::vector<QString> &stringsToCheck ) const
+    {
+        QString errMsg = getErrorMessage();
+
+        for( const auto s : stringsToCheck )
+        {
+            //indexOf(const QString &str, int from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+            //if ( errMsg.compare( s, cs) != 0 )
+            if (errMsg.indexOf( s, 0, cs ) < 0 )
+                return false;
+        }
+
+        return true;
+    }
+
+    bool checkErrorMessageFor( Qt::CaseSensitivity cs, const QString &s1 ) const { std::vector<QString>res; res.push_back(s1); return checkErrorMessageFor(cs,res); }
+    bool checkErrorMessageFor( Qt::CaseSensitivity cs, const QString &s1, const QString &s2 ) const { std::vector<QString>res; res.push_back(s1); res.push_back(s2); return checkErrorMessageFor(cs,res); }
+    bool checkErrorMessageFor( Qt::CaseSensitivity cs, const QString &s1, const QString &s2, const QString &s3 ) const { std::vector<QString>res; res.push_back(s1); res.push_back(s2); res.push_back(s3); return checkErrorMessageFor(cs,res); }
+    bool checkErrorMessageFor( Qt::CaseSensitivity cs, const QString &s1, const QString &s2, const QString &s3, const QString &s4 ) const { std::vector<QString>res; res.push_back(s1); res.push_back(s2); res.push_back(s3); res.push_back(s4); return checkErrorMessageFor(cs,res); }
+    bool checkErrorMessageFor( Qt::CaseSensitivity cs, const QString &s1, const QString &s2, const QString &s3, const QString &s4, const QString &s5 ) const { std::vector<QString>res; res.push_back(s1); res.push_back(s2); res.push_back(s3); res.push_back(s4); res.push_back(s5); return checkErrorMessageFor(cs,res); }
 
     /*
         erroneous           - ошибочный

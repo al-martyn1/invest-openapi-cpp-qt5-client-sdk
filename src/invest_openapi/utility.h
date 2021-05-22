@@ -192,6 +192,29 @@ std::map< Key, Val > makeTransitionMap( const std::map<Key,TransitionKey> &mapFi
 
 
 //----------------------------------------------------------------------------
+template<typename ContainerType> inline //!< For set or map
+ContainerType merge( const ContainerType &s1, const ContainerType &s2 )
+{
+    ContainerType res = s1;
+
+    typename ContainerType::const_iterator it = s2.begin();
+    for(; it!=s2.end(); ++it)
+    {
+        res.insert(*it);
+    }
+
+    return res;
+}
+
+
+
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
 template <typename StringType> inline bool starts_with( const StringType &str, const StringType &prefix )
 {
     if (str.size()<prefix.size())

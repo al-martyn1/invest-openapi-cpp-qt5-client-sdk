@@ -1,1 +1,4 @@
-instruments = ROSN,OZON,FIVE
+instruments = MAIL,OZON,POLY,QIWI,YNDX,AFLT,FIVE,     DSKY,     LNTA,      MGNT,NVTK,ROSN,USD000UTSTOM
+;                                                GRNT      IRKT     LSNGP
+
+; OKEY,POGR,TCSG,AFKS,VTBR,GAZP,SIBN,,PLZL,RUSP,SBER,SBERP,SNGS,SNGSP,ENPG,
