@@ -60,21 +60,21 @@ INVEST_OPENAPI_MAIN()
     QSharedPointer<tkf::LoggingConfig>  pLoggingConfig  = QSharedPointer<tkf::LoggingConfig> ( new tkf::LoggingConfig(logConfigFullName) );
 
 
-    qDebug().nospace().noquote() << "DB name      : " << pDatabaseConfig->dbFilename;
+    qDebug().nospace().noquote() << "Main DB name      : " << pDatabaseConfig->dbMainFilename;
 
     qDebug() << "";
 
-    QSharedPointer<QSqlDatabase> pSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
-    pSqlDb->setDatabaseName( pDatabaseConfig->dbFilename );
+    QSharedPointer<QSqlDatabase> pMainSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
+    pMainSqlDb->setDatabaseName( pDatabaseConfig->dbMainFilename );
 
-    if (!pSqlDb->open())
+    if (!pMainSqlDb->open())
     {
-      qDebug() << pSqlDb->lastError().text();
+      qDebug() << pMainSqlDb->lastError().text();
       return 0;
     }
 
 
-    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createMainDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
+    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createMainDatabaseManager( pMainSqlDb, pDatabaseConfig, pLoggingConfig );
 
     pDbMan->setDefaultDecimalFormat(18,8);
 

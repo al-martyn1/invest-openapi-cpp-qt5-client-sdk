@@ -83,16 +83,19 @@ protected:
             tablesLevel_0.insert("TRADING_TARIFF");
 
             tablesLevel_1.insert("MARKET_INSTRUMENT");
-            tablesLevel_1.insert("TRADING_TARIFF_HISTORY");
+            //tablesLevel_1.insert("TRADING_TARIFF_HISTORY");
 
             tablesLevel_2.insert("TIMEZONE");
             tablesLevel_2.insert("STOCK_EXCHANGE_LIST");
             tablesLevel_2.insert("INSTRUMENT_LISTING_DATES");
-            tablesLevel_2.insert("INSTRUMENT_CANDLES");
+            //tablesLevel_2.insert("INSTRUMENT_CANDLES");
+            tablesLevel_3.insert("INSTRUMENT_STATUS");
 
-            tablesLevel_3.insert("OPERATIONS");
+            //tablesLevel_3.insert("OPERATIONS");
             
-            tablesLevel_4.insert("OPERATION_TRADE");
+            //tablesLevel_4.insert("OPERATION_TRADE");
+            
+
 
             /*
             tablesLevel_2.insert("_META_TABLES");
@@ -119,7 +122,7 @@ protected:
             return m;
 
         m["INSTRUMENT_LISTING_DATES"] = QVector<QString>{ "INSTRUMENT_ID,STOCK_EXCHANGE_ID", "INSTRUMENT_FIGI,STOCK_EXCHANGE_NAME" };
-        m["INSTRUMENT_CANDLES"] = QVector<QString>{ "INSTRUMENT_ID,STOCK_EXCHANGE_ID,CANDLE_RESOLUTION_ID,CANDLE_DATE_TIME" };
+        //m["INSTRUMENT_CANDLES"] = QVector<QString>{ "INSTRUMENT_ID,STOCK_EXCHANGE_ID,CANDLE_RESOLUTION_ID,CANDLE_DATE_TIME" };
         
 
         return m;
@@ -170,6 +173,7 @@ protected:
                                                        "LISTING_DATE          VARCHAR(10)"
                                                      ;
 
+            /*
             tableSchemas["INSTRUMENT_CANDLES" ] = "INSTRUMENT_ID         INTEGER REFERENCES MARKET_INSTRUMENT,"   + lf() +
                                                   "STOCK_EXCHANGE_ID     INTEGER REFERENCES STOCK_EXCHANGE_LIST," + lf() +
                                                   "CANDLE_RESOLUTION_ID  INTEGER REFERENCES CANDLE_RESOLUTION,"   + lf() +
@@ -181,7 +185,9 @@ protected:
                                                   "LOW_PRICE             DECIMAL(18,8) NOT NULL,"                 + lf() +
                                                   "VOLUME                DECIMAL(18,8) NOT NULL"
                                                 ;
+            */
 
+            /*
             tableSchemas["OPERATIONS"         ] = "ID                    VARCHAR(32) NOT NULL UNIQUE,"            + lf() +
                                                   "BROKER_ACCOUNT_TYPE_ID INTEGER REFERENCES BROKER_ACCOUNT_TYPE," + lf() +
                                                   "OPERATION_TYPE_ID     INTEGER REFERENCES OPERATION_TYPE_WITH_COMMISSION," + lf() +
@@ -194,7 +200,7 @@ protected:
                                                   "QUANTITY              DECIMAL(18,8),"                          + lf() +
                                                   "QUANTITY_EXECUTED     DECIMAL(18,8)"
                                                   ;
-
+            */
 
             tableSchemas["TRADING_TARIFF"     ] = "ID                    INTEGER PRIMARY KEY AUTOINCREMENT,"      + lf() +
                                                   "NAME                  VARCHAR(64) NOT NULL UNIQUE,"            + lf() +
@@ -202,11 +208,26 @@ protected:
                                                   "DESCRIPTION           VARCHAR(255)"
                                                   ;
 
+
+            /*
             tableSchemas["TRADING_TARIFF_HISTORY"] = "TRADING_TARIFF_ID  INTEGER REFERENCES TRADING_TARIFF,"      + lf() +
                                                      "BROKER_ACCOUNT_TYPE_ID INTEGER REFERENCES BROKER_ACCOUNT_TYPE," + lf() +
                                                      "SINCE_DATE_TIME       VARCHAR(24) NOT NULL,"                   + lf() +
                                                      "COMMISSION            DECIMAL(18,8)"
                                                       ;
+            */
+            tableSchemas["INSTRUMENT_STATUS"  ] = "ID                    INTEGER PRIMARY KEY,"                    + lf() +
+                                                  "STATUS                VARCHAR(10) NOT NULL,"                   + lf() +
+                                                  "DESCRIPTION           VARCHAR(255) NOT NULL"                   + lf()
+                                                  ;
+
+
+            tableSchemas["INSTRUMENT_STATUS_LOG"] = "INSTRUMENT_ID         INTEGER REFERENCES MARKET_INSTRUMENT," + lf() +
+                                                  "STATUS_ID               INTEGER REFERENCES INSTRUMENT_STATUS," + lf() +
+                                                  "STOCK_EXCHANGE_ID       INTEGER REFERENCES STOCK_EXCHANGE_LIST," + lf() +
+                                                  "SINCE_DATE_TIME         VARCHAR(24) NOT NULL"                  + lf()
+                                                  ;
+
 
         }
 
@@ -225,6 +246,11 @@ protected:
         if (initData.empty())
         {
         
+            initData["INSTRUMENT_STATUS"]   = "0,INVALID,Invalid instrument status value;"
+                                              "1,NORMAL,Instrument is in normal condition;"
+                                              "2,DELISTED,Instrument is delisted - trading with this instrument has been terminated;"
+                                              "3,ERRONEOUS,Instrument is erroneous - requests for this instrument will fails";
+
             initData["BROKER_ACCOUNT_TYPE"] = "0,INVALID,Invalid BrokerAccountType value;"
                                               "1,TINKOFF,Tinkoff broker account;"
                                               "2,TINKOFFIIS,Tinkoff IIS account";
@@ -310,13 +336,10 @@ protected:
             initData["STOCK_EXCHANGE_LIST"] = "0,INVALID,,INVALID,Invalid stock exchange ID;"
                                               "1,MOEX,2011-12-19,MSK,PAO Moskovskaya Birzha";
 
-            initData["TRADING_TARIFF"     ] = "0,INVALID,,Invalid trading tariff;"
+            initData["TRADING_TARIFF"     ] = "0,INVALID,0.0,Invalid trading tariff;"
                                               "1,INVESTOR,0.3,Investor trading tariff;"
                                               "2,TRADER,0.05,Trader trading tariff - RUB 290 monthly fee;"
                                               "3,PREMIUM,0.025,Premium trading tariff - RUB 0/990/3000 monthly fee";
-
-            initData["TRADING_TARIFF_HISTORY"] = "1,1,2021-02-14 00:00:00,0.3;"
-                                                 "2,1,2021-03-27 00:00:00,0.05";
 
         } // if (initData.empty())
 

@@ -33,10 +33,6 @@ class DatabaseManagerSQLiteImplBase : public DatabaseManagerImplBase
 protected:
 
     //------------------------------
-    //friend QSharedPointer<IDatabaseManager> createMainDatabaseManager( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig );
-
-
-    //------------------------------
     DatabaseManagerSQLiteImplBase( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig )
     : DatabaseManagerImplBase(pDb, pDatabaseConfig, pLoggingConfig)
     {}
@@ -265,7 +261,6 @@ protected:
                                                         + tableName.toStdString()
                                                         + std::string(". Columns: ") + mergeString(tableColumns, ",").toStdString()
                                                         + std::string(", values: ")  + mergeString(v, ",").toStdString()
-
                                                         );
                             }
 

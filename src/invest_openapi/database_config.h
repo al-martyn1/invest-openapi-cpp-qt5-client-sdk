@@ -24,6 +24,9 @@ struct DatabasePlacementStrategyDefault
         // confPathNamesList ignored in default strategy
         // 
 
+        if (dbFilename.isEmpty())
+            return dbFilename;
+
         QFileInfo qFileInfo = QFileInfo(dbConfigFullName);
         QDir      confDir   = qFileInfo.absoluteDir();
         return    confDir   . absoluteFilePath(dbFilename);
@@ -36,19 +39,35 @@ struct DatabasePlacementStrategyDefault
 
 class DatabaseConfig;
 class IDatabaseManager;
+
 QSharedPointer<IDatabaseManager> 
 createMainDatabaseManager( QSharedPointer<QSqlDatabase> pDb
                      , QSharedPointer<DatabaseConfig> pDatabaseConfig
                      , QSharedPointer<LoggingConfig> pLoggingConfig 
                      );
 
+QSharedPointer<IDatabaseManager> 
+createCandlesDatabaseManager( QSharedPointer<QSqlDatabase> pDb
+                     , QSharedPointer<DatabaseConfig> pDatabaseConfig
+                     , QSharedPointer<LoggingConfig> pLoggingConfig 
+                     );
+
+QSharedPointer<IDatabaseManager> 
+createUserDatabaseManager( QSharedPointer<QSqlDatabase> pDb
+                     , QSharedPointer<DatabaseConfig> pDatabaseConfig
+                     , QSharedPointer<LoggingConfig> pLoggingConfig 
+                     );
 
 
 
 struct DatabaseConfig
 {
-    QString   dbFilename;
+    QString   dbMainFilename;
+    QString   dbCandlesFilename;
+    QString   dbUserFilename;
     bool      reopenMode; // reopen for each query or not
+
+    std::set<QString> createSet;
 
     enum CreationType
     {
@@ -62,33 +81,68 @@ struct DatabaseConfig
     unsigned  defaultDecimalFormatFractionalSize =  8;
 
     //bool      createClean = false;
-    QStringList initTablesList;
+    QStringList mainInitTablesList;
+    QStringList candlesInitTablesList;
+    QStringList userInitTablesList;
+
+    bool mainInitDropTables   ;
+    bool candlesInitDropTables;
+    bool userInitDropTables   ;
+
+
     bool        initFailOnFillUnknownTable  = true;
     bool        initFailOnInsertionError    = true;
 
-    QString     tableNameInstruments;
+    //QString     tableNameInstruments;
 
 
     friend QSharedPointer<IDatabaseManager> createMainDatabaseManager( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig );
-
+    friend QSharedPointer<IDatabaseManager> createCandlesDatabaseManager( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig );
+    friend QSharedPointer<IDatabaseManager> createUserDatabaseManager( QSharedPointer<QSqlDatabase> pDb, QSharedPointer<DatabaseConfig> pDatabaseConfig, QSharedPointer<LoggingConfig> pLoggingConfig );
 
 
     void load( const QSettings &settings )
     {
-        if (dbFilename.isEmpty())
+        if (dbMainFilename.isEmpty())
         {
-            dbFilename = settings.value("database").toString();
+            dbMainFilename = settings.value("database.main").toString();
+        }
+
+        if (dbCandlesFilename.isEmpty())
+        {
+            dbCandlesFilename = settings.value("database.candles").toString();
+        }
+
+        if (dbUserFilename.isEmpty())
+        {
+            dbUserFilename = settings.value("database.user").toString();
+        }
+
+
+        {
+            QStringList createList = settings.value("database.create").toStringList();
+            for( auto s : createList )
+            {
+                createSet.insert(s.toUpper());
+            }
         }
 
         reopenMode  = settings.value("database.reopen", QVariant(false)).toBool();
         //createClean = settings.value("database.create_clean", QVariant(false)).toBool();
 
-        initTablesList              = settings.value("database.init.tables_list").toStringList();
+        mainInitTablesList          = settings.value("database.main.init.tables_list").toStringList();
+        candlesInitTablesList       = settings.value("database.candles.init.tables_list").toStringList();
+        userInitTablesList          = settings.value("database.user.init.tables_list").toStringList();
+
+        mainInitDropTables          = settings.value("database.main.init.drop_tables", QVariant(false)).toBool();
+        candlesInitDropTables       = settings.value("database.candles.init.drop_tables", QVariant(false)).toBool();
+        userInitDropTables          = settings.value("database.user.init.drop_tables", QVariant(false)).toBool();
+
         initFailOnFillUnknownTable  = settings.value("database.init.fail.on_fill_unknown_table"  , QVariant(true)).toBool();
         initFailOnInsertionError    = settings.value("database.init.fail.on_insertion_error"     , QVariant(true)).toBool();
 
 
-        tableNameInstruments = settings.value("database.schema.table.name.instruments").toString();
+        //tableNameInstruments = settings.value("database.schema.table.name.instruments").toString();
 
         QString decimalFormatStr = settings.value("database.defaults.decimal.format", QVariant("18.8")).toString();
         // https://doc.qt.io/qt-5/qstring.html#split-5
@@ -105,10 +159,15 @@ struct DatabaseConfig
     template<typename DatabasePlacementStrategyType>
     void load( const QSettings &settings, const QString &dbConfigFullName, const DatabasePlacementStrategyType &dbPlacementStrategy, const QStringList &confPathNamesList = QStringList() )
     {
-        dbFilename = settings.value("database").toString();
-        dbFilename = dbPlacementStrategy(dbConfigFullName, dbFilename, confPathNamesList);
+        // dbFilename = settings.value("database").toString();
+        // dbFilename = dbPlacementStrategy(dbConfigFullName, dbFilename, confPathNamesList);
 
         load(settings);
+
+        dbMainFilename    = dbPlacementStrategy(dbConfigFullName, dbMainFilename   , confPathNamesList);
+        dbCandlesFilename = dbPlacementStrategy(dbConfigFullName, dbCandlesFilename, confPathNamesList);
+        dbUserFilename    = dbPlacementStrategy(dbConfigFullName, dbUserFilename   , confPathNamesList);
+
     }
 
     void checkValid()
@@ -140,6 +199,7 @@ struct DatabaseConfig
 
 protected:
 
+    /*
     DatabaseConfig escapeForDb( const QSqlDatabase &db ) const
     {
         DatabaseConfig res;
@@ -147,6 +207,7 @@ protected:
         res.tableNameInstruments = sqlEscape(db, tableNameInstruments);
         return res;
     }
+    */
 
 };
 

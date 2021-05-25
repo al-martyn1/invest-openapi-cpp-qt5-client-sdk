@@ -69,19 +69,19 @@ INVEST_OPENAPI_MAIN()
     QSharedPointer<tkf::DatabaseConfig> pDatabaseConfig = QSharedPointer<tkf::DatabaseConfig>( new tkf::DatabaseConfig(dbConfigFullFileName, tkf::DatabasePlacementStrategyDefault()) );
     QSharedPointer<tkf::LoggingConfig>  pLoggingConfig  = QSharedPointer<tkf::LoggingConfig> ( new tkf::LoggingConfig(logConfigFullFileName) );
 
-    qDebug().nospace().noquote() << "DB name: " << pDatabaseConfig->dbFilename;
+    qDebug().nospace().noquote() << "Main DB name: " << pDatabaseConfig->dbMainFilename;
 
-    QSharedPointer<QSqlDatabase> pSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
-    pSqlDb->setDatabaseName( pDatabaseConfig->dbFilename );
+    QSharedPointer<QSqlDatabase> pMainSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
+    pMainSqlDb->setDatabaseName( pDatabaseConfig->dbMainFilename );
 
-    if (!pSqlDb->open())
+    if (!pMainSqlDb->open())
     {
-        qDebug() << pSqlDb->lastError().text();
+        qDebug() << pMainSqlDb->lastError().text();
         return 0;
     }
 
-    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createMainDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
-    pDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
+    QSharedPointer<tkf::IDatabaseManager> pMainDbMan = tkf::createMainDatabaseManager( pMainSqlDb, pDatabaseConfig, pLoggingConfig );
+    pMainDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
 
 
     auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
@@ -103,15 +103,15 @@ INVEST_OPENAPI_MAIN()
 
 
     //----------------------------------------------------------------------------
-    QVector<QString> instrumentListingDatesTableColumns = pDbMan->tableGetColumnsFromSchema  ( "INSTRUMENT_LISTING_DATES" );
+    QVector<QString> instrumentListingDatesTableColumns = pMainDbMan->tableGetColumnsFromSchema  ( "INSTRUMENT_LISTING_DATES" );
 
     //qDebug().nospace().noquote() << "INSTRUMENT_LISTING_DATES: " << instrumentListingDatesTableColumns;
 
     //----------------------------------------------------------------------------
-    QString    selectMoexQueryText = pDbMan->makeSimpleSelectQueryText( "STOCK_EXCHANGE_LIST", "NAME", "MOEX", "ID;NAME;FOUNDATION_DATE" );
+    QString    selectMoexQueryText = pMainDbMan->makeSimpleSelectQueryText( "STOCK_EXCHANGE_LIST", "NAME", "MOEX", "ID;NAME;FOUNDATION_DATE" );
 
     bool queryRes = false;
-    QSqlQuery  moexExecutedQuery   = pDbMan->execHelper ( selectMoexQueryText, &queryRes );
+    QSqlQuery  moexExecutedQuery   = pMainDbMan->execHelper ( selectMoexQueryText, &queryRes );
 
     if (!queryRes)
     {
@@ -119,7 +119,7 @@ INVEST_OPENAPI_MAIN()
         return 1;
     }
 
-    QVector< QVector<QString> > vvMoex = pDbMan->selectResultToStringVectors( moexExecutedQuery );
+    QVector< QVector<QString> > vvMoex = pMainDbMan->selectResultToStringVectors( moexExecutedQuery );
     if (vvMoex.empty())
     {
         qDebug().nospace().noquote() << "Select MOEX failed: no such entry";
@@ -136,10 +136,10 @@ INVEST_OPENAPI_MAIN()
     qDebug().nospace().noquote() << "MOEX: " << vMoexIdName;
 
 
-    QString    selectFigiQueryText = pDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "ID;FIGI;TICKER" );
-    QSqlQuery  figiExucutedQuery   = pDbMan->execHelper ( selectFigiQueryText, &queryRes );
+    QString    selectFigiQueryText = pMainDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "ID;FIGI;TICKER" );
+    QSqlQuery  figiExucutedQuery   = pMainDbMan->execHelper ( selectFigiQueryText, &queryRes );
 
-    QVector< QVector<QString> > vvFigis = pDbMan->selectResultToStringVectors(figiExucutedQuery);
+    QVector< QVector<QString> > vvFigis = pMainDbMan->selectResultToStringVectors(figiExucutedQuery);
 
     // int counter = 0; // Only first 10 items for first time
 
@@ -168,13 +168,13 @@ INVEST_OPENAPI_MAIN()
 
         // figiRow contains ID;FIGI;TICKER from MARKET_INSTRUMENT
         // vMoexIdName contains ID;NAME from STOCK_EXCHANGE_LIST
-        QString checkListingDateExistQuery = pDbMan->makeSimpleSelectQueryText( "INSTRUMENT_LISTING_DATES"
+        QString checkListingDateExistQuery = pMainDbMan->makeSimpleSelectQueryText( "INSTRUMENT_LISTING_DATES"
                                                                               , QVector<QString>{ "INSTRUMENT_ID", "STOCK_EXCHANGE_ID" }
                                                                               , QVector<QString>{ figiRow[0], vMoexIdName[0] }
                                                                               );
         timer.restart();
-        QSqlQuery  checkListingDateExistExecutedQuery = pDbMan->execHelper ( checkListingDateExistQuery, &queryRes );
-        std::size_t foundRecordsNumber = pDbMan->getQueryResultSize( checkListingDateExistExecutedQuery, true  /* needBool */ );
+        QSqlQuery  checkListingDateExistExecutedQuery = pMainDbMan->execHelper ( checkListingDateExistQuery, &queryRes );
+        std::size_t foundRecordsNumber = pMainDbMan->getQueryResultSize( checkListingDateExistExecutedQuery, true  /* needBool */ );
         elapsedTime = (unsigned)timer.restart();
 
         if (foundRecordsNumber)
@@ -262,7 +262,7 @@ enum class GenericError
             figiRow.append( qt_helpers::dateToDbString(foundDate) );
            
             timer.restart();
-            pDbMan->insertTo( "INSTRUMENT_LISTING_DATES", figiRow, instrumentListingDatesTableColumns );
+            pMainDbMan->insertTo( "INSTRUMENT_LISTING_DATES", figiRow, instrumentListingDatesTableColumns );
             elapsedTime = (unsigned)timer.restart();
             qDebug().nospace().noquote() << "Listing start date for " << figiRow[1] << " (" << figiRow[2] << ") was inserted, elapsed time: " << elapsedTime;
            

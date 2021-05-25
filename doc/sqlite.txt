@@ -1,3 +1,6 @@
+https://www.sqlite.org/download.html
+
+
 Внутренние таблицы SQLite - https://habr.com/ru/post/223451/
 SQLite — замечательная встраиваемая БД - https://habr.com/ru/post/149356/
                                          https://habr.com/ru/post/149390/
@@ -5,3 +8,49 @@ SQLite — замечательная встраиваемая БД - https://ha
 
 Возможности SQLite, которые вы могли пропустить - https://habr.com/ru/post/528882/
 Индексы в базах данных SQLite - https://zametkinapolyah.ru/zametki-o-mysql/chast-11-7-indeksy-v-bazax-dannyx-sqlite-indeksaciya-tablic-v-sqlite3-algoritm-b-dereva-v-bazax-dannyx.html
+
+Как удалить констрайнты - https://stackoverflow.com/questions/1884787/how-do-i-drop-a-constraint-from-a-sqlite-3-6-21-table
+ (создание копии без констрайнтов и дропаньем оригинальной таблицы)
+
+
+ALTER TABLE INSTRUMENT_CANDLES RENAME TO INSTRUMENT_CANDLES_SRC;
+
+
+CREATE TABLE 'INSTRUMENT_CANDLES' (
+  INSTRUMENT_ID         INTEGER,
+  STOCK_EXCHANGE_ID     INTEGER,
+  CANDLE_RESOLUTION_ID  INTEGER,
+  CANDLE_DATE_TIME      VARCHAR(24) NOT NULL,
+  CURRENCY_ID           INTEGER,
+  OPEN_PRICE            DECIMAL(18,8) NOT NULL,
+  CLOSE_PRICE           DECIMAL(18,8) NOT NULL,
+  HIGH_PRICE            DECIMAL(18,8) NOT NULL,
+  LOW_PRICE             DECIMAL(18,8) NOT NULL,
+  VOLUME                DECIMAL(18,8) NOT NULL,
+  UNIQUE(INSTRUMENT_ID,STOCK_EXCHANGE_ID,CANDLE_RESOLUTION_ID,CANDLE_DATE_TIME)
+  );
+
+
+INSERT INTO INSTRUMENT_CANDLES (INSTRUMENT_ID, STOCK_EXCHANGE_ID, CANDLE_RESOLUTION_ID, CANDLE_DATE_TIME, CURRENCY_ID, OPEN_PRICE, CLOSE_PRICE, HIGH_PRICE, LOW_PRICE, VOLUME )
+  SELECT INSTRUMENT_ID, STOCK_EXCHANGE_ID, CANDLE_RESOLUTION_ID, CANDLE_DATE_TIME, CURRENCY_ID, OPEN_PRICE, CLOSE_PRICE, HIGH_PRICE, LOW_PRICE, VOLUME   FROM INSTRUMENT_CANDLES_SRC;
+
+DROP TABLE INSTRUMENT_CANDLES_SRC;
+
+
+
+DROP TABLE BROKER_ACCOUNT_TYPE;
+DROP TABLE CURRENCY;
+DROP TABLE INSTRUMENT_TYPE;
+DROP TABLE CANDLE_RESOLUTION;
+DROP TABLE OPERATION_TYPE;
+DROP TABLE ORDER_STATUS;
+DROP TABLE ORDER_TYPE;
+DROP TABLE OPERATION_STATUS;
+DROP TABLE OPERATION_TYPE_WITH_COMMISSION;
+DROP TABLE TIMEZONE;
+DROP TABLE STOCK_EXCHANGE_LIST;
+DROP TABLE INSTRUMENT_LISTING_DATES;
+DROP TABLE OPERATIONS;
+DROP TABLE TRADING_TARIFF;
+DROP TABLE INSTRUMENT_STATUS;
+DROP TABLE INSTRUMENT_STATUS_LOG;

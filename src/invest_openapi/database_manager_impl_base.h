@@ -201,10 +201,12 @@ protected:
     //------------------------------
     virtual QString tableMapName       ( const QString &tableName  ) const override // to internal name mapping
     {
+        /*
         if (tableName.toUpper()=="INSTRUMENTS")
         {
             return m_pDatabaseConfig->tableNameInstruments;
         }
+        */
 
         //checkTableName(QString());
         //return QString();

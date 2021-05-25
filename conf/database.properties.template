@@ -1,7 +1,25 @@
-database = ../tkf_invest_db.sqlite
+database.main    = ../tkf_invest_main_db.sqlite
+database.candles = ../tkf_invest_candles_db.sqlite
+database.user    = ../tkf_invest_user_db.sqlite
+
+;database.create = main,candles,user
+database.create = main,user
+
+database.main.init.drop_tables = false
+database.candles.init.drop_tables = false
+database.user.init.drop_tables = false
+
+
 database.reopen = true
 database.defaults.decimal.format = 18.8
 
-database.init.fail.on_fill_unknown_table   = true
-database.init.fail.on_insertion_error      = true
-database.init.tables_list = BROKER_ACCOUNT_TYPE,CURRENCY,INSTRUMENT_TYPE,CANDLE_RESOLUTION,OPERATION_TYPE,ORDER_STATUS,ORDER_TYPE,OPERATION_STATUS,OPERATION_TYPE_WITH_COMMISSION,TRADING_TARIFF,TRADING_TARIFF_HISTORY,TIMEZONE,STOCK_EXCHANGE_LIST
+
+database.init.fail.on_fill_unknown_table  = true
+database.init.fail.on_insertion_error     = false
+
+;database.properties.template = INSTRUMENT_STATUS
+database.main.init.tables_list = INSTRUMENT_STATUS,BROKER_ACCOUNT_TYPE,CURRENCY,INSTRUMENT_TYPE,CANDLE_RESOLUTION,OPERATION_TYPE,ORDER_STATUS,ORDER_TYPE,OPERATION_STATUS,OPERATION_TYPE_WITH_COMMISSION,TIMEZONE,STOCK_EXCHANGE_LIST,TRADING_TARIFF
+;database.candles.init.tables_list = CANDLE_RESOLUTION
+;database.user.init.tables_list =
+
+

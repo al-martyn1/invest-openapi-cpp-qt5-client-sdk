@@ -86,20 +86,20 @@ INVEST_OPENAPI_MAIN()
     auto loggingConfig = *pLoggingConfig;
 
 
-    qDebug().nospace().noquote() << "DB name: " << pDatabaseConfig->dbFilename;
+    qDebug().nospace().noquote() << "Main DB name: " << pDatabaseConfig->dbMainFilename;
 
-    QSharedPointer<QSqlDatabase> pSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
-    pSqlDb->setDatabaseName( pDatabaseConfig->dbFilename );
+    QSharedPointer<QSqlDatabase> pMainSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
+    pMainSqlDb->setDatabaseName( pDatabaseConfig->dbMainFilename );
 
-    if (!pSqlDb->open())
+    if (!pMainSqlDb->open())
     {
-      qDebug() << pSqlDb->lastError().text();
+      qDebug() << pMainSqlDb->lastError().text();
       return 0;
     }
 
-    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createMainDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
+    QSharedPointer<tkf::IDatabaseManager> pMainDbMan = tkf::createMainDatabaseManager( pMainSqlDb, pDatabaseConfig, pLoggingConfig );
 
-    pDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
+    pMainDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
 
 
 
@@ -117,16 +117,16 @@ INVEST_OPENAPI_MAIN()
     }
 
 
-    tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pDbMan);
+    tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
 
     // Нормально работает
-    dicts.dictLoadTest( pDbMan, "MARKET_INSTRUMENT", "FIGI,ID" );
+    dicts.dictLoadTest( pMainDbMan, "MARKET_INSTRUMENT", "FIGI,ID" );
 
     // Кидает исключение из кишочек DbMan'а - такой таблицы по просту нет
-    //dicts.dictLoadTest( pDbMan, "HPEN", "FIGI,ID" );
+    //dicts.dictLoadTest( pMainDbMan, "HPEN", "FIGI,ID" );
 
     // Кидает исключение при загрузке словаря (ну, если в базу данные по свечам ещё не были залиты) - тестировал отработку пустого словаря, а базу пересоздавать было лень
-    //dicts.dictLoadTest( pDbMan, "INSTRUMENT_CANDLES", "CANDLE_DATE_TIME,INSTRUMENT_ID" );
+    //dicts.dictLoadTest( pMainDbMan, "INSTRUMENT_CANDLES", "CANDLE_DATE_TIME,INSTRUMENT_ID" );
 
 
     // std::set<QString> findFigisByName( QString name ) const

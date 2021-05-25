@@ -23,9 +23,62 @@
 #include "i_database_manager.h"
 
 
+
+#define INVEST_OPENAPI_OPEN_DATABASE_EX2( sqlDbVarName, dbManagerVarName, dbManagerCreationProc, logConfigVarName, dbConvigVarName, dbFilenameVarName, retValOnFail, driverName ) \
+                QSharedPointer<QSqlDatabase> sqlDbVarName = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase(driverName, invest_openapi::generateNewDbConnectionName())) ); \
+                sqlDbVarName->setDatabaseName( dbConvigVarName -> dbFilenameVarName );                                                               \
+                if (!sqlDbVarName->open())                                                                                                           \
+                {                                                                                                                                    \
+                  qDebug().nospace().noquote()                                                                                                       \
+                           << "Failed to open Database (" #dbFilenameVarName "), "                                                                   \
+                           << "DB file: "                                                                                                            \
+                           << dbConvigVarName -> dbFilenameVarName                                                                                   \
+                           << ", Error: " << sqlDbVarName->lastError().text();                                                                       \
+                  return retValOnFail;                                                                                                               \
+                }                                                                                                                                    \
+                                                                                                                                                     \
+                QSharedPointer<invest_openapi::IDatabaseManager> dbManagerVarName                                                                    \
+                              = invest_openapi:: dbManagerCreationProc( sqlDbVarName, dbConvigVarName, logConfigVarName );                           \
+                                                                                                                                                     \
+                dbManagerVarName -> applyDefDecimalFormatFromConfig( * dbConvigVarName )
+
+
+
+#define INVEST_OPENAPI_OPEN_DATABASE_EX( sqlDbVarName, dbManagerVarName, dbManagerCreationProc, logConfigVarName, dbConvigVarName, dbFilenameVarName, retValOnFail ) \
+                INVEST_OPENAPI_OPEN_DATABASE_EX2( sqlDbVarName, dbManagerVarName, dbManagerCreationProc, logConfigVarName, dbConvigVarName, dbFilenameVarName, retValOnFail, "QSQLITE" )
+
+
+#define INVEST_OPENAPI_OPEN_DATABASE( sqlDbVarName, dbManagerVarName, dbManagerCreationProc, logConfigVarName, dbConvigVarName, dbFilenameVarName ) \
+                INVEST_OPENAPI_OPEN_DATABASE_EX( sqlDbVarName, dbManagerVarName, dbManagerCreationProc, logConfigVarName, dbConvigVarName, dbFilenameVarName, 1 )
+
+
+
+
+
+
+
 //----------------------------------------------------------------------------
 namespace invest_openapi
 {
+
+
+
+//----------------------------------------------------------------------------
+inline 
+QString generateNewDbConnectionName()
+{
+    // qt_sql_default_connection
+    static unsigned connectionCounter = 0;
+
+    QString connectionName = QString("invest_openapi_qt_sql_default_connection_") + QString::number( connectionCounter );
+
+    ++connectionCounter;
+
+    return connectionName;
+}
+
+//----------------------------------------------------------------------------
+
 
 
 

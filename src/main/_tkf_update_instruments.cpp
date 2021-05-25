@@ -69,19 +69,19 @@ INVEST_OPENAPI_MAIN()
     QSharedPointer<tkf::DatabaseConfig> pDatabaseConfig = QSharedPointer<tkf::DatabaseConfig>( new tkf::DatabaseConfig(dbConfigFullFileName, tkf::DatabasePlacementStrategyDefault()) );
     QSharedPointer<tkf::LoggingConfig>  pLoggingConfig  = QSharedPointer<tkf::LoggingConfig> ( new tkf::LoggingConfig(logConfigFullFileName) );
 
-    qDebug().nospace().noquote() << "DB name: " << pDatabaseConfig->dbFilename;
+    qDebug().nospace().noquote() << "Main DB name: " << pDatabaseConfig->dbMainFilename;
 
-    QSharedPointer<QSqlDatabase> pSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
-    pSqlDb->setDatabaseName( pDatabaseConfig->dbFilename );
+    QSharedPointer<QSqlDatabase> pMainSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
+    pMainSqlDb->setDatabaseName( pDatabaseConfig->dbMainFilename );
 
-    if (!pSqlDb->open())
+    if (!pMainSqlDb->open())
     {
-        qDebug() << pSqlDb->lastError().text();
+        qDebug() << pMainSqlDb->lastError().text();
         return 0;
     }
 
-    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createMainDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
-    pDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
+    QSharedPointer<tkf::IDatabaseManager> pMainDbMan = tkf::createMainDatabaseManager( pMainSqlDb, pDatabaseConfig, pLoggingConfig );
+    pMainDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
 
 
     auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
@@ -119,7 +119,7 @@ INVEST_OPENAPI_MAIN()
     qDebug().nospace().noquote() << "TIMER: Waiting instrument responses, time elapsed: " << mainTimer.restart();
 
 
-    QVector<QString> instrumentColsWithLotMarket = tkf::removeItemsByName( pDbMan->tableGetColumnsFromSchema("MARKET_INSTRUMENT"), "ID" );
+    QVector<QString> instrumentColsWithLotMarket = tkf::removeItemsByName( pMainDbMan->tableGetColumnsFromSchema("MARKET_INSTRUMENT"), "ID" );
     QVector<QString> instrumentColsNoLotMarket   = tkf::removeItemsByName(instrumentColsWithLotMarket, "LOT_MARKET");
     int lotFieldIdx                              = tkf::findItemByName(instrumentColsWithLotMarket, "LOT");
 
@@ -184,15 +184,15 @@ INVEST_OPENAPI_MAIN()
             qDebug().nospace().noquote() << values;
 
             //QString instrumentFigi = instrumentInfo.getFigi();
-            //QString selectQuery = pDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentFigi, instrumentColsNoLotMarket );
-            QString selectQuery = pDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), instrumentColsNoLotMarket );
+            //QString selectQuery = pMainDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentFigi, instrumentColsNoLotMarket );
+            QString selectQuery = pMainDbMan->makeSimpleSelectQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), instrumentColsNoLotMarket );
             
-            std::size_t selectResSize = pDbMan->getQueryResultSize( pDbMan->execHelper(selectQuery) );
+            std::size_t selectResSize = pMainDbMan->getQueryResultSize( pMainDbMan->execHelper(selectQuery) );
             if (selectResSize>0)
             {
                 qDebug().nospace().noquote() << "Updating instrument, FIGI = " << instrumentInfo.getFigi();
-                QString updateQuery = pDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), values, instrumentColsNoLotMarket );
-                pDbMan->execHelper( updateQuery );
+                QString updateQuery = pMainDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), values, instrumentColsNoLotMarket );
+                pMainDbMan->execHelper( updateQuery );
             }
             else
             {
@@ -203,7 +203,7 @@ INVEST_OPENAPI_MAIN()
 
                 qDebug().nospace().noquote() << "Creating instrument, FIGI = " << instrumentInfo.getFigi();
 
-                pDbMan->insertTo( "MARKET_INSTRUMENT", values, instrumentColsWithLotMarket );
+                pMainDbMan->insertTo( "MARKET_INSTRUMENT", values, instrumentColsWithLotMarket );
             }
 
             ++instrumentCount;
@@ -214,12 +214,12 @@ INVEST_OPENAPI_MAIN()
 
     }
 
-    pDbMan->execHelper( pDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "TICKER", "USD000UTSTOM"
+    pMainDbMan->execHelper( pMainDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "TICKER", "USD000UTSTOM"
                                                          , QVector<QString>{ "1" }, QVector<QString>{ "LOT_MARKET" }
                                                          )
                       );
 
-    pDbMan->execHelper( pDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "TICKER", "EUR_RUB__TOM"
+    pMainDbMan->execHelper( pMainDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "TICKER", "EUR_RUB__TOM"
                                                          , QVector<QString>{ "1" }, QVector<QString>{ "LOT_MARKET" }
                                                          )
                       );

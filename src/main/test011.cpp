@@ -62,46 +62,46 @@ INVEST_OPENAPI_MAIN()
 
 
 
-    qDebug().nospace().noquote() << "DB name: " << pDatabaseConfig->dbFilename;
+    qDebug().nospace().noquote() << "Main DB name: " << pDatabaseConfig->dbMainFilename;
 
-    QSharedPointer<QSqlDatabase> pSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
-    pSqlDb->setDatabaseName( pDatabaseConfig->dbFilename );
+    QSharedPointer<QSqlDatabase> pMainSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
+    pMainSqlDb->setDatabaseName( pDatabaseConfig->dbMainFilename );
 
-    if (!pSqlDb->open())
+    if (!pMainSqlDb->open())
     {
-      qDebug() << pSqlDb->lastError().text();
+      qDebug() << pMainSqlDb->lastError().text();
       return 0;
     }
 
 
-    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createMainDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
+    QSharedPointer<tkf::IDatabaseManager> pMainDbMan = tkf::createMainDatabaseManager( pMainSqlDb, pDatabaseConfig, pLoggingConfig );
 
-    pDbMan->setDefaultDecimalFormat(18,8);
+    pMainDbMan->setDefaultDecimalFormat(18,8);
 
-    qDebug().nospace().noquote() << pDbMan->getTableExistString("INSTRUMENTS");
-    qDebug().nospace().noquote() << pDbMan->getTableExistString("CURRENCIES");
-
-    qDebug() << "";
-
-    qDebug().nospace().noquote() << "Drop table TEST if exists (def)       : " << pDbMan->tableDrop("TEST")                                                << ", SQL Error:" << pSqlDb->lastError();
-    qDebug().nospace().noquote() << "Drop table TEST if not exists         : " << pDbMan->tableDrop("TEST", tkf::IDatabaseManager::IfExists::ifNotExists ) << ", SQL Error:" << pSqlDb->lastError();
-    qDebug().nospace().noquote() << "Drop table TEST in anyway             : " << pDbMan->tableDrop("TEST", tkf::IDatabaseManager::IfExists::ifAnyway    ) << ", SQL Error:" << pSqlDb->lastError();
+    qDebug().nospace().noquote() << pMainDbMan->getTableExistString("INSTRUMENTS");
+    qDebug().nospace().noquote() << pMainDbMan->getTableExistString("CURRENCIES");
 
     qDebug() << "";
 
-    qDebug().nospace().noquote() << "Create table TEST if not exists (def) : " << pDbMan->tableCreate("TEST")                                              << ", SQL Error:" << pSqlDb->lastError();
-    qDebug().nospace().noquote() << "Create table TEST if exists           : " << pDbMan->tableCreate("TEST", tkf::IDatabaseManager::IfExists::ifExists  ) << ", SQL Error:" << pSqlDb->lastError();
-    qDebug().nospace().noquote() << "Create table TEST in anyway           : " << pDbMan->tableCreate("TEST", tkf::IDatabaseManager::IfExists::ifAnyway  ) << ", SQL Error:" << pSqlDb->lastError();
+    qDebug().nospace().noquote() << "Drop table TEST if exists (def)       : " << pMainDbMan->tableDrop("TEST")                                                << ", SQL Error:" << pMainSqlDb->lastError();
+    qDebug().nospace().noquote() << "Drop table TEST if not exists         : " << pMainDbMan->tableDrop("TEST", tkf::IDatabaseManager::IfExists::ifNotExists ) << ", SQL Error:" << pMainSqlDb->lastError();
+    qDebug().nospace().noquote() << "Drop table TEST in anyway             : " << pMainDbMan->tableDrop("TEST", tkf::IDatabaseManager::IfExists::ifAnyway    ) << ", SQL Error:" << pMainSqlDb->lastError();
+
+    qDebug() << "";
+
+    qDebug().nospace().noquote() << "Create table TEST if not exists (def) : " << pMainDbMan->tableCreate("TEST")                                              << ", SQL Error:" << pMainSqlDb->lastError();
+    qDebug().nospace().noquote() << "Create table TEST if exists           : " << pMainDbMan->tableCreate("TEST", tkf::IDatabaseManager::IfExists::ifExists  ) << ", SQL Error:" << pMainSqlDb->lastError();
+    qDebug().nospace().noquote() << "Create table TEST in anyway           : " << pMainDbMan->tableCreate("TEST", tkf::IDatabaseManager::IfExists::ifAnyway  ) << ", SQL Error:" << pMainSqlDb->lastError();
 
     qDebug() << "";
     
-    qDebug().nospace().noquote() << "Drop table TEST if not exists         : " << pDbMan->tableDrop("TEST", tkf::IDatabaseManager::IfExists::ifNotExists ) << ", SQL Error:" << pSqlDb->lastError();
-    qDebug().nospace().noquote() << "Drop table TEST in anyway             : " << pDbMan->tableDrop("TEST", tkf::IDatabaseManager::IfExists::ifAnyway    ) << ", SQL Error:" << pSqlDb->lastError();
+    qDebug().nospace().noquote() << "Drop table TEST if not exists         : " << pMainDbMan->tableDrop("TEST", tkf::IDatabaseManager::IfExists::ifNotExists ) << ", SQL Error:" << pMainSqlDb->lastError();
+    qDebug().nospace().noquote() << "Drop table TEST in anyway             : " << pMainDbMan->tableDrop("TEST", tkf::IDatabaseManager::IfExists::ifAnyway    ) << ", SQL Error:" << pMainSqlDb->lastError();
 
     qDebug() << "";
 
-    qDebug().nospace().noquote() << "Create table TEST if exists           : " << pDbMan->tableCreate("TEST", tkf::IDatabaseManager::IfExists::ifExists  ) << ", SQL Error:" << pSqlDb->lastError();
-    qDebug().nospace().noquote() << "Create table TEST in anyway           : " << pDbMan->tableCreate("TEST", tkf::IDatabaseManager::IfExists::ifAnyway  ) << ", SQL Error:" << pSqlDb->lastError();
+    qDebug().nospace().noquote() << "Create table TEST if exists           : " << pMainDbMan->tableCreate("TEST", tkf::IDatabaseManager::IfExists::ifExists  ) << ", SQL Error:" << pMainSqlDb->lastError();
+    qDebug().nospace().noquote() << "Create table TEST in anyway           : " << pMainDbMan->tableCreate("TEST", tkf::IDatabaseManager::IfExists::ifAnyway  ) << ", SQL Error:" << pMainSqlDb->lastError();
 
 
     return 0;

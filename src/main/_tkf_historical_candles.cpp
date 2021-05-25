@@ -40,6 +40,9 @@
 #include "invest_openapi/ioa_ostream.h"
 #include "invest_openapi/ioa_db_dictionaries.h"
 
+#include "invest_openapi/db_utils.h"
+
+
 #include "invest_openapi/console_break_helper.h"
 
 INVEST_OPENAPI_MAIN()
@@ -91,22 +94,49 @@ INVEST_OPENAPI_MAIN()
     auto loggingConfig = *pLoggingConfig;
 
 
-    qDebug().nospace().noquote() << "DB name: " << pDatabaseConfig->dbFilename;
+    qDebug().nospace().noquote() << "Main DB name   : " << pDatabaseConfig->dbMainFilename;
+    qDebug().nospace().noquote() << "Candles DB name: " << pDatabaseConfig->dbCandlesFilename;
 
-    QSharedPointer<QSqlDatabase> pSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
-    pSqlDb->setDatabaseName( pDatabaseConfig->dbFilename );
 
-    if (!pSqlDb->open())
+    //------------------------------
+    /*
+    QSharedPointer<QSqlDatabase> pMainSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
+    pMainSqlDb->setDatabaseName( pDatabaseConfig->dbMainFilename );
+
+    if (!pMainSqlDb->open())
     {
-      qDebug() << pSqlDb->lastError().text();
-      return 0;
+      qDebug() << pMainSqlDb->lastError().text();
+      return 1;
     }
 
-    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createMainDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
+    QSharedPointer<tkf::IDatabaseManager> pMainDbMan = tkf::createMainDatabaseManager( pMainSqlDb, pDatabaseConfig, pLoggingConfig );
 
-    pDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
+    pMainDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
+    */
+    //------------------------------
+    /*
+    QSharedPointer<QSqlDatabase> pCandlesSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
+    pCandlesSqlDb->setDatabaseName( pDatabaseConfig->dbCandlesFilename );
+
+    if (!pCandlesSqlDb->open())
+    {
+      qDebug() << pCandlesSqlDb->lastError().text();
+      return 1;
+    }
+
+    QSharedPointer<tkf::IDatabaseManager> pCandlesDbMan = tkf::createMainDatabaseManager( pCandlesSqlDb, pDatabaseConfig, pLoggingConfig );
+
+    pCandlesDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
+    */
+
+    INVEST_OPENAPI_OPEN_DATABASE( pMainSqlDb   , pMainDbMan   , createMainDatabaseManager   , pLoggingConfig, pDatabaseConfig, dbMainFilename    );
+    INVEST_OPENAPI_OPEN_DATABASE( pCandlesSqlDb, pCandlesDbMan, createCandlesDatabaseManager, pLoggingConfig, pDatabaseConfig, dbCandlesFilename );
+    //INVEST_OPENAPI_OPEN_DATABASE( pUserSqlDb   , pUserDbMan   , createUserDatabaseManager   , pLoggingConfig, pDatabaseConfig, dbUserFilename    );
 
 
+
+
+    //------------------------------
 
     QSharedPointer<tkf::IOpenApi> pOpenApi = tkf::createOpenApi( apiConfig, authConfig, loggingConfig );
 
@@ -121,13 +151,13 @@ INVEST_OPENAPI_MAIN()
         pOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
     }
 
-    tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pDbMan);
+    tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
 
 
     int stockExchangeId = dicts.getStockExangeListIdChecked("moex");
 
 
-
+    //------------------------------
     std::set<QString> explicitFigisForUpdate;
     {
         QSettings settings(histCandlesFullFileName, QSettings::IniFormat);
@@ -143,7 +173,7 @@ INVEST_OPENAPI_MAIN()
         }
     }
 
-
+    //------------------------------
 
     auto instrumentCandlesTableFields = QString("INSTRUMENT_ID,STOCK_EXCHANGE_ID,CANDLE_RESOLUTION_ID,CANDLE_DATE_TIME,CURRENCY_ID,OPEN_PRICE,CLOSE_PRICE,HIGH_PRICE,LOW_PRICE,VOLUME");
     auto instrumentCandlesTableFieldsVec = tkf::convertToQVectorOfQStrings(instrumentCandlesTableFields);
@@ -296,14 +326,14 @@ INVEST_OPENAPI_MAIN()
             // Выбираем поле CANDLE_DATE_TIME с максимальным значением
 
             QString selectCandleDateTimeFromInstrumentCandlesQueryText 
-                        = pDbMan->makeSimpleSelectQueryText( "INSTRUMENT_CANDLES"
+                        = pCandlesDbMan->makeSimpleSelectQueryText( "INSTRUMENT_CANDLES"
                                                            , "INSTRUMENT_ID,STOCK_EXCHANGE_ID,CANDLE_RESOLUTION_ID" // whereNames
                                                            , QString("%1,%2,%3").arg(instrumentId).arg(stockExchangeId).arg(candleResolutionId) // whereVals
                                                            , "CANDLE_DATE_TIME" // fields to select
                                                            );
 
             QString selectLastDateQueryText 
-                        = pDbMan->makeSelectSingleValueQuery( selectCandleDateTimeFromInstrumentCandlesQueryText , "CANDLE_DATE_TIME", true /* true for last, false for first */ );
+                        = pCandlesDbMan->makeSelectSingleValueQuery( selectCandleDateTimeFromInstrumentCandlesQueryText , "CANDLE_DATE_TIME", true /* true for last, false for first */ );
 
 
             //bool papyNotGood = true;
@@ -313,7 +343,7 @@ INVEST_OPENAPI_MAIN()
             // std::optional - https://habr.com/ru/post/372103/
             // Но на самом деле он не нужен
 
-            auto resVec = pDbMan->execSelectQueryReturnFirstRow( selectLastDateQueryText );
+            auto resVec = pCandlesDbMan->execSelectQueryReturnFirstRow( selectLastDateQueryText );
 
             if ( !resVec.empty() && !resVec.front().isEmpty() )
             {
@@ -431,17 +461,17 @@ INVEST_OPENAPI_MAIN()
                     cout << "      Looking in INSTRUMENT_LISTING_DATES" << endl;
                
                     QString selectQueryText 
-                            = pDbMan->makeSimpleSelectQueryText( "INSTRUMENT_LISTING_DATES"
+                            = pMainDbMan->makeSimpleSelectQueryText( "INSTRUMENT_LISTING_DATES"
                                                                , "INSTRUMENT_ID,STOCK_EXCHANGE_ID" // whereNames
                                                                , QString("%1,%2").arg(instrumentId).arg(stockExchangeId) // whereVals
                                                                , "LISTING_DATE" // fields to select
                                                                );
                
                     selectLastDateQueryText 
-                            = pDbMan->makeSelectSingleValueQuery( selectQueryText, "LISTING_DATE", true /* true for last, false for first */ );
+                            = pMainDbMan->makeSelectSingleValueQuery( selectQueryText, "LISTING_DATE", true /* true for last, false for first */ );
                
                
-                    auto resVec = pDbMan->execSelectQueryReturnFirstRow( selectLastDateQueryText );
+                    auto resVec = pMainDbMan->execSelectQueryReturnFirstRow( selectLastDateQueryText );
                
                     if ( !resVec.empty() && !resVec.front().isEmpty() )
                     {
@@ -492,7 +522,7 @@ INVEST_OPENAPI_MAIN()
             // Делаем std::set компрессированных дат
             std::set< std::string > allCurCandleDates;
             {
-                auto resVec = pDbMan->queryToSingleStringVector( pDbMan->execHelper( selectCandleDateTimeFromInstrumentCandlesQueryText ) // результат выполнения игнорим
+                auto resVec = pCandlesDbMan->queryToSingleStringVector( pCandlesDbMan->execHelper( selectCandleDateTimeFromInstrumentCandlesQueryText ) // результат выполнения игнорим
                                                                , 0 // индекс требуемой величины в векторо строки результата
                                                                );
 
@@ -862,14 +892,14 @@ INVEST_OPENAPI_MAIN()
                          QString whereValuesStr = tkf::mergeString(whereValuesList, ",");
                          
 
-                         QString updateQuery = pDbMan->makeSimpleUpdateQueryText( "INSTRUMENT_CANDLES"
+                         QString updateQuery = pCandlesDbMan->makeSimpleUpdateQueryText( "INSTRUMENT_CANDLES"
                                                                                 , whereFieldsStr // whereFields
                                                                                 , whereValuesStr // whereVal
                                                                                 , tkf::convertToQVectorOfQStrings(valuesToInsert) // valuesToInsert
                                                                                 , instrumentCandlesTableFields // whereName
                                                                                 );
 
-                        pDbMan->execHelper( updateQuery );
+                        pCandlesDbMan->execHelper( updateQuery );
 
                         continue;
                     }
@@ -880,7 +910,7 @@ INVEST_OPENAPI_MAIN()
                     candleDataForInsertion.push_back( tkf::convertToQVectorOfQStrings(valuesToInsert) );
                     /*
                     //QVector<QString> valsVec = {valuesToInsert};
-                    pDbMan->insertTo( "INSTRUMENT_CANDLES"
+                    pCandlesDbMan->insertTo( "INSTRUMENT_CANDLES"
                                     , QVector< QVector<QString> >{ tkf::convertToQVectorOfQStrings(valuesToInsert) }
                                     , instrumentCandlesTableFields
                                     );
@@ -892,7 +922,7 @@ INVEST_OPENAPI_MAIN()
 
                 if (!candleDataForInsertion.empty())
                 {
-                    pDbMan->insertTo( "INSTRUMENT_CANDLES"
+                    pCandlesDbMan->insertTo( "INSTRUMENT_CANDLES"
                                     , candleDataForInsertion
                                     , instrumentCandlesTableFields
                                     );
@@ -1006,12 +1036,22 @@ INVEST_OPENAPI_MAIN()
     for(; ftIt != sortedFigiTimeByCandleGetTime.end(); ++ftIt)
     {
         QString figi = ftIt->figi;
+
+        if (discontinuedFigis.find(figi)!=discontinuedFigis.end())
+            continue;
+
+        if (erroneousFigis.find(figi)!=erroneousFigis.end())
+            continue;
+
+        //QString figi = dicts.getInstrumentById( instrumentId );
+        auto instrumentId = dicts.getInstrumentId(figi);
+
         std::uint64_t et = ftIt->totalCandlesTime;
 
         QString ticker         = dicts.getTickerByFigiChecked(figi);
         QString instrumentName = dicts.getNameByFigiChecked(figi);
 
-        cout << figi << ": " << (unsigned)et << ", " << ticker << " - " << instrumentName << endl;
+        cout << figi << ": " << (unsigned)et << ", " << ticker << " - " << instrumentName << ", ID: " << instrumentId << endl;
     
     }
 

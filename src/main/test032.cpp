@@ -95,21 +95,21 @@ INVEST_OPENAPI_MAIN()
 
 
 
-    cout << "# DB name: " << pDatabaseConfig->dbFilename << endl;
+    cout << "# Main DB name: " << pDatabaseConfig->dbMainFilename << endl;
 
-    QSharedPointer<QSqlDatabase> pSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
-    pSqlDb->setDatabaseName( pDatabaseConfig->dbFilename );
+    QSharedPointer<QSqlDatabase> pMainSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
+    pMainSqlDb->setDatabaseName( pDatabaseConfig->dbMainFilename );
 
-    if (!pSqlDb->open())
+    if (!pMainSqlDb->open())
     {
       //qDebug() 
-      cout << pSqlDb->lastError().text() << endl;
+      cout << pMainSqlDb->lastError().text() << endl;
       return 0;
     }
 
-    QSharedPointer<tkf::IDatabaseManager> pDbMan = tkf::createMainDatabaseManager( pSqlDb, pDatabaseConfig, pLoggingConfig );
+    QSharedPointer<tkf::IDatabaseManager> pMainDbMan = tkf::createMainDatabaseManager( pMainSqlDb, pDatabaseConfig, pLoggingConfig );
 
-    pDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
+    pMainDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
 
 
 
@@ -137,7 +137,7 @@ INVEST_OPENAPI_MAIN()
 
     //QStringList   figis;
 
-    tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pDbMan);
+    tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
 
 
     cout<<"#" << endl;
