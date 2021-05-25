@@ -1,4 +1,6 @@
 https://www.sqlite.org/download.html
+https://sqlite.org/cli.html
+https://www.sqlite.org/lang_vacuum.html
 
 
 Внутренние таблицы SQLite - https://habr.com/ru/post/223451/
