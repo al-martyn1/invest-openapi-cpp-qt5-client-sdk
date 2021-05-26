@@ -101,11 +101,9 @@ INVEST_OPENAPI_MAIN()
         INVEST_OPENAPI_OPEN_DATABASE( pMainSqlDb   , pMainDbMan   , createMainDatabaseManager   , pLoggingConfig, pDatabaseConfig, dbMainFilename    );
         qDebug().nospace().noquote() << "Creating Main DB: " << pDatabaseConfig->dbMainFilename;
        
-        int 
-        curLevel = 0;
+        int curLevel = 0;
        
-        QSet<QString> 
-        tablesForCreation = pMainDbMan->tableGetTableNamesForCreation( curLevel );
+        QSet<QString> tablesForCreation = pMainDbMan->tableGetTableNamesForCreation( curLevel );
         for(; !tablesForCreation.empty(); ++curLevel, tablesForCreation = pMainDbMan->tableGetTableNamesForCreation( curLevel ) )
         {
             qDebug().nospace().noquote() << "Level "<<curLevel;
@@ -153,9 +151,9 @@ INVEST_OPENAPI_MAIN()
         INVEST_OPENAPI_OPEN_DATABASE( pCandlesSqlDb, pCandlesDbMan, createCandlesDatabaseManager, pLoggingConfig, pDatabaseConfig, dbCandlesFilename );
         qDebug().nospace().noquote() << "Creating Candles DB: " << pDatabaseConfig->dbCandlesFilename;
        
-        curLevel = 0;
+        int curLevel = 0;
        
-        tablesForCreation = pCandlesDbMan->tableGetTableNamesForCreation( curLevel );
+        QSet<QString> tablesForCreation = pCandlesDbMan->tableGetTableNamesForCreation( curLevel );
         for(; !tablesForCreation.empty(); ++curLevel, tablesForCreation = pCandlesDbMan->tableGetTableNamesForCreation( curLevel ) )
         {
             qDebug().nospace().noquote() << "Level "<<curLevel;
@@ -192,9 +190,9 @@ INVEST_OPENAPI_MAIN()
         INVEST_OPENAPI_OPEN_DATABASE( pUserSqlDb   , pUserDbMan   , createUserDatabaseManager   , pLoggingConfig, pDatabaseConfig, dbUserFilename    );
         qDebug().nospace().noquote() << "Creating User DB: " << pDatabaseConfig->dbUserFilename;
        
-        curLevel = 0;
+        int curLevel = 0;
        
-        tablesForCreation = pUserDbMan->tableGetTableNamesForCreation( curLevel );
+        QSet<QString> tablesForCreation = pUserDbMan->tableGetTableNamesForCreation( curLevel );
         for(; !tablesForCreation.empty(); ++curLevel, tablesForCreation = pUserDbMan->tableGetTableNamesForCreation( curLevel ) )
         {
             qDebug().nospace().noquote() << "Level "<<curLevel;

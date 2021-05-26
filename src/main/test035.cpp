@@ -1,5 +1,5 @@
 /*! \file
-    \brief Тестирование Streaming API. Пишем все streaming события в виде JSON, потом может займемся анализом
+    \brief Тестируем статистику на стакане, получаемом по Streaming API
 
     Streaming API    - https://tinkoffcreditsystems.github.io/invest-openapi/marketdata/
 
@@ -72,7 +72,7 @@
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("test032");
+    QCoreApplication::setApplicationName("test035");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");
@@ -234,12 +234,22 @@ INVEST_OPENAPI_MAIN()
                 tkf::GenericStreamingResponse genericStreamingResponse;
                 genericStreamingResponse.fromJson(msg);
 
-                if (genericStreamingResponse.getEvent()=="error")
+                auto eventName = genericStreamingResponse.getEvent();
+
+                if (eventName=="error")
                 {
                     tkf::StreamingError streamingError;
                     streamingError.fromJson(msg);
 
                     cout << "# !!! Streaming error: " << streamingError.getPayload().getMessage() << endl;
+
+                }
+
+                else
+                {
+                    cout << "Event name: " << eventName << endl;
+                }
+
 
                     // StreamingCandleResponse
 
@@ -318,14 +328,6 @@ INVEST_OPENAPI_MAIN()
                     //   marty::Decimal   quantity;
                     //   static StreamingOrderbookItem fromList( const QList< marty::Decimal > &list )
 
-
-
-                }
-
-                else
-                {
-                    cout << msg << endl;
-                }
 
             };
 

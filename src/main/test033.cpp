@@ -1,5 +1,5 @@
 /*! \file
-    \brief Configs lookup test
+    \brief Тестирование ф-ии nanosecFromRfc3339NanoString - в таком формате приходит время в свечах
 
  */
 

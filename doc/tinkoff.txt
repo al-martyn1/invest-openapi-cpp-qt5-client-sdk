@@ -5,6 +5,26 @@
                    https://github.com/TinkoffCreditSystems/invest-openapi/
                    https://github.com/TinkoffCreditSystems/invest-openapi.git
 
+Streaming API    - https://tinkoffcreditsystems.github.io/invest-openapi/marketdata/
+
+    Свечи
+      candle:subscribe
+      candle:unsubscribe
+
+    Стакан
+      orderbook:subscribe
+      orderbook:unsubscribe
+
+    Инфа по инструменту
+      тут из нужного - статус - торгуется или нет - "trade_status": "normal_trading" / "not_available_for_trading"
+      Дельта цены и размер лота
+      "min_price_increment": 0.0025,
+      "lot": 1000
+      
+      instrument_info:subscribe
+      instrument_info:unsubscribe
+
+
 Веб-морда, чтобы поиграть с tinkoff REST API - https://tinkoffcreditsystems.github.io/invest-openapi/swagger-ui/
 
 Swagger-ui                                    - https://tinkoffcreditsystems.github.io/invest-openapi/swagger-ui/
@@ -13,7 +33,7 @@ Swagger-ui                                    - https://tinkoffcreditsystems.git
 
 swagger.yaml доступен по адресу https://tinkoffcreditsystems.github.io/invest-openapi/swagger-ui/swagger.yaml
 
-Что-токенапро генератор - https://openapi-generator.tech/
+Что-то про генератор - https://openapi-generator.tech/
 
 
 Докер (вроде для сборки док) -  https://github.com/docker/toolbox.git
