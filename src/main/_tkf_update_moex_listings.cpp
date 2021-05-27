@@ -262,7 +262,7 @@ enum class GenericError
             figiRow.append( qt_helpers::dateToDbString(foundDate) );
            
             timer.restart();
-            pMainDbMan->insertTo( "INSTRUMENT_LISTING_DATES", figiRow, instrumentListingDatesTableColumns );
+            pMainDbMan->insertTo( "INSTRUMENT_LISTING_DATES", QVector< QVector<QString> >{figiRow}, instrumentListingDatesTableColumns );
             elapsedTime = (unsigned)timer.restart();
             qDebug().nospace().noquote() << "Listing start date for " << figiRow[1] << " (" << figiRow[2] << ") was inserted, elapsed time: " << elapsedTime;
            

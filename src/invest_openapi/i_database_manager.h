@@ -198,19 +198,31 @@ struct IDatabaseManager
     }
 
     INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QVector<QVariant > >, QVector<QString> )
-    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QVector<QString  > >, QVector<QString> )
+    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QVector<QString  > >, QVector<QString> )    // !!!
     INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QStringList        >, QVector<QString> )
-    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QString            >, QVector<QString> )
+    //INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QString            >, QVector<QString> )
 
     INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QVector<QVariant > >, QStringList )
     INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QVector<QString  > >, QStringList )
     INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QStringList        >, QStringList )
-    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QString            >, QStringList )
+    //INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QString            >, QStringList )
 
     INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QVector<QVariant > >, QString )
     INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QVector<QString  > >, QString )
     INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QStringList        >, QString )
-    INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QString            >, QString )
+    //INVEST_OPENAPI_IDATABASEMANAGER_INSERTTO_DECLARE_WITH_DEF_IMPLEMENTATION( QVector<QString            >, QString )
+
+    /*
+    virtual bool insertTo( const QString &tableName, const QVector<QVector<QString> > &valsList, const QVector<QString> &tableColumnNamesList) const
+    {
+        return insertToImpl( tableName, valsList, tableColumnNamesList );
+    }
+
+    virtual bool insertTo( const QString &tableName, const QVector<QStringList> &valsList, const QVector<QString> &tableColumnNamesList) const
+    {
+        return insertToImpl( tableName, convertToQVectorOfQVectorOfQStrings(valsList), tableColumnNamesList );
+    }
+    */
 
 
     virtual bool insertToBulkFromString( const QString &tableName, const QString &vals, const QVector<QString> &tableColumnNames = QVector<QString>() ) const

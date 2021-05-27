@@ -66,6 +66,8 @@
 
 #include "invest_openapi/streaming_handlers.h"
 
+#include "invest_openapi/market_glass.h"
+
 
 
 
@@ -242,12 +244,20 @@ INVEST_OPENAPI_MAIN()
                     streamingError.fromJson(msg);
 
                     cout << "# !!! Streaming error: " << streamingError.getPayload().getMessage() << endl;
-
                 }
 
-                else
+                else if (eventName=="orderbook")
                 {
-                    cout << "Event name: " << eventName << endl;
+                    tkf::StreamingOrderbookResponse orderbookResponse;
+                    orderbookResponse.fromJson(msg);
+
+                    tkf::MarketGlass marketGlass = tkf::MarketGlass::fromStreamingOrderbookResponse(orderbookResponse);
+                    cout << "#---------------------" << endl;
+                    cout << marketGlass << endl << endl ;
+                    cout << marketGlass.getGlassMaxPrice();
+                    cout << marketGlass.getGlassMinPrice();
+                    cout << marketGlass << endl << endl ;
+                    
                 }
 
 

@@ -177,6 +177,14 @@ INVEST_OPENAPI_MAIN()
             //inline QVector<QString> removeFirstItems(QVector<QString> v, int numItemsToRemove )
             //inline QVector<QString> removeItemsByName( const QVector<QString> &v, const QString &name )
 
+
+            if (!instrumentInfo.isSet() || !instrumentInfo.isValid())
+            {
+                qDebug().nospace().noquote() << "Got invalid instrument, FIGI = " << instrumentInfo.getFigi();
+                throw std::runtime_error("Invalid instrument");
+            }
+
+
             QElapsedTimer singleInstrumentTimer;
             singleInstrumentTimer.start();
 
@@ -192,6 +200,7 @@ INVEST_OPENAPI_MAIN()
             {
                 qDebug().nospace().noquote() << "Updating instrument, FIGI = " << instrumentInfo.getFigi();
                 QString updateQuery = pMainDbMan->makeSimpleUpdateQueryText( "MARKET_INSTRUMENT", "FIGI", instrumentInfo.getFigi(), values, instrumentColsNoLotMarket );
+                qDebug().nospace().noquote() << "Update Query: " << updateQuery ;
                 pMainDbMan->execHelper( updateQuery );
             }
             else
@@ -203,7 +212,9 @@ INVEST_OPENAPI_MAIN()
 
                 qDebug().nospace().noquote() << "Creating instrument, FIGI = " << instrumentInfo.getFigi();
 
-                pMainDbMan->insertTo( "MARKET_INSTRUMENT", values, instrumentColsWithLotMarket );
+                qDebug().nospace().noquote() << "Insert columns: " << instrumentColsWithLotMarket ;
+                qDebug().nospace().noquote() << "Insert values : " << values ;
+                pMainDbMan->insertTo( "MARKET_INSTRUMENT", QVector< QVector<QString> >{values}, instrumentColsWithLotMarket );
             }
 
             ++instrumentCount;
