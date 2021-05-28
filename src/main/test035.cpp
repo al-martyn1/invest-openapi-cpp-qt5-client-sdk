@@ -253,12 +253,25 @@ INVEST_OPENAPI_MAIN()
 
                     tkf::MarketGlass marketGlass = tkf::MarketGlass::fromStreamingOrderbookResponse(orderbookResponse);
                     cout << "#---------------------" << endl;
-                    cout << marketGlass << endl << endl ;
-                    cout << marketGlass.getGlassMaxPrice();
-                    cout << marketGlass.getGlassMinPrice();
-                    cout << marketGlass << endl << endl ;
+                    cout << marketGlass << endl; // << endl ;
+                    cout << "Max price:  " << marketGlass.getGlassMaxPrice() << endl;
+                    cout << "Min price:  " << marketGlass.getGlassMinPrice() << endl;
+                    cout << endl;
+                    cout << "Asks range: " << marketGlass.getAsksMinPrice() << " - " << marketGlass.getAsksMaxPrice() << endl;
+                    //cout << endl;
+                    cout << "Bids range: " << marketGlass.getBidsMinPrice() << " - " << marketGlass.getBidsMaxPrice() << endl;
+                    cout << endl;
+                    cout << "Best ask  :  " << marketGlass.getAskBestPrice() << endl;
+                    cout << "Best bid  :  " << marketGlass.getBidBestPrice() << endl;
+                    cout << "Spread    :  " << marketGlass.getPriceSpread() << endl;
+
+                    cout << endl;
+                    cout << endl;
+                    //cout << marketGlass << endl << endl ;
                     
                 }
+
+                // https://bcs-express.ru/novosti-i-analitika/o-chem-mogut-rasskazat-birzhevoi-stakan-i-lenta-sdelok
 
 
                     // StreamingCandleResponse

@@ -36,14 +36,14 @@ typedef marty::Decimal      Decimal;
 struct MarketGlassItem
 {
     Decimal          price;
-    int              quantity;
+    unsigned         quantity;
 
     static MarketGlassItem fromStreamingOrderbookItem( const OpenAPI::StreamingOrderbookItem &item )
     {
         MarketGlassItem mgi;
 
         mgi.price     = item.price;
-        mgi.quantity  = int(item.quantity);
+        mgi.quantity  = unsigned(item.quantity);
         
         return mgi;
     }
@@ -76,12 +76,12 @@ struct MarketGlassItemPriceLess
 //----------------------------------------------------------------------------
 struct MarketGlass
 {
-    QString                            figi;  //!< Instrument FIGI
-    unsigned                           depth; //!< Glass depth
-
     QDateTime                          dateTime;
     QString                            dateTimeString;
     std::uint64_t                      dateTimeAsStamp; //!< Timestamp in nanoseconds
+
+    QString                            figi;  //!< Instrument FIGI
+    unsigned                           depth; //!< Glass depth
 
     std::vector< MarketGlassItem >     asks; //!< Запросы на продажу
     std::vector< MarketGlassItem >     bids; //!< Запросы на покупку (предложения)
@@ -94,11 +94,12 @@ protected:
         auto it = b;
         for(; it!=e; ++it)
         {
-            if (it->quantity==0) continue;
+            if (it->quantity==0)
+                continue;
             return it->price;
         }
 
-        throw std::runtime_error(thMsg);
+        throw std::runtime_error(std::string("invest_openapi::MarketGlass::") + thMsg);
 
         return Decimal(0);
     }
@@ -106,15 +107,18 @@ protected:
 public:
 
 
-    Decimal getGlassMaxPrice() const
-    {
-        return getGlassMinMaxHelper( asks.begin(), asks.end(), "invest_openapi::MarketGlass::getGlassMaxPrice - failed to get max price" );
-    }
+    Decimal getGlassMaxPrice() const    { return getGlassMinMaxHelper( asks.begin() , asks.end() , "getGlassMaxPrice - failed to get max price" ); }
+    Decimal getGlassMinPrice() const    { return getGlassMinMaxHelper( bids.rbegin(), bids.rend(), "getGlassMinPrice - failed to get min price" ); }
 
-    Decimal getGlassMinPrice() const
-    {
-        return getGlassMinMaxHelper( bids.begin(), bids.end(), "invest_openapi::MarketGlass::getGlassMinPrice - failed to get min price" );
-    }
+    Decimal getAsksMaxPrice() const     { return getGlassMinMaxHelper( asks.begin() , asks.end() , "getAsksMaxPrice - failed to get max price" ); }
+    Decimal getAsksMinPrice() const     { return getGlassMinMaxHelper( asks.rbegin(), asks.rend(), "getAsksMinPrice - failed to get min price" ); }
+
+    Decimal getBidsMaxPrice() const     { return getGlassMinMaxHelper( bids.begin() , bids.end() , "invest_openapi::MarketGlass::getAsksMaxPrice - failed to get max price" ); }
+    Decimal getBidsMinPrice() const     { return getGlassMinMaxHelper( bids.rbegin(), bids.rend(), "invest_openapi::MarketGlass::getAsksMinPrice - failed to get min price" ); }
+
+    Decimal getAskBestPrice() const     { return getAsksMinPrice(); }
+    Decimal getBidBestPrice() const     { return getBidsMaxPrice(); }
+    Decimal getPriceSpread()  const     { return getAskBestPrice() - getBidBestPrice(); }
 
 
     bool isValid() const
@@ -127,12 +131,12 @@ public:
     {
         MarketGlass mg;
 
-        mg.figi              = orderBook.getFigi();
-        mg.depth             = orderBook.getDepth();
-
         mg.dateTime          = dt;
         mg.dateTimeString    = dtStr;
         mg.dateTimeAsStamp   = qt_helpers::nanosecFromRfc3339NanoString( dtStr );
+
+        mg.figi              = orderBook.getFigi();
+        mg.depth             = orderBook.getDepth();
 
 
         if (orderBook.is_asks_Set() && orderBook.is_asks_Valid())
@@ -184,6 +188,42 @@ public:
 
         return fromStreamingOrderbook( orderBook, timeAsTime, timeStr );
     }
+
+
+    int alignPrecision()
+    {
+        int maxPricePrecision = 0;
+
+        for( const auto &ask: asks )
+        {
+            int p = ask.price.precision();
+            if (maxPricePrecision<p)
+                maxPricePrecision = p;
+        }
+       
+        for( const auto &bid: bids )
+        {
+            int p = bid.price.precision();
+            if (maxPricePrecision<p)
+                maxPricePrecision = p;
+        }
+
+        for( auto &ask: asks )
+            ask.price.precisionExpandTo(maxPricePrecision);
+       
+        for( auto &bid: bids )
+            bid.price.precisionExpandTo(maxPricePrecision);
+
+        return maxPricePrecision;
+    }
+
+    MarketGlass getPrecisionAlignedGlass() const
+    {
+        MarketGlass cp = *this;
+        cp.alignPrecision();
+        return cp;
+    }
+
 
 }; // struct MarketGlass
 
@@ -238,7 +278,7 @@ std::string marketGlassFormatHelperForQuantity( int q, std::size_t w )
 
 //----------------------------------------------------------------------------
 inline
-std::ostream& operator<<( std::ostream &s, const MarketGlass &mg ) 
+std::ostream& operator<<( std::ostream &s, MarketGlass mg ) 
 {
     using std::endl;
     using cpp::makeExpandString;
@@ -262,12 +302,12 @@ std::ostream& operator<<( std::ostream &s, const MarketGlass &mg )
     */
 
 
-    int         maxPricePrecision = 0;
+    //int         maxPricePrecision = 0;
     std::size_t maxPriceWidth     = 0;
     std::size_t sepWidth          = 2;
 
     //------------------------------
-
+    /*
     for( auto ask: mg.asks )
     {
         int p = ask.price.precision();
@@ -281,25 +321,29 @@ std::ostream& operator<<( std::ostream &s, const MarketGlass &mg )
         if (maxPricePrecision<p)
             maxPricePrecision = p;
     }
-
+    */
     //------------------------------
 
-    for( auto ask: mg.asks )
+    //MarketGlass getPrecisionAlignedGlass() const
+
+    int maxPricePrecision = mg.alignPrecision();
+
+    for( const auto &ask: mg.asks )
     {
-        auto tmp = ask.price;
-        tmp.precisionExpandTo(maxPricePrecision);
-        std::string tmpStr = tmp.to_string(maxPricePrecision);
+        //auto tmp = ask.price;
+        //tmp.precisionExpandTo(maxPricePrecision);
+        std::string tmpStr = ask.price.to_string(maxPricePrecision);
 
         std::size_t w = tmpStr.size();
         if (maxPriceWidth<w)
             maxPriceWidth = w;
     }
 
-    for( auto bid: mg.bids )
+    for( const auto &bid: mg.bids )
     {
-        auto tmp = bid.price;
-        tmp.precisionExpandTo(maxPricePrecision);
-        std::string tmpStr = tmp.to_string(maxPricePrecision);
+        //auto tmp = bid.price;
+        //tmp.precisionExpandTo(maxPricePrecision);
+        std::string tmpStr = bid.price.to_string(maxPricePrecision);
 
         std::size_t w = tmpStr.size();
         if (maxPriceWidth<w)
