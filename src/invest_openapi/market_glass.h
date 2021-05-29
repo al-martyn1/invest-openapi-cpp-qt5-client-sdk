@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <exception>
 #include <stdexcept>
+#include <utility>
 
 
 
@@ -83,20 +84,42 @@ struct MarketGlass
     QString                            figi;  //!< Instrument FIGI
     unsigned                           depth; //!< Glass depth
 
-    std::vector< MarketGlassItem >     asks; //!< Запросы на продажу
-    std::vector< MarketGlassItem >     bids; //!< Запросы на покупку (предложения)
+    std::vector< MarketGlassItem >     asks; //!< Запросы на продажу               - отсортированы по убыванию
+    std::vector< MarketGlassItem >     bids; //!< Запросы на покупку (предложения) - отсортированы по убыванию
+
 
 protected:
 
-    template< typename IterType>
+    unsigned                           quantityAsks;
+    unsigned                           quantityBids;
+
+
+    template< typename IterType >
+    static bool isAllQuantityZero( IterType b, IterType e )
+    {
+        for(; b!=e; ++b)
+        {
+            if (b->quantity==0)
+                continue;
+            return false;
+        }
+
+        return true;
+    }
+
+
+    bool isAsksQuantityAllZero() const     { return isAllQuantityZero( asks.begin() , asks.end() );  }
+    bool isBidsQuantityAllZero() const     { return isAllQuantityZero( bids.begin() , bids.end() );  }
+
+
+    template< typename IterType >
     Decimal getGlassMinMaxHelper( IterType b, IterType e, const std::string &thMsg ) const 
     {
-        auto it = b;
-        for(; it!=e; ++it)
+        for(; b!=e; ++b)
         {
-            if (it->quantity==0)
+            if (b->quantity==0)
                 continue;
-            return it->price;
+            return b->price;
         }
 
         throw std::runtime_error(std::string("invest_openapi::MarketGlass::") + thMsg);
@@ -104,7 +127,52 @@ protected:
         return Decimal(0);
     }
 
+    template< typename IterType >
+    unsigned calcQuantity( IterType b, IterType e )
+    {
+        unsigned q = 0;
+
+        for(; b!=e; ++b)
+        {
+            q += b->quantity;
+        }
+
+        return q;
+    }
+
+    template <typename T >
+    Decimal calcRatio( T dividend, T divisor, int divPrecision ) const
+    {
+        Decimal res = Decimal(dividend);
+
+        if (res==Decimal(0))
+            return res;
+
+        res.div( Decimal(divisor), divPrecision );
+
+        return res;
+    }
+
+
+
 public:
+
+
+    bool isValid() const
+    {
+        return !dateTimeString.isEmpty() && !figi.isEmpty() && !asks.empty() && !bids.empty() && !isAsksQuantityAllZero() && !isBidsQuantityAllZero();
+    }
+
+    std::string whyInvalid() const
+    {
+        if (dateTimeString.isEmpty()) return "Source invalid";
+        if (figi.isEmpty())           return "FIGI not received";
+        if (asks.empty())             return "Asks is empty";
+        if (bids.empty())             return "Bids is empty";
+        if (isAsksQuantityAllZero())  return "Asks are all zero";
+        if (isBidsQuantityAllZero())  return "Bids are all zero";
+        return "Object is fully valid";
+    }
 
 
     Decimal getGlassMaxPrice() const    { return getGlassMinMaxHelper( asks.begin() , asks.end() , "getGlassMaxPrice - failed to get max price" ); }
@@ -120,10 +188,20 @@ public:
     Decimal getBidBestPrice() const     { return getBidsMaxPrice(); }
     Decimal getPriceSpread()  const     { return getAskBestPrice() - getBidBestPrice(); }
 
+    int getPriceSpreadPoints( const Decimal &priceStep ) const;
 
-    bool isValid() const
+    unsigned getQuantityAsks() const    { return quantityAsks; }
+    unsigned getQuantityBids() const    { return quantityBids; }
+
+    Decimal getAsksBidsRatio() const    { return calcRatio( quantityAsks, quantityBids, 3 ); }
+    Decimal getBidsAsksRatio() const    { return calcRatio( quantityBids, quantityAsks, 3 ); }
+
+
+
+    void updateQuantity()
     {
-        return !dateTimeString.isEmpty() && !figi.isEmpty();
+        quantityAsks = calcQuantity( asks.begin() , asks.end() );
+        quantityBids = calcQuantity( bids.begin() , bids.end() );
     }
 
 
@@ -135,7 +213,7 @@ public:
         mg.dateTimeString    = dtStr;
         mg.dateTimeAsStamp   = qt_helpers::nanosecFromRfc3339NanoString( dtStr );
 
-        mg.figi              = orderBook.getFigi();
+        mg.figi              = orderBook.getFigi().toUpper();
         mg.depth             = orderBook.getDepth();
 
 
@@ -165,6 +243,8 @@ public:
         // Не расчитываем, что всё придёт в нужном порядке, сортируем сами
         std::stable_sort( mg.asks.begin(), mg.asks.end(), MarketGlassItemPriceGreater() );
         std::stable_sort( mg.bids.begin(), mg.bids.end(), MarketGlassItemPriceGreater() );
+
+        mg.updateQuantity();
 
         return mg;
     }
@@ -234,6 +314,43 @@ public:
 
 //----------------------------------------------------------------------------
 inline
+int MarketGlass::getPriceSpreadPoints( const Decimal &priceStep ) const
+{
+    Decimal spread = getPriceSpread();
+
+    /*
+    #if defined(DEBUG) || defined(_DEBUG)
+        Decimal     spreadCnt        = spread / priceStep;
+        std::string spreadPointsStr  = spreadCnt.to_string();
+    #endif
+    */
+
+    bool neg = false;
+
+    if (spread.sgn()<0)
+    {
+        neg    = true;
+        spread = -spread;
+    }
+
+    int spreadPoints = 0;
+
+    Decimal spreadCounter = Decimal(0);
+
+    while(spreadCounter<=spread)
+    {
+        ++spreadPoints;
+        spreadCounter += priceStep;
+    }
+
+    spreadPoints -= 1;
+
+    return neg ? -spreadPoints : spreadPoints;
+}
+
+
+//----------------------------------------------------------------------------
+inline
 std::string marketGlassFormatHelperForPrice( const std::string &priceStr, std::size_t maxPriceWidth )
 {
     using cpp::makeExpandString;
@@ -275,6 +392,11 @@ std::string marketGlassFormatHelperForQuantity( int q, std::size_t w )
 
     return expandAtFront( oss.str(), w );
 }
+
+//----------------------------------------------------------------------------
+
+
+
 
 //----------------------------------------------------------------------------
 inline

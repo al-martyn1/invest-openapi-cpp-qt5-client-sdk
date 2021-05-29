@@ -2,7 +2,6 @@
 
 
 #include "models.h"
-#include "streaming_models/StreamingOrderbookItem.h"
 #include "qt_helpers.h"
 #include "qt_time_helpers.h"
 #include "../cpp/cpp.h"
@@ -45,36 +44,43 @@ struct MarketInstrumentState
     unsigned                           lotSize; // for limit orders
 
 
+    bool isValid() const
+    {
+        return !dateTimeString.isEmpty() && !figi.isEmpty();
+    }
+
+
     static MarketInstrumentState fromStreamingInstrumentInfo( const OpenAPI::StreamingInstrumentInfo &instrumentInfo, const QDateTime &dt, const QString &dtStr )
     {
         MarketInstrumentState mis;
 
-        mg.dateTime          = dt;
-        mg.dateTimeString    = dtStr;
-        mg.dateTimeAsStamp   = qt_helpers::nanosecFromRfc3339NanoString( dtStr );
+        mis.dateTime          = dt;
+        mis.dateTimeString    = dtStr;
+        mis.dateTimeAsStamp   = qt_helpers::nanosecFromRfc3339NanoString( dtStr );
 
-        mg.figi              = instrumentInfo.getFigi();
-        tradeStatus          = instrumentInfo.getTradeStatus();
-        priceIncrement       = instrumentInfo.getMinPriceIncrement();
-        lotSize              = (unsigned)instrumentInfo.getLot();
+        mis.figi              = instrumentInfo.getFigi().toUpper();
+        mis.tradeStatus       = instrumentInfo.getTradeStatus();
+        mis.priceIncrement    = instrumentInfo.getMinPriceIncrement();
+        mis.lotSize           = (unsigned)instrumentInfo.getLot();
 
+        return mis;
     }
 
-    static MarketInstrumentState fromStreamingInstrumentInfoResponse.h( const OpenAPI::StreamingInstrumentInfoResponse.h &instrumentInfoResponse )
+    static MarketInstrumentState fromStreamingInstrumentInfoResponse( const OpenAPI::StreamingInstrumentInfoResponse &instrumentInfoResponse )
     {
         MarketInstrumentState tmp;
 
         if (!instrumentInfoResponse.is_time_Set() || !instrumentInfoResponse.is_time_Valid())
-            return tmpMg;
+            return tmp;
 
         if (!instrumentInfoResponse.is_payload_Set() || !instrumentInfoResponse.is_payload_Valid())
-            return tmpMg;
+            return tmp;
 
 
-        OpenAPI::StreamingInstrumentInfo sii = instrumentInfo.getPayload();
+        OpenAPI::StreamingInstrumentInfo sii = instrumentInfoResponse.getPayload();
 
-        QString   timeStr    = sii.getTimeAsString();
-        QDateTime timeAsTime = sii.getTime();
+        QString   timeStr    = instrumentInfoResponse.getTimeAsString();
+        QDateTime timeAsTime = instrumentInfoResponse.getTime();
 
         return fromStreamingInstrumentInfo( sii, timeAsTime, timeStr );
     }
@@ -110,6 +116,30 @@ struct MarketInstrumentState
 
 
 
+//----------------------------------------------------------------------------
+inline
+std::ostream& operator<<( std::ostream &s, MarketInstrumentState mis ) 
+{
+    using std::endl;
+    using cpp::makeExpandString;
+    using cpp::expandAtFront;
+    using cpp::expandAtBack;
+
+    s << "Instrument Info for : " << mis.figi  << endl;
+    s << "              Time  : " << mis.dateTimeString  << endl;
+    s << "              Stamp : " << mis.dateTimeAsStamp << endl;
+
+    // mis.tradeStatus.getValue() == OpenAPI::TradeStatus::INVALID_VALUE_OPENAPI_GENERATED = 0,
+    //                               OpenAPI::TradeStatus::NORMALTRADING
+    //                               OpenAPI::TradeStatus::NOTAVAILABLEFORTRADING
+
+    s << "              Status: " << mis.tradeStatus.asJson() << endl;
+    s << "              Inc   : " << mis.priceIncrement << endl;
+    s << "              Lot   : " << mis.lotSize << endl;
+    s << endl;
+
+    return s;
+}
 
 
 //----------------------------------------------------------------------------

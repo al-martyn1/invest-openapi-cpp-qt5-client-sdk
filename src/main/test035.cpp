@@ -67,6 +67,7 @@
 #include "invest_openapi/streaming_handlers.h"
 
 #include "invest_openapi/market_glass.h"
+#include "invest_openapi/market_instrument_state.h"
 
 
 
@@ -161,6 +162,8 @@ INVEST_OPENAPI_MAIN()
 
     tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
 
+    std::map< QString, tkf::MarketInstrumentState >  marketInstrumentsState;
+
 
     cout<<"#" << endl;
 
@@ -199,16 +202,21 @@ INVEST_OPENAPI_MAIN()
 
                     QString ticker = dicts.getTickerByFigiChecked(figi);
 
-                    QString orderBookSubscriptionText      = pOpenApi->getStreamingApiOrderbookSubscribeJson( figi );
-                    QString instrumentInfoSubscriptionText = pOpenApi->getStreamingApiInstrumentInfoSubscribeJson( figi );
+                    QString orderBookSubscriptionText         = pOpenApi->getStreamingApiOrderbookSubscribeJson( figi );
+                    QString instrumentInfoSubscriptionText    = pOpenApi->getStreamingApiInstrumentInfoSubscribeJson( figi );
+                    QString instrumentCandlesSubscriptionText = pOpenApi->getStreamingApiCandleSubscribeJson( figi, "1MIN" );
 
-                    cout << "# Subscribe to orderbook for " << ticker << " (" << figi << ")" << endl;
                     QTest::qWait(5);
+                    cout << "# Subscribe to instrument info for " << ticker << " (" << figi << ")" << endl;
+                    webSocket.sendTextMessage( instrumentInfoSubscriptionText );
+
+                    QTest::qWait(5);
+                    cout << "# Subscribe to orderbook for " << ticker << " (" << figi << ")" << endl;
                     webSocket.sendTextMessage( orderBookSubscriptionText );
 
-                    cout << "# Subscribe to instrument info for " << ticker << " (" << figi << ")" << endl;
                     QTest::qWait(5);
-                    webSocket.sendTextMessage( instrumentInfoSubscriptionText );
+                    cout << "# Subscribe to instrument 1 MIN candles for " << ticker << " (" << figi << ")" << endl;
+                    webSocket.sendTextMessage( instrumentCandlesSubscriptionText );
 
                 }
 
@@ -233,10 +241,10 @@ INVEST_OPENAPI_MAIN()
             {
                 using std::cout;  using std::endl;
 
-                tkf::GenericStreamingResponse genericStreamingResponse;
-                genericStreamingResponse.fromJson(msg);
+                tkf::GenericStreamingResponse response;
+                response.fromJson(msg);
 
-                auto eventName = genericStreamingResponse.getEvent();
+                auto eventName = response.getEvent();
 
                 if (eventName=="error")
                 {
@@ -248,28 +256,95 @@ INVEST_OPENAPI_MAIN()
 
                 else if (eventName=="orderbook")
                 {
-                    tkf::StreamingOrderbookResponse orderbookResponse;
-                    orderbookResponse.fromJson(msg);
+                    tkf::StreamingOrderbookResponse response;
+                    response.fromJson(msg);
 
-                    tkf::MarketGlass marketGlass = tkf::MarketGlass::fromStreamingOrderbookResponse(orderbookResponse);
-                    cout << "#---------------------" << endl;
-                    cout << marketGlass << endl; // << endl ;
-                    cout << "Max price:  " << marketGlass.getGlassMaxPrice() << endl;
-                    cout << "Min price:  " << marketGlass.getGlassMinPrice() << endl;
-                    cout << endl;
-                    cout << "Asks range: " << marketGlass.getAsksMinPrice() << " - " << marketGlass.getAsksMaxPrice() << endl;
-                    //cout << endl;
-                    cout << "Bids range: " << marketGlass.getBidsMinPrice() << " - " << marketGlass.getBidsMaxPrice() << endl;
-                    cout << endl;
-                    cout << "Best ask  :  " << marketGlass.getAskBestPrice() << endl;
-                    cout << "Best bid  :  " << marketGlass.getBidBestPrice() << endl;
-                    cout << "Spread    :  " << marketGlass.getPriceSpread() << endl;
+                    tkf::MarketGlass marketGlass = tkf::MarketGlass::fromStreamingOrderbookResponse(response);
 
-                    cout << endl;
-                    cout << endl;
-                    //cout << marketGlass << endl << endl ;
+                    if (!marketGlass.isValid())
+                    {
+                        cout << "# !!! Streaming error: got an invalid MarketGlass - " << marketGlass.whyInvalid() << endl;
+                        cout << "#     Input is: " << msg << endl;
+                        
+                    }
+                    else
+                    {
+                        cout << "#---------------------" << endl;
+                        cout << marketGlass << endl; // << endl ;
+                        cout << "Max price  :  " << marketGlass.getGlassMaxPrice() << endl;
+                        cout << "Min price  :  " << marketGlass.getGlassMinPrice() << endl;
+                        cout << endl;
+
+                        cout << "Asks range : " << marketGlass.getAsksMinPrice() << " - " << marketGlass.getAsksMaxPrice() << endl;
+                        cout << "Bids range : " << marketGlass.getBidsMinPrice() << " - " << marketGlass.getBidsMaxPrice() << endl;
+
+                        cout << endl;
+
+                        cout << "Best ask   :  " << marketGlass.getAskBestPrice() << endl;
+                        cout << "Best bid   :  " << marketGlass.getBidBestPrice() << endl;
+                        cout << "Spread     :  " << marketGlass.getPriceSpread() << endl;
+
+                        cout << endl;
+
+                        cout << "Total asks :  " << marketGlass.getQuantityAsks() << ", ratio to bids: " << marketGlass.getAsksBidsRatio() << endl;
+                        cout << "Total bids :  " << marketGlass.getQuantityBids() << ", ratio to asks: " << marketGlass.getBidsAsksRatio() << endl;
+                       
+                        cout << endl;
+
+                        bool instrumentInfoFound = marketInstrumentsState.find(marketGlass.figi)!=marketInstrumentsState.end();
+                        cout << "Instrument Info: " << ( instrumentInfoFound? "not " : "" ) << "found" << (!instrumentInfoFound ? " ////???" : "") << endl;
+
+                        auto miStateIt = marketInstrumentsState.find(marketGlass.figi);
+                        if (miStateIt!=marketInstrumentsState.end())
+                        {
+                            // Here is a lot of advanced info
+
+                            cout << endl;
+                            cout << "Price increment: " << miStateIt->second.priceIncrement << endl;
+                            cout << "Spread points  : " << marketGlass.getPriceSpreadPoints( miStateIt->second.priceIncrement ) << endl;
+                        }
+
+                        cout << endl;
+                        cout << endl;
+                        //cout << marketGlass << endl << endl ;
+                    }
                     
                 }
+
+                else if (eventName=="instrument_info")
+                {
+                    tkf::StreamingInstrumentInfoResponse response;
+                    response.fromJson(msg);
+
+                    tkf::MarketInstrumentState instrumentState = tkf::MarketInstrumentState::fromStreamingInstrumentInfoResponse( response );
+
+                    if (!instrumentState.isValid())
+                    {
+                        cout << "# !!! Streaming error: got an invalid MarketInstrumentState - " << msg << endl;
+                    }
+                    else
+                    {
+                        marketInstrumentsState[instrumentState.figi] = instrumentState;
+
+                        cout << "#---------------------" << endl;
+                        cout << instrumentState << endl; // << endl ;
+
+                    }
+                    
+                }
+
+                else if (eventName=="candle")
+                {
+                    cout << "# !!! Candle event not handled, data: " << endl << msg << endl << endl;
+                }
+
+                else
+                {
+                    cout << "# !!! Unknown event: " << eventName << endl;
+                    cout << msg << endl;
+                }
+
+                // std::map< QString, tkf::MarketInstrumentState >  marketInstrumentState;
 
                 // https://bcs-express.ru/novosti-i-analitika/o-chem-mogut-rasskazat-birzhevoi-stakan-i-lenta-sdelok
 
