@@ -140,6 +140,8 @@ INVEST_OPENAPI_MAIN()
     cout << "Best ask   :  " << marketGlass.getAskBestPrice() << endl;
     cout << "Best bid   :  " << marketGlass.getBidBestPrice() << endl;
     cout << "Spread     :  " << marketGlass.getPriceSpread() << endl;
+    auto instrumentPrice = marketGlass.calcInstrumentPrice( priceIncrement );
+    cout << "Cur price  :  " << instrumentPrice << endl;
 
     cout << endl;
 

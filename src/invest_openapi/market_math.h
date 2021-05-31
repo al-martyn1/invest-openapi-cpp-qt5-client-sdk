@@ -42,12 +42,16 @@ struct OutlierLimits
     ValType    upper; //!< All which is >= upper is an outlier
 };
 
+//----------------------------------------------------------------------------
 
 
+
+
+//----------------------------------------------------------------------------
 template< typename ValType >
 inline
 OutlierLimits< ValType >
-calcOutlierLimits( const std::vector< ValType >& sortedVals, std::size_t percentile )
+getPercentiles( const std::vector< ValType >& sortedVals, std::size_t percentile = 25 ) //!< 25 for quartiles
 {
     if (percentile>50)
         percentile = 50;
@@ -61,6 +65,82 @@ calcOutlierLimits( const std::vector< ValType >& sortedVals, std::size_t percent
     return OutlierLimits< ValType >{ sortedVals[idxLow], sortedVals[idxHigh] };
 }
 
+//----------------------------------------------------------------------------
+template< typename ValType >
+inline
+OutlierLimits< ValType >
+calcOutlierLimits( const OutlierLimits< ValType > &limits )
+{
+    ValType percentileLow   = limits.lower;
+    ValType percentileHight = limits.upper;
+
+    ValType deltaPercentile       = percentileHight - percentileLow;
+    ValType deltaPercentileScaled = 3*deltaPercentile / 2;
+
+    ValType limLow   = percentileLow   - deltaPercentileScaled;
+    ValType limHight = percentileHight + deltaPercentileScaled;
+
+    if (limLow<0)
+        limLow = 0;
+
+    return OutlierLimits< ValType >{  /* limLow */ 2*percentileLow/3, limHight };
+}
+
+//----------------------------------------------------------------------------
+//! Вычисляем текущую цену инструмента
+/*!
+    Текущей ценой считается цена последней сделки. 
+    Но у нас нет возможности её получить.
+    Максимально оперативно обновляется стакан.
+    Поэтому текущей ценой будем считать среднее между макс предложением (bid'ом) и спросом (ask'ом),
+    приведеное к шкале цен инструмента (к ближайшему делящемуся на price increment).
+
+*/
+
+inline
+marty::Decimal calcInstrumentPrice( marty::Decimal p1, marty::Decimal p2, const marty::Decimal &priceStep, bool roundDown = true )
+{
+    if (p1 > p2)
+        p1.swap(p2);
+
+    // Here p1 is less than p2
+
+
+    using marty::Decimal;
+
+    Decimal avg = (p1+p2) / marty::Decimal(2);
+
+    Decimal priceStepDivRawRes = avg.mod_helper_raw_div( priceStep );
+
+    Decimal finalPrice         = priceStepDivRawRes * priceStep;
+    Decimal finalPriceMod      = avg.mod_helper( priceStep );
+    Decimal finalPriceMin      = finalPriceMod;
+    Decimal finalPriceMax      = finalPriceMod + priceStep;
+
+
+    Decimal deltaToLower = finalPriceMax - p1;
+    Decimal deltaToUpper = p2 - finalPriceMin;
+
+    int cmpResult = deltaToLower.compare( deltaToUpper );
+    if (cmpResult==0)
+    {
+        if (roundDown)
+            return finalPriceMin;
+        else
+            return finalPriceMax;
+    }
+    else if (cmpResult<0)
+    {
+        return finalPriceMin;
+    }
+    else
+    {
+        return finalPriceMax;
+    }
+
+}
+
+//----------------------------------------------------------------------------
 
 
 
