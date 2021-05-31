@@ -117,7 +117,7 @@ INVEST_OPENAPI_MAIN()
 
     // MAIL
     // 0.2
-    QString json = "{\"payload\":{\"figi\":\"BBG00178PGX3\",\"depth\":20,\"bids\":[[1731,69],[1730.8,11],[1730.6,38],[1730.4,151],[1730.2,21],[1730,602],[1729.8,240],[1729.6,17],[1729.2,22],[1729,12],[1728.8,1],[1728.6,2],[1728.4,101],[1728.2,20],[1728,26],[1727.8,75],[1727.6,5683],[1727.4,400],[1727.2,200],[1727,81]],\"asks\":[[1731.8,100],[1732,20],[1732.2,58],[1732.4,61],[1732.6,51],[1732.8,189],[1733,1508],[1733.2,111],[1733.4,26],[1733.6,210],[1733.8,31],[1734,59],[1734.4,20],[1734.6,200],[1735,212],[1735.4,230],[1735.6,200],[1735.8,655],[1736,1205],[1736.2,1]]},\"event\":\"orderbook\",\"time\":\"2021-04-23T18:58:44.557787641Z\"}";
+    QString json = "{\"payload\":{\"figi\":\"BBG00178PGX3\",\"depth\":20,\"bids\":[[1731,69],[1730.8,11],[1730.6,38],[1730.4,151],[1730.2,21],[1730,602],[1729.8,240],[1729.6,17],[1729.2,22],[1729,12],[1728.8,1],[1728.6,2],[1728.4,101],[1728.2,20],[1728,26],[1727.8,75],[1727.6,5683],[1727.4,400],[1727.2,200],[1727,81]],\"asks\":[[1731.6,100],[1732,20],[1732.2,58],[1732.4,61],[1732.6,51],[1732.8,189],[1733,1508],[1733.2,111],[1733.4,26],[1733.6,210],[1733.8,31],[1734,59],[1734.4,20],[1734.6,200],[1735,212],[1735.4,230],[1735.6,200],[1735.8,655],[1736,1205],[1736.2,1]]},\"event\":\"orderbook\",\"time\":\"2021-04-23T18:58:44.557787641Z\"}";
 
     tkf::StreamingOrderbookResponse response;
     response.fromJson(json);
@@ -148,21 +148,40 @@ INVEST_OPENAPI_MAIN()
     
     cout << endl;
 
+    /*
     bool instrumentInfoFound = marketInstrumentsState.find(marketGlass.figi)!=marketInstrumentsState.end();
     cout << "Instrument Info: " << ( instrumentInfoFound? "not " : "" ) << "found" << (!instrumentInfoFound ? " ////???" : "") << endl;
-
+    */
 
     // Here is a lot of advanced info
 
     cout << endl;
-    cout << "Price increment: " << miStateIt->second.priceIncrement << endl;
+    cout << "Price increment: " << priceIncrement << endl;
     cout << "Spread points  : " << marketGlass.getPriceSpreadPoints( priceIncrement ) << endl;
 
-
     cout << endl;
     cout << endl;
 
+    tkf::MarketGlass sparsedGlass = marketGlass.getSparsed( priceIncrement );
 
+    cout << sparsedGlass << endl; // << endl ;
+
+    cout << endl;
+
+    std::size_t asksSparsedSize = marketGlass.getAsksSparsedSize(priceIncrement);
+    std::size_t bidsSparsedSize = marketGlass.getBidsSparsedSize(priceIncrement);
+
+    Decimal asksSparseScale = marketGlass.getAsksSparseScale(priceIncrement);
+    Decimal bidsSparseScale = marketGlass.getBidsSparseScale(priceIncrement);
+
+    Decimal asksSparsePercent = marketGlass.getAsksSparsePercent(priceIncrement);
+    Decimal bidsSparsePercent = marketGlass.getBidsSparsePercent(priceIncrement);
+
+    cout << "Asks sparse size: " << asksSparsedSize << ", scale: " << asksSparseScale << ", " << asksSparsePercent << "%" << endl;
+    cout << "Bids sparse size: " << bidsSparsedSize << ", scale: " << bidsSparseScale << ", " << bidsSparsePercent << "%" << endl;
+
+    cout << endl;
+    cout << endl;
 
     
     return 0;

@@ -7,14 +7,18 @@
 #include "qt_time_helpers.h"
 #include "../cpp/cpp.h"
 
+#include "market_math.h"
 
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <vector>
+#include <map>
 #include <algorithm>
 #include <exception>
 #include <stdexcept>
 #include <utility>
+#include <iterator>
 
 
 
@@ -37,14 +41,14 @@ typedef marty::Decimal      Decimal;
 struct MarketGlassItem
 {
     Decimal          price;
-    unsigned         quantity;
+    int              quantity;
 
     static MarketGlassItem fromStreamingOrderbookItem( const OpenAPI::StreamingOrderbookItem &item )
     {
         MarketGlassItem mgi;
 
         mgi.price     = item.price;
-        mgi.quantity  = unsigned(item.quantity);
+        mgi.quantity  = int(item.quantity);
         
         return mgi;
     }
@@ -54,20 +58,39 @@ struct MarketGlassItem
 //------------------------------
 struct MarketGlassItemPriceGreater
 {
-    bool operator()( const MarketGlassItem &mgi1, const MarketGlassItem &mgi2 ) const
-    {
-        return mgi1.price > mgi2.price;
-    }
+    bool operator()( const MarketGlassItem &mgi1, const MarketGlassItem &mgi2 ) const  { return mgi1.price > mgi2.price; }
+};
+
+struct MarketGlassItemPriceLess
+{
+    bool operator()( const MarketGlassItem &mgi1, const MarketGlassItem &mgi2 ) const  { return mgi1.price < mgi2.price; }
 };
 
 //------------------------------
-struct MarketGlassItemPriceLess
+struct MarketGlassItemQuantityGreater
 {
-    bool operator()( const MarketGlassItem &mgi1, const MarketGlassItem &mgi2 ) const
-    {
-        return mgi1.price < mgi2.price;
-    }
+    bool operator()( const MarketGlassItem &mgi1, const MarketGlassItem &mgi2 ) const  { return mgi1.quantity > mgi2.quantity; }
 };
+
+struct MarketGlassItemQuantityLess
+{
+    bool operator()( const MarketGlassItem &mgi1, const MarketGlassItem &mgi2 ) const  { return mgi1.quantity < mgi2.quantity; }
+};
+
+//----------------------------------------------------------------------------
+
+
+
+
+
+//----------------------------------------------------------------------------
+/*
+struct QuantityOutliers
+{
+    std::map< Decimal, MarketGlassItem>    upper;
+    std::map< Decimal, MarketGlassItem>    lower;
+};
+*/
 
 //----------------------------------------------------------------------------
 
@@ -134,7 +157,7 @@ protected:
 
         for(; b!=e; ++b)
         {
-            q += b->quantity;
+            q += (unsigned)b->quantity;
         }
 
         return q;
@@ -153,7 +176,125 @@ protected:
         return res;
     }
 
+    template< typename IterType, typename BackInsertIter > static
+    void sparseSeq( IterType b, IterType e, BackInsertIter backInserter, Decimal priceStep )
+    {
+        if (b==e)
+            return;
 
+        Decimal lastPrice = Decimal(0);
+        {
+            IterType iterBeforeEnd = e;
+            --iterBeforeEnd;
+            lastPrice = iterBeforeEnd->price;
+        }
+
+        priceStep = priceStep.abs();
+
+
+        Decimal price = b->price;
+
+        *backInserter++ = MarketGlassItem{ b->price, b->quantity };
+
+        //Decimal nextPrice = price + priceStep;
+        price += priceStep;
+        ++b;
+
+        while( b!=e && price<=lastPrice )
+        {
+            while( price!=b->price && price<=lastPrice )
+            {
+                *backInserter++ = MarketGlassItem{ price, 0 };
+                price += priceStep;
+            }
+
+            *backInserter++ = MarketGlassItem{ b->price, b->quantity };
+            price = b->price + priceStep;
+
+            ++b;
+        }
+
+    }
+
+
+    template< typename IterType > static
+    std::size_t calcNumSparsedItems( IterType b, IterType e, Decimal priceStep )
+    {
+        if (b==e)
+            return 0;
+
+        Decimal lastPrice = Decimal(0);
+        {
+            IterType iterBeforeEnd = e;
+            --iterBeforeEnd;
+            lastPrice = iterBeforeEnd->price;
+        }
+
+        std::size_t resCnt = 0;
+
+        priceStep = priceStep.abs();
+
+
+        Decimal price = b->price;
+
+        price += priceStep;
+        ++b;
+
+        while( b!=e && price<=lastPrice )
+        {
+            while( price!=b->price && price<=lastPrice )
+            {
+                ++resCnt;
+                price += priceStep;
+            }
+
+            price = b->price + priceStep;
+
+            ++b;
+        }
+
+        return resCnt;
+
+    }
+
+
+    //Outlier
+    template< typename IterType > static
+    OutlierLimits< int >
+    calcOutlierLimits( IterType b, IterType e, std::size_t percentile )
+    {
+        /*
+        std::stable_sort( tmpItems.begin(), tmpItems.end(), MarketGlassItemQuantityLess() );
+        */
+
+        // std::vector< MarketGlassItem > tmpItems;
+        // tmpItems.reserve( std::distance(b,e) );
+
+        if (b==e)
+            return OutlierLimits<int>{ 0, 0 };
+
+        std::vector< int > tmp;
+        tmp.reserve( std::distance(b,e) );
+
+        for(; b!=e; ++b)
+        {
+            if (b->quantity > 0)
+                tmp.push_back(b->quantity);
+        }
+
+        std::sort( tmp.begin(), tmp.end(), std::less<int>() );
+
+        return invest_openapi::calcOutlierLimits( tmp, percentile );
+    }
+
+
+/*
+struct MarketGlassItem
+{
+    Decimal          price;
+    int              quantity;
+
+*/
 
 public:
 
@@ -197,12 +338,51 @@ public:
     Decimal getBidsAsksRatio() const    { return calcRatio( quantityBids, quantityAsks, 3 ); }
 
 
-
     void updateQuantity()
     {
         quantityAsks = calcQuantity( asks.begin() , asks.end() );
         quantityBids = calcQuantity( bids.begin() , bids.end() );
     }
+
+
+    MarketGlass getSparsed( Decimal priceStep ) const
+    {
+
+        MarketGlass res;
+        res.dateTime         = dateTime;
+        res.dateTimeString   = dateTimeString;
+        res.dateTimeAsStamp  = dateTimeAsStamp;
+        res.figi             = figi;
+        res.depth            = depth;
+        res.quantityAsks     = quantityAsks;
+        res.quantityBids     = quantityBids;
+
+        sparseSeq( asks.rbegin(), asks.rend(), std::back_inserter(res.asks), priceStep );
+        sparseSeq( bids.rbegin(), bids.rend(), std::back_inserter(res.bids), priceStep );
+
+        std::reverse( res.asks.begin(), res.asks.end() );
+        std::reverse( res.bids.begin(), res.bids.end() );
+
+        return res;
+    }
+
+
+    std::size_t getAsksSparsedSize( Decimal priceStep ) const  { return asks.size() + calcNumSparsedItems(asks.rbegin(), asks.rend(), priceStep); }
+    std::size_t getBidsSparsedSize( Decimal priceStep ) const  { return bids.size() + calcNumSparsedItems(bids.rbegin(), bids.rend(), priceStep); }
+
+    Decimal getAsksSparseScale( Decimal priceStep )     const  { return calcRatio( getAsksSparsedSize(priceStep), asks.size(), 3 ); }
+    Decimal getBidsSparseScale( Decimal priceStep )     const  { return calcRatio( getBidsSparsedSize(priceStep), bids.size(), 3 ); }
+
+    // Decimal getAsksSparsePercent( Decimal priceStep )   const  { Decimal d = Decimal(asks.size()); return d.getExPercentOf( Decimal(getAsksSparsedSize(priceStep)-asks.size()), 2, 2 ); }
+    // Decimal getBidsSparsePercent( Decimal priceStep )   const  { Decimal d = Decimal(bids.size()); return d.getExPercentOf( Decimal(getBidsSparsedSize(priceStep)-bids.size()), 2, 2 ); }
+    Decimal getAsksSparsePercent( Decimal priceStep )   const  { Decimal d = Decimal(asks.size()); return d.getExPercent( Decimal(getAsksSparsedSize(priceStep)-asks.size()), 2, 2 ); }
+    Decimal getBidsSparsePercent( Decimal priceStep )   const  { Decimal d = Decimal(bids.size()); return d.getExPercent( Decimal(getBidsSparsedSize(priceStep)-bids.size()), 2, 2 ); }
+
+
+
+    OutlierLimits< int > getAsksOutlierLimits( std::size_t percentile ) const { return calcOutlierLimits( asks.begin(), asks.end(), percentile ); }
+    OutlierLimits< int > getBidsOutlierLimits( std::size_t percentile ) const { return calcOutlierLimits( bids.begin(), bids.end(), percentile ); }
+
 
 
     static MarketGlass fromStreamingOrderbook( const OpenAPI::StreamingOrderbook &orderBook, const QDateTime &dt, const QString &dtStr )
@@ -239,7 +419,6 @@ public:
             }
         }
 
-        
         // Не расчитываем, что всё придёт в нужном порядке, сортируем сами
         std::stable_sort( mg.asks.begin(), mg.asks.end(), MarketGlassItemPriceGreater() );
         std::stable_sort( mg.bids.begin(), mg.bids.end(), MarketGlassItemPriceGreater() );
@@ -270,39 +449,8 @@ public:
     }
 
 
-    int alignPrecision()
-    {
-        int maxPricePrecision = 0;
-
-        for( const auto &ask: asks )
-        {
-            int p = ask.price.precision();
-            if (maxPricePrecision<p)
-                maxPricePrecision = p;
-        }
-       
-        for( const auto &bid: bids )
-        {
-            int p = bid.price.precision();
-            if (maxPricePrecision<p)
-                maxPricePrecision = p;
-        }
-
-        for( auto &ask: asks )
-            ask.price.precisionExpandTo(maxPricePrecision);
-       
-        for( auto &bid: bids )
-            bid.price.precisionExpandTo(maxPricePrecision);
-
-        return maxPricePrecision;
-    }
-
-    MarketGlass getPrecisionAlignedGlass() const
-    {
-        MarketGlass cp = *this;
-        cp.alignPrecision();
-        return cp;
-    }
+    int alignPrecision();
+    MarketGlass getPrecisionAlignedGlass() const;
 
 
 }; // struct MarketGlass
@@ -347,6 +495,48 @@ int MarketGlass::getPriceSpreadPoints( const Decimal &priceStep ) const
 
     return neg ? -spreadPoints : spreadPoints;
 }
+
+//----------------------------------------------------------------------------
+inline
+int MarketGlass::alignPrecision()
+{
+    int maxPricePrecision = 0;
+
+    for( const auto &ask: asks )
+    {
+        int p = ask.price.precision();
+        if (maxPricePrecision<p)
+            maxPricePrecision = p;
+    }
+   
+    for( const auto &bid: bids )
+    {
+        int p = bid.price.precision();
+        if (maxPricePrecision<p)
+            maxPricePrecision = p;
+    }
+
+    for( auto &ask: asks )
+        ask.price.precisionExpandTo(maxPricePrecision);
+   
+    for( auto &bid: bids )
+        bid.price.precisionExpandTo(maxPricePrecision);
+
+    return maxPricePrecision;
+}
+
+//----------------------------------------------------------------------------
+inline
+MarketGlass MarketGlass::getPrecisionAlignedGlass() const
+{
+    MarketGlass cp = *this;
+    cp.alignPrecision();
+    return cp;
+}
+
+//----------------------------------------------------------------------------
+
+
 
 
 //----------------------------------------------------------------------------
@@ -394,6 +584,7 @@ std::string marketGlassFormatHelperForQuantity( int q, std::size_t w )
 }
 
 //----------------------------------------------------------------------------
+
 
 
 
@@ -480,12 +671,23 @@ std::ostream& operator<<( std::ostream &s, MarketGlass mg )
     std::string strEmptyPrice = std::string( priceWidth, ' ' );
     std::string strEmptyQuant = std::string( quantWidth, ' ' );
     std::string strSep        = std::string( sepWidth  , ' ' );
+
+    OutlierLimits< int > asksOutliers = mg.getAsksOutlierLimits( 20 );
+    OutlierLimits< int > bidsOutliers = mg.getBidsOutlierLimits( 20 );
+
     
 
     //------------------------------
 
     for( auto ask: mg.asks )
     {
+        if (ask.quantity >= asksOutliers.upper)
+            s << "!";
+        // else if (ask.quantity <= asksOutliers.lower)
+        //     s << "?";
+        else
+            s << " ";
+
         s << strEmptyQuant ;
         s << strSep;
         s << marketGlassFormatHelperForPrice( ask.price, maxPricePrecision, maxPriceWidth );
@@ -500,11 +702,20 @@ std::ostream& operator<<( std::ostream &s, MarketGlass mg )
 
     for( auto bid: mg.bids )
     {
+        s << " ";
         s << marketGlassFormatHelperForQuantity(bid.quantity, quantWidth );
         s << strSep;
         s << marketGlassFormatHelperForPrice( bid.price, maxPricePrecision, maxPriceWidth );
         s << strSep;
         s << strEmptyQuant ;
+
+        if (bid.quantity >= bidsOutliers.upper)
+            s << "!";
+        // else if (bid.quantity <= bidsOutliers.lower)
+        //     s << "?";
+        else
+            s << " ";
+
         s << endl;
     }
 
