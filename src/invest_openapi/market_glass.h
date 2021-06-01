@@ -289,17 +289,26 @@ protected:
 
 
     template< typename IterType > static
-    void getThreeBackets( IterType b, IterType e, const OutlierLimits< int > &limits, int &bLow, int &bMid, int &bHight )
+    void getThreeQuantityBackets( IterType b, IterType e, const OutlierLimits< int > &limits, int &backetLow, int &backetMid, int &backetHigh )
     {
-        bLow   = 0;
-        bMid   = 0;
-        bHight = 0;
+        backetLow   = 0;
+        backetMid   = 0;
+        backetHigh  = 0;
 
-        for()
+        for( ; b!=e; ++b )
+        {
+            if (b->quantity<=0)
+                continue;
+
+            if (b->quantity >= limits.upper)
+                backetHigh += b->quantity;
+            else if (b->quantity <= limits.lower)
+                backetLow += b->quantity;
+            else
+                backetMid += b->quantity;
+        }
     }
 
-
-    OutlierLimits< int >
 
 
 
@@ -359,7 +368,6 @@ public:
     }
 
 
-
     void updateQuantity()
     {
         quantityAsks = calcQuantity( asks.begin() , asks.end() );
@@ -401,12 +409,39 @@ public:
     Decimal getBidsSparsePercent( Decimal priceStep )   const  { Decimal d = Decimal(bids.size()); return d.getExPercent( Decimal(getBidsSparsedSize(priceStep)-bids.size()), 2, 2 ); }
 
 
-    OutlierLimits< int > getAsksOutlierLimits( std::size_t percentile ) const { return calcOutlierLimits( asks.begin(), asks.end(), percentile ); }
-    OutlierLimits< int > getBidsOutlierLimits( std::size_t percentile ) const { return calcOutlierLimits( bids.begin(), bids.end(), percentile ); }
+    OutlierLimits< int > getAsksQuantityOutlierLimits( std::size_t percentile = 25 ) const { return calcOutlierLimits( asks.begin(), asks.end(), percentile ); }
+    OutlierLimits< int > getBidsQuantityOutlierLimits( std::size_t percentile = 25 ) const { return calcOutlierLimits( bids.begin(), bids.end(), percentile ); }
+
+    OutlierLimits< int > getAsksQuantityPercentiles( std::size_t percentile = 25 ) const  { return calcPercentiles( asks.begin(), asks.end(), percentile ); }
+    OutlierLimits< int > getBidsQuantityPercentiles( std::size_t percentile = 25 ) const  { return calcPercentiles( bids.begin(), bids.end(), percentile ); }
+
+    void getAsksThreeQuantityBackets( const OutlierLimits< int > &limits, int &backetLow, int &backetMid, int &backetHigh ) const
+    {
+        getThreeQuantityBackets( asks.begin(), asks.end(), limits, backetLow, backetMid, backetHigh );
+    }
+
+    void getBidsThreeQuantityBackets( const OutlierLimits< int > &limits, int &backetLow, int &backetMid, int &backetHigh ) const
+    {
+        getThreeQuantityBackets( bids.begin(), bids.end(), limits, backetLow, backetMid, backetHigh );
+    }
+
+    Decimal calcAsksHighQuantityRatio( const OutlierLimits< int > &limits )
+    {
+        int backetLow = 0, backetMid = 0, backetHigh = 0;
+        getAsksThreeQuantityBackets( limits, backetLow, backetMid, backetHigh );
+        return calcRatio( backetLow+backetMid, backetHigh, 3 );
+    }
+
+    Decimal calcBidsHighQuantityRatio( const OutlierLimits< int > &limits )
+    {
+        int backetLow = 0, backetMid = 0, backetHigh = 0;
+        getBidsThreeQuantityBackets( limits, backetLow, backetMid, backetHigh );
+        return calcRatio( backetLow+backetMid, backetHigh, 3 );
+    }
 
 
-    void getThreeBackets()
-    OutlierLimits< int >
+
+
 
     static MarketGlass fromStreamingOrderbook( const OpenAPI::StreamingOrderbook &orderBook, const QDateTime &dt, const QString &dtStr )
     {
@@ -695,8 +730,8 @@ std::ostream& operator<<( std::ostream &s, MarketGlass mg )
     std::string strEmptyQuant = std::string( quantWidth, ' ' );
     std::string strSep        = std::string( sepWidth  , ' ' );
 
-    OutlierLimits< int > asksOutliers = mg.getAsksOutlierLimits( 25 );
-    OutlierLimits< int > bidsOutliers = mg.getBidsOutlierLimits( 25 );
+    OutlierLimits< int > asksOutliers = mg.getAsksQuantityOutlierLimits( 25 );
+    OutlierLimits< int > bidsOutliers = mg.getBidsQuantityOutlierLimits( 25 );
 
     
 

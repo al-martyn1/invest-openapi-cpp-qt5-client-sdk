@@ -150,6 +150,11 @@ INVEST_OPENAPI_MAIN()
     
     cout << endl;
 
+    cout << "Asks HQ Ratio: " << marketGlass.calcAsksHighQuantityRatio( marketGlass.getAsksQuantityOutlierLimits() ) << endl;
+    cout << "Bids HQ Ratio: " << marketGlass.calcBidsHighQuantityRatio( marketGlass.getBidsQuantityOutlierLimits() ) << endl;
+
+    cout << endl;
+
     /*
     bool instrumentInfoFound = marketInstrumentsState.find(marketGlass.figi)!=marketInstrumentsState.end();
     cout << "Instrument Info: " << ( instrumentInfoFound? "not " : "" ) << "found" << (!instrumentInfoFound ? " ////???" : "") << endl;
