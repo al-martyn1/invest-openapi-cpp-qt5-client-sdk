@@ -164,7 +164,7 @@ void Decimal::assignFromDoubleImpl( double d, int precision )
 
 //----------------------------------------------------------------------------
 inline
-const char* Decimal::toString( char *pBuf, std::size_t bufSize, int precision ) const
+const char* Decimal::toString( char *pBuf, std::size_t bufSize, int precision, char dot ) const
 {
     if (bufSize < 5 )
         throw std::runtime_error("marty::Decimal::toString: bufSize is not enough");
@@ -182,17 +182,17 @@ const char* Decimal::toString( char *pBuf, std::size_t bufSize, int precision ) 
         pBuf[idx++] = '-';
     }
 
-    bcd::formatRawBcdNumber( m_number, m_precision, &pBuf[idx], bufSize-1 );
+    bcd::formatRawBcdNumber( m_number, m_precision, &pBuf[idx], bufSize-1, dot );
 
     return pBuf;
 }
 
 //----------------------------------------------------------------------------
 inline
-std::string Decimal::toString( int precision ) const
+std::string Decimal::toString( int precision, char dot ) const
 {
-    char buf[256]; // 256 знаком в числе хватит для всех :)
-    return toString( &buf[0], sizeof(buf), precision );
+    char buf[4096]; // 256 знаков в числе хватит для всех :)
+    return toString( &buf[0], sizeof(buf), precision, dot );
 }
 
 //----------------------------------------------------------------------------
