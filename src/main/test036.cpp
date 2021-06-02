@@ -150,8 +150,16 @@ INVEST_OPENAPI_MAIN()
     
     cout << endl;
 
-    cout << "Asks HQ Ratio: " << marketGlass.calcAsksHighQuantityRatio( marketGlass.getAsksQuantityOutlierLimits() ) << endl;
-    cout << "Bids HQ Ratio: " << marketGlass.calcBidsHighQuantityRatio( marketGlass.getBidsQuantityOutlierLimits() ) << endl;
+    auto asksLimits = marketGlass.getAsksQuantityOutlierLimits();
+    auto bidsLimits = marketGlass.getBidsQuantityOutlierLimits();
+
+    cout << "Asks HQ Ratio: " << marketGlass.calcAsksHighQuantityRatio( asksLimits ) << endl;
+    cout << "Bids HQ Ratio: " << marketGlass.calcBidsHighQuantityRatio( bidsLimits ) << endl;
+
+    cout << endl;
+
+    cout << "Asks Outlier distance: " << marketGlass.calcAsksDistanceToOutlier( asksLimits, priceIncrement ) << endl;
+    cout << "Bids Outlier distance: " << marketGlass.calcBidsDistanceToOutlier( bidsLimits, priceIncrement ) << endl;
 
     cout << endl;
 

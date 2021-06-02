@@ -439,8 +439,86 @@ public:
         return calcRatio( backetLow+backetMid, backetHigh, 3 );
     }
 
+    std::size_t calcAsksDistanceToOutlier( const OutlierLimits< int > &limits, Decimal priceStep ) const 
+    {
+        Decimal outlierPrice = Decimal(0);
+
+        std::vector< MarketGlassItem >::const_reverse_iterator it  = asks.rbegin();
+        std::vector< MarketGlassItem >::const_reverse_iterator end = asks.rend();
+        for(; it!=end; ++it)
+        {
+            if (it->quantity >= limits.upper)
+            {
+                outlierPrice = it->price;
+                break;
+            }
+        }
+
+        if (outlierPrice == Decimal(0))
+        {
+            outlierPrice = asks.begin() -> price + priceStep; // Делаем цену за пределами стакана
+        }
+
+        Decimal deltaPrice = outlierPrice - getAskBestPrice();
+
+        Decimal deltaModStep = deltaPrice.mod_helper(priceStep);
+
+        #if defined(DEBUG) || defined(_DEBUG)
+
+        std::string outlierPriceStr = outlierPrice.to_string();
+        std::string priceStepStr    = priceStep.to_string();
+        std::string deltaPriceStr   = deltaPrice.to_string();
+        std::string deltaModStepStr = deltaModStep.to_string();
+
+        #endif
+
+        return std::size_t ( deltaModStep );
+    }
 
 
+    std::size_t calcBidsDistanceToOutlier( const OutlierLimits< int > &limits, Decimal priceStep ) const 
+    {
+        Decimal outlierPrice = Decimal(0);
+
+        std::vector< MarketGlassItem >::const_iterator it  = bids.begin();
+        std::vector< MarketGlassItem >::const_iterator end = bids.end();
+        for(; it!=end; ++it)
+        {
+            if (it->quantity >= limits.upper)
+            {
+                outlierPrice = it->price;
+                break;
+            }
+        }
+
+        if (outlierPrice == Decimal(0))
+        {
+            outlierPrice = bids.rbegin() -> price - priceStep; // Делаем цену за пределами стакана
+        }
+
+        Decimal deltaPrice = getBidBestPrice() - outlierPrice;
+
+        Decimal deltaModStep = deltaPrice.mod_helper(priceStep);
+
+        #if defined(DEBUG) || defined(_DEBUG)
+
+        std::string outlierPriceStr = outlierPrice.to_string();
+        std::string priceStepStr    = priceStep.to_string();
+        std::string deltaPriceStr   = deltaPrice.to_string();
+        std::string deltaModStepStr = deltaModStep.to_string();
+
+        #endif
+
+        return std::size_t ( deltaModStep );
+    }
+
+
+    //std::vector< MarketGlassItem >     asks; //!< Запросы на продажу               - отсортированы по убыванию
+    //std::vector< MarketGlassItem >     bids; //!< Запросы на покупку (предложения) - отсортированы по убыванию
+    //Decimal          price;
+    //int              quantity;
+    //Decimal getAskBestPrice() const     { return getAsksMinPrice(); }
+    //Decimal getBidBestPrice() const     { return getBidsMaxPrice(); }
 
 
     static MarketGlass fromStreamingOrderbook( const OpenAPI::StreamingOrderbook &orderBook, const QDateTime &dt, const QString &dtStr )
