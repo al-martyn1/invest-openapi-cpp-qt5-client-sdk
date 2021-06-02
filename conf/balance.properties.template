@@ -1,4 +1,4 @@
-instruments = MAIL,OZON,POLY,QIWI,YNDX,AFLT,FIVE,     DSKY,     LNTA,      MGNT,NVTK,ROSN,USD000UTSTOM
-;                                                GRNT      IRKT     LSNGP
+instruments = MAIL,OKEY,OZON,POLY,QIWI,YNDX,AFLT,FIVE,GRNT,DSKY,IRKT,LNTA,LSNGP,MGNT,NVTK,ROSN,USD000UTSTOM
+;                                                                 
 
 ; OKEY,POGR,TCSG,AFKS,VTBR,GAZP,SIBN,,PLZL,RUSP,SBER,SBERP,SNGS,SNGSP,ENPG,
