@@ -98,7 +98,7 @@ calcOutlierLimits( const OutlierLimits< ValType > &limits )
 */
 
 inline
-marty::Decimal calcInstrumentPrice( marty::Decimal p1, marty::Decimal p2, const marty::Decimal &priceStep, bool roundDown = true )
+marty::Decimal calcInstrumentPrice( marty::Decimal p1, marty::Decimal p2, const marty::Decimal &priceStep, bool roundDown = false )
 {
     if (p1 > p2)
         p1.swap(p2);
@@ -110,16 +110,20 @@ marty::Decimal calcInstrumentPrice( marty::Decimal p1, marty::Decimal p2, const 
 
     Decimal avg = (p1+p2) / marty::Decimal(2);
 
-    Decimal priceStepDivRawRes = avg.mod_helper_raw_div( priceStep );
-
-    Decimal finalPrice         = priceStepDivRawRes * priceStep;
+    //Decimal priceStepDivRawRes = avg.mod_helper_raw_div( priceStep );
     Decimal finalPriceMod      = avg.mod_helper( priceStep );
-    Decimal finalPriceMin      = finalPriceMod;
-    Decimal finalPriceMax      = finalPriceMod + priceStep;
+
+    Decimal finalPrice         = finalPriceMod * priceStep;
+    
+    Decimal finalPriceMin      = finalPrice;
+    Decimal finalPriceMax      = finalPrice + priceStep;
 
 
-    Decimal deltaToLower = finalPriceMax - p1;
-    Decimal deltaToUpper = p2 - finalPriceMin;
+    // Decimal deltaToLower = finalPriceMax - p1;
+    // Decimal deltaToUpper = p2 - finalPriceMin;
+
+    Decimal deltaToLower = finalPrice - p1;
+    Decimal deltaToUpper = p2 - finalPrice;
 
     int cmpResult = deltaToLower.compare( deltaToUpper );
     if (cmpResult==0)
@@ -129,7 +133,7 @@ marty::Decimal calcInstrumentPrice( marty::Decimal p1, marty::Decimal p2, const 
         else
             return finalPriceMax;
     }
-    else if (cmpResult<0)
+    else if (cmpResult<=0)
     {
         return finalPriceMin;
     }

@@ -171,7 +171,11 @@ protected:
         if (res==Decimal(0))
             return res;
 
-        res.div( Decimal(divisor), divPrecision );
+        auto decimalDivisor = Decimal(divisor);
+        if (decimalDivisor.isZero())
+           decimalDivisor = Decimal("0.00000000000000000000000000000000000000000000000000000000001"); // Делим на что-то очень маленькое
+
+        res.div( decimalDivisor, divPrecision );
 
         return res;
     }
@@ -342,12 +346,18 @@ public:
 
     Decimal getGlassMaxPrice() const    { return getGlassMinMaxHelper( asks.begin() , asks.end() , "getGlassMaxPrice - failed to get max price" ); }
     Decimal getGlassMinPrice() const    { return getGlassMinMaxHelper( bids.rbegin(), bids.rend(), "getGlassMinPrice - failed to get min price" ); }
+    Decimal calcGlassPriceRange() const { return getGlassMaxPrice() - getGlassMinPrice(); }
+    int calcGlassPriceRangePoints(Decimal priceStep) const { return int(calcGlassPriceRange().mod_helper(priceStep));  }
 
     Decimal getAsksMaxPrice() const     { return getGlassMinMaxHelper( asks.begin() , asks.end() , "getAsksMaxPrice - failed to get max price" ); }
     Decimal getAsksMinPrice() const     { return getGlassMinMaxHelper( asks.rbegin(), asks.rend(), "getAsksMinPrice - failed to get min price" ); }
+    Decimal calcAsksPriceRange() const  { return getAsksMaxPrice() - getAsksMinPrice(); }
+    int     calcAsksPriceRangePoints(const Decimal &priceStep) const { return int(calcAsksPriceRange().mod_helper(priceStep));  }
 
     Decimal getBidsMaxPrice() const     { return getGlassMinMaxHelper( bids.begin() , bids.end() , "invest_openapi::MarketGlass::getAsksMaxPrice - failed to get max price" ); }
     Decimal getBidsMinPrice() const     { return getGlassMinMaxHelper( bids.rbegin(), bids.rend(), "invest_openapi::MarketGlass::getAsksMinPrice - failed to get min price" ); }
+    Decimal calcBidsPriceRange() const  { return getBidsMaxPrice() - getBidsMinPrice(); }
+    int     calcBidsPriceRangePoints(const Decimal &priceStep) const { return int(calcBidsPriceRange().mod_helper(priceStep));  }
 
     Decimal getAskBestPrice() const     { return getAsksMinPrice(); }
     Decimal getBidBestPrice() const     { return getBidsMaxPrice(); }
@@ -362,9 +372,9 @@ public:
     Decimal getBidsAsksRatio() const    { return calcRatio( quantityBids, quantityAsks, 3 ); }
 
 
-    Decimal calcInstrumentPrice( const marty::Decimal &priceStep ) const
+    Decimal calcInstrumentPrice( const Decimal &priceStep, bool roundDown = false ) const
     {
-        return invest_openapi::calcInstrumentPrice( getBidsMaxPrice(), getAsksMinPrice(), priceStep );
+        return invest_openapi::calcInstrumentPrice( getBidsMaxPrice(), getAsksMinPrice(), priceStep, roundDown );
     }
 
 
@@ -414,6 +424,8 @@ public:
 
     OutlierLimits< int > getAsksQuantityPercentiles( std::size_t percentile = 25 ) const  { return calcPercentiles( asks.begin(), asks.end(), percentile ); }
     OutlierLimits< int > getBidsQuantityPercentiles( std::size_t percentile = 25 ) const  { return calcPercentiles( bids.begin(), bids.end(), percentile ); }
+
+    unsigned getGlassDepth() const { return depth; }
 
     void getAsksThreeQuantityBackets( const OutlierLimits< int > &limits, int &backetLow, int &backetMid, int &backetHigh ) const
     {
