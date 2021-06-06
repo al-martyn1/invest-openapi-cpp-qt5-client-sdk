@@ -45,6 +45,7 @@
 
 #include "invest_openapi/streaming_handlers.h"
 
+#include "invest_openapi/market_candle.h"
 #include "invest_openapi/market_glass.h"
 #include "invest_openapi/market_instrument_state.h"
 
@@ -114,6 +115,19 @@ INVEST_OPENAPI_MAIN()
 
     pMainDbMan->applyDefDecimalFormatFromConfig( *pDatabaseConfig );
 
+
+
+    
+    QDateTime sampleDt = qt_helpers::parseDateTimeISO8601( "2021-06-04T20:25:00Z" );
+    cout << "SampleDt nanosecs: " << qt_helpers::nanosecFromQDateTime( sampleDt );
+
+    QString candleJson = "{\"payload\":{\"o\":1669.8,\"c\":1669.8,\"h\":1669.8,\"l\":1669.8,\"v\":1,\"time\":\"2021-06-04T20:25:00Z\",\"interval\":\"1min\",\"figi\":\"BBG00178PGX3\"},\"event\":\"candle\",\"time\":\"2021-06-04T20:26:18.802122316Z\"}";
+
+    tkf::StreamingCandleResponse candleResponse;
+    candleResponse.fromJson(candleJson);
+    tkf::MarketCandle candle = tkf::MarketCandle::fromStreamingCandleResponse( candleResponse );
+
+    cout << endl;
 
     // MAIL
     // 0.2

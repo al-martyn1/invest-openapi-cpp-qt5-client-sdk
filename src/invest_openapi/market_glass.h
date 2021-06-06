@@ -30,9 +30,6 @@ namespace invest_openapi
 
 
 //----------------------------------------------------------------------------
-typedef marty::Decimal      Decimal;
-
-//----------------------------------------------------------------------------
 
 
 
@@ -40,6 +37,10 @@ typedef marty::Decimal      Decimal;
 //----------------------------------------------------------------------------
 struct MarketGlassItem
 {
+
+    typedef marty::Decimal      Decimal;
+
+
     Decimal          price;
     int              quantity;
 
@@ -100,6 +101,10 @@ struct QuantityOutliers
 //----------------------------------------------------------------------------
 struct MarketGlass
 {
+
+    typedef marty::Decimal      Decimal;
+
+
     QDateTime                          dateTime;
     QString                            dateTimeString;
     std::uint64_t                      dateTimeAsStamp; //!< Timestamp in nanoseconds
@@ -536,6 +541,10 @@ public:
     static MarketGlass fromStreamingOrderbook( const OpenAPI::StreamingOrderbook &orderBook, const QDateTime &dt, const QString &dtStr )
     {
         MarketGlass mg;
+
+        if (!orderBook.isSet() || !orderBook.isValid())
+            return mg;
+
 
         mg.dateTime          = dt;
         mg.dateTimeString    = dtStr;
