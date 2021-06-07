@@ -182,6 +182,14 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test036", "vcxproj\test036.vcxproj", "{807CBB65-F217-4E06-B0EA-4A7FD2AC9F4A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_log_streaming_orderbooks", "vcxproj\_tkf_log_streaming_orderbooks.vcxproj", "{DFA98602-C056-424B-8BCF-4E6DB395559F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_make_order", "vcxproj\_tkf_make_order.vcxproj", "{5C944948-A562-42B8-BB9B-8B70974142D5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -599,6 +607,14 @@ Global
 		{DFA98602-C056-424B-8BCF-4E6DB395559F}.Release|x64.Build.0 = Release|x64
 		{DFA98602-C056-424B-8BCF-4E6DB395559F}.Release|x86.ActiveCfg = Release|Win32
 		{DFA98602-C056-424B-8BCF-4E6DB395559F}.Release|x86.Build.0 = Release|Win32
+		{5C944948-A562-42B8-BB9B-8B70974142D5}.Debug|x64.ActiveCfg = Debug|x64
+		{5C944948-A562-42B8-BB9B-8B70974142D5}.Debug|x64.Build.0 = Debug|x64
+		{5C944948-A562-42B8-BB9B-8B70974142D5}.Debug|x86.ActiveCfg = Debug|Win32
+		{5C944948-A562-42B8-BB9B-8B70974142D5}.Debug|x86.Build.0 = Debug|Win32
+		{5C944948-A562-42B8-BB9B-8B70974142D5}.Release|x64.ActiveCfg = Release|x64
+		{5C944948-A562-42B8-BB9B-8B70974142D5}.Release|x64.Build.0 = Release|x64
+		{5C944948-A562-42B8-BB9B-8B70974142D5}.Release|x86.ActiveCfg = Release|Win32
+		{5C944948-A562-42B8-BB9B-8B70974142D5}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

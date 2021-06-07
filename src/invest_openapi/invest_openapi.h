@@ -165,9 +165,9 @@ struct IOpenApi
     // OrdersApi
 
     TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const LimitOrderRequest  &limit_order_request , QString broker_account_id = QString()) );
-    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const OperationType &operation, qint32 nLots  , double price, QString broker_account_id = QString()) );
-    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const OperationType::eOperationType &operation, qint32 nLots, double price, QString broker_account_id = QString()) );
-    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const QString &operation      , qint32 nLots  , double price, QString broker_account_id = QString()) );
+    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const OperationType &operation, qint32 nLots  , marty::Decimal price, QString broker_account_id = QString()) );
+    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const OperationType::eOperationType &operation, qint32 nLots, marty::Decimal price, QString broker_account_id = QString()) );
+    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const QString &operation      , qint32 nLots  , marty::Decimal price, QString broker_account_id = QString()) );
 
     TKF_IOA_ABSTRACT_METHOD( MarketOrderResponse, ordersMarketOrder(const QString &figi, const MarketOrderRequest &market_order_request, QString broker_account_id = QString()) );
     TKF_IOA_ABSTRACT_METHOD( MarketOrderResponse, ordersMarketOrder(const QString &figi, const OperationType &operation, qint32 nLots  , QString broker_account_id = QString()) );
@@ -752,7 +752,7 @@ public:
         return response;
     }
 
-    TKF_IOA_METHOD_IMPL( LimitOrderResponse, ordersLimitOrder(const QString &figi, const OperationType &operation, qint32 nLots  , double price, QString broker_account_id = QString()) )
+    TKF_IOA_METHOD_IMPL( LimitOrderResponse, ordersLimitOrder(const QString &figi, const OperationType &operation, qint32 nLots  , marty::Decimal price, QString broker_account_id = QString()) )
     {
         LimitOrderRequest request;
         request.setLots(nLots);
@@ -761,12 +761,12 @@ public:
         return ordersLimitOrder(figi, request, broker_account_id);
     }
 
-    TKF_IOA_METHOD_IMPL( LimitOrderResponse, ordersLimitOrder(const QString &figi, const OperationType::eOperationType &operation, qint32 nLots, double price, QString broker_account_id = QString()) )
+    TKF_IOA_METHOD_IMPL( LimitOrderResponse, ordersLimitOrder(const QString &figi, const OperationType::eOperationType &operation, qint32 nLots, marty::Decimal price, QString broker_account_id = QString()) )
     {
         return ordersLimitOrder( figi, toOperationType(operation), nLots, price, broker_account_id);
     }
 
-    TKF_IOA_METHOD_IMPL( LimitOrderResponse, ordersLimitOrder(const QString &figi, const QString &operation      , qint32 nLots  , double price, QString broker_account_id = QString()) )
+    TKF_IOA_METHOD_IMPL( LimitOrderResponse, ordersLimitOrder(const QString &figi, const QString &operation      , qint32 nLots  , marty::Decimal price, QString broker_account_id = QString()) )
     {
         return ordersLimitOrder( figi, toOperationType(operation), nLots, price, broker_account_id);
     }

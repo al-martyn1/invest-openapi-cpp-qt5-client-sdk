@@ -120,13 +120,6 @@ INVEST_OPENAPI_MAIN()
 
 
 
-    //auto dataLogFullFilename = pLoggingConfig->getDataLogFullName( logConfigFullFileName, "", "test.dat" );
-
-    //cout << "# test_streaming_api data log file: "<< dataLogFullFilename << endl;
-
-
-
-
     cout << "# Main DB name: " << pDatabaseConfig->dbMainFilename << endl;
 
     QSharedPointer<QSqlDatabase> pMainSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
@@ -158,13 +151,11 @@ INVEST_OPENAPI_MAIN()
         pOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
     }
 
-
     QStringList instrumentList;
     {
         QSettings settings(instrumentsConfigFullFileName, QSettings::IniFormat);
         instrumentList = settings.value("instruments" ).toStringList();
     }
-
     
 
     //QStringList   figis;
@@ -177,8 +168,6 @@ INVEST_OPENAPI_MAIN()
     std::map< QString, std::shared_ptr< std::ofstream > >  marketInstrumentCsvs;
 
     std::map< QString, std::uint64_t >  timeStamps;
-
-
 
     cout<<"#" << endl;
 
@@ -467,32 +456,6 @@ INVEST_OPENAPI_MAIN()
 
                         timeStamps[marketGlass.figi] = marketGlass.dateTimeAsStamp;
 
-                        /*
-                        cout << "#---------------------" << endl;
-                        cout << marketGlass << endl; // << endl ;
-
-                        cout << endl;
-
-                        bool instrumentInfoFound = marketInstrumentsState.find(marketGlass.figi)!=marketInstrumentsState.end();
-                        cout << "Instrument Info: " << ( !instrumentInfoFound ? "not " : "" ) << "found" << (!instrumentInfoFound ? " ////???" : "") << endl;
-
-                        auto miStateIt = marketInstrumentsState.find(marketGlass.figi);
-                        if (miStateIt!=marketInstrumentsState.end())
-                        {
-                            // Here is a lot of advanced info
-
-                           
-                            cout << endl;
-                           
-                            cout << "Asks Outlier distance: " << marketGlass.calcAsksDistanceToOutlier( asksLimits, priceIncrement ) << endl;
-                            cout << "Bids Outlier distance: " << marketGlass.calcBidsDistanceToOutlier( bidsLimits, priceIncrement ) << endl;
-
-                        }
-
-                        cout << endl;
-                        cout << endl;
-                        //cout << marketGlass << endl << endl ;
-                        */
                     }
                     
                 }
@@ -533,85 +496,6 @@ INVEST_OPENAPI_MAIN()
                 // std::map< QString, tkf::MarketInstrumentState >  marketInstrumentState;
 
                 // https://bcs-express.ru/novosti-i-analitika/o-chem-mogut-rasskazat-birzhevoi-stakan-i-lenta-sdelok
-
-
-                    // StreamingCandleResponse
-
-                    //   QString getTimeAsString()
-                    //   bool is_time_Set() const;
-                    //   bool is_time_Valid() const;
-
-                    //   Candle getPayload()
-                    //   bool is_payload_Set() const;
-                    //   bool is_payload_Valid() const;
-
-
-                    // StreamingInstrumentInfoResponse
-
-                    //   QString getTimeAsString() const;
-                    //   bool is_time_Set() const;
-                    //   bool is_time_Valid() const;
-                   
-                    //   StreamingInstrumentInfo getPayload() const;
-                    //   bool is_payload_Set() const;
-                    //   bool is_payload_Valid() const;
-
-
-                    // StreamingInstrumentInfo
-
-                    //   QString getFigi() const;
-                    //   bool is_figi_Set() const;
-                    //   bool is_figi_Valid() const;
-
-                    //   TradeStatus getTradeStatus() const;
-                    //   bool is_trade_status_Set() const;
-                    //   bool is_trade_status_Valid() const;
-                   
-                    //   marty::Decimal getMinPriceIncrement() const;
-                    //   bool is_min_price_increment_Set() const;
-                    //   bool is_min_price_increment_Valid() const;
-                   
-                    //   qint32 getLot() const;
-                    //   bool is_lot_Set() const;
-                    //   bool is_lot_Valid() const;
-
-
-                    // StreamingOrderbookResponse
-
-                    //   QString getTimeAsString() const;
-                    //   bool is_time_Set() const;
-                    //   bool is_time_Valid() const;
-
-                    //   StreamingOrderbook getPayload() const;
-                    //   bool is_payload_Set() const;
-                    //   bool is_payload_Valid() const;
-
-
-                    // StreamingOrderbook
-
-                    //   QString getFigi() const;
-                    //   bool is_figi_Set() const;
-                    //   bool is_figi_Valid() const;
-                   
-                    //   qint32 getDepth() const;
-                    //   bool is_depth_Set() const;
-                    //   bool is_depth_Valid() const;
-                   
-                    //   QList< QList<marty::Decimal> > getBids() const;
-                    //   bool is_bids_Set() const;
-                    //   bool is_bids_Valid() const;
-                   
-                    //   QList< QList<marty::Decimal> > getAsks() const;
-                    //   bool is_asks_Set() const;
-                    //   bool is_asks_Valid() const;
-
-
-                    // StreamingOrderbookItem
-
-                    //   marty::Decimal   price;
-                    //   marty::Decimal   quantity;
-                    //   static StreamingOrderbookItem fromList( const QList< marty::Decimal > &list )
-
 
             };
 

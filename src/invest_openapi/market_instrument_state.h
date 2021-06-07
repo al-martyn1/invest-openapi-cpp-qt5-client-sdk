@@ -49,6 +49,10 @@ struct MarketInstrumentState
         return !dateTimeString.isEmpty() && !figi.isEmpty();
     }
 
+    bool isTradeStatusInvalid       () const  { return tradeStatus.getValue() == OpenAPI::TradeStatus::eTradeStatus::INVALID_VALUE_OPENAPI_GENERATED;  }
+    bool isTradeStatusNormalTrading () const  { return tradeStatus.getValue() == OpenAPI::TradeStatus::eTradeStatus::NORMALTRADING;  }
+    bool isTradeStatusNotTraded     () const  { return tradeStatus.getValue() == OpenAPI::TradeStatus::eTradeStatus::NOTAVAILABLEFORTRADING;  }
+
 
     static MarketInstrumentState fromStreamingInstrumentInfo( const OpenAPI::StreamingInstrumentInfo &instrumentInfo, const QDateTime &dt, const QString &dtStr )
     {
