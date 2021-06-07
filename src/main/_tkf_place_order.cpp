@@ -179,13 +179,13 @@ INVEST_OPENAPI_MAIN()
     cout << endl;
     cout << "Order Parameters:" << endl;
 
-    cout << "  Operation : " << orderParams.getOperationTypeString() << endl;
-    cout << "  Order Type: " << orderParams.getOrderTypeString() << endl;
-    cout << "  Instrument: " << orderParams.figi << " (" << orderParams.ticker << ")" << endl;
-    cout << "  Order Size: " << (int)orderParams.orderSize << " (pieces, not lots)" << endl;
+    cout << "  Operation  : " << orderParams.getOperationTypeString() << endl;
+    cout << "  Order Type : " << orderParams.getOrderTypeString() << endl;
+    cout << "  Instrument : " << orderParams.figi << " (" << orderParams.ticker << ")" << endl;
+    cout << "  Order Size : " << (int)orderParams.orderSize << " (pieces, not lots)" << endl;
     if (orderParams.orderPrice!=0)
     {
-        cout << "  Price     : " << orderParams.orderPrice << endl;
+        cout << "  Price      : " << orderParams.orderPrice << endl;
     }
 
     cout << endl;
@@ -443,29 +443,29 @@ INVEST_OPENAPI_MAIN()
             cout << "Response:" << endl;
             cout << endl;
 
-            cout << "  TrackingId     :" << placedOrderInfo.trackingId << endl;
-            cout << "  Status         :" << placedOrderInfo.status << endl;
+            cout << "  TrackingId     : " << placedOrderInfo.trackingId << endl;
+            cout << "  Status         : " << placedOrderInfo.status << endl;
             cout << endl;
 
-            cout << "  OrderId        :" << placedOrderInfo.orderId << endl;
-            cout << "  Order Status   :" << placedOrderInfo.orderStatus << endl;
-            cout << "  Operation Type :" << placedOrderInfo.operationType << endl;
+            cout << "  OrderId        : " << placedOrderInfo.orderId << endl;
+            cout << "  Order Status   : " << placedOrderInfo.orderStatus << endl;
+            cout << "  Operation Type : " << placedOrderInfo.operationType << endl;
             cout << endl;
 
-            cout << "  Requested Lots :" << placedOrderInfo.requestedLots << endl;
-            cout << "  Executed  Lots :" << placedOrderInfo.executedLots << endl;
-            cout << "  Commission     :" << placedOrderInfo.commission << endl;
+            cout << "  Requested Lots : " << placedOrderInfo.requestedLots << endl;
+            cout << "  Executed  Lots : " << placedOrderInfo.executedLots << endl;
+            cout << "  Commission     : " << placedOrderInfo.commission << endl;
             cout << endl;
 
             if (!placedOrderInfo.rejectReason.isEmpty())
             {
-                cout << "  Reject Reason  :" << placedOrderInfo.rejectReason << endl;
+                cout << "  Reject Reason  : " << placedOrderInfo.rejectReason << endl;
                 cout << endl;
             }
 
             if (!placedOrderInfo.message.isEmpty())
             {
-                cout << "  Message        :" << placedOrderInfo.message << endl;
+                cout << "  Message        : " << placedOrderInfo.message << endl;
                 cout << endl;
             }
 
