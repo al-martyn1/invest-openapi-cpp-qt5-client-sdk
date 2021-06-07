@@ -181,6 +181,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test035", "vcxproj\test035.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test036", "vcxproj\test036.vcxproj", "{807CBB65-F217-4E06-B0EA-4A7FD2AC9F4A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_log_streaming_orderbooks", "vcxproj\_tkf_log_streaming_orderbooks.vcxproj", "{DFA98602-C056-424B-8BCF-4E6DB395559F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -589,6 +591,14 @@ Global
 		{807CBB65-F217-4E06-B0EA-4A7FD2AC9F4A}.Release|x64.Build.0 = Release|x64
 		{807CBB65-F217-4E06-B0EA-4A7FD2AC9F4A}.Release|x86.ActiveCfg = Release|Win32
 		{807CBB65-F217-4E06-B0EA-4A7FD2AC9F4A}.Release|x86.Build.0 = Release|Win32
+		{DFA98602-C056-424B-8BCF-4E6DB395559F}.Debug|x64.ActiveCfg = Debug|x64
+		{DFA98602-C056-424B-8BCF-4E6DB395559F}.Debug|x64.Build.0 = Debug|x64
+		{DFA98602-C056-424B-8BCF-4E6DB395559F}.Debug|x86.ActiveCfg = Debug|Win32
+		{DFA98602-C056-424B-8BCF-4E6DB395559F}.Debug|x86.Build.0 = Debug|Win32
+		{DFA98602-C056-424B-8BCF-4E6DB395559F}.Release|x64.ActiveCfg = Release|x64
+		{DFA98602-C056-424B-8BCF-4E6DB395559F}.Release|x64.Build.0 = Release|x64
+		{DFA98602-C056-424B-8BCF-4E6DB395559F}.Release|x86.ActiveCfg = Release|Win32
+		{DFA98602-C056-424B-8BCF-4E6DB395559F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

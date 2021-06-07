@@ -5,3 +5,7 @@ logging.debug.dump.sql       = true
 ;logging.debug.dump.requests  = false
 ;logging.debug.dump.responses = false
 ;logging.debug.dump.sql       = false
+
+
+
+logging.data.base-folder = ../_data_logs
