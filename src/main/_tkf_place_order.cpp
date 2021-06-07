@@ -72,6 +72,8 @@
 #include "invest_openapi/market_instrument_state.h"
 
 
+#include "invest_openapi/placed_order_info.h"
+
 
 #include "tkf_utils.h"
 
@@ -81,7 +83,7 @@
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("_tkf_make_order");
+    QCoreApplication::setApplicationName("_tkf_place_order");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");
@@ -318,11 +320,14 @@ INVEST_OPENAPI_MAIN()
 
     //cout<<"#" << endl;
 
+    cout << endl;
+    cout << endl;
+
 
     QElapsedTimer timer;
     timer.start();
 
-    while(!ctrlC.isBreaked() && !timer.hasExpired(10000) && !(instrumentState.isValid() && instrumentGlass.isValid()) )
+    while(!ctrlC.isBreaked() && !timer.hasExpired(30000) && !(instrumentState.isValid() && instrumentGlass.isValid()) )
     {
         QTest::qWait(1);
     }
@@ -408,6 +413,8 @@ INVEST_OPENAPI_MAIN()
             cout << endl;
             cout << endl;
 
+            tkf::PlacedOrderInfo   placedOrderInfo;
+
 
             if (orderParams.isOrderTypeLimit())
             {
@@ -416,29 +423,9 @@ INVEST_OPENAPI_MAIN()
                                                           , numLots
                                                           , orderParams.orderPrice
                                                           );
-                /*
-                    QString getTrackingId() const;
-                    void setTrackingId(const QString &tracking_id);
-                    bool is_tracking_id_Set() const;
-                    bool is_tracking_id_Valid() const;
-                   
-                    QString getStatus() const;
-                    void setStatus(const QString &status);
-                    bool is_status_Set() const;
-                    bool is_status_Valid() const;
-                   
-                    PlacedLimitOrder getPayload() const;
-                    void setPayload(const PlacedLimitOrder &payload);
-                    bool is_payload_Set() const;
-                    bool is_payload_Valid() const;
-
-
-
-                    // PlacedLimitOrder
-
-                    // m_order_id_isValid && m_operation_isValid && m_status_isValid && m_requested_lots_isValid && m_executed_lots_isValid && true;
-                
-                */
+                response->join();
+                tkf::checkAbort(response);
+                placedOrderInfo = tkf::PlacedOrderInfo::fromOrderResponse(response->value);
 
             }
             else
@@ -447,39 +434,43 @@ INVEST_OPENAPI_MAIN()
                                                           , orderParams.getOpenApiOperationType()
                                                           , numLots
                                                           );
-
-                /*
-                    QString getTrackingId() const;
-                    void setTrackingId(const QString &tracking_id);
-                    bool is_tracking_id_Set() const;
-                    bool is_tracking_id_Valid() const;
-                
-                    QString getStatus() const;
-                    void setStatus(const QString &status);
-                    bool is_status_Set() const;
-                    bool is_status_Valid() const;
-                
-                    PlacedMarketOrder getPayload() const;
-                    void setPayload(const PlacedMarketOrder &payload);
-                    bool is_payload_Set() const;
-                    bool is_payload_Valid() const;
-
-
-                    // PlacedMarketOrder
-
-                    // m_order_id_isValid && m_operation_isValid && m_status_isValid && m_requested_lots_isValid && m_executed_lots_isValid && true;
-
-
-
-
-namespace OpenAPI {
-
-class MoneyAmount : public Object {
-
-                    
-                */
+                response->join();
+                tkf::checkAbort(response);
+                placedOrderInfo = tkf::PlacedOrderInfo::fromOrderResponse(response->value);
                             
             }
+
+            cout << "Response:" << endl;
+            cout << endl;
+
+            cout << "  TrackingId     :" << placedOrderInfo.trackingId << endl;
+            cout << "  Status         :" << placedOrderInfo.status << endl;
+            cout << endl;
+
+            cout << "  OrderId        :" << placedOrderInfo.orderId << endl;
+            cout << "  Order Status   :" << placedOrderInfo.orderStatus << endl;
+            cout << "  Operation Type :" << placedOrderInfo.operationType << endl;
+            cout << endl;
+
+            cout << "  Requested Lots :" << placedOrderInfo.requestedLots << endl;
+            cout << "  Executed  Lots :" << placedOrderInfo.executedLots << endl;
+            cout << "  Commission     :" << placedOrderInfo.commission << endl;
+            cout << endl;
+
+            if (!placedOrderInfo.rejectReason.isEmpty())
+            {
+                cout << "  Reject Reason  :" << placedOrderInfo.rejectReason << endl;
+                cout << endl;
+            }
+
+            if (!placedOrderInfo.message.isEmpty())
+            {
+                cout << "  Message        :" << placedOrderInfo.message << endl;
+                cout << endl;
+            }
+
+
+
 
 /*
 
@@ -494,38 +485,11 @@ class MoneyAmount : public Object {
     TKF_IOA_ABSTRACT_METHOD( MarketOrderResponse, ordersMarketOrder(const QString &figi, const QString &operation      , qint32 nLots  , QString broker_account_id = QString()) );
 
 
-
-
-
-    Decimal getAskBestPrice() const     { return getAsksMinPrice(); }
-    Decimal getBidBestPrice() const     { return getBidsMaxPrice(); }
-    Decimal getPriceSpread()  const     { return getAskBestPrice() - getBidBestPrice(); }
-
-    int getPriceSpreadPoints( const Decimal &priceStep ) const;
-
-
-
-    marty::Decimal        orderSize ; // in pieces, not in lots. Need to convert to lots number
-    marty::Decimal        orderPrice; // Need to be adjusted to valid price with priceIncrement
-
 */       
         }
 
         //
     }
-
-
-//    Decimal                            priceIncrement;
-//    unsigned                           lotSize; // for limit orders
-
-
-/*
-    QString                            figi;
-    OpenAPI::TradeStatus               tradeStatus;
-    Decimal                            priceIncrement;
-    unsigned                           lotSize; // for limit orders
-
-*/
 
 
 

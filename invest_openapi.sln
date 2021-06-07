@@ -5,6 +5,49 @@ VisualStudioVersion = 15.0.27428.2037
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tkf_invest_oa", "vcxproj\tkf_invest_oa.vcxproj", "{2AB01889-DA6B-4353-BD39-067B25F3461B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_create_db", "vcxproj\_tkf_create_db.vcxproj", "{4EDA4FE9-A97D-4E2D-B06E-B5BFBAB7E2DC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_historical_candles", "vcxproj\_tkf_historical_candles.vcxproj", "{4C4FD2E8-639B-487B-B709-0A11F19416F1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_log_streaming_orderbooks", "vcxproj\_tkf_log_streaming_orderbooks.vcxproj", "{DFA98602-C056-424B-8BCF-4E6DB395559F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_place_order", "vcxproj\_tkf_place_order.vcxproj", "{5C944948-A562-42B8-BB9B-8B70974142D5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_portfolio", "vcxproj\_tkf_portfolio.vcxproj", "{EED0D55E-39BF-49E3-8F4B-A2EDE12C0DC2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_portfolio_currencies", "vcxproj\_tkf_portfolio_currencies.vcxproj", "{10C03F8D-9AD0-423A-9B82-4DA04FF8ED28}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_sandbox_create", "vcxproj\_tkf_sandbox_create.vcxproj", "{09B292E5-B5C4-47B7-B093-F830B70E0B23}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_sandbox_remove", "vcxproj\_tkf_sandbox_remove.vcxproj", "{364AB316-3CA7-447E-8D9D-F3A0AD83A2A1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_sandbox_add_positions", "vcxproj\_tkf_sandbox_add_positions.vcxproj", "{5D402347-C8AE-4F7C-959E-AAC9D1907E7F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_sandbox_clear_positions", "vcxproj\_tkf_sandbox_clear_positions.vcxproj", "{A18CDAE4-68F8-4AD1-B3E3-B207F72E1C2B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_update_instruments", "vcxproj\_tkf_update_instruments.vcxproj", "{6B0A9F80-DEEE-45A2-8431-15C7361F5A8B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_user_accounts", "vcxproj\_tkf_user_accounts.vcxproj", "{54CE331F-5FD4-4A3B-8A0F-EDEBDA1DCF8B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tz_list", "vcxproj\_tz_list.vcxproj", "{31748532-CF3C-4708-BD2C-4BF594B38BB1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "md_gen", "vcxproj\md_gen.vcxproj", "{A64814D3-EFE7-41D6-BE24-795A2CF45AB8}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test001", "vcxproj\test001.vcxproj", "{7CA03583-0724-4FED-9A9E-6651F35E42A9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
@@ -62,41 +105,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test012", "vcxproj\test012.
 		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "md_gen", "vcxproj\md_gen.vcxproj", "{A64814D3-EFE7-41D6-BE24-795A2CF45AB8}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test013", "vcxproj\test013.vcxproj", "{7EFC1461-7D11-42F3-9BB1-C2F89B3C5BEA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test014", "vcxproj\test014.vcxproj", "{F4EBFBFC-B8A2-47F8-98C8-B2F4F180844E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test015", "vcxproj\test015.vcxproj", "{B20197BE-16A6-4A0E-A410-47BA649DBFB9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_create_db", "vcxproj\_tkf_create_db.vcxproj", "{4EDA4FE9-A97D-4E2D-B06E-B5BFBAB7E2DC}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_update_instruments", "vcxproj\_tkf_update_instruments.vcxproj", "{6B0A9F80-DEEE-45A2-8431-15C7361F5A8B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_sandbox_create", "vcxproj\_tkf_sandbox_create.vcxproj", "{09B292E5-B5C4-47B7-B093-F830B70E0B23}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_sandbox_remove", "vcxproj\_tkf_sandbox_remove.vcxproj", "{364AB316-3CA7-447E-8D9D-F3A0AD83A2A1}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_sandbox_add_positions", "vcxproj\_tkf_sandbox_add_positions.vcxproj", "{5D402347-C8AE-4F7C-959E-AAC9D1907E7F}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_sandbox_clear_positions", "vcxproj\_tkf_sandbox_clear_positions.vcxproj", "{A18CDAE4-68F8-4AD1-B3E3-B207F72E1C2B}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_portfolio", "vcxproj\_tkf_portfolio.vcxproj", "{EED0D55E-39BF-49E3-8F4B-A2EDE12C0DC2}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_portfolio_currencies", "vcxproj\_tkf_portfolio_currencies.vcxproj", "{10C03F8D-9AD0-423A-9B82-4DA04FF8ED28}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_user_accounts", "vcxproj\_tkf_user_accounts.vcxproj", "{54CE331F-5FD4-4A3B-8A0F-EDEBDA1DCF8B}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test016", "vcxproj\test016.vcxproj", "{FB6D5FD7-66B9-4E71-AD40-281BCCB466A5}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tz_list", "vcxproj\_tz_list.vcxproj", "{31748532-CF3C-4708-BD2C-4BF594B38BB1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test017", "vcxproj\test017.vcxproj", "{BA59BD87-E4F6-4924-9760-BE49D97FE5DE}"
 EndProject
@@ -128,11 +143,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test022", "vcxproj\test022.
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test023", "vcxproj\test023.vcxproj", "{4C228239-3C0A-4020-ABFA-6D2A2ED14700}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_historical_candles", "vcxproj\_tkf_historical_candles.vcxproj", "{4C4FD2E8-639B-487B-B709-0A11F19416F1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
 	EndProjectSection
@@ -180,16 +190,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test035", "vcxproj\test035.vcxproj", "{2F14283E-61E9-4E74-812C-37131513A8AB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test036", "vcxproj\test036.vcxproj", "{807CBB65-F217-4E06-B0EA-4A7FD2AC9F4A}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_log_streaming_orderbooks", "vcxproj\_tkf_log_streaming_orderbooks.vcxproj", "{DFA98602-C056-424B-8BCF-4E6DB395559F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_tkf_make_order", "vcxproj\_tkf_make_order.vcxproj", "{5C944948-A562-42B8-BB9B-8B70974142D5}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2AB01889-DA6B-4353-BD39-067B25F3461B} = {2AB01889-DA6B-4353-BD39-067B25F3461B}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

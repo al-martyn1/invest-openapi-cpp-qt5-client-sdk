@@ -77,7 +77,7 @@ struct PlacedOrderInfo
         poRes.rejectReason  = o.getRejectReason();
         poRes.message       = o.getMessage();
 
-        return res;
+        return poRes;
 
     }
 
@@ -100,17 +100,49 @@ struct PlacedOrderInfo
         poRes.rejectReason  = o.getRejectReason();
         poRes.message       = o.getMessage();
 
-        return res;
+        return poRes;
 
     }
 
 
-                    QString getTrackingId() const;
-                    void setTrackingId(const QString &tracking_id);
-                    bool is_tracking_id_Set() const;
-                    bool is_tracking_id_Valid() const;
-                
-                    QString getStatus() const;
+    static
+    PlacedOrderInfo fromOrderResponse( const OpenAPI::MarketOrderResponse &response )
+    {
+        PlacedOrderInfo poRes;
+
+        if (!response.isSet() || !response.isValid())
+            return poRes;
+
+        if (!response.is_payload_Set() || !response.is_payload_Valid())
+            return poRes;
+
+        poRes = fromPlacedOrder( response.getPayload() );
+
+        poRes.trackingId = response.getTrackingId();
+        poRes.status     = response.getStatus();
+
+        return poRes;
+    }
+
+
+    static
+    PlacedOrderInfo fromOrderResponse( const OpenAPI::LimitOrderResponse &response )
+    {
+        PlacedOrderInfo poRes;
+
+        if (!response.isSet() || !response.isValid())
+            return poRes;
+
+        if (!response.is_payload_Set() || !response.is_payload_Valid())
+            return poRes;
+
+        poRes = fromPlacedOrder( response.getPayload() );
+
+        poRes.trackingId = response.getTrackingId();
+        poRes.status     = response.getStatus();
+
+        return poRes;
+    }
 
 
 
