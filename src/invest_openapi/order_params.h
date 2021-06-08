@@ -17,30 +17,32 @@
 #include <QString>
 
 
-#include "invest_openapi/config_helpers.h"
-#include "invest_openapi/api_config.h"
-#include "invest_openapi/auth_config.h"
-#include "invest_openapi/currencies_config.h"
-#include "invest_openapi/balance_config.h"
+#include "config_helpers.h"
+#include "api_config.h"
+#include "auth_config.h"
+#include "currencies_config.h"
+#include "balance_config.h"
 
-#include "invest_openapi/invest_openapi.h"
-#include "invest_openapi/factory.h"
-#include "invest_openapi/openapi_completable_future.h"
+#include "invest_openapi.h"
+#include "factory.h"
+#include "openapi_completable_future.h"
 
-#include "invest_openapi/database_config.h"
-#include "invest_openapi/database_manager.h"
-#include "invest_openapi/qt_time_helpers.h"
+#include "database_config.h"
+#include "database_manager.h"
+#include "qt_time_helpers.h"
 
-#include "invest_openapi/db_utils.h"
-#include "invest_openapi/ioa_utils.h"
-#include "invest_openapi/ioa_ostream.h"
-#include "invest_openapi/ioa_db_dictionaries.h"
+#include "db_utils.h"
+#include "ioa_utils.h"
+#include "ioa_ostream.h"
+#include "ioa_db_dictionaries.h"
+
+#include "marty_decimal.h"
 
 
 
 
 //----------------------------------------------------------------------------
-namespace tkf_utils
+namespace invest_openapi
 {
 
 
@@ -48,6 +50,9 @@ namespace tkf_utils
 //----------------------------------------------------------------------------
 struct OrderParams
 {
+
+    typedef marty::Decimal   Decimal ;
+
     enum OrderOperationType
     {
         operationTypeBuy,
@@ -74,11 +79,11 @@ struct OrderParams
     OrderType             orderType;
 
 
-    QString     figi;
-    QString     ticker;
+    QString               figi;
+    QString               ticker;
 
-    marty::Decimal        orderSize ; // in pieces, not in lots. Need to convert to lots number
-    marty::Decimal        orderPrice; // Need to be adjusted to valid price with priceIncrement
+    Decimal               orderSize ; // in pieces, not in lots. Need to convert to lots number
+    Decimal               orderPrice; // Need to be adjusted to valid price with priceIncrement
 
 
 /*
@@ -127,6 +132,73 @@ struct OrderParams
          return QString("AUTO");
      }
 
+
+     template< typename LotSizeType >
+     unsigned calcNumLots( LotSizeType lotSize ) const
+     {
+         unsigned uLotSize   = unsigned(lotSize);
+         unsigned uOrderSize = unsigned(orderSize);
+
+         if (uLotSize==0)
+             throw std::runtime_error("invest_openapi::OrderParams::calcNumLots: lot size can't be zero");
+
+         unsigned numLots = uOrderSize / uLotSize;
+
+         if (!numLots)
+             numLots = 1;
+
+         return numLots;
+     }
+
+
+     OrderParams getAdjusted( int spreadPoints
+                            , const Decimal &priceIncrement
+                            , const Decimal &asksMinPrice
+                            , const Decimal &bidsMaxPrice
+                            ) const
+     {
+         OrderParams orderParams = *this;
+
+         if (orderParams.isOrderTypeAuto() && spreadPoints<=1)
+         {
+             orderParams.orderType = orderTypeMarket;
+         }
+         else if (orderParams.orderType==orderTypeMarket)
+         {
+             // Do nothing
+         }
+         else // orderParams.orderType==orderTypeLimit or (Auto && SpreadPoints>1)
+         {
+             orderParams.orderType = orderTypeLimit;
+
+             if (orderParams.orderPrice==0) // Цену лимитной заявки подбираем автоматом так, чтобы продалось побыстрее, но по не самой плохой цене
+             {
+                 if (orderParams.isSellOperation()) // При продаже, автоматически вычисляя цену, делаем её на один пункт ниже уже выставленной (минимальный аск-шаг)
+                     orderParams.orderPrice = asksMinPrice - priceIncrement;
+                 else                               // При покупке, автоматически вычисляя цену, делаем её на один пункт выше уже выставленной (максимальный бид+шаг)
+                     orderParams.orderPrice = bidsMaxPrice + priceIncrement;
+             }
+         }
+
+
+         if (orderParams.orderPrice!=0)
+         {
+             Decimal finalPriceMod        = orderParams.orderPrice.mod_helper( priceIncrement );
+             Decimal finalPriceCandidate  = finalPriceMod * priceIncrement;
+             Decimal deltaPrice           = orderParams.orderPrice - finalPriceCandidate;
+            
+             if (deltaPrice!=0)
+             {
+                 if (orderParams.isSellOperation())
+                     orderParams.orderPrice = finalPriceCandidate + priceIncrement;
+                 else
+                     orderParams.orderPrice = finalPriceCandidate;
+             }
+         }
+
+         return orderParams;
+
+     }
 
 
 
@@ -191,7 +263,7 @@ int parseOrderParams( const std::vector<std::string> &paramsVec
     if (pit==paramsVec.end())
         return errIdx;
 
-    orderParams.orderSize = marty::Decimal(*pit);
+    orderParams.orderSize = Decimal(*pit);
     if (orderParams.orderSize==0)
         return errIdx;
 
@@ -208,7 +280,7 @@ int parseOrderParams( const std::vector<std::string> &paramsVec
         strPrice.replace(commaPos, 1, ".");
     }
 
-    orderParams.orderPrice = marty::Decimal(strPrice);
+    orderParams.orderPrice = Decimal(strPrice);
 
     if (orderParams.orderPrice==0)
         return errIdx;
@@ -230,6 +302,6 @@ int parseOrderParams( const std::vector<std::string> &paramsVec
 
 //----------------------------------------------------------------------------
 
-} // namespace tkf_utils
+} // namespace invest_openapi
 
 

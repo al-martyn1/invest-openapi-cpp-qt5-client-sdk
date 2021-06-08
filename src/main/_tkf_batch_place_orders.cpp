@@ -76,6 +76,8 @@
 
 #include "invest_openapi/order_params.h"
 
+#include "invest_openapi/cpp_helpers.h"
+
 
 
 
@@ -83,7 +85,7 @@
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("_tkf_place_order");
+    QCoreApplication::setApplicationName("_tkf_batch_place_orders");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");
@@ -159,6 +161,83 @@ INVEST_OPENAPI_MAIN()
 
 
     tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
+
+
+
+    std::string inputFileName;
+    if (argc>1)
+    {
+        inputFileName = argv[1];
+    }
+
+    std::vector<std::string> inputLines;
+    
+    if (inputFileName.empty() || inputFileName=='-')
+    {
+        inputLines = tkf::cpp_helpers::readLines( std::cin );
+    }
+    else
+    {
+        inputLines = tkf::cpp_helpers::readLinesFromFile( inputFileName );
+    }
+
+
+    tkf::cpp_helpers::trimStrings( inputLines, false  /* !keepEmpty */  );
+
+
+    std::vector< tkf::OrderParams > inputOrderParams;
+
+    unsigned lineNo = 1;
+
+    for( auto line : inputLines )
+    {
+        if (!line.empty() && line[0]!='#' && line[0]!=';')
+        {
+            std::vector< std::string > opArgs;
+            tkf::cpp_helpers::splitToVector( line, opArgs, ' ' );
+            tkf::cpp_helpers::trimStrings(opArgs);
+
+            tkf::OrderParams orderParams;
+            int orderParamsParsingRes = tkf::parseOrderParams( opArgs, dicts, orderParams );
+            if (orderParamsParsingRes<0)
+            {
+                std::cerr << "Error: invalid parameter #" << -orderParamsParsingRes << " in line #" << lineNo << endl;
+                return -orderParamsParsingRes;
+            }
+
+            if (!orderParams.isOrderTypeLimit())
+            {
+                std::cerr << "Error: in line #" << lineNo << ": Only limit orders supported" << endl;
+                return 1;
+            }
+
+            inputOrderParams.push_back(orderParams);
+        }
+    
+    }
+
+
+    /*  Что делаем
+
+        1) Раскладываем заявки по отдельным корзинам инструментов
+
+        2) Коннектим веб сокет
+
+        3) Делаем подписку на инструменты и стаканы по ним
+
+        4) По приходу стакана проверяем, активен ли инструмент
+           Тут надо еще проверить, нет ли запросов по той же фиге
+
+        5) Если активен, отсылаем запрос. Тут надо связать запрос с OrderParams, из которых он строится.
+
+           Храним FIGI, индекс в массиве, привязанном к FIGI, и response (QSharedPointer),
+           кладём это в какой-то вектор
+
+
+     */
+
+
+
 
     std::vector< std::string > argsVec;
     for( int i=1; i<argc; ++i)
@@ -358,47 +437,6 @@ INVEST_OPENAPI_MAIN()
                                                  , instrumentGlass.getAsksMinPrice()
                                                  , instrumentGlass.getBidsMaxPrice()
                                                  );
-
-            /*
-            if (orderParams.isOrderTypeAuto() && instrumentGlass.getPriceSpreadPoints(instrumentState.priceIncrement)<=1)
-            {
-                orderParams.orderType = tkf::OrderParams::orderTypeMarket;
-            }
-            else if (orderParams.orderType==tkf::OrderParams::orderTypeMarket)
-            {
-                // Do nothing
-            }
-            else // orderParams.orderType==orderTypeLimit or (Auto && SpreadPoints>1)
-            {
-                orderParams.orderType = tkf::OrderParams::orderTypeLimit;
-
-                if (orderParams.orderPrice==0) // Цену лимитной заявки подбираем автоматом так, чтобы продалось побыстрее, но по не самой плохой цене
-                {
-                    if (orderParams.isSellOperation()) // При продаже, автоматически вычисляя цену, делаем её на один пункт ниже уже выставленной (минимальный аск-шаг)
-                        orderParams.orderPrice = instrumentGlass.getAsksMinPrice() - instrumentState.priceIncrement;
-                    else                               // При покупке, автоматически вычисляя цену, делаем её на один пункт выше уже выставленной (максимальный бид+шаг)
-                        orderParams.orderPrice = instrumentGlass.getBidsMaxPrice() + instrumentState.priceIncrement;
-                }
-            }
-
-
-            //
-
-            if (orderParams.orderPrice!=0)
-            {
-                marty::Decimal finalPriceMod        = orderParams.orderPrice.mod_helper( instrumentState.priceIncrement );
-                marty::Decimal finalPriceCandidate  = finalPriceMod * instrumentState.priceIncrement;
-                marty::Decimal deltaPrice           = orderParams.orderPrice - finalPriceCandidate;
-               
-                if (deltaPrice!=0)
-                {
-                    if (orderParams.isSellOperation())
-                        orderParams.orderPrice = finalPriceCandidate + instrumentState.priceIncrement;
-                    else
-                        orderParams.orderPrice = finalPriceCandidate;
-                }
-            }
-            */
 
             cout << endl;
             cout << endl;

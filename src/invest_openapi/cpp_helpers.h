@@ -196,17 +196,25 @@ void splitToVector( std::string str, std::vector<std::string> &vec, char ch )
 
 
 //----------------------------------------------------------------------------
-//TODO: trim for strings vector
-
-/*
-template <typename StringType> inline void trim(StringType &s)
+template< typename VectorType > inline
+void trimStrings( VectorType &v, bool keepEmpty = false )
 {
-    trim(s, space_or_tab_pred<typename StringType::value_type>());
+    VectorType res; res.reserve( v.size() );
+
+    for(auto s : v)
+    {
+        trim(s);
+
+        if (s.empty() && !keepEmpty)
+            continue;
+
+        res.push_back(s);
+    }
+
+    res.shrink_to_fit();
+
+    v.swap(res);
 }
-*/
-
-
-
 
 //----------------------------------------------------------------------------
 
