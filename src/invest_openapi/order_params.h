@@ -123,6 +123,13 @@ struct OrderParams
          return QString("BUY");
      }
 
+     QString getOperationTypeSignString() const
+     {
+         if (isSellOperation())
+             return QString("-");
+         return QString("+");
+     }
+
      QString getOrderTypeString() const
      {
          if (orderType==orderTypeLimit)
@@ -199,6 +206,39 @@ struct OrderParams
          return orderParams;
 
      }
+
+
+     QString toQString() const
+     {
+         QString res;
+
+         res += getOperationTypeSignString();
+         res += " ";
+
+         if (isOrderTypeMarket()) // forced market
+         {
+             res += "! ";
+         }
+
+         res += ticker; // figi;
+         res += " ";
+
+         res += QString::fromStdString( orderSize.toString() );
+
+         if (orderPrice!=0)
+         {
+             res += " ";
+             res += QString::fromStdString( orderPrice.toString() );
+         }
+
+         return res;
+     
+     }
+
+
+     std::string toString () const      { return toQString().toStdString(); }
+     std::string to_string() const      { return toString(); }
+
 
 
 

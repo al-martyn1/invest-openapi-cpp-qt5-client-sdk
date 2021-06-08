@@ -20,7 +20,7 @@ namespace cpp_helpers {
 
 
 //----------------------------------------------------------------------------
-template< typename LineHandler >
+template< typename LineHandler > inline
 void readLines( std::istream &in, LineHandler handler )
 {
     std::string s;
@@ -32,7 +32,7 @@ void readLines( std::istream &in, LineHandler handler )
 }
 
 //----------------------------------------------------------------------------
-template< typename LineHandler >
+inline
 std::vector<std::string> readLines( std::istream &in )
 {
     std::string s;
@@ -49,7 +49,7 @@ std::vector<std::string> readLines( std::istream &in )
 }
 
 //----------------------------------------------------------------------------
-template< typename LineHandler >
+template< typename LineHandler > inline
 void readLinesFromFile( const std::string &fname, LineHandler handler )
 {
     std::ifstream in(fname.c_str());
@@ -60,7 +60,7 @@ void readLinesFromFile( const std::string &fname, LineHandler handler )
 }
 
 //----------------------------------------------------------------------------
-template< typename LineHandler >
+inline
 std::vector<std::string> readLinesFromFile( const std::string &fname )
 {
     std::ifstream in(fname.c_str());
@@ -102,14 +102,21 @@ struct not_pred
 template<typename CharType>
 struct space_pred
 {
-    bool operator()( CharType  ch ) const { return is_space(ch); }
+    bool operator()( CharType  ch ) const { return ch==(CharType)' '; /* is_space(ch); */  }
 };
 
 //-----------------------------------------------------------------------------
 template<typename CharType>
 struct space_or_tab_pred
 {
-    bool operator()( CharType ch )  const { return is_space_ot_tab(ch); }
+    bool operator()( CharType ch )  const { return ch==(CharType)' ' || ch==(CharType)'\t';; /* is_space_ot_tab(ch); */  }
+};
+
+//-----------------------------------------------------------------------------
+template<typename CharType>
+struct space_or_tab_or_crlf_pred
+{
+    bool operator()( CharType ch )  const { return ch==(CharType)' ' || ch==(CharType)'\t' || ch==(CharType)'\r' || ch==(CharType)'\n';  }
 };
 
 //----------------------------------------------------------------------------
@@ -199,11 +206,14 @@ void splitToVector( std::string str, std::vector<std::string> &vec, char ch )
 template< typename VectorType > inline
 void trimStrings( VectorType &v, bool keepEmpty = false )
 {
+    typedef typename VectorType::value_type          vector_value_type;
+    typedef typename vector_value_type::value_type   CharType;
+
     VectorType res; res.reserve( v.size() );
 
     for(auto s : v)
     {
-        trim(s);
+        trim(s, space_or_tab_or_crlf_pred<CharType>());
 
         if (s.empty() && !keepEmpty)
             continue;

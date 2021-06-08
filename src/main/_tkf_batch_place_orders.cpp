@@ -172,7 +172,7 @@ INVEST_OPENAPI_MAIN()
 
     std::vector<std::string> inputLines;
     
-    if (inputFileName.empty() || inputFileName=='-')
+    if (inputFileName.empty() || inputFileName=="-")
     {
         inputLines = tkf::cpp_helpers::readLines( std::cin );
     }
@@ -226,15 +226,83 @@ INVEST_OPENAPI_MAIN()
         3) Делаем подписку на инструменты и стаканы по ним
 
         4) По приходу стакана проверяем, активен ли инструмент
-           Тут надо еще проверить, нет ли запросов по той же фиге
+           Тут надо еще проверить, нет ли запросов по той же фиге.
+           Отсылку запроса на Order также делаем в случае прихода ответа.
+           Если ответ удачный - переходим к следующему запросу.
+           Если неудачный - повторяем, но не больше TryMax
+
+           Счетчики повтора храним в мапе по фиге - там лежит счётчик для текущего инструмента
+
+           Номер следующего запроса также храним в мапе по фиге. Все запросы по фиге считаются исполненными,
+           когда этот номер равен или больше размеру вектора запросов по фиге.
+
 
         5) Если активен, отсылаем запрос. Тут надо связать запрос с OrderParams, из которых он строится.
 
            Храним FIGI, индекс в массиве, привязанном к FIGI, и response (QSharedPointer),
            кладём это в какой-то вектор
 
-
      */
+
+
+    typedef std::size_t index_t;
+
+    const index_t MaxTryes = 5;
+
+
+    std::map< QString, std::vector<tkf::OrderParams> >             figiOrders;
+    std::map< QString, index_t >                                   tryCounters;
+    std::map< QString, index_t >                                   nextOrders;
+    std::map< QString, QSharedPointer<tkf::LimitOrderResponse> >   awaitingResponses;
+
+
+    cout << endl;
+
+    cout << "Requested orders:" << endl;
+
+
+    for( auto orderParams : inputOrderParams )
+    {
+        auto figi = orderParams.figi;
+
+        figiOrders [figi].push_back(orderParams);
+        tryCounters[figi] = 0;
+        nextOrders [figi] = 0;
+
+        cout << "  " << orderParams.to_string() << endl;
+    }
+
+    cout << endl;
+
+    return 0;
+    
+
+    auto checkIsAllComplete = [&]()
+                              {
+                                  bool allComplete = true;
+
+                                  std::map< QString, std::vector<tkf::OrderParams> >::const_iterator figiIt = figiOrders.begin();
+                                  for(; figiIt != figiOrders.end(); ++figiIt )
+                                  {
+
+                                      const auto &figi      = figiIt->first;
+                                      auto  figiTotalOrders = figiIt->second.size();
+                                      auto  figiNextOrderNo = nextOrders[figi];
+
+                                      if (figiNextOrderNo>=figiTotalOrders)
+                                      {
+                                          allComplete = false;
+                                          break;
+                                      }
+
+                                  }
+
+                                  return allComplete;
+
+                              };
+
+
+
 
 
 
