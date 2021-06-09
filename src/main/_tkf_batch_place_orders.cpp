@@ -303,9 +303,6 @@ INVEST_OPENAPI_MAIN()
 
     checkIsAllComplete();
 
-    return 0;
-    
-
 
 
     std::map< QString, tkf::MarketInstrumentState >   instrumentStates;
@@ -315,6 +312,8 @@ INVEST_OPENAPI_MAIN()
 
     auto isInstrumentActive         = [&]( QString figi )
                                       {
+                                          figi = dicts.findFigiByAnyIdString(figi); // This allows to use ticker also (for test)
+
                                           std::map< QString, tkf::MarketInstrumentState >::const_iterator it = instrumentStates.find(figi);
                                           if (it == instrumentStates.end())
                                               return false;
@@ -324,10 +323,44 @@ INVEST_OPENAPI_MAIN()
 
     auto hasInstrumentActiveRequest = [&]( QString figi )
                                       {
+                                          figi = dicts.findFigiByAnyIdString(figi); // This allows to use ticker also (for test)
                                           return awaitingResponses.find(figi)!=awaitingResponses.end();
                                       };
 
 
+    // cout << "Active : " << ( isInstrumentActive        (QString("ROSN")) ? "true" : "false" ) << endl;
+    // cout << "Has Req: " << ( hasInstrumentActiveRequest(QString("ROSN")) ? "true" : "false" ) << endl;
+
+
+    // TKF_IOA_ABSTRACT_METHOD( Empty, ordersCancel(const QString &order_id, QString broker_account_id = QString() ));
+    // TKF_IOA_ABSTRACT_METHOD( OrdersResponse, orders(QString broker_account_id = QString() ));
+
+    {
+        auto ordersResponse = pOpenApi->orders();
+       
+        ordersResponse->join();
+        tkf::checkAbort(ordersResponse);
+
+        cout << "Orders Response: " << endl;
+
+
+/*
+    QString getTrackingId() const;
+    void setTrackingId(const QString &tracking_id);
+    bool is_tracking_id_Set() const;
+    bool is_tracking_id_Valid() const;
+
+    QString getStatus() const;
+    void setStatus(const QString &status);
+    bool is_status_Set() const;
+    bool is_status_Valid() const;
+
+    QList<Order> getPayload() const;
+*/
+
+
+    }
+    
 
 
 
@@ -410,6 +443,8 @@ INVEST_OPENAPI_MAIN()
                     if (marketGlass.isValid())
                     {
                         instrumentGlasses[marketGlass.figi] = marketGlass;
+
+                        // Here we need to place limit order
                     }
 
                 }
