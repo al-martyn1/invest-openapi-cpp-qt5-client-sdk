@@ -44,7 +44,8 @@ int mainImpl(int argc, char* argv[])
 
     try
     {
-        return safeMain(argc, argv);
+        int res = safeMain(argc, argv);
+        return res;
     }
     catch( const std::runtime_error &e )
     {

@@ -182,7 +182,7 @@ INVEST_OPENAPI_MAIN()
     }
 
 
-    tkf::cpp_helpers::trimStrings( inputLines, false  /* !keepEmpty */  );
+    tkf::cpp_helpers::trimStrings( inputLines, true  /* keepEmpty */  );
 
 
     std::vector< tkf::OrderParams > inputOrderParams;
@@ -213,7 +213,9 @@ INVEST_OPENAPI_MAIN()
 
             inputOrderParams.push_back(orderParams);
         }
-    
+
+        ++lineNo;
+
     }
 
 
@@ -274,8 +276,6 @@ INVEST_OPENAPI_MAIN()
 
     cout << endl;
 
-    return 0;
-    
 
     auto checkIsAllComplete = [&]()
                               {
@@ -289,7 +289,7 @@ INVEST_OPENAPI_MAIN()
                                       auto  figiTotalOrders = figiIt->second.size();
                                       auto  figiNextOrderNo = nextOrders[figi];
 
-                                      if (figiNextOrderNo>=figiTotalOrders)
+                                      if (figiNextOrderNo<figiTotalOrders)
                                       {
                                           allComplete = false;
                                           break;
@@ -301,49 +301,32 @@ INVEST_OPENAPI_MAIN()
 
                               };
 
+    checkIsAllComplete();
+
+    return 0;
+    
 
 
 
+    std::map< QString, tkf::MarketInstrumentState >   instrumentStates;
+    std::map< QString, tkf::MarketGlass           >   instrumentGlasses;
 
 
 
-    std::vector< std::string > argsVec;
-    for( int i=1; i<argc; ++i)
-        argsVec.push_back(argv[i]);
+    auto isInstrumentActive         = [&]( QString figi )
+                                      {
+                                          std::map< QString, tkf::MarketInstrumentState >::const_iterator it = instrumentStates.find(figi);
+                                          if (it == instrumentStates.end())
+                                              return false;
+                                   
+                                          return it->second.isTradeStatusNormalTrading();
+                                      };
 
+    auto hasInstrumentActiveRequest = [&]( QString figi )
+                                      {
+                                          return awaitingResponses.find(figi)!=awaitingResponses.end();
+                                      };
 
-    tkf::OrderParams orderParams;
-
-    int orderParamsParsingRes = tkf::parseOrderParams( argsVec, dicts, orderParams );
-    if (orderParamsParsingRes<0)
-    {
-        std::cerr << "Error: invalid argument #" << -orderParamsParsingRes << endl;
-        return -orderParamsParsingRes;
-    }
-
-
-    cout << endl;
-    cout << endl;
-    cout << "Order Parameters:" << endl;
-
-    cout << "  Operation  : " << orderParams.getOperationTypeString() << endl;
-    cout << "  Order Type : " << orderParams.getOrderTypeString() << endl;
-    cout << "  Instrument : " << orderParams.figi << " (" << orderParams.ticker << ")" << endl;
-    cout << "  Order Size : " << (int)orderParams.orderSize << " (pieces, not lots)" << endl;
-    if (orderParams.orderPrice!=0)
-    {
-        cout << "  Price      : " << orderParams.orderPrice << endl;
-    }
-
-    cout << endl;
-    cout << endl;
-
-
-    tkf::MarketInstrumentState   instrumentState; // volatile
-    tkf::MarketGlass             instrumentGlass; // volatile
-
-
-    //return 0;
 
 
 
@@ -363,18 +346,26 @@ INVEST_OPENAPI_MAIN()
 
                 cout << "# Streaming API Web socket connected" << endl;
 
-                QString orderBookSubscriptionText         = pOpenApi->getStreamingApiOrderbookSubscribeJson( orderParams.figi );
-                QString instrumentInfoSubscriptionText    = pOpenApi->getStreamingApiInstrumentInfoSubscribeJson( orderParams.figi );
+                std::map< QString, std::vector<tkf::OrderParams> >::const_iterator it = figiOrders.begin();
+                for(; it!=figiOrders.end(); ++it)
+                {
+                    QString figi = it->first;
 
-                QTest::qWait(5);
-                cout << "# Subscribe to instrument info for " << orderParams.ticker << " (" << orderParams.figi << ")" << endl;
-                //cout << "# Message: "   << instrumentInfoSubscriptionText << endl;
-                webSocket.sendTextMessage( instrumentInfoSubscriptionText );
+                    QString orderBookSubscriptionText         = pOpenApi->getStreamingApiOrderbookSubscribeJson( figi );
+                    QString instrumentInfoSubscriptionText    = pOpenApi->getStreamingApiInstrumentInfoSubscribeJson( figi );
+                   
+                    QTest::qWait(5);
+                    cout << "# Subscribe to instrument info for "  /* << orderParams.ticker << " (" */  << figi <<  /* ")" << */  endl;
+                    //cout << "# Message: "   << instrumentInfoSubscriptionText << endl;
+                    webSocket.sendTextMessage( instrumentInfoSubscriptionText );
+                   
+                    QTest::qWait(5);
+                    cout << "# Subscribe to orderbook for "  /* << orderParams.ticker << " (" */  << figi <<  /* ")" << */  endl;
+                    //cout << "# Message: "   << orderBookSubscriptionText << endl;
+                    webSocket.sendTextMessage( orderBookSubscriptionText );
 
-                QTest::qWait(5);
-                cout << "# Subscribe to orderbook for " << orderParams.ticker << " (" << orderParams.figi << ")" << endl;
-                //cout << "# Message: "   << orderBookSubscriptionText << endl;
-                webSocket.sendTextMessage( orderBookSubscriptionText );
+                }
+
 
             };
 
@@ -416,8 +407,10 @@ INVEST_OPENAPI_MAIN()
 
                     tkf::MarketGlass marketGlass = tkf::MarketGlass::fromStreamingOrderbookResponse(response);
 
-                    if (marketGlass.isValid() && marketGlass.figi==orderParams.figi)
-                        instrumentGlass = marketGlass;
+                    if (marketGlass.isValid())
+                    {
+                        instrumentGlasses[marketGlass.figi] = marketGlass;
+                    }
 
                 }
 
@@ -428,10 +421,9 @@ INVEST_OPENAPI_MAIN()
 
                     tkf::MarketInstrumentState instrState = tkf::MarketInstrumentState::fromStreamingInstrumentInfoResponse( response );
 
-                    if (instrState.isValid() && instrState.figi==orderParams.figi)
+                    if (instrState.isValid())
                     {
-                        instrumentState = instrState;
-                        //cout << "# !!! Streaming error: got an invalid MarketInstrumentState - " << msg << endl;
+                        instrumentStates[instrState.figi] = instrState;
                     }
                 }
 
@@ -474,11 +466,12 @@ INVEST_OPENAPI_MAIN()
     QElapsedTimer timer;
     timer.start();
 
-    while(!ctrlC.isBreaked() && !timer.hasExpired(30000) && !(instrumentState.isValid() && instrumentGlass.isValid()) )
+    while(!ctrlC.isBreaked()  /* && !timer.hasExpired(30000) && !(instrumentState.isValid() && instrumentGlass.isValid()) */  )
     {
         QTest::qWait(1);
     }
 
+    /*
     if (instrumentState.isValid() && instrumentGlass.isValid())
     {
         cout << "Got instrument streaming info" << endl;
@@ -581,25 +574,13 @@ INVEST_OPENAPI_MAIN()
 
 
 
-/*
-
-    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const LimitOrderRequest  &limit_order_request , QString broker_account_id = QString()) );
-    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const OperationType &operation, qint32 nLots  , marty::Decimal price, QString broker_account_id = QString()) );
-    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const OperationType::eOperationType &operation, qint32 nLots, marty::Decimal price, QString broker_account_id = QString()) );
-    TKF_IOA_ABSTRACT_METHOD( LimitOrderResponse , ordersLimitOrder (const QString &figi, const QString &operation      , qint32 nLots  , marty::Decimal price, QString broker_account_id = QString()) );
-
-    TKF_IOA_ABSTRACT_METHOD( MarketOrderResponse, ordersMarketOrder(const QString &figi, const MarketOrderRequest &market_order_request, QString broker_account_id = QString()) );
-    TKF_IOA_ABSTRACT_METHOD( MarketOrderResponse, ordersMarketOrder(const QString &figi, const OperationType &operation, qint32 nLots  , QString broker_account_id = QString()) );
-    TKF_IOA_ABSTRACT_METHOD( MarketOrderResponse, ordersMarketOrder(const QString &figi, const OperationType::eOperationType &operation, qint32 nLots, QString broker_account_id = QString()) );
-    TKF_IOA_ABSTRACT_METHOD( MarketOrderResponse, ordersMarketOrder(const QString &figi, const QString &operation      , qint32 nLots  , QString broker_account_id = QString()) );
-
-
-*/       
         }
+
 
         //
     }
 
+    */
 
 
 
