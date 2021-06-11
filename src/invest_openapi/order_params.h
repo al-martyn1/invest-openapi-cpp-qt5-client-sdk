@@ -109,6 +109,16 @@ struct OrderParams
 
      bool isSellOperation() const    { return orderOperationType==operationTypeSell; }
 
+
+     OpenAPI::OrderType getOpenApiOrderType() const
+     {
+         if (isOrderTypeLimit())
+             return OpenAPI::OrderType("LIMIT");
+
+         return OpenAPI::OrderType("MARKET");
+     }
+
+
      OpenAPI::OperationType getOpenApiOperationType() const
      {
          if (isSellOperation())

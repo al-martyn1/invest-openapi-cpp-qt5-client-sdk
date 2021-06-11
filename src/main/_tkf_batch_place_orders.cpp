@@ -301,7 +301,16 @@ INVEST_OPENAPI_MAIN()
 
                               };
 
-    checkIsAllComplete();
+    // checkIsAllComplete();
+
+
+    auto removeAwaitingResponse = [&]( QString figi )
+                              {
+                                  std::map< QString, QSharedPointer<tkf::LimitOrderResponse> >::const_iterator it = awaitingResponses.find(figi);
+                                  if (it != awaitingResponses.end())
+                                  awaitingResponses.erase(it);
+                              };
+
 
 
 
@@ -332,8 +341,8 @@ INVEST_OPENAPI_MAIN()
     // cout << "Has Req: " << ( hasInstrumentActiveRequest(QString("ROSN")) ? "true" : "false" ) << endl;
 
 
-    // TKF_IOA_ABSTRACT_METHOD( Empty, ordersCancel(const QString &order_id, QString broker_account_id = QString() ));
-    // TKF_IOA_ABSTRACT_METHOD( OrdersResponse, orders(QString broker_account_id = QString() ));
+    
+    std::map< QString, std::vector< tkf::Order > > activeOrders;
 
     {
         auto ordersResponse = pOpenApi->orders();
@@ -341,25 +350,55 @@ INVEST_OPENAPI_MAIN()
         ordersResponse->join();
         tkf::checkAbort(ordersResponse);
 
-        cout << "Orders Response: " << endl;
+        auto responseValue = ordersResponse->value;
 
+        QList<tkf::Order> orders = responseValue.getPayload();
 
-/*
-    QString getTrackingId() const;
-    void setTrackingId(const QString &tracking_id);
-    bool is_tracking_id_Set() const;
-    bool is_tracking_id_Valid() const;
+        for( auto order : orders )
+        {
+            QString figi = order.getFigi().toUpper();
 
-    QString getStatus() const;
-    void setStatus(const QString &status);
-    bool is_status_Set() const;
-    bool is_status_Valid() const;
-
-    QList<Order> getPayload() const;
-*/
-
+            activeOrders[figi].push_back(order);
+        }
 
     }
+
+// tkf::OrderParams orderParams;
+
+    auto isOrderAlreadySet = [&]( const tkf::OrderParams &adjustedOrderParams, unsigned orderNumLots )
+                             {
+                                 QString figi = adjustedOrderParams.figi;
+
+                                 const std::map< QString, std::vector< tkf::Order > >::const_iterator aoit = activeOrders.find(figi);
+                                 if (aoit==activeOrders.end())
+                                     return false;
+
+                                 const std::vector< tkf::Order > &activeFigiOrders = aoit->second;
+
+                                 //std::vector< tkf::Order >::const_iterator it = activeFigiOrders.begin();
+
+                                 for( const auto &activeOrder : activeFigiOrders )
+                                 {
+
+                                     if (activeOrder.getOperation().getValue()!=adjustedOrderParams.getOpenApiOperationType().getValue())
+                                         continue;
+
+                                     if (activeOrder.getType().getValue()!=adjustedOrderParams.getOpenApiOrderType().getValue())
+                                         continue;
+
+                                     if (orderNumLots!=(unsigned)activeOrder.getRequestedLots())
+                                         continue;
+
+                                     if (activeOrder.getPrice()!=adjustedOrderParams.orderPrice)
+                                         continue;
+
+                                     return true;
+
+                                 }
+
+                                 return false;
+
+                             };
     
 
 
@@ -442,6 +481,8 @@ INVEST_OPENAPI_MAIN()
 
                     if (marketGlass.isValid())
                     {
+
+
                         instrumentGlasses[marketGlass.figi] = marketGlass;
 
                         // Here we need to place limit order
@@ -458,8 +499,49 @@ INVEST_OPENAPI_MAIN()
 
                     if (instrState.isValid())
                     {
+                        if (instrState.isTradeStatusNormalTrading() && !isInstrumentActive(instrState.figi))
+                        {
+                            /*
+                            // Интструмент был неактиным, и получена инфа о его активизации - 
+                            // нужно для всех ордеров по этому инструменту сделать adjust
+
+                            std::map< QString, std::vector<tkf::OrderParams> >::iterator figiOrdersIt = figiOrders.find(instrState.figi);
+                            if (figiOrdersIt != figiOrders.end())
+                            {
+                                // Есть запросы на ордера по данной фиге
+                                std::vector<tkf::OrderParams> &orderParamsVec = figiOrdersIt->second();
+
+                                for( auto & orderParams : orderParamsVec )
+                                {
+                                    orderParams = orderParams.getAdjusted( instrumentGlass.getPriceSpreadPoints(instrumentState.priceIncrement)
+                                                 , instrumentState.priceIncrement
+                                                 , instrumentGlass.getAsksMinPrice()
+                                                 , instrumentGlass.getBidsMaxPrice()
+                                                 );
+
+                            }
+                            */
+
+                        }
+
                         instrumentStates[instrState.figi] = instrState;
                     }
+
+
+
+    // cout << "Active : " << ( isInstrumentActive        (QString("ROSN")) ? "true" : "false" ) << endl;
+
+
+
+
+
+
+
+
+
+
+
+
                 }
 
                 else if (eventName=="candle")
@@ -501,7 +583,7 @@ INVEST_OPENAPI_MAIN()
     QElapsedTimer timer;
     timer.start();
 
-    while(!ctrlC.isBreaked()  /* && !timer.hasExpired(30000) && !(instrumentState.isValid() && instrumentGlass.isValid()) */  )
+    while(!ctrlC.isBreaked() && !checkIsAllComplete() )
     {
         QTest::qWait(1);
     }
