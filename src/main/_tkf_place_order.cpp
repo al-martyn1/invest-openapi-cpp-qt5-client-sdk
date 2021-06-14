@@ -120,7 +120,11 @@ INVEST_OPENAPI_MAIN()
 
     QSharedPointer<tkf::LoggingConfig>  pLoggingConfig  = QSharedPointer<tkf::LoggingConfig> ( new tkf::LoggingConfig(logConfigFullFileName) );
 
+    // Force turn of requests logging
     pLoggingConfig->debugSqlQueries = false;
+    pLoggingConfig->debugRequests   = false;
+    pLoggingConfig->debugResponses  = false;
+
 
     auto loggingConfig = *pLoggingConfig;
 

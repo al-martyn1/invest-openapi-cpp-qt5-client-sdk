@@ -54,7 +54,7 @@
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("_tkf_get_orders");
+    QCoreApplication::setApplicationName("_tkf_get_operations");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");
@@ -150,52 +150,83 @@ INVEST_OPENAPI_MAIN()
     tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
 
 
-
-    auto ordersResponse = pOpenApi->orders();
-    
-    ordersResponse->join();
-    tkf::checkAbort(ordersResponse);
-
-
-    auto responseValue = ordersResponse->value;
-
-    cout << endl;
-
-    cout << "Orders Response: " << endl;
-
-    cout << "  Tracking Id: " << responseValue.getTrackingId() << endl;
-    cout << "  Status     : " << responseValue.getStatus()     << endl;
-
-    cout << endl;
-
-    QList<tkf::Order> orders = responseValue.getPayload();
-
-    for( auto order : orders )
+    QStringList instrumentList;
     {
-        cout << "----------------------" << endl << endl;
+        QSettings settings(instrumentsConfigFullFileName, QSettings::IniFormat);
+        instrumentList = settings.value("instruments" ).toStringList();
+    }
 
-        QString figi   = order.getFigi();
+
+    for( auto instrument : instrumentList )
+    {
+        QString figi   = dicts.findFigiByAnyIdString(instrument);
         QString ticker = dicts.getTickerByFigiChecked(figi);
 
-        cout << "Instrument     : " << ticker << "/" << figi    << endl;
+        cout << "-------------------------------" << endl;
 
-        cout << "Order Id       : " << order.getOrderId()       << endl;
-        cout << "Operation      : " << order.getOperation()     << endl;
-        cout << "Status         : " << order.getStatus()        << endl;
-        cout << "Order Type     : " << order.getType()          << endl;
+        cout << "Try to get operations on " << ticker << " (" << figi << ")" << endl;
 
-        cout << endl;
-
-        cout << "Lots Requested : " << order.getRequestedLots() << endl;
-        cout << "Lots Executed  : " << order.getExecutedLots() << endl;
-
-        cout << endl;
-
-        cout << "Price          : " << order.getPrice() << endl;
-
-        cout << endl;
+        QDateTime dateTimeNow     = QDateTime::currentDateTime();
+        QDateTime dateTimeBefore  = qt_helpers::dtAddTimeInterval( dtNow, QString("-10YEAR") );
         
+        // const QDateTime &from, const QDateTime &to, const QString &figi, QString broker_account_id
+        auto operationsResponse = pOpenApi->operations(dateTimeBefore, dateTimeNow, figi);
+
+        operationsResponse->join();
+
+        tkf::checkAbort(operationsResponse);
+
+        // QList<Operation> getOperations() const;
+        auto operations = operationsResponse->value.getPayload().getOperations();
+
+        for( auto op : operations )
+        {
+            // QList<OperationTrade> op.getTrades() const;
+            // OperationTypeWithCommission getOperationType() const;
+
+#if 0
+
+
+            QString operationTypeStr   = op.getOperationType().asJson().toUpper();
+            QString operationStatusStr = op.getStatus().asJson().toUpper();
+
+            foundOperationTypes[figi].insert(operationTypeStr);
+            foundOperationStatuses[figi].insert(operationStatusStr);
+
+            if (operationStatusStr!="DONE")
+                continue;
+
+            cout << op;
+            cout << "------------------------------------------------" << endl;
+
+            // BROKERCOMMISSION, BUY, DIVIDEND, SELL, TAXDIVIDEND
+            // BBG0013HGFT4 (USD000UTSTOM) : BROKERCOMMISSION, BUY, BUYCARD, SELL
+
+            // BUYCARD - появилось в операциях с USD000UTSTOM, по сути - похоже на простой BUY
+
+            // Плохо, что комиссия идёт отдельным полем в операции, и отдельно идёт записью в списке операций, 
+            // и их никак не связать, только по времени исполнения, но это не гарантированно.
+
+            //QString figi = op.getFigi().asJson().toUpper();
+            QString currencyName = op.getCurrency().asJson().toUpper();
+
+            if (operationTypeStr=="BUY" || operationTypeStr=="BUYCARD" || operationTypeStr=="SELL")
+            {
+                figiBalance[figi][currencyName] += op.getPayment();
+            }
+
+
+#endif
+
+        }
+
+
+
+
     }
+
+
+    // Custom code goes here
 
     
     return 0;
