@@ -140,14 +140,8 @@ INVEST_OPENAPI_MAIN()
     }
 
 
-    QStringList instrumentList;
-    {
-        QSettings settings(instrumentsConfigFullFileName, QSettings::IniFormat);
-        instrumentList = settings.value("instruments" ).toStringList();
-    }
-
-
     tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
+
 
 
     QStringList instrumentList;
@@ -167,7 +161,7 @@ INVEST_OPENAPI_MAIN()
         cout << "Try to get operations on " << ticker << " (" << figi << ")" << endl;
 
         QDateTime dateTimeNow     = QDateTime::currentDateTime();
-        QDateTime dateTimeBefore  = qt_helpers::dtAddTimeInterval( dtNow, QString("-10YEAR") );
+        QDateTime dateTimeBefore  = qt_helpers::dtAddTimeInterval( dateTimeNow, QString("-10YEAR") );
         
         // const QDateTime &from, const QDateTime &to, const QString &figi, QString broker_account_id
         auto operationsResponse = pOpenApi->operations(dateTimeBefore, dateTimeNow, figi);
@@ -184,44 +178,30 @@ INVEST_OPENAPI_MAIN()
             // QList<OperationTrade> op.getTrades() const;
             // OperationTypeWithCommission getOperationType() const;
 
-#if 0
-
-
             QString operationTypeStr   = op.getOperationType().asJson().toUpper();
             QString operationStatusStr = op.getStatus().asJson().toUpper();
 
-            foundOperationTypes[figi].insert(operationTypeStr);
-            foundOperationStatuses[figi].insert(operationStatusStr);
-
-            if (operationStatusStr!="DONE")
+            if (operationStatusStr!="DONE" && operationStatusStr!="PROGRESS") // DECLINE or INVALID
                 continue;
 
-            cout << op;
-            cout << "------------------------------------------------" << endl;
+            if (operationTypeStr!="BUYCARD" && operationTypeStr!="BUY" && operationTypeStr!="SELL")
+                continue;
 
-            // BROKERCOMMISSION, BUY, DIVIDEND, SELL, TAXDIVIDEND
-            // BBG0013HGFT4 (USD000UTSTOM) : BROKERCOMMISSION, BUY, BUYCARD, SELL
+            cout << "Operation: " << operationTypeStr << endl;
+            cout << "Status   : " << operationStatusStr << endl;
+            cout << "Trades   :"  << endl;
 
-            // BUYCARD - появилось в операциях с USD000UTSTOM, по сути - похоже на простой BUY
 
-            // Плохо, что комиссия идёт отдельным полем в операции, и отдельно идёт записью в списке операций, 
-            // и их никак не связать, только по времени исполнения, но это не гарантированно.
+            auto trades = op.getTrades(); // QList<OperationTrade>
 
-            //QString figi = op.getFigi().asJson().toUpper();
-            QString currencyName = op.getCurrency().asJson().toUpper();
-
-            if (operationTypeStr=="BUY" || operationTypeStr=="BUYCARD" || operationTypeStr=="SELL")
+            for( auto trade : trades )
             {
-                figiBalance[figi][currencyName] += op.getPayment();
+                cout << "    " << trade.getQuantity() << " x " << trade.getPrice() << endl;
             }
 
-
-#endif
+            cout << endl;
 
         }
-
-
-
 
     }
 
