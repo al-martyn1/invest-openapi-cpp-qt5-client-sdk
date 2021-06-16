@@ -50,6 +50,8 @@
 
 #include "invest_openapi/format_helpers.h"
 
+#include "invest_openapi/term_helpers.h"
+
 
 
 
@@ -138,13 +140,6 @@ INVEST_OPENAPI_MAIN()
     }
 
 
-    QStringList instrumentList;
-    {
-        QSettings settings(instrumentsConfigFullFileName, QSettings::IniFormat);
-        instrumentList = settings.value("instruments" ).toStringList();
-    }
-
-
     tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
 
 
@@ -188,6 +183,8 @@ INVEST_OPENAPI_MAIN()
                              {
                                  cout << tkf::format_field( 0 /* leftSpace */ , 2 /* rightSpace */ , 12 /* fieldWidth */ , -1, figi );
 
+                                 figi = dicts.findFigiByAnyIdString(figi);
+
                                  if (!isInstrumentActive(figi))
                                  {
                                      cout << "Innactive" << endl;
@@ -207,6 +204,35 @@ INVEST_OPENAPI_MAIN()
 
 
 
+    auto updateScreen =      [&]( )
+                             {
+                                 cout << "Status: " << statusStr << endl;
+
+                                 cout << endl;
+
+                                 for( auto figi : instrumentList)
+                                 {
+                                     //QString figi = dicts.findFigiByAnyIdString(figi);
+
+                                     printFigiInfoLine( figi );
+                                 }
+
+                                 cout << endl;
+
+                             };
+
+
+
+    auto updateFigiScreen =  [&]( QString figi )
+                             {
+                                 // Do something for FIGI
+
+                                 updateScreen();
+
+                             };
+
+
+
     auto onConnected = [&]()
             {
                 using std::cout;  using std::endl;
@@ -216,6 +242,8 @@ INVEST_OPENAPI_MAIN()
                 //std::map< QString, std::vector<tkf::OrderParams> >::const_iterator it = figiOrders.begin();
                 for( auto figi : instrumentList)
                 {
+                    cout << "onConnected: figi: <" << figi << ">" << endl;
+
                     QString figi = dicts.findFigiByAnyIdString(figi);
 
                     QString orderBookSubscriptionText         = pOpenApi->getStreamingApiOrderbookSubscribeJson( figi );
@@ -231,6 +259,8 @@ INVEST_OPENAPI_MAIN()
 
                 statusStr = "Connected";
 
+                updateScreen();
+
             };
 
     auto onDisconnected = [&]()
@@ -245,8 +275,7 @@ INVEST_OPENAPI_MAIN()
 
                 statusStr = "Disconnected";
 
-
-                //UNDONE: !!! Update screen
+                updateScreen();
             };
 
 
@@ -264,9 +293,10 @@ INVEST_OPENAPI_MAIN()
                     tkf::StreamingError streamingError;
                     streamingError.fromJson(msg);
 
-                    //cout << "# !!! Streaming error: " << streamingError.getPayload().getMessage() << endl;
                     statusStr = QString("Streaming error: ") + streamingError.getPayload().getMessage();
-                    //UNDONE: !!! Update screen
+
+                    //updateFigiScreen(marketGlass.figi);
+                    updateScreen();
                 }
 
                 else if (eventName=="orderbook")
@@ -276,10 +306,9 @@ INVEST_OPENAPI_MAIN()
 
                     tkf::MarketGlass marketGlass = tkf::MarketGlass::fromStreamingOrderbookResponse(response);
 
-                    //if (marketGlass.isValid() && marketGlass.figi==orderParams.figi)
-                    //    instrumentGlass = marketGlass;
+                    instrumentGlasses[marketGlass.figi] = marketGlass;
 
-                    //UNDONE: !!! Update screen
+                    updateFigiScreen(marketGlass.figi);
                 }
 
                 else if (eventName=="instrument_info")
@@ -289,13 +318,9 @@ INVEST_OPENAPI_MAIN()
 
                     tkf::MarketInstrumentState instrState = tkf::MarketInstrumentState::fromStreamingInstrumentInfoResponse( response );
 
-                    if (instrState.isValid() && instrState.figi==orderParams.figi)
-                    {
-                        //instrumentState = instrState;
-                        //cout << "# !!! Streaming error: got an invalid MarketInstrumentState - " << msg << endl;
-                    }
+                    instrumentStates[instrState.figi] = instrState;
 
-                    //UNDONE: !!! Update screen
+                    updateFigiScreen(instrState.figi);
                 }
 
                 else if (eventName=="candle")

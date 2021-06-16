@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 
 
 #include "../cpp/cpp.h"
@@ -15,7 +16,6 @@ namespace invest_openapi
 // Alignment left    - <0
 //           right   - >0
 //           center  - ==0
-
 
 //----------------------------------------------------------------------------
 template< typename T > inline

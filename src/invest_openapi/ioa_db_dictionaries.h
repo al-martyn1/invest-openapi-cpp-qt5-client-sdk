@@ -372,6 +372,10 @@ public:
     //------------------------------
     QString findFigiByAnyIdString( QString idStr ) const
     {
+        std::string idStdStr = idStr.toStdString();
+
+        idStr = QString::fromStdString(idStdStr);
+
         idStr = idStr.toUpper();
 
         QString figi;
