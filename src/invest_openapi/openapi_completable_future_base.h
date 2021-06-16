@@ -44,14 +44,26 @@ public:
         return m_complete.load(std::memory_order_relaxed);
     }
 
-    bool isFinished() const // QFuture compatible
-    {
-        return isCompleted();
-    }
+    // QFuture compatible methods
+    bool isFinished() const  { return isCompleted(); }
+    bool isCanceled() const  { return false; }
+    bool isPaused  () const  { return false; }
+    bool isRunning () const  { return true; }
+    bool isStarted () const  { return true; }
+    void cancel    ()        {} // May be implemented later
+    void pause     ()        {} 
+    bool isResultReadyAt(int index) const { return isCompleted(); }
+    void waitForFinished()   { joinImpl(); }
+    // End of QFuture compatible methods
 
     bool isCompletionError() const
     {
         return m_errorType != QNetworkReply::NoError;
+    }
+
+    bool isResultValid() const // More Qt styled, and complementary to result()
+    {
+        return isCompletionError();
     }
 
     QNetworkReply::NetworkError getError() const

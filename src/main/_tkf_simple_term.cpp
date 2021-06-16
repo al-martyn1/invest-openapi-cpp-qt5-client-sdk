@@ -154,8 +154,12 @@ INVEST_OPENAPI_MAIN()
 
     // Custom code goes here
 
-    std::map< QString, tkf::MarketInstrumentState >   instrumentStates;
-    std::map< QString, tkf::MarketGlass           >   instrumentGlasses;
+    // Key - FIGI
+    std::map< QString, tkf::MarketInstrumentState >     instrumentStates;
+    std::map< QString, tkf::MarketGlass           >     instrumentGlasses;
+    std::map< QString, std::vector< tkf::Operation > >  instrumentOperations;
+
+
 
 
     auto isInstrumentActive         = [&]( QString figi )
@@ -280,6 +284,8 @@ INVEST_OPENAPI_MAIN()
             };
 
 
+
+
     auto onMessage = [&]( QString msg )
             {
                 using std::cout;  using std::endl;
@@ -344,22 +350,104 @@ INVEST_OPENAPI_MAIN()
             };
 
 
-    //cout << "# Connecting Streaming API Web socket" << endl;
-    webSocket.connect( &webSocket, &QWebSocket::connected             , onConnected    );
-    webSocket.connect( &webSocket, &QWebSocket::disconnected          , onDisconnected );
-    webSocket.connect( &webSocket, &QWebSocket::textMessageReceived   , onMessage      );
-
-    webSocket.open( pOpenApi->getStreamingApiNetworkRequest() );
 
 
-    QElapsedTimer operationsRequestTimer;
-    operationsRequestTimer.start();
 
-    std::vector< QSharedPointer< tkf::OperationsResponse > > operationResponses;
+    //     auto foundOpResponseIt = tkf::findOpenApiCompletableFutureFinished( operationResponses.begin(), operationResponses.end() );
+    //     if (foundOpResonseIt!=operationResponses.end())
+    //     {
+    //         auto operationResponse = *foundOpResonseIt;
+    //  
+    //         operationResponses.erase(foundOpResonseIt);
+    //  
+    //  
+    // QString getFigi() const;
+
+    // QList< kf::Operation > getOperations() const;
+    // std::map< QString, sd::vector< kf::Operation > >  instrumentOperations;
+
+    std::vector< QSharedPointer< tkf::OperationsResponse > > awaitingOperationResponses;
+
+    auto checkAwaitingOperationResponses = [&]()
+                                           {
+                                               auto foundOpResponseIt = tkf::findOpenApiCompletableFutureFinished( awaitingOperationResponses.begin(), awaitingOperationResponses.end() );
+                                               if (foundOpResonseIt==awaitingOperationResponses.end())
+                                                   return;
+
+                                               auto operationsResponse = *foundOpResponseIt;
+                                              
+                                               awaitingOperationResponses.erase(foundOpResponseIt);
+
+                                               if (!operationResponse->isResultValid())
+                                               {
+                                                   statusStr = QString("Get Operations Error: ") + operationResponse->getErrorMessage();
+                                                   updateScreen();
+                                                   return;
+                                               }
+
+                                               //auto payload = 
+
+                                               std::map< QString, std::vector< kf::Operation > > tmpOperationsFigiMap;
+
+                                               QList< tkf::Operation > operations = operationsResponse->value.getPayload().getOperations();
+
+                                               for( const auto &op : operations )
+                                               {
+                                                   QString figi = op.getFigi().toUpper();
+
+                                                   QString operationStatusStr = op.getStatus().asJson().toUpper();
+                                                   if (operationStatusStr!="DONE" && operationStatusStr!="PROGRESS") // Also may be DECLINE or INVALID_...
+                                                       continue;
+                                                   
+                                                   QString operationTypeStr   = op.getOperationType().asJson().toUpper();
+                                                   if (operationTypeStr!="BUYCARD" && operationTypeStr!="BUY" && operationTypeStr!="SELL")
+                                                       continue;
+
+                                                   //opVec.push_back(op);
+                                                   tmpOperationsFigiMap[figi].push_back(op);
+                                               }
+
+
+                                               std::map< QString, std::vector< tkf::Operation > >::iterator it = tmpOperationsFigiMap.begin();
+                                               for( ; it!=tmpOperationsFigiMap.end(); ++it )
+                                               {
+                                                   const QString &figi = it->first;
+                                                   auto &opVec = it->second;
+
+                                                   std::stable_sort( opVec.begin(), opVec.end()
+                                                                   , []( const tkf::Operation &op1, const tkf::Operation &op2 )
+                                                                     {
+                                                                         return op1.getDate() < op2.getDate();
+                                                                     }
+                                                                   );
+
+                                                   instrumentOperations[figi] = opVec;
+
+
+                                                   cout << "--------" << endl;
+                                                   QString ticker = dicts.getTickerByFigiChecked(figi);
+                                                   cout << "Operations for Figi: " << figi << " (" << ticker << ")" << endl;
+
+                                                   auto opIt = opVec.begin();
+                                                   for(; opIt!=opVec.end(); ++opIt)
+                                                   {
+                                                       cout << "Operation: " << opIt->getOperationType().asJson().toUpper() << endl;
+                                                       cout << "Status   : " << opIt->getStatus().asJson().toUpper() << endl;
+                                                       cout << "Date&Time: " << opIt->getDate() << endl;
+                                                       cout << "Trades # :"  << opIt->getTrades() << endl;
+                                                       cout << endl;
+                                                   } // for(; opIt!=opVec.end(); ++opIt)
+
+                                               } // for( ; it!=tmpOperationsFigiMap.end(); ++it )
+                                           
+                                           };
+
+
     
     QSharedPointer< tkf::OrdersResponse > ordersResponse  = pOpenApi->orders();
 
     QStringList::const_iterator instrumentForOperationsIt = instrumentList.begin();
+    
 
     /*
         Делать запрос по ордерам один раз в конце списка инструментов - не дело.
@@ -376,6 +464,53 @@ INVEST_OPENAPI_MAIN()
         значит, ордер исполнен, и надо запросить операции по инструменту.
     
      */
+
+    QElapsedTimer operationsRequestTimer;
+    operationsRequestTimer.start();
+
+    unsigned counter = 0;
+
+    for(; instrumentForOperationsIt!=instrumentList.end(); ++instrumentForOperationsIt, ++counter)
+    {
+        if (counter>0 && (counter%120)) // Лимит - 120 запросов в минуту
+        {
+            std::uint64_t elapsed     = (std::uint64_t)operationsRequestTimer.elapsed();
+            std::uint64_t inerval     = 60*1000u; // 1 минута
+
+            if (elapsed<inerval)
+            {
+                std::uint64_t timeToSleep = inerval - elapsed;
+                QTest::qWait(timeToSleep);
+            }
+        }
+
+        QDateTime dateTimeNow     = QDateTime::currentDateTime();
+        QDateTime dateTimeBefore  = qt_helpers::dtAddTimeInterval( dateTimeNow, QString("-10YEAR") );
+
+        QString requestForFigi    = dicts.findFigiByAnyIdString(*instrumentForOperationsIt);
+        
+        auto operationsResponse   = pOpenApi->operations(dateTimeBefore, dateTimeNow, requestForFigi);
+
+        awaitingOperationResponses.push_back(operationsResponse);
+
+        checkAwaitingOperationResponses();
+
+    }
+
+    return 0;
+
+
+
+
+    #if 0
+
+    //cout << "# Connecting Streaming API Web socket" << endl;
+    webSocket.connect( &webSocket, &QWebSocket::connected             , onConnected    );
+    webSocket.connect( &webSocket, &QWebSocket::disconnected          , onDisconnected );
+    webSocket.connect( &webSocket, &QWebSocket::textMessageReceived   , onMessage      );
+
+    webSocket.open( pOpenApi->getStreamingApiNetworkRequest() );
+
 
 
 
@@ -401,7 +536,7 @@ INVEST_OPENAPI_MAIN()
                 QDateTime dateTimeNow     = QDateTime::currentDateTime();
                 QDateTime dateTimeBefore  = qt_helpers::dtAddTimeInterval( dateTimeNow, QString("-10YEAR") );
 
-                QString requestForFigi    = figi = dicts.findFigiByAnyIdString(*instrumentForOperationsIt);
+                QString requestForFigi    = dicts.findFigiByAnyIdString(*instrumentForOperationsIt);
                 
                 auto operationsResponse   = pOpenApi->operations(dateTimeBefore, dateTimeNow, requestForFigi);
             
@@ -443,12 +578,12 @@ INVEST_OPENAPI_MAIN()
         }
 
 
-        auto foundOpResponseIt = tkf::findOpenApiCompletableFutureFinished( operationResponses.begin(), operationResponses.end() );
-        if (foundOpResonseIt!=operationResponses.end())
+        auto foundOpResponseIt = tkf::findOpenApiCompletableFutureFinished( awaitingOperationResponses.begin(), awaitingOperationResponses.end() );
+        if (foundOpResonseIt!=awaitingOperationResponses.end())
         {
             auto operationResponse = *foundOpResonseIt;
 
-            operationResponses.erase(foundOpResonseIt);
+            awaitingOperationResponses.erase(foundOpResonseIt);
 
             // auto responseValue = ordersResponse->value;
         // tkf::checkAbort(operationsResponse);
@@ -505,7 +640,10 @@ INVEST_OPENAPI_MAIN()
             // timer.start();
             // auto sandboxRegisterResponseInterval = timer.restart();
     
+
     return 0;
+
+    #endif
 }
 
 

@@ -65,6 +65,12 @@ public:
     }
 
 
+    value_type result() const // QFuture compatible
+    {
+        return value;
+    }
+
+
     template< typename SignalSourseObjectType, typename SignalCompleteType, typename SignalErrorType >
     void connectTo( SignalSourseObjectType * pSource
                   , SignalCompleteType completeSignal
