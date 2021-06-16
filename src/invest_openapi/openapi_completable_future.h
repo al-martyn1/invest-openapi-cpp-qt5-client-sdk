@@ -119,6 +119,28 @@ protected:
 
 
 
+
+template< typename IteratorType > inline
+IteratorType findOpenApiCompletableFutureFinished( IteratorType b, IteratorType e )
+{
+    for(; b!=e; ++b )
+    {
+        auto &f = *b;
+        if (f->isFinished())
+            return b;
+    }
+
+    return b;
+}
+
+template< typename IteratorType > inline
+IteratorType findOpenApiCompletableFutureCompleted( IteratorType b, IteratorType e )
+{
+    return findOpenApiCompletableFutureFinished(b,e);
+}
+
+
+
 //----------------------------------------------------------------------------
 template<typename T>
 inline
@@ -137,6 +159,9 @@ void dumpIfError( const QSharedPointer< OpenApiCompletableFuture< T > > &val )
     qDebug().nospace().noquote() << val->getErrorMessage();
     dump(val);
 }
+
+//----------------------------------------------------------------------------
+
 
 
 

@@ -12,6 +12,7 @@
 #include <set>
 #include <optional>
 #include <atomic>
+#include <deque>
 
 #include <QCoreApplication>
 #include <QString>
@@ -210,7 +211,7 @@ INVEST_OPENAPI_MAIN()
 
                                  cout << endl;
 
-                                 for( auto figi : instrumentList)
+                                 for( auto figi : instrumentList )
                                  {
                                      //QString figi = dicts.findFigiByAnyIdString(figi);
 
@@ -240,11 +241,11 @@ INVEST_OPENAPI_MAIN()
                 fConnected.store( true, std::memory_order_seq_cst  );
 
                 //std::map< QString, std::vector<tkf::OrderParams> >::const_iterator it = figiOrders.begin();
-                for( auto figi : instrumentList)
+                for( auto figi : instrumentList )
                 {
-                    cout << "onConnected: figi: <" << figi << ">" << endl;
+                    //cout << "onConnected: figi: <" << figi << ">, size: " << figi.size() << endl;
 
-                    QString figi = dicts.findFigiByAnyIdString(figi);
+                    figi = dicts.findFigiByAnyIdString(figi);
 
                     QString orderBookSubscriptionText         = pOpenApi->getStreamingApiOrderbookSubscribeJson( figi );
                     QString instrumentInfoSubscriptionText    = pOpenApi->getStreamingApiInstrumentInfoSubscribeJson( figi );
@@ -351,12 +352,158 @@ INVEST_OPENAPI_MAIN()
     webSocket.open( pOpenApi->getStreamingApiNetworkRequest() );
 
 
+    QElapsedTimer operationsRequestTimer;
+    operationsRequestTimer.start();
+
+    std::vector< QSharedPointer< tkf::OperationsResponse > > operationResponses;
+    
+    QSharedPointer< tkf::OrdersResponse > ordersResponse  = pOpenApi->orders();
+
+    QStringList::const_iterator instrumentForOperationsIt = instrumentList.begin();
+
+    /*
+        Делать запрос по ордерам один раз в конце списка инструментов - не дело.
+        
+        По инструментам неспешно полируем с паузой в пару секунд (и один раз при старте, 
+        до главного цикла).
+
+        Наверное, каждый раз надо и ордера запрашивать. Если пауза - 3 секунды, и два запроса, 
+        то это 40 запросов в минуту (если 5 - то 24), при лимите в 120. 
+        При ручном добавлении заявок - вполне хватит. Для робота, и если куча инструментов - 
+        наверное маловато будет.
+
+        Текущие ордера надо хранить. Если пришел ответ, и там ордера нет, но есть локально - 
+        значит, ордер исполнен, и надо запросить операции по инструменту.
+    
+     */
+
+
+
     while(!ctrlC.isBreaked() )
     {
         QTest::qWait(1);
+
+        if (operationsRequestTimer.hasExpired(500))
+        {
+            operationsRequestTimer.restart();
+
+            if (instrumentForOperationsIt==instrumentList.end())
+            {
+                instrumentForOperationsIt = instrumentList.begin();
+                //ordersResponse = pOpenApi->orders();
+                // if (ordersResponse->isFinished())
+                // {
+                //     ordersResponse = pOpenApi->orders(); // send new request for orders
+                // }
+            }
+            else
+            {
+                QDateTime dateTimeNow     = QDateTime::currentDateTime();
+                QDateTime dateTimeBefore  = qt_helpers::dtAddTimeInterval( dateTimeNow, QString("-10YEAR") );
+
+                QString requestForFigi    = figi = dicts.findFigiByAnyIdString(*instrumentForOperationsIt);
+                
+                auto operationsResponse   = pOpenApi->operations(dateTimeBefore, dateTimeNow, requestForFigi);
+            
+            }
+
+        }
+
+
+        if (ordersResponse->isFinished())
+        {
+            // auto responseValue = ordersResponse->value;
+
+    // QList<tkf::Order> orders = responseValue.getPayload();
+    //  
+    // for( auto order : orders )
+    // {
+    //     cout << "----------------------" << endl << endl;
+    //  
+    //     QString figi   = order.getFigi();
+    //     QString ticker = dicts.getTickerByFigiChecked(figi);
+    //  
+    //     cout << "Instrument     : " << ticker << "/" << figi    << endl;
+    //  
+    //     cout << "Order Id       : " << order.getOrderId()       << endl;
+    //     cout << "Operation      : " << order.getOperation()     << endl;
+    //     cout << "Status         : " << order.getStatus()        << endl;
+    //     cout << "Order Type     : " << order.getType()          << endl;
+    //  
+    //     cout << endl;
+    //  
+    //     cout << "Lots Requested : " << order.getRequestedLots() << endl;
+    //     cout << "Lots Executed  : " << order.getExecutedLots() << endl;
+    //  
+    //     cout << endl;
+    //  
+    //     cout << "Price          : " << order.getPrice() << endl;
+
+
+        }
+
+
+        auto foundOpResponseIt = tkf::findOpenApiCompletableFutureFinished( operationResponses.begin(), operationResponses.end() );
+        if (foundOpResonseIt!=operationResponses.end())
+        {
+            auto operationResponse = *foundOpResonseIt;
+
+            operationResponses.erase(foundOpResonseIt);
+
+            // auto responseValue = ordersResponse->value;
+        // tkf::checkAbort(operationsResponse);
+        //  
+        // // QList<Operation> getOperations() const;
+        // auto operations = operationsResponse->value.getPayload().getOperations();
+
+
+        // for( auto op : operations )
+        // {
+        //     // QList<OperationTrade> op.getTrades() const;
+        //     // OperationTypeWithCommission getOperationType() const;
+        //  
+        //     QString operationTypeStr   = op.getOperationType().asJson().toUpper();
+        //     QString operationStatusStr = op.getStatus().asJson().toUpper();
+        //  
+        //     if (operationStatusStr!="DONE" && operationStatusStr!="PROGRESS") // DECLINE or INVALID
+        //         continue;
+        //  
+        //     if (operationTypeStr!="BUYCARD" && operationTypeStr!="BUY" && operationTypeStr!="SELL")
+        //         continue;
+        //  
+        //     cout << "Operation: " << operationTypeStr << endl;
+        //     cout << "Status   : " << operationStatusStr << endl;
+        //     cout << "Trades   :"  << endl;
+        //  
+        //  
+        //     auto trades = op.getTrades(); // QList<OperationTrade>
+        //  
+        //     for( auto trade : trades )
+        //     {
+        //         cout << "    " << trade.getQuantity() << " x " << trade.getPrice() << endl;
+        //     }
+
+
+        }
+
+        //IteratorType findOpenApiCompletableFutureFinished( IteratorType b, IteratorType e )
+
+        //if (instrumentForOperationsIt
     }
 
 
+
+
+        // operationsResponse->join();
+        //  
+        // tkf::checkAbort(operationsResponse);
+        //  
+        // // QList<Operation> getOperations() const;
+        // auto operations = operationsResponse->value.getPayload().getOperations();
+
+            // QElapsedTimer timer;
+            // timer.start();
+            // auto sandboxRegisterResponseInterval = timer.restart();
     
     return 0;
 }

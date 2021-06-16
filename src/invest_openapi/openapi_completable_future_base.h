@@ -44,6 +44,11 @@ public:
         return m_complete.load(std::memory_order_relaxed);
     }
 
+    bool isFinished() const // QFuture compatible
+    {
+        return isCompleted();
+    }
+
     bool isCompletionError() const
     {
         return m_errorType != QNetworkReply::NoError;
@@ -323,7 +328,7 @@ protected slots:
     
 
 
-}; // class OpenApiCompletableFuture
+}; // class OpenApiCompletableFutureBase
 
 
 } // namespace invest_openapi
