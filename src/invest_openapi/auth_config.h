@@ -22,6 +22,12 @@ namespace invest_openapi
 
 
 
+//----------------------------------------------------------------------------
+struct IOpenApi;
+struct ISanboxOpenApi;
+
+
+
 
 //----------------------------------------------------------------------------
 struct AuthConfig
@@ -79,6 +85,10 @@ struct AuthConfig
         sanboxToken = smbxtk;
         sandboxMode = sm;
     }
+
+
+    void setDefaultBrokerAccountForOpenApi( QSharedPointer<IOpenApi> pOpenApi ) const;
+
 
 };
 

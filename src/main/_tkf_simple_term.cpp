@@ -3,6 +3,7 @@
  */
 
 #include <iostream>
+#include <ostream>
 #include <exception>
 #include <stdexcept>
 #include <vector>
@@ -47,13 +48,16 @@
 
 
 #include "invest_openapi/streaming_handlers.h"
+#include "invest_openapi/streaming_helpers.h"
 
 #include "invest_openapi/market_glass.h"
 #include "invest_openapi/market_instrument_state.h"
 
+#include "invest_openapi/operation_helpers.h"
 #include "invest_openapi/format_helpers.h"
-
 #include "invest_openapi/term_helpers.h"
+
+
 
 
 
@@ -67,6 +71,7 @@ INVEST_OPENAPI_MAIN()
     QCoreApplication::setOrganizationName("al-martyn1");
     QCoreApplication::setOrganizationDomain("https://github.com/al-martyn1/");
 
+    using std::cerr;
     using std::cout;
     using std::endl;
 
@@ -86,13 +91,12 @@ INVEST_OPENAPI_MAIN()
     auto dbConfigFullFileName      = lookupForConfigFile( "database.properties", lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto instrumentsConfigFullFileName = lookupForConfigFile( "instruments.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
 
-    // cout << "# Log  Config File: "<< logConfigFullFileName   << endl;
-    // cout << "# API  Config File: "<< apiConfigFullFileName   << endl;
-    // cout << "# Auth Config File: "<< authConfigFullFileName  << endl;
-    // cout << "# Instruments Cfg File: "<< instrumentsConfigFullFileName << endl;
+
 
     auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
     auto authConfig    = tkf::AuthConfig   ( authConfigFullFileName );
+
+
 
     QSharedPointer<tkf::DatabaseConfig> pDatabaseConfig = QSharedPointer<tkf::DatabaseConfig>( new tkf::DatabaseConfig(dbConfigFullFileName, tkf::DatabasePlacementStrategyDefault()) );
 
@@ -106,12 +110,7 @@ INVEST_OPENAPI_MAIN()
 
     auto dataLogFullFilename = pLoggingConfig->getDataLogFullName( logConfigFullFileName, "", "test.dat" );
 
-    // cout << "# test_streaming_api data log file: "<< dataLogFullFilename << endl;
 
-
-
-
-    // cout << "# Main DB name: " << pDatabaseConfig->dbMainFilename << endl;
 
     QSharedPointer<QSqlDatabase> pMainSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
     pMainSqlDb->setDatabaseName( pDatabaseConfig->dbMainFilename );
@@ -119,9 +118,11 @@ INVEST_OPENAPI_MAIN()
     if (!pMainSqlDb->open())
     {
       //qDebug() 
-      cout << pMainSqlDb->lastError().text() << endl;
+      cerr << pMainSqlDb->lastError().text() << endl;
       return 0;
     }
+
+
 
     QSharedPointer<tkf::IDatabaseManager> pMainDbMan = tkf::createMainDatabaseManager( pMainSqlDb, pDatabaseConfig, pLoggingConfig );
 
@@ -131,6 +132,9 @@ INVEST_OPENAPI_MAIN()
 
     QSharedPointer<tkf::IOpenApi> pOpenApi = tkf::createOpenApi( apiConfig, authConfig, loggingConfig );
 
+    authConfig.setDefaultBrokerAccountForOpenApi(pOpenApi);
+
+    /*
     tkf::ISanboxOpenApi* pSandboxOpenApi = tkf::getSandboxApi(pOpenApi);
 
     if (pSandboxOpenApi)
@@ -141,7 +145,7 @@ INVEST_OPENAPI_MAIN()
     {
         pOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
     }
-
+    */
 
     tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
 
@@ -353,19 +357,6 @@ INVEST_OPENAPI_MAIN()
 
 
 
-
-
-    //     auto foundOpResponseIt = tkf::findOpenApiCompletableFutureFinished( operationResponses.begin(), operationResponses.end() );
-    //     if (foundOpResonseIt!=operationResponses.end())
-    //     {
-    //         auto operationResponse = *foundOpResonseIt;
-    //  
-    //         operationResponses.erase(foundOpResonseIt);
-    //  
-    //  
-    // QString getFigi() const;
-
-    // QList< kf::Operation > getOperations() const;
     // std::map< QString, sd::vector< kf::Operation > >  instrumentOperations;
 
     std::vector< QSharedPointer< tkf::OpenApiCompletableFuture< tkf::OperationsResponse > > > awaitingOperationResponses;
@@ -381,16 +372,12 @@ INVEST_OPENAPI_MAIN()
                                               
                                                awaitingOperationResponses.erase(foundOpResponseIt);
 
-                                               //operationsResponseResult = operationsResponse->result();
-
-                                               if (!operationsResponse /* Result */ ->isResultValid())
+                                               if (!operationsResponse->isResultValid())
                                                {
                                                    statusStr = QString("Get Operations Error: ") + operationsResponse->getErrorMessage();
                                                    updateScreen();
                                                    return;
                                                }
-
-                                               //auto payload = 
 
                                                std::map< QString, std::vector< tkf::Operation > > tmpOperationsFigiMap;
 
@@ -400,15 +387,12 @@ INVEST_OPENAPI_MAIN()
                                                {
                                                    QString figi = op.getFigi().toUpper();
 
-                                                   QString operationStatusStr = op.getStatus().asJson().toUpper();
-                                                   if (operationStatusStr!="DONE" && operationStatusStr!="PROGRESS") // Also may be DECLINE or INVALID_...
-                                                       continue;
-                                                   
-                                                   QString operationTypeStr   = op.getOperationType().asJson().toUpper();
-                                                   if (operationTypeStr!="BUYCARD" && operationTypeStr!="BUY" && operationTypeStr!="SELL")
+                                                   if ( !tkf::isOperationStatusDoneOrInProgress(op) )
+                                                       continue; // May be DECLINE or INVALID_...
+
+                                                   if ( !tkf::isOperationTypeAnyBuyOrSell(op) ) // Also may be BUYCARD
                                                        continue;
 
-                                                   //opVec.push_back(op);
                                                    tmpOperationsFigiMap[figi].push_back(op);
                                                }
 
@@ -419,30 +403,32 @@ INVEST_OPENAPI_MAIN()
                                                    const QString &figi = it->first;
                                                    auto &opVec = it->second;
 
-                                                   std::stable_sort( opVec.begin(), opVec.end()
-                                                                   , []( const tkf::Operation &op1, const tkf::Operation &op2 )
-                                                                     {
-                                                                         return op1.getDate() < op2.getDate();
-                                                                     }
-                                                                   );
+                                                   tkf::sortOperationsByDate( opVec, tkf::SortType::descending );
 
                                                    instrumentOperations[figi] = opVec;
 
-                                                   /*
+                                                   // /*
                                                    cout << "--------" << endl;
                                                    QString ticker = dicts.getTickerByFigiChecked(figi);
                                                    cout << "Operations for Figi: " << figi << " (" << ticker << ")" << endl;
 
+                                                   tkf::operationPrintBrief( std::cout
+                                                                           , "   "
+                                                                           , []( std::ostream &os ) { return std::endl; }
+                                                                           , opVec.begin(), opVec.end()
+                                                                           );
+                                                   #if 0
                                                    auto opIt = opVec.begin();
                                                    for(; opIt!=opVec.end(); ++opIt)
                                                    {
                                                        cout << "Operation: " << opIt->getOperationType().asJson().toUpper() << endl;
                                                        cout << "Status   : " << opIt->getStatus().asJson().toUpper() << endl;
                                                        cout << "Date&Time: " << opIt->getDate() << endl;
-                                                       cout << "Trades # :"  << opIt->getTrades().size() << endl;
+                                                       cout << "Trades # : " << opIt->getTrades().size() << endl;
                                                        cout << endl;
                                                    } // for(; opIt!=opVec.end(); ++opIt)
-                                                   */
+                                                   #endif
+                                                   // */
 
                                                } // for( ; it!=tmpOperationsFigiMap.end(); ++it )
                                            
@@ -483,14 +469,11 @@ INVEST_OPENAPI_MAIN()
 
     for(; instrumentForOperationsIt!=instrumentList.end(); ++instrumentForOperationsIt, ++requestCounter)
     {
-        tkf::waitOnRequestsLimit( operationsRequestTimer, requestCounter );
-
-        QDateTime dateTimeNow     = QDateTime::currentDateTime();
-        QDateTime dateTimeBefore  = qt_helpers::dtAddTimeInterval( dateTimeNow, QString("-10YEAR") );
+        tkf::checkWaitOnRequestsLimit( operationsRequestTimer, requestCounter );
 
         QString requestForFigi    = dicts.findFigiByAnyIdString(*instrumentForOperationsIt);
-        
-        auto operationsResponse   = pOpenApi->operations(dateTimeBefore, dateTimeNow, requestForFigi);
+
+        auto operationsResponse   = pOpenApi->operations( "10YEAR", requestForFigi);
 
         awaitingOperationResponses.push_back(operationsResponse);
 
@@ -501,16 +484,13 @@ INVEST_OPENAPI_MAIN()
     while(!awaitingOperationResponses.empty())
         checkAwaitingOperationResponses();
 
+    return 0;
+
 
 
 
     //cout << "# Connecting Streaming API Web socket" << endl;
-    webSocket.connect( &webSocket, &QWebSocket::connected             , onConnected    );
-    webSocket.connect( &webSocket, &QWebSocket::disconnected          , onDisconnected );
-    webSocket.connect( &webSocket, &QWebSocket::textMessageReceived   , onMessage      );
-
-    webSocket.open( pOpenApi->getStreamingApiNetworkRequest() );
-
+    tkf::connectStreamingWebSocket( pOpenApi, webSocket, onConnected, onDisconnected, onMessage );
 
 
 

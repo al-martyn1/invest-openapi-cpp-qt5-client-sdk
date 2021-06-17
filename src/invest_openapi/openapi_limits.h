@@ -10,25 +10,63 @@ namespace invest_openapi
 {
 
 
+struct RequestLimits
+{
+    const static std::size_t  minuteMillisecs      = 60000u;
+
+    const static std::size_t  maxRequestsPerMinute = 120; // Лимит - 120 запросов в минуту
+
+
+    static bool isLimitReached( std::size_t requestCounter, std::size_t limitValue )
+    {
+        if (!requestCounter)
+            return false;
+
+        return (requestCounter%limitValue)==0;
+    }
+
+
+}; // struct RequestLimits
+
+//----------------------------------------------------------------------------
+
+
+
+
 //----------------------------------------------------------------------------
 inline
-void waitOnRequestsLimit( QElapsedTimer &timer, std::size_t requestCounter )
+std::uint64_t calcWaitIntervalOnRequestsLimit( QElapsedTimer &timer, std::size_t requestCounter, std::size_t limitValue = RequestLimits::maxRequestsPerMinute )
 {
-
-    if (requestCounter>0 && (requestCounter%120)==0) // Лимит - 120 запросов в минуту
+    if ( RequestLimits::isLimitReached( requestCounter, limitValue ) )
     {
         std::uint64_t elapsed     = (std::uint64_t)timer.elapsed();
-        std::uint64_t interval    = 60*1000u; // 1 минута
+        std::uint64_t interval    = RequestLimits::minuteMillisecs;
 
-        if (elapsed<interval)
+        if ( elapsed < interval )
         {
             std::uint64_t timeToSleep = interval - elapsed;
-            QTest::qWait(timeToSleep);
+            return timeToSleep;
         }
     }
 
+    return 0;
+
 }
 
+//----------------------------------------------------------------------------
+inline
+void checkWaitOnRequestsLimit( QElapsedTimer &timer, std::size_t requestCounter, std::size_t limitValue = RequestLimits::maxRequestsPerMinute)
+{
+    auto timeToSleep = calcWaitIntervalOnRequestsLimit( timer, requestCounter, limitValue );
+    if (!timeToSleep)
+        return;
+
+    QTest::qWait(timeToSleep);
+    timer.restart();
+
+}
+
+//----------------------------------------------------------------------------
 
 
 

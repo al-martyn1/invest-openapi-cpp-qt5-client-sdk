@@ -181,6 +181,8 @@ struct IOpenApi
     // OperationsApi
 
     TKF_IOA_ABSTRACT_METHOD( OperationsResponse , operations ( const QDateTime &from, const QDateTime &to, const QString &figi, QString broker_account_id = QString()) );
+    TKF_IOA_ABSTRACT_METHOD( OperationsResponse , operations ( QString intervalStr /* eg "10YEAR" */, const QDateTime &to, const QString &figi, QString broker_account_id = QString()) );
+    TKF_IOA_ABSTRACT_METHOD( OperationsResponse , operations ( QString intervalStr /* eg "10YEAR" */ /* , const QDateTime &to = now */ , const QString &figi, QString broker_account_id = QString()) );
 
 /*
     void operationsGet(const QDateTime &from, const QDateTime &to, const QString &figi, const QString &broker_account_id);
@@ -844,6 +846,31 @@ public:
     }
 
 
+    TKF_IOA_METHOD_IMPL( OperationsResponse , operations ( QString intervalStr /* eg "10YEAR" */, const QDateTime &to, const QString &figi, QString broker_account_id = QString()) )
+    {
+        checkBrokerAccountIdParam(broker_account_id);
+
+        if (intervalStr.isEmpty())
+            intervalStr = "1YEAR";
+
+        QDateTime dateTimeFrom = qt_helpers::dtAddTimeInterval( to, intervalStr, -1 /* forceSign */ );
+
+        return operations( dateTimeFrom, to, figi, broker_account_id );
+    }
+
+    TKF_IOA_METHOD_IMPL( OperationsResponse , operations ( QString intervalStr /* eg "10YEAR" */ /* , const QDateTime &to = now */ , const QString &figi, QString broker_account_id = QString()) )
+    {
+        checkBrokerAccountIdParam(broker_account_id);
+
+        if (intervalStr.isEmpty())
+            intervalStr = "1YEAR";
+
+        QDateTime dateTimeNow     = QDateTime::currentDateTime();
+
+        return operations( intervalStr, dateTimeNow, figi, broker_account_id );
+    }
+
+
     GenericError findInstrumentListingStartDate( const QString &figi, const QDate &dateStartLookupFrom, QDate &foundDate ) override
     {
         bool bFound = false;
@@ -1250,6 +1277,34 @@ ISanboxOpenApi* getSandboxApi( QSharedPointer<IOpenApi> pApi )
 }
 
 //----------------------------------------------------------------------------
+
+
+
+
+
+
+//----------------------------------------------------------------------------
+inline
+void AuthConfig::setDefaultBrokerAccountForOpenApi( QSharedPointer<IOpenApi> pOpenApi ) const
+{
+    ISanboxOpenApi* pSandboxOpenApi = getSandboxApi(pOpenApi);
+   
+    if (pSandboxOpenApi)
+    {
+        pSandboxOpenApi->setBrokerAccountId( getBrokerAccountId() );
+    }
+    else
+    {
+        pOpenApi->setBrokerAccountId( getBrokerAccountId() );
+    }
+
+}
+
+
+
+
+
+
 
 
 } // namespace invest_openapi
