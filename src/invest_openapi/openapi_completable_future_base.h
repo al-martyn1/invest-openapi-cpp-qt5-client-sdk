@@ -63,7 +63,7 @@ public:
 
     bool isResultValid() const // More Qt styled, and complementary to result()
     {
-        return isCompletionError();
+        return !isCompletionError();
     }
 
     QNetworkReply::NetworkError getError() const

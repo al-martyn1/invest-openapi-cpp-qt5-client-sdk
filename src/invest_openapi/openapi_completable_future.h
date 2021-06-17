@@ -129,6 +129,8 @@ protected:
 template< typename IteratorType > inline
 IteratorType findOpenApiCompletableFutureFinished( IteratorType b, IteratorType e )
 {
+    pollMessageQueue();
+
     for(; b!=e; ++b )
     {
         auto &f = *b;

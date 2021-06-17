@@ -41,6 +41,8 @@
 #include "invest_openapi/ioa_ostream.h"
 #include "invest_openapi/ioa_db_dictionaries.h"
 
+#include "invest_openapi/openapi_limits.h"
+
 #include "invest_openapi/console_break_helper.h"
 
 
@@ -366,28 +368,31 @@ INVEST_OPENAPI_MAIN()
     // QList< kf::Operation > getOperations() const;
     // std::map< QString, sd::vector< kf::Operation > >  instrumentOperations;
 
-    std::vector< QSharedPointer< tkf::OperationsResponse > > awaitingOperationResponses;
+    std::vector< QSharedPointer< tkf::OpenApiCompletableFuture< tkf::OperationsResponse > > > awaitingOperationResponses;
+    std::set< QString > awaitingOperationResponsesFigi; // Набор фиг по текущим запросам по операциям. 
 
     auto checkAwaitingOperationResponses = [&]()
                                            {
                                                auto foundOpResponseIt = tkf::findOpenApiCompletableFutureFinished( awaitingOperationResponses.begin(), awaitingOperationResponses.end() );
-                                               if (foundOpResonseIt==awaitingOperationResponses.end())
+                                               if (foundOpResponseIt==awaitingOperationResponses.end())
                                                    return;
 
                                                auto operationsResponse = *foundOpResponseIt;
                                               
                                                awaitingOperationResponses.erase(foundOpResponseIt);
 
-                                               if (!operationResponse->isResultValid())
+                                               //operationsResponseResult = operationsResponse->result();
+
+                                               if (!operationsResponse /* Result */ ->isResultValid())
                                                {
-                                                   statusStr = QString("Get Operations Error: ") + operationResponse->getErrorMessage();
+                                                   statusStr = QString("Get Operations Error: ") + operationsResponse->getErrorMessage();
                                                    updateScreen();
                                                    return;
                                                }
 
                                                //auto payload = 
 
-                                               std::map< QString, std::vector< kf::Operation > > tmpOperationsFigiMap;
+                                               std::map< QString, std::vector< tkf::Operation > > tmpOperationsFigiMap;
 
                                                QList< tkf::Operation > operations = operationsResponse->value.getPayload().getOperations();
 
@@ -423,7 +428,7 @@ INVEST_OPENAPI_MAIN()
 
                                                    instrumentOperations[figi] = opVec;
 
-
+                                                   /*
                                                    cout << "--------" << endl;
                                                    QString ticker = dicts.getTickerByFigiChecked(figi);
                                                    cout << "Operations for Figi: " << figi << " (" << ticker << ")" << endl;
@@ -434,9 +439,10 @@ INVEST_OPENAPI_MAIN()
                                                        cout << "Operation: " << opIt->getOperationType().asJson().toUpper() << endl;
                                                        cout << "Status   : " << opIt->getStatus().asJson().toUpper() << endl;
                                                        cout << "Date&Time: " << opIt->getDate() << endl;
-                                                       cout << "Trades # :"  << opIt->getTrades() << endl;
+                                                       cout << "Trades # :"  << opIt->getTrades().size() << endl;
                                                        cout << endl;
                                                    } // for(; opIt!=opVec.end(); ++opIt)
+                                                   */
 
                                                } // for( ; it!=tmpOperationsFigiMap.end(); ++it )
                                            
@@ -444,7 +450,7 @@ INVEST_OPENAPI_MAIN()
 
 
     
-    QSharedPointer< tkf::OrdersResponse > ordersResponse  = pOpenApi->orders();
+    QSharedPointer< tkf::OpenApiCompletableFuture < tkf::OrdersResponse > > ordersResponse  = pOpenApi->orders();
 
     QStringList::const_iterator instrumentForOperationsIt = instrumentList.begin();
     
@@ -452,8 +458,10 @@ INVEST_OPENAPI_MAIN()
     /*
         Делать запрос по ордерам один раз в конце списка инструментов - не дело.
         
-        По инструментам неспешно полируем с паузой в пару секунд (и один раз при старте, 
+        По операции инструментам неспешно полируем с паузой в пару секунд (и один раз при старте, 
         до главного цикла).
+
+        А надо ли вообще полировать?
 
         Наверное, каждый раз надо и ордера запрашивать. Если пауза - 3 секунды, и два запроса, 
         то это 40 запросов в минуту (если 5 - то 24), при лимите в 120. 
@@ -462,27 +470,20 @@ INVEST_OPENAPI_MAIN()
 
         Текущие ордера надо хранить. Если пришел ответ, и там ордера нет, но есть локально - 
         значит, ордер исполнен, и надо запросить операции по инструменту.
+
+        Теоретически, если запрос по операциям вернул ошибку - надо бы перезапросить
+
     
      */
 
     QElapsedTimer operationsRequestTimer;
     operationsRequestTimer.start();
 
-    unsigned counter = 0;
+    std::size_t requestCounter = 0;
 
-    for(; instrumentForOperationsIt!=instrumentList.end(); ++instrumentForOperationsIt, ++counter)
+    for(; instrumentForOperationsIt!=instrumentList.end(); ++instrumentForOperationsIt, ++requestCounter)
     {
-        if (counter>0 && (counter%120)) // Лимит - 120 запросов в минуту
-        {
-            std::uint64_t elapsed     = (std::uint64_t)operationsRequestTimer.elapsed();
-            std::uint64_t inerval     = 60*1000u; // 1 минута
-
-            if (elapsed<inerval)
-            {
-                std::uint64_t timeToSleep = inerval - elapsed;
-                QTest::qWait(timeToSleep);
-            }
-        }
+        tkf::waitOnRequestsLimit( operationsRequestTimer, requestCounter );
 
         QDateTime dateTimeNow     = QDateTime::currentDateTime();
         QDateTime dateTimeBefore  = qt_helpers::dtAddTimeInterval( dateTimeNow, QString("-10YEAR") );
@@ -497,12 +498,11 @@ INVEST_OPENAPI_MAIN()
 
     }
 
-    return 0;
+    while(!awaitingOperationResponses.empty())
+        checkAwaitingOperationResponses();
 
 
 
-
-    #if 0
 
     //cout << "# Connecting Streaming API Web socket" << endl;
     webSocket.connect( &webSocket, &QWebSocket::connected             , onConnected    );
@@ -517,6 +517,8 @@ INVEST_OPENAPI_MAIN()
     while(!ctrlC.isBreaked() )
     {
         QTest::qWait(1);
+
+        #if 0
 
         if (operationsRequestTimer.hasExpired(500))
         {
@@ -624,6 +626,8 @@ INVEST_OPENAPI_MAIN()
         //IteratorType findOpenApiCompletableFutureFinished( IteratorType b, IteratorType e )
 
         //if (instrumentForOperationsIt
+
+        #endif
     }
 
 
@@ -643,7 +647,7 @@ INVEST_OPENAPI_MAIN()
 
     return 0;
 
-    #endif
+    
 }
 
 
