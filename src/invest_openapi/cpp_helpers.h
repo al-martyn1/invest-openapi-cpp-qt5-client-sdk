@@ -9,12 +9,31 @@
 #include <stdexcept>
 #include <utility>
 #include <iterator>
+#include <fstream>
 
 
 
 //----------------------------------------------------------------------------
 namespace invest_openapi {
 namespace cpp_helpers {
+
+
+
+//----------------------------------------------------------------------------
+template < typename ContainerType, typename KeyType > inline
+void conainerKeyErase( ContainerType &container, const KeyType &key )
+{
+    auto it = container.find(key);
+    if (it==container.end())
+        return;
+    container.erase(it);
+}
+
+
+
+
+
+//----------------------------------------------------------------------------
 
 
 
