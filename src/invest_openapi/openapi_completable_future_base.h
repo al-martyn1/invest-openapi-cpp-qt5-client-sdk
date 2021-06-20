@@ -108,6 +108,17 @@ public:
 
 protected:
 
+    QMetaObject::Connection slotConnectionComplete;
+    QMetaObject::Connection slotConnectionError   ;
+
+
+    void disconnectAll()
+    {
+        disconnect(slotConnectionComplete);
+        disconnect(slotConnectionError   );
+    }
+
+
     QString composeMsgStr( const QString &msg, const QString &codeStr = QString(), const QString &statusStr = QString() ) const
     {
         QVector<QString> resVec;

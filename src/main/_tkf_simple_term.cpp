@@ -156,7 +156,7 @@ INVEST_OPENAPI_MAIN()
         instrumentList = settings.value("instruments" ).toStringList();
     }
 
-
+    const QString operationsMaxAge = "10YEAR";
 
     // Custom code goes here
 
@@ -357,20 +357,20 @@ INVEST_OPENAPI_MAIN()
 
 
 
-    // std::map< QString, sd::vector< kf::Operation > >  instrumentOperations;
-
-    std::vector< QSharedPointer< tkf::OpenApiCompletableFuture< tkf::OperationsResponse > > > awaitingOperationResponses;
-    std::set< QString > awaitingOperationResponsesFigiSet; // Набор фиг по текущим запросам по операциям. 
+    std::map< QString, QSharedPointer< tkf::OpenApiCompletableFuture< tkf::OperationsResponse > > > awaitingOperationResponses;
 
     auto checkAwaitingOperationResponses = [&]()
                                            {
                                                std::map< QString, std::vector< tkf::Operation > > completedOperationsByFigi;
 
+                                               std::map< QString, std::set<QString> > figiMismatches;
+
                                                bool res = tkf::processAwaitingOperationResponses( pOpenApi
+                                                                                                , operationsMaxAge
                                                                                                 , awaitingOperationResponses
-                                                                                                , awaitingOperationResponsesFigiSet
                                                                                                 , completedOperationsByFigi
                                                                                                 , statusStr
+                                                                                                , &figiMismatches
                                                                                                 );
                                                if (!res)
                                                {
@@ -412,6 +412,22 @@ INVEST_OPENAPI_MAIN()
                                                } // for( ; it!=tmpOperationsFigiMap.end(); ++it )
 
                                                //updateScreen();
+
+
+                                               if (!figiMismatches.empty())
+                                                   cout << endl << "FIGI Key/op FIGI mismatches" << endl << endl;
+
+                                               std::map< QString, std::set<QString> >::const_iterator fmIt = figiMismatches.begin();
+                                               for(; fmIt != figiMismatches.end(); ++fmIt)
+                                               {
+                                                   cout << "  " << fmIt->first << endl;
+                                                   const auto &s = fmIt->second;
+                                                   for( auto f : s )
+                                                   {
+                                                       cout << "    " << f << endl;
+                                                   }
+                                                   cout << endl;
+                                               }
 
 
                                                #if 0
@@ -534,12 +550,20 @@ INVEST_OPENAPI_MAIN()
     {
         tkf::checkWaitOnRequestsLimit( operationsRequestTimer, requestCounter );
 
-        QString requestForFigi    = dicts.findFigiByAnyIdString(*instrumentForOperationsIt);
+        QString requestForFigi     = dicts.findFigiByAnyIdString(*instrumentForOperationsIt);
+        QString requestForTicker   = dicts.getTickerByFigiChecked(requestForFigi);
+        
+        cout << "Request operations for " << requestForTicker << " (" << requestForFigi << ")" << endl;
 
-        auto operationsResponse   = pOpenApi->operations( "10YEAR", requestForFigi);
+        if (awaitingOperationResponses.find(requestForFigi)!=awaitingOperationResponses.end())
+        {
+            cout << "  Already requested" << endl;
+            continue; // Already in queu
+        }
 
-        awaitingOperationResponses.push_back(operationsResponse);
-        awaitingOperationResponsesFigiSet.insert(requestForFigi);
+        auto operationsResponse   = pOpenApi->operations( operationsMaxAge, requestForFigi);
+
+        awaitingOperationResponses[requestForFigi] = operationsResponse;
 
         checkAwaitingOperationResponses();
 

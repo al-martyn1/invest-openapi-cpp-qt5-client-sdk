@@ -77,12 +77,14 @@ public:
                   , SignalErrorType    errorSignal
                   )
     {
-        connect( pSource, completeSignal, this, qOverload<value_type>(&OpenApiCompletableFutureBase::onComplete), Qt::QueuedConnection );
-        connect( pSource, errorSignal   , this, qOverload<value_type, QNetworkReply::NetworkError, QString>(&OpenApiCompletableFutureBase::onError), Qt::QueuedConnection );
+        // https://wiki.qt.io/New_Signal_Slot_Syntax
+        slotConnectionComplete = connect( pSource, completeSignal, this, qOverload<value_type>(&OpenApiCompletableFutureBase::onComplete), Qt::QueuedConnection );
+        slotConnectionError    = connect( pSource, errorSignal   , this, qOverload<value_type, QNetworkReply::NetworkError, QString>(&OpenApiCompletableFutureBase::onError), Qt::QueuedConnection );
     }
 
 
 protected:
+
 
 /*
     void complete(const value_type &v)
@@ -102,6 +104,7 @@ protected:
         #endif
 
         m_complete.store(true, std::memory_order_relaxed);
+        disconnectAll();
     }
 
     virtual void onError( value_type v, QNetworkReply::NetworkError et, QString es ) override
@@ -114,6 +117,7 @@ protected:
         #endif
 
         errorComplete(et, es);
+        disconnectAll();
     }
 
 
@@ -126,23 +130,24 @@ protected:
 
 
 
-template< typename IteratorType > inline
-IteratorType findOpenApiCompletableFutureFinished( IteratorType b, IteratorType e )
+template< typename IteratorType, typename IsFinishedPred > inline
+IteratorType findOpenApiCompletableFutureFinished( IteratorType b, IteratorType e, IsFinishedPred isFinishedPred )
 {
     pollMessageQueue();
 
     for(; b!=e; ++b )
     {
-        auto &f = *b;
-        if (f->isFinished())
+        //auto &f = *b;
+        //if (f->isFinished())
+        if (isFinishedPred(b))
             return b;
     }
 
     return b;
 }
 
-template< typename IteratorType > inline
-IteratorType findOpenApiCompletableFutureCompleted( IteratorType b, IteratorType e )
+template< typename IteratorType, typename IsFinishedPred > inline
+IteratorType findOpenApiCompletableFutureCompleted( IteratorType b, IteratorType e, IsFinishedPred isFinishedPred )
 {
     return findOpenApiCompletableFutureFinished(b,e);
 }

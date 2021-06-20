@@ -48,6 +48,7 @@
 #define TKF_IOA_METHOD_IMPL_END       override
 
 #define TKF_IOA_SHARED_COMPLETABLE_FUTURE( T )               QSharedPointer< OpenApiCompletableFuture< T > >
+
 #define TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( T, valName )  \
         TKF_IOA_SHARED_COMPLETABLE_FUTURE( T ) valName = TKF_IOA_SHARED_COMPLETABLE_FUTURE( T )( new OpenApiCompletableFuture< T >() )
 

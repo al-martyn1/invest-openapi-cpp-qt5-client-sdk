@@ -483,9 +483,7 @@ std::ostream& operator<<( std::ostream& os, const Decimal &v )
     }
     else if (precision>0)
     {
-        // Exact global output precision will be used
-        // if (precision > Decimal::maxPrecision())
-        //     precision = Decimal::maxPrecision();
+        // Exact taken precision will be used
     }
     else // precision==0
     {
