@@ -70,7 +70,7 @@ void OperationsApi::abortRequests(){
     emit abortRequestsSignal();
 }
 
-void OperationsApi::operationsGet(const QDateTime &from, const QDateTime &to, const QString &figi, const QString &broker_account_id) {
+HttpRequestWorker* OperationsApi::operationsGet(const QDateTime &from, const QDateTime &to, const QString &figi, const QString &broker_account_id) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -112,6 +112,8 @@ void OperationsApi::operationsGet(const QDateTime &from, const QDateTime &to, co
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &OperationsApi::operationsGetCallback);
     connect(this, &OperationsApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void OperationsApi::operationsGetCallback(HttpRequestWorker *worker) {

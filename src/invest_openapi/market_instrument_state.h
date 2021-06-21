@@ -90,30 +90,23 @@ struct MarketInstrumentState
     }
 
 
+}; // struct MarketInstrumentState
+
+//----------------------------------------------------------------------------
 
 
-/*
-    QString getFigi() const;
-    void setFigi(const QString &figi);
-    bool is_figi_Set() const;
-    bool is_figi_Valid() const;
-
-    TradeStatus getTradeStatus() const;
-    void setTradeStatus(const TradeStatus &trade_status);
-    bool is_trade_status_Set() const;
-    bool is_trade_status_Valid() const;
-
-    marty::Decimal getMinPriceIncrement() const;
-    void setMinPriceIncrement(const marty::Decimal &min_price_increment);
-    bool is_min_price_increment_Set() const;
-    bool is_min_price_increment_Valid() const;
-
-    qint32 getLot() const;
-*/
 
 
-};
-// TradeStatus
+//----------------------------------------------------------------------------
+inline
+bool isMarketInstrumentActive( const std::map< QString, MarketInstrumentState > &instrumentStates, const QString &figi )
+{
+    std::map< QString, MarketInstrumentState >::const_iterator it = instrumentStates.find(figi.toUpper());
+    if (it == instrumentStates.end())
+        return false;
+    
+    return it->second.isTradeStatusNormalTrading();
+}
 
 //----------------------------------------------------------------------------
 

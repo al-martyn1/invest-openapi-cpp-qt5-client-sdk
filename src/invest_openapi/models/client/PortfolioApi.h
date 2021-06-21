@@ -42,8 +42,8 @@ public:
     void enableResponseCompression();
     void abortRequests();
 
-    void portfolioCurrenciesGet(const QString &broker_account_id);
-    void portfolioGet(const QString &broker_account_id);
+    HttpRequestWorker* portfolioCurrenciesGet(const QString &broker_account_id);
+    HttpRequestWorker* portfolioGet(const QString &broker_account_id);
 
 private:
     QString _scheme, _host;

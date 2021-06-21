@@ -555,7 +555,7 @@ public:
     {
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketInstrumentListResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pMarketApi.get(), marketBonds, Get );
-        m_pMarketApi->marketBondsGet();
+        response->setWorker(m_pMarketApi->marketBondsGet());
 
         return response;
     }
@@ -565,7 +565,7 @@ public:
     {
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketInstrumentListResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pMarketApi.get(), marketCurrencies, Get );
-        m_pMarketApi->marketCurrenciesGet();
+        response->setWorker(m_pMarketApi->marketCurrenciesGet());
 
         return response;
     }
@@ -575,7 +575,7 @@ public:
     {
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketInstrumentListResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pMarketApi.get(), marketEtfs, Get );
-        m_pMarketApi->marketEtfsGet();
+        response->setWorker(m_pMarketApi->marketEtfsGet());
 
         return response;
     }
@@ -585,7 +585,7 @@ public:
     {
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketInstrumentListResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pMarketApi.get(), marketStocks, Get );
-        m_pMarketApi->marketStocksGet();
+        response->setWorker(m_pMarketApi->marketStocksGet());
 
         return response;
     }
@@ -649,7 +649,7 @@ public:
     {
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( CandlesResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pMarketApi.get(), marketCandles, Get );
-        m_pMarketApi->marketCandlesGet(figi, from, to, interval);
+        response->setWorker(m_pMarketApi->marketCandlesGet(figi, from, to, interval));
         return response;
     }
 
@@ -675,7 +675,7 @@ public:
 
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( OrderbookResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pMarketApi.get(), marketOrderbook, Get );
-        m_pMarketApi->marketOrderbookGet(figi, depth);
+        response->setWorker(m_pMarketApi->marketOrderbookGet(figi, depth));
         return response;
     }
 
@@ -700,7 +700,7 @@ public:
     {
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( UserAccountsResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pUserApi.get(), userAccounts, Get );
-        m_pUserApi->userAccountsGet();
+        response->setWorker(m_pUserApi->userAccountsGet());
         return response;
     }
 
@@ -719,7 +719,7 @@ public:
 
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( PortfolioCurrenciesResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pPortfolioApi.get(), portfolioCurrencies, Get );
-        m_pPortfolioApi->portfolioCurrenciesGet(broker_account_id);
+        response->setWorker(m_pPortfolioApi->portfolioCurrenciesGet(broker_account_id));
         return response;
     }
 
@@ -730,7 +730,7 @@ public:
 
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( PortfolioResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pPortfolioApi.get(), portfolio, Get );
-        m_pPortfolioApi->portfolioGet(broker_account_id);
+        response->setWorker(m_pPortfolioApi->portfolioGet(broker_account_id));
         return response;
     }
 
@@ -751,7 +751,7 @@ public:
 
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( LimitOrderResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pOrdersApi.get(), ordersLimitOrder, Post );
-        m_pOrdersApi->ordersLimitOrderPost(figi, limit_order_request, broker_account_id);
+        response->setWorker(m_pOrdersApi->ordersLimitOrderPost(figi, limit_order_request, broker_account_id));
         return response;
     }
 
@@ -781,7 +781,7 @@ public:
 
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( MarketOrderResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pOrdersApi.get(), ordersMarketOrder, Post );
-        m_pOrdersApi->ordersMarketOrderPost(figi, market_order_request, broker_account_id);
+        response->setWorker(m_pOrdersApi->ordersMarketOrderPost(figi, market_order_request, broker_account_id));
         return response;
     }
 
@@ -810,7 +810,7 @@ public:
 
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( Empty, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pOrdersApi.get(), ordersCancel, Post );
-        m_pOrdersApi->ordersCancelPost(order_id,broker_account_id);
+        response->setWorker(m_pOrdersApi->ordersCancelPost(order_id,broker_account_id));
         return response;
     }
 
@@ -821,7 +821,7 @@ public:
 
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( OrdersResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pOrdersApi.get(), orders, Get );
-        m_pOrdersApi->ordersGet(broker_account_id);
+        response->setWorker(m_pOrdersApi->ordersGet(broker_account_id));
         return response;
     }
 
@@ -842,7 +842,7 @@ public:
 
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( OperationsResponse, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pOperationsApi.get(), operations, Get );
-        m_pOperationsApi->operationsGet( from, to, figi, broker_account_id);
+        response->setWorker(m_pOperationsApi->operationsGet( from, to, figi, broker_account_id));
         return response;
     }
 
@@ -1071,7 +1071,7 @@ public:
 
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( Empty, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pSandboxApi.get(), sandboxClear, Post );
-        m_pSandboxApi->sandboxClearPost(broker_account_id);
+        response->setWorker(m_pSandboxApi->sandboxClearPost(broker_account_id));
 
         return response;
     }
@@ -1082,11 +1082,11 @@ public:
         SandboxRegisterRequest sandboxRegisterRequest;
         sandboxRegisterRequest.setBrokerAccountType(v);
 
-        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( SandboxRegisterResponse, sandboxRegisterResponse );
-        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( sandboxRegisterResponse.get(), m_pSandboxApi.get(), sandboxRegister, Post );
-        m_pSandboxApi->sandboxRegisterPost(sandboxRegisterRequest);
+        TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( SandboxRegisterResponse, response );
+        INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pSandboxApi.get(), sandboxRegister, Post );
+        response->setWorker(m_pSandboxApi->sandboxRegisterPost(sandboxRegisterRequest));
 
-        return sandboxRegisterResponse;
+        return response;
     }
 
     //------------------------------
@@ -1112,7 +1112,7 @@ public:
 
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( Empty, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pSandboxApi.get(), sandboxCurrenciesBalance, Post );
-        m_pSandboxApi->sandboxCurrenciesBalancePost(request, broker_account_id);
+        response->setWorker(m_pSandboxApi->sandboxCurrenciesBalancePost(request, broker_account_id));
         
         return response;
     }
@@ -1132,7 +1132,7 @@ public:
 
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( Empty, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pSandboxApi.get(), sandboxCurrenciesBalance, Post );
-        m_pSandboxApi->sandboxCurrenciesBalancePost(request, broker_account_id);
+        response->setWorker(m_pSandboxApi->sandboxCurrenciesBalancePost(request, broker_account_id));
         
         return response;
     }
@@ -1170,7 +1170,7 @@ public:
 
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( Empty, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pSandboxApi.get(), sandboxPositionsBalance, Post );
-        m_pSandboxApi->sandboxPositionsBalancePost(positionBalance, broker_account_id);
+        response->setWorker(m_pSandboxApi->sandboxPositionsBalancePost(positionBalance, broker_account_id));
 
         return response;
     }
@@ -1217,7 +1217,7 @@ public:
 
         TKF_IOA_NEW_SHARED_COMPLETABLE_FUTURE( Empty, response );
         INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( response.get(), m_pSandboxApi.get(), sandboxRemove, Post );
-        m_pSandboxApi->sandboxRemovePost(broker_account_id);
+        response->setWorker(m_pSandboxApi->sandboxRemovePost(broker_account_id));
 
         return response;
     

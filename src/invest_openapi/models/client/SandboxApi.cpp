@@ -70,7 +70,7 @@ void SandboxApi::abortRequests(){
     emit abortRequestsSignal();
 }
 
-void SandboxApi::sandboxClearPost(const QString &broker_account_id) {
+HttpRequestWorker* SandboxApi::sandboxClearPost(const QString &broker_account_id) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -94,6 +94,8 @@ void SandboxApi::sandboxClearPost(const QString &broker_account_id) {
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &SandboxApi::sandboxClearPostCallback);
     connect(this, &SandboxApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void SandboxApi::sandboxClearPostCallback(HttpRequestWorker *worker) {
@@ -119,7 +121,7 @@ void SandboxApi::sandboxClearPostCallback(HttpRequestWorker *worker) {
     }
 }
 
-void SandboxApi::sandboxCurrenciesBalancePost(const SandboxSetCurrencyBalanceRequest &sandbox_set_currency_balance_request, const QString &broker_account_id) {
+HttpRequestWorker* SandboxApi::sandboxCurrenciesBalancePost(const SandboxSetCurrencyBalanceRequest &sandbox_set_currency_balance_request, const QString &broker_account_id) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -146,6 +148,8 @@ void SandboxApi::sandboxCurrenciesBalancePost(const SandboxSetCurrencyBalanceReq
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &SandboxApi::sandboxCurrenciesBalancePostCallback);
     connect(this, &SandboxApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void SandboxApi::sandboxCurrenciesBalancePostCallback(HttpRequestWorker *worker) {
@@ -171,7 +175,7 @@ void SandboxApi::sandboxCurrenciesBalancePostCallback(HttpRequestWorker *worker)
     }
 }
 
-void SandboxApi::sandboxPositionsBalancePost(const SandboxSetPositionBalanceRequest &sandbox_set_position_balance_request, const QString &broker_account_id) {
+HttpRequestWorker* SandboxApi::sandboxPositionsBalancePost(const SandboxSetPositionBalanceRequest &sandbox_set_position_balance_request, const QString &broker_account_id) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -198,6 +202,8 @@ void SandboxApi::sandboxPositionsBalancePost(const SandboxSetPositionBalanceRequ
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &SandboxApi::sandboxPositionsBalancePostCallback);
     connect(this, &SandboxApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void SandboxApi::sandboxPositionsBalancePostCallback(HttpRequestWorker *worker) {
@@ -223,7 +229,7 @@ void SandboxApi::sandboxPositionsBalancePostCallback(HttpRequestWorker *worker) 
     }
 }
 
-void SandboxApi::sandboxRegisterPost(const SandboxRegisterRequest &sandbox_register_request) {
+HttpRequestWorker* SandboxApi::sandboxRegisterPost(const SandboxRegisterRequest &sandbox_register_request) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -244,6 +250,8 @@ void SandboxApi::sandboxRegisterPost(const SandboxRegisterRequest &sandbox_regis
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &SandboxApi::sandboxRegisterPostCallback);
     connect(this, &SandboxApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void SandboxApi::sandboxRegisterPostCallback(HttpRequestWorker *worker) {
@@ -269,7 +277,7 @@ void SandboxApi::sandboxRegisterPostCallback(HttpRequestWorker *worker) {
     }
 }
 
-void SandboxApi::sandboxRemovePost(const QString &broker_account_id) {
+HttpRequestWorker* SandboxApi::sandboxRemovePost(const QString &broker_account_id) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -293,6 +301,8 @@ void SandboxApi::sandboxRemovePost(const QString &broker_account_id) {
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &SandboxApi::sandboxRemovePostCallback);
     connect(this, &SandboxApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void SandboxApi::sandboxRemovePostCallback(HttpRequestWorker *worker) {

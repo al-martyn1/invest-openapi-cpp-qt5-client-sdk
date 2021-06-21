@@ -70,7 +70,7 @@ void UserApi::abortRequests(){
     emit abortRequestsSignal();
 }
 
-void UserApi::userAccountsGet() {
+HttpRequestWorker* UserApi::userAccountsGet() {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -88,6 +88,8 @@ void UserApi::userAccountsGet() {
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &UserApi::userAccountsGetCallback);
     connect(this, &UserApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void UserApi::userAccountsGetCallback(HttpRequestWorker *worker) {

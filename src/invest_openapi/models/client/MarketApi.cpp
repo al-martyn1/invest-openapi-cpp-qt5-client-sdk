@@ -70,7 +70,7 @@ void MarketApi::abortRequests(){
     emit abortRequestsSignal();
 }
 
-void MarketApi::marketBondsGet() {
+HttpRequestWorker* MarketApi::marketBondsGet() {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -88,6 +88,8 @@ void MarketApi::marketBondsGet() {
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &MarketApi::marketBondsGetCallback);
     connect(this, &MarketApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void MarketApi::marketBondsGetCallback(HttpRequestWorker *worker) {
@@ -113,7 +115,7 @@ void MarketApi::marketBondsGetCallback(HttpRequestWorker *worker) {
     }
 }
 
-void MarketApi::marketCandlesGet(const QString &figi, const QDateTime &from, const QDateTime &to, const CandleResolution &interval) {
+HttpRequestWorker* MarketApi::marketCandlesGet(const QString &figi, const QDateTime &from, const QDateTime &to, const CandleResolution &interval) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -155,6 +157,8 @@ void MarketApi::marketCandlesGet(const QString &figi, const QDateTime &from, con
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &MarketApi::marketCandlesGetCallback);
     connect(this, &MarketApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void MarketApi::marketCandlesGetCallback(HttpRequestWorker *worker) {
@@ -180,7 +184,7 @@ void MarketApi::marketCandlesGetCallback(HttpRequestWorker *worker) {
     }
 }
 
-void MarketApi::marketCurrenciesGet() {
+HttpRequestWorker* MarketApi::marketCurrenciesGet() {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -198,6 +202,8 @@ void MarketApi::marketCurrenciesGet() {
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &MarketApi::marketCurrenciesGetCallback);
     connect(this, &MarketApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void MarketApi::marketCurrenciesGetCallback(HttpRequestWorker *worker) {
@@ -223,7 +229,7 @@ void MarketApi::marketCurrenciesGetCallback(HttpRequestWorker *worker) {
     }
 }
 
-void MarketApi::marketEtfsGet() {
+HttpRequestWorker* MarketApi::marketEtfsGet() {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -241,6 +247,8 @@ void MarketApi::marketEtfsGet() {
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &MarketApi::marketEtfsGetCallback);
     connect(this, &MarketApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void MarketApi::marketEtfsGetCallback(HttpRequestWorker *worker) {
@@ -266,7 +274,7 @@ void MarketApi::marketEtfsGetCallback(HttpRequestWorker *worker) {
     }
 }
 
-void MarketApi::marketOrderbookGet(const QString &figi, const qint32 &depth) {
+HttpRequestWorker* MarketApi::marketOrderbookGet(const QString &figi, const qint32 &depth) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -296,6 +304,8 @@ void MarketApi::marketOrderbookGet(const QString &figi, const qint32 &depth) {
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &MarketApi::marketOrderbookGetCallback);
     connect(this, &MarketApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void MarketApi::marketOrderbookGetCallback(HttpRequestWorker *worker) {
@@ -321,7 +331,7 @@ void MarketApi::marketOrderbookGetCallback(HttpRequestWorker *worker) {
     }
 }
 
-void MarketApi::marketSearchByFigiGet(const QString &figi) {
+HttpRequestWorker* MarketApi::marketSearchByFigiGet(const QString &figi) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -345,6 +355,8 @@ void MarketApi::marketSearchByFigiGet(const QString &figi) {
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &MarketApi::marketSearchByFigiGetCallback);
     connect(this, &MarketApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void MarketApi::marketSearchByFigiGetCallback(HttpRequestWorker *worker) {
@@ -370,7 +382,7 @@ void MarketApi::marketSearchByFigiGetCallback(HttpRequestWorker *worker) {
     }
 }
 
-void MarketApi::marketSearchByTickerGet(const QString &ticker) {
+HttpRequestWorker* MarketApi::marketSearchByTickerGet(const QString &ticker) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -394,6 +406,8 @@ void MarketApi::marketSearchByTickerGet(const QString &ticker) {
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &MarketApi::marketSearchByTickerGetCallback);
     connect(this, &MarketApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void MarketApi::marketSearchByTickerGetCallback(HttpRequestWorker *worker) {
@@ -419,7 +433,7 @@ void MarketApi::marketSearchByTickerGetCallback(HttpRequestWorker *worker) {
     }
 }
 
-void MarketApi::marketStocksGet() {
+HttpRequestWorker* MarketApi::marketStocksGet() {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -437,6 +451,8 @@ void MarketApi::marketStocksGet() {
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &MarketApi::marketStocksGetCallback);
     connect(this, &MarketApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void MarketApi::marketStocksGetCallback(HttpRequestWorker *worker) {

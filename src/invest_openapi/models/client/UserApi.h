@@ -41,7 +41,7 @@ public:
     void enableResponseCompression();
     void abortRequests();
 
-    void userAccountsGet();
+    HttpRequestWorker* userAccountsGet();
 
 private:
     QString _scheme, _host;

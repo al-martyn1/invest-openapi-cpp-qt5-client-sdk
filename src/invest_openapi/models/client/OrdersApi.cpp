@@ -70,7 +70,7 @@ void OrdersApi::abortRequests(){
     emit abortRequestsSignal();
 }
 
-void OrdersApi::ordersCancelPost(const QString &order_id, const QString &broker_account_id) {
+HttpRequestWorker* OrdersApi::ordersCancelPost(const QString &order_id, const QString &broker_account_id) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -100,6 +100,8 @@ void OrdersApi::ordersCancelPost(const QString &order_id, const QString &broker_
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &OrdersApi::ordersCancelPostCallback);
     connect(this, &OrdersApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void OrdersApi::ordersCancelPostCallback(HttpRequestWorker *worker) {
@@ -125,7 +127,7 @@ void OrdersApi::ordersCancelPostCallback(HttpRequestWorker *worker) {
     }
 }
 
-void OrdersApi::ordersGet(const QString &broker_account_id) {
+HttpRequestWorker* OrdersApi::ordersGet(const QString &broker_account_id) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -149,6 +151,8 @@ void OrdersApi::ordersGet(const QString &broker_account_id) {
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &OrdersApi::ordersGetCallback);
     connect(this, &OrdersApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void OrdersApi::ordersGetCallback(HttpRequestWorker *worker) {
@@ -174,7 +178,7 @@ void OrdersApi::ordersGetCallback(HttpRequestWorker *worker) {
     }
 }
 
-void OrdersApi::ordersLimitOrderPost(const QString &figi, const LimitOrderRequest &limit_order_request, const QString &broker_account_id) {
+HttpRequestWorker* OrdersApi::ordersLimitOrderPost(const QString &figi, const LimitOrderRequest &limit_order_request, const QString &broker_account_id) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -207,6 +211,8 @@ void OrdersApi::ordersLimitOrderPost(const QString &figi, const LimitOrderReques
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &OrdersApi::ordersLimitOrderPostCallback);
     connect(this, &OrdersApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void OrdersApi::ordersLimitOrderPostCallback(HttpRequestWorker *worker) {
@@ -232,7 +238,7 @@ void OrdersApi::ordersLimitOrderPostCallback(HttpRequestWorker *worker) {
     }
 }
 
-void OrdersApi::ordersMarketOrderPost(const QString &figi, const MarketOrderRequest &market_order_request, const QString &broker_account_id) {
+HttpRequestWorker* OrdersApi::ordersMarketOrderPost(const QString &figi, const MarketOrderRequest &market_order_request, const QString &broker_account_id) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -265,6 +271,8 @@ void OrdersApi::ordersMarketOrderPost(const QString &figi, const MarketOrderRequ
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &OrdersApi::ordersMarketOrderPostCallback);
     connect(this, &OrdersApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void OrdersApi::ordersMarketOrderPostCallback(HttpRequestWorker *worker) {

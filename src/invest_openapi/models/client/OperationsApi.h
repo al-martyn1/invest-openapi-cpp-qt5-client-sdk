@@ -41,7 +41,7 @@ public:
     void enableResponseCompression();
     void abortRequests();
 
-    void operationsGet(const QDateTime &from, const QDateTime &to, const QString &figi, const QString &broker_account_id);
+    HttpRequestWorker* operationsGet(const QDateTime &from, const QDateTime &to, const QString &figi, const QString &broker_account_id);
 
 private:
     QString _scheme, _host;

@@ -219,7 +219,7 @@ bool processAwaitingOperationResponses( QSharedPointer<IOpenApi> pOpenApi
         auto figiKey            = foundOpResponseIt->first;
         auto operationsResponse = foundOpResponseIt->second;
 
-        std::cout << "Found completed: " << figiKey << " : " << (void*)&(*operationsResponse) << std::endl;
+        //std::cout << "Found completed: " << figiKey << " : " << (void*)&(*operationsResponse) << std::endl;
 
 
         auto nextIt = foundOpResponseIt; ++nextIt;
@@ -234,7 +234,7 @@ bool processAwaitingOperationResponses( QSharedPointer<IOpenApi> pOpenApi
             // Try to rerequest
             awaitingOperationResponses[figiKey] = pOpenApi->operations( operationsMaxAge, figiKey );
 
-            std::cout << "Got an error" << std::endl << std::endl;
+            //std::cout << "Got an error" << std::endl << std::endl;
 
             noErrors = false;
             //return false; // Stop on first error

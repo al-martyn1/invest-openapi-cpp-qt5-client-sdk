@@ -134,18 +134,6 @@ INVEST_OPENAPI_MAIN()
 
     authConfig.setDefaultBrokerAccountForOpenApi(pOpenApi);
 
-    /*
-    tkf::ISanboxOpenApi* pSandboxOpenApi = tkf::getSandboxApi(pOpenApi);
-
-    if (pSandboxOpenApi)
-    {
-        pSandboxOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
-    }
-    else
-    {
-        pOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
-    }
-    */
 
     tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
 
@@ -160,27 +148,18 @@ INVEST_OPENAPI_MAIN()
 
     // Custom code goes here
 
+    //------------------------------
     // Key - FIGI
     std::map< QString, tkf::MarketInstrumentState >     instrumentStates;
     std::map< QString, tkf::MarketGlass           >     instrumentGlasses;
     std::map< QString, std::vector< tkf::Operation > >  instrumentOperations;
 
+    //------------------------------
 
 
 
-    auto isInstrumentActive         = [&]( QString figi )
-                                      {
-                                          figi = dicts.findFigiByAnyIdString(figi); // This allows to use ticker also (for test)
 
-                                          std::map< QString, tkf::MarketInstrumentState >::const_iterator it = instrumentStates.find(figi);
-                                          if (it == instrumentStates.end())
-                                              return false;
-                                   
-                                          return it->second.isTradeStatusNormalTrading();
-                                      };
-
-
-
+    //------------------------------
     QWebSocket webSocket;
     console_helpers::SimpleHandleCtrlC ctrlC; // ctrlC.isBreaked()
 
@@ -196,7 +175,7 @@ INVEST_OPENAPI_MAIN()
 
                                  figi = dicts.findFigiByAnyIdString(figi);
 
-                                 if (!isInstrumentActive(figi))
+                                 if (!tkf::isMarketInstrumentActive(instrumentStates, figi))
                                  {
                                      cout << "Innactive" << endl;
                                      return;
@@ -363,14 +342,11 @@ INVEST_OPENAPI_MAIN()
                                            {
                                                std::map< QString, std::vector< tkf::Operation > > completedOperationsByFigi;
 
-                                               std::map< QString, std::set<QString> > figiMismatches;
-
                                                bool res = tkf::processAwaitingOperationResponses( pOpenApi
                                                                                                 , operationsMaxAge
                                                                                                 , awaitingOperationResponses
                                                                                                 , completedOperationsByFigi
                                                                                                 , statusStr
-                                                                                                , &figiMismatches
                                                                                                 );
                                                if (!res)
                                                {
@@ -378,141 +354,10 @@ INVEST_OPENAPI_MAIN()
                                                    return;
                                                }
 
-                                               std::map< QString, std::vector< tkf::Operation > >::iterator it = completedOperationsByFigi.begin();
-                                               for( ; it!=completedOperationsByFigi.end(); ++it )
-                                               {
-                                                   const QString &figi = it->first;
-                                                   auto &opVec = it->second;
+                                               tkf::mergeMap(instrumentOperations, completedOperationsByFigi);
 
-                                                   //tkf::sortOperationsByDate( opVec, tkf::SortType::descending );
-
-                                                   instrumentOperations[figi] = opVec;
-
-                                                   // /*
-                                                   cout << "--------" << endl;
-                                                   QString ticker = dicts.getTickerByFigiChecked(figi);
-                                                   cout << "Operations for Figi: " << figi << " (" << ticker << ")" << endl << endl;
-
-
-                                                   std::vector< tkf::Operation > sellOps;
-                                                   std::vector< tkf::Operation > buyOps;
-
-                                                   tkf::getSomeOfFirstOperations( 3, opVec, sellOps, buyOps );
-
-                                                   cout << "SELLs" << endl;
-                                                   tkf::operationPrintBrief( std::cout, "   "
-                                                                           , sellOps.begin(), sellOps.end()
-                                                                           );
-                                                   cout << "BUYs" << endl;
-                                                   tkf::operationPrintBrief( std::cout, "   "
-                                                                           , buyOps.begin(), buyOps.end()
-                                                                           );
-                                                   // */
-
-                                               } // for( ; it!=tmpOperationsFigiMap.end(); ++it )
-
-                                               //updateScreen();
-
-
-                                               if (!figiMismatches.empty())
-                                                   cout << endl << "FIGI Key/op FIGI mismatches" << endl << endl;
-
-                                               std::map< QString, std::set<QString> >::const_iterator fmIt = figiMismatches.begin();
-                                               for(; fmIt != figiMismatches.end(); ++fmIt)
-                                               {
-                                                   cout << "  " << fmIt->first << endl;
-                                                   const auto &s = fmIt->second;
-                                                   for( auto f : s )
-                                                   {
-                                                       cout << "    " << f << endl;
-                                                   }
-                                                   cout << endl;
-                                               }
-
-
-                                               #if 0
-
-                                               if (awaitingOperationResponses.empty())
-                                               {
-                                                   QElapsedTimer operationsRequestTimer;
-                                                   operationsRequestTimer.start();
-                                                  
-                                                   std::size_t requestCounter = 0;
-
-                                               }
-
-                                               auto foundOpResponseIt = tkf::findOpenApiCompletableFutureFinished( awaitingOperationResponses.begin(), awaitingOperationResponses.end() );
-                                               if (foundOpResponseIt==awaitingOperationResponses.end())
-                                                   return;
-
-                                               auto operationsResponse = *foundOpResponseIt;
-                                              
-                                               awaitingOperationResponses.erase(foundOpResponseIt);
-
-                                               if (!operationsResponse->isResultValid())
-                                               {
-                                                   statusStr = QString("Get Operations Error: ") + operationsResponse->getErrorMessage();
-                                                   updateScreen();
-                                                   return;
-                                               }
-                                               
-
-                                               std::map< QString, std::vector< tkf::Operation > > tmpOperationsFigiMap;
-
-                                               QList< tkf::Operation > operations = operationsResponse->value.getPayload().getOperations();
-
-                                               for( const auto &op : operations )
-                                               {
-                                                   QString figi = op.getFigi().toUpper();
-                                                   tkf::cpp_helpers::conainerKeyErase(awaitingOperationResponsesFigiSet, figi);
-
-                                                   if ( !tkf::isOperationStatusDoneOrInProgress(op) )
-                                                       continue; // May be DECLINE or INVALID_...
-
-                                                   if ( !tkf::isOperationTypeAnyBuyOrSell(op) ) // Also may be BUYCARD
-                                                       continue;
-
-                                                   tmpOperationsFigiMap[figi].push_back(op);
-                                               }
-
-
-                                               std::map< QString, std::vector< tkf::Operation > >::iterator it = tmpOperationsFigiMap.begin();
-                                               for( ; it!=tmpOperationsFigiMap.end(); ++it )
-                                               {
-                                                   const QString &figi = it->first;
-                                                   auto &opVec = it->second;
-
-                                                   tkf::sortOperationsByDate( opVec, tkf::SortType::descending );
-
-                                                   instrumentOperations[figi] = opVec;
-
-                                                   /*
-                                                   cout << "--------" << endl;
-                                                   QString ticker = dicts.getTickerByFigiChecked(figi);
-                                                   cout << "Operations for Figi: " << figi << " (" << ticker << ")" << endl << endl;
-
-
-                                                   std::vector< tkf::Operation > sellOps;
-                                                   std::vector< tkf::Operation > buyOps;
-
-                                                   tkf::getSomeOfFirstOperations( 3, opVec, sellOps, buyOps );
-
-                                                   cout << "SELLs" << endl;
-                                                   tkf::operationPrintBrief( std::cout, "   "
-                                                                           , sellOps.begin(), sellOps.end()
-                                                                           );
-                                                   cout << "BUYs" << endl;
-                                                   tkf::operationPrintBrief( std::cout, "   "
-                                                                           , buyOps.begin(), buyOps.end()
-                                                                           );
-                                                   */
-
-                                               } // for( ; it!=tmpOperationsFigiMap.end(); ++it )
-
-                                               #endif
-                                           
+                                               updateScreen();
                                            };
-
 
     
     QSharedPointer< tkf::OpenApiCompletableFuture < tkf::OrdersResponse > > ordersResponse  = pOpenApi->orders();
@@ -553,13 +398,8 @@ INVEST_OPENAPI_MAIN()
         QString requestForFigi     = dicts.findFigiByAnyIdString(*instrumentForOperationsIt);
         QString requestForTicker   = dicts.getTickerByFigiChecked(requestForFigi);
         
-        cout << "Request operations for " << requestForTicker << " (" << requestForFigi << ")" << endl;
-
         if (awaitingOperationResponses.find(requestForFigi)!=awaitingOperationResponses.end())
-        {
-            cout << "  Already requested" << endl;
-            continue; // Already in queu
-        }
+            continue; // Already in queue
 
         auto operationsResponse   = pOpenApi->operations( operationsMaxAge, requestForFigi);
 

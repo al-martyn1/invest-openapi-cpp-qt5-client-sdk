@@ -46,10 +46,10 @@ public:
     void enableResponseCompression();
     void abortRequests();
 
-    void ordersCancelPost(const QString &order_id, const QString &broker_account_id);
-    void ordersGet(const QString &broker_account_id);
-    void ordersLimitOrderPost(const QString &figi, const LimitOrderRequest &limit_order_request, const QString &broker_account_id);
-    void ordersMarketOrderPost(const QString &figi, const MarketOrderRequest &market_order_request, const QString &broker_account_id);
+    HttpRequestWorker* ordersCancelPost(const QString &order_id, const QString &broker_account_id);
+    HttpRequestWorker* ordersGet(const QString &broker_account_id);
+    HttpRequestWorker* ordersLimitOrderPost(const QString &figi, const LimitOrderRequest &limit_order_request, const QString &broker_account_id);
+    HttpRequestWorker* ordersMarketOrderPost(const QString &figi, const MarketOrderRequest &market_order_request, const QString &broker_account_id);
 
 private:
     QString _scheme, _host;

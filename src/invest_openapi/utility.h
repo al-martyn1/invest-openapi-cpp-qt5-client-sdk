@@ -192,6 +192,7 @@ std::map< Key, Val > makeTransitionMap( const std::map<Key,TransitionKey> &mapFi
 
 
 //----------------------------------------------------------------------------
+/*
 template<typename ContainerType> inline //!< For set or map
 ContainerType merge( const ContainerType &s1, const ContainerType &s2 )
 {
@@ -205,7 +206,43 @@ ContainerType merge( const ContainerType &s1, const ContainerType &s2 )
 
     return res;
 }
+*/
 
+template<typename MapType> inline //!< Existent values in s1 will be overwritten from s2
+MapType mergeMapCopy( const MapType &s1, const MapType &s2 )
+{
+    MapType res = s1;
+
+    typename MapType::const_iterator it = s2.begin();
+    for(; it!=s2.end(); ++it)
+    {
+        res.insert(*it);
+    }
+
+    return res;
+}
+
+template<typename MapType> inline //!< Existent values in s1 will be overwritten from s2
+void mergeMap( MapType &s1, const MapType &s2 )
+{
+    typename MapType::const_iterator it = s2.begin();
+    for(; it!=s2.end(); ++it)
+    {
+        s1.insert(*it);
+    }
+}
+
+template<typename SetType> inline //!< Existent values in s1 will be overwritten from s2
+SetType mergeSetCopy( const SetType &s1, const SetType &s2 )
+{
+    return mergeMapCopy<SetType>( s1, s2 );
+}
+
+template<typename SetType> inline //!< Existent values in s1 will be overwritten from s2
+void mergeSet( SetType &s1, const SetType &s2 )
+{
+    mergeMap<SetType>( s1, s2 );
+}
 
 
 

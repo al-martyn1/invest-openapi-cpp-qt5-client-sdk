@@ -45,14 +45,14 @@ public:
     void enableResponseCompression();
     void abortRequests();
 
-    void marketBondsGet();
-    void marketCandlesGet(const QString &figi, const QDateTime &from, const QDateTime &to, const CandleResolution &interval);
-    void marketCurrenciesGet();
-    void marketEtfsGet();
-    void marketOrderbookGet(const QString &figi, const qint32 &depth);
-    void marketSearchByFigiGet(const QString &figi);
-    void marketSearchByTickerGet(const QString &ticker);
-    void marketStocksGet();
+    HttpRequestWorker* marketBondsGet();
+    HttpRequestWorker* marketCandlesGet(const QString &figi, const QDateTime &from, const QDateTime &to, const CandleResolution &interval);
+    HttpRequestWorker* marketCurrenciesGet();
+    HttpRequestWorker* marketEtfsGet();
+    HttpRequestWorker* marketOrderbookGet(const QString &figi, const qint32 &depth);
+    HttpRequestWorker* marketSearchByFigiGet(const QString &figi);
+    HttpRequestWorker* marketSearchByTickerGet(const QString &ticker);
+    HttpRequestWorker* marketStocksGet();
 
 private:
     QString _scheme, _host;

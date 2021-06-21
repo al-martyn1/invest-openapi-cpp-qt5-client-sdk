@@ -70,7 +70,7 @@ void PortfolioApi::abortRequests(){
     emit abortRequestsSignal();
 }
 
-void PortfolioApi::portfolioCurrenciesGet(const QString &broker_account_id) {
+HttpRequestWorker* PortfolioApi::portfolioCurrenciesGet(const QString &broker_account_id) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -94,6 +94,8 @@ void PortfolioApi::portfolioCurrenciesGet(const QString &broker_account_id) {
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &PortfolioApi::portfolioCurrenciesGetCallback);
     connect(this, &PortfolioApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void PortfolioApi::portfolioCurrenciesGetCallback(HttpRequestWorker *worker) {
@@ -119,7 +121,7 @@ void PortfolioApi::portfolioCurrenciesGetCallback(HttpRequestWorker *worker) {
     }
 }
 
-void PortfolioApi::portfolioGet(const QString &broker_account_id) {
+HttpRequestWorker* PortfolioApi::portfolioGet(const QString &broker_account_id) {
     QString fullPath = QString("%1://%2%3%4%5")
                            .arg(_scheme)
                            .arg(_host)
@@ -143,6 +145,8 @@ void PortfolioApi::portfolioGet(const QString &broker_account_id) {
     connect(worker, &HttpRequestWorker::on_execution_finished, this, &PortfolioApi::portfolioGetCallback);
     connect(this, &PortfolioApi::abortRequestsSignal, worker, &QObject::deleteLater); 
     worker->execute(&input);
+
+    return worker;
 }
 
 void PortfolioApi::portfolioGetCallback(HttpRequestWorker *worker) {

@@ -978,7 +978,7 @@ INVEST_OPENAPI_MAIN()
     cout << endl << endl << "-----------------"
          << endl << " Instruments update statistic:" << endl;
 
-    std::set<QString> allBadFigis = tkf::merge(discontinuedFigis, erroneousFigis);
+    std::set<QString> allBadFigis = tkf::mergeSetCopy(discontinuedFigis, erroneousFigis);
 
     for( auto badFigi : allBadFigis )
     {

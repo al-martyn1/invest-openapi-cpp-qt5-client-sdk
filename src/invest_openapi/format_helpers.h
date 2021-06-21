@@ -39,11 +39,11 @@ std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fie
 
     if (strRes.size()>fieldWidth && bAddEllipsis)
     {
-        strRes.erase( fieldWidth, strRes.npos ); // Укоротили
+        strRes.erase( fieldWidth, strRes.npos ); // РЈРєРѕСЂРѕС‚РёР»Рё
 
-        if (strRes.size()>6) // Добавлям элипсис. Иначе - просто отрезаем лишнее, потому как если окончание строки заменить на элипсис, то нихрена не понятно будет
+        if (strRes.size()>6) // Р”РѕР±Р°РІР»СЏРј СЌР»РёРїСЃРёСЃ. РРЅР°С‡Рµ - РїСЂРѕСЃС‚Рѕ РѕС‚СЂРµР·Р°РµРј Р»РёС€РЅРµРµ, РїРѕС‚РѕРјСѓ РєР°Рє РµСЃР»Рё РѕРєРѕРЅС‡Р°РЅРёРµ СЃС‚СЂРѕРєРё Р·Р°РјРµРЅРёС‚СЊ РЅР° СЌР»РёРїСЃРёСЃ, С‚Рѕ РЅРёС…СЂРµРЅР° РЅРµ РїРѕРЅСЏС‚РЅРѕ Р±СѓРґРµС‚
         {
-            strRes.erase( strRes.size()-3, strRes.npos ); // Освободили место под элипсис
+            strRes.erase( strRes.size()-3, strRes.npos ); // РћСЃРІРѕР±РѕРґРёР»Рё РјРµСЃС‚Рѕ РїРѕРґ СЌР»РёРїСЃРёСЃ
             strRes = marty_cpp::expandAtBack( strRes, fieldWidth, '.' );
         }
     }
@@ -106,7 +106,7 @@ std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fie
 {
     precision = format_field_decimalAdjustPrecision(d,precision);
 
-    // Числа никогда не обрезаем
+    // Р§РёСЃР»Р° РЅРёРєРѕРіРґР° РЅРµ РѕР±СЂРµР·Р°РµРј
     if (fieldWidth<0)
         fieldWidth = -fieldWidth;
 
@@ -118,7 +118,7 @@ std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fie
 inline
 std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fieldWidth, int align
                         , marty::Decimal d, int precision
-                        , std::size_t dotAlign // Выравнивание по десятчной точке
+                        , std::size_t dotAlign // Р’С‹СЂР°РІРЅРёРІР°РЅРёРµ РїРѕ РґРµСЃСЏС‚С‡РЅРѕР№ С‚РѕС‡РєРµ
                         )
 {
     precision = format_field_decimalAdjustPrecision(d,precision);
@@ -130,7 +130,7 @@ std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fie
         fieldWidth = -fieldWidth;
 
     d.precisionExpandTo(precision+1);
-    d.round( round, marty::Decimal::RoundingMethod::roundMath );
+    d.round( precision, marty::Decimal::RoundingMethod::roundMath );
 
     std::string numberStr = d.toString( precision );
 
@@ -150,7 +150,7 @@ inline
 std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fieldWidth, int align
                         , marty::Decimal d
                         , const marty::Decimal &numberWithRequiredPrecision // priceIncrement is a good candidate
-                        , std::size_t dotAlign // Выравнивание по десятчной точке
+                        , std::size_t dotAlign // Р’С‹СЂР°РІРЅРёРІР°РЅРёРµ РїРѕ РґРµСЃСЏС‚С‡РЅРѕР№ С‚РѕС‡РєРµ
                         )
 {
     return format_field( leftSpace, rightSpace, fieldWidth, align

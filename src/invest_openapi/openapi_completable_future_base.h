@@ -22,6 +22,9 @@
 namespace invest_openapi
 {
 
+class OpenApiImpl;
+class SanboxOpenApiImpl;
+
 
 void pollMessageQueue();
 QString mergeString(const QVector<QString> &v, const QString &sep );
@@ -35,6 +38,10 @@ class OpenApiCompletableFutureBase : public QObject
     Q_OBJECT
 
 public:
+
+    friend class OpenApiImpl;      
+    friend class SanboxOpenApiImpl;
+
 
     template<typename ValueType> friend class OpenApiCompletableFuture;
 
@@ -112,10 +119,28 @@ protected:
     QMetaObject::Connection slotConnectionError   ;
 
 
+    void disconnectCompleteSlot()
+    {
+        if (slotConnectionComplete)
+        {
+            disconnect(slotConnectionComplete);
+            slotConnectionComplete = QMetaObject::Connection();
+        }
+    }
+
+    void disconnectErrorSlot()
+    {
+        if (slotConnectionError)
+        {
+            disconnect(slotConnectionError);
+            slotConnectionError = QMetaObject::Connection();
+        }
+    }
+
     void disconnectAll()
     {
-        disconnect(slotConnectionComplete);
-        disconnect(slotConnectionError   );
+        disconnectCompleteSlot();
+        disconnectErrorSlot();
     }
 
 
@@ -135,7 +160,14 @@ protected:
 
     }
 
+    //OpenAPI::HttpRequestWorker *worker
+
 public:
+
+    virtual ~OpenApiCompletableFutureBase()
+    {
+        disconnectAll();
+    }
 
     QString getErrorMessage() const
     {
@@ -272,6 +304,11 @@ protected:
         return m_errorMessage;
     }
 
+    void onCompleteCommon( )
+    {
+        m_complete.store(true, std::memory_order_relaxed);
+        disconnectCompleteSlot();
+    }
 
     void errorComplete( QNetworkReply::NetworkError errorType    = QNetworkReply::NoError
                  , QString                     errorMessage = QString()
@@ -285,6 +322,7 @@ protected:
         m_errorType     = errorType   ;
         m_errorMessage  = errorMessage;
         m_complete.store(true, std::memory_order_relaxed);
+        disconnectErrorSlot();
     }
 
     void joinImpl() const
@@ -296,38 +334,61 @@ protected:
     }
 
 
+
 protected:
 
     std::atomic<bool>           m_complete     = false;
     QNetworkReply::NetworkError m_errorType    = QNetworkReply::NoError;
     QString                     m_errorMessage ;
+    OpenAPI::HttpRequestWorker *m_pWorker      = 0;
+
+    void setWorker( OpenAPI::HttpRequestWorker *worker )
+    {
+        m_pWorker = worker;
+    }
 
     
 protected slots:
 
-    virtual void onComplete( Empty                          v ) {}
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, Empty                          v ) {}
 
-    virtual void onComplete( SandboxRegisterResponse        v ) {}
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, SandboxRegisterResponse        v ) {}
 
-    virtual void onComplete( MarketInstrumentListResponse   v ) {}
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, MarketInstrumentListResponse   v ) {}
 
-    virtual void onComplete( CandlesResponse                v ) {}
-    virtual void onComplete( OrderbookResponse              v ) {}
-    virtual void onComplete( SearchMarketInstrumentResponse v ) {}
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, CandlesResponse                v ) {}
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, OrderbookResponse              v ) {}
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, SearchMarketInstrumentResponse v ) {}
 
-    virtual void onComplete( UserAccountsResponse           v ) {}
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, UserAccountsResponse           v ) {}
 
-    virtual void onComplete( OperationsResponse             v ) {}
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, OperationsResponse             v ) {}
 
-    virtual void onComplete( OrdersResponse                 v ) {}
-    virtual void onComplete( LimitOrderResponse             v ) {}
-    virtual void onComplete( MarketOrderResponse            v ) {}
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, OrdersResponse                 v ) {}
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, LimitOrderResponse             v ) {}
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, MarketOrderResponse            v ) {}
 
-    virtual void onComplete( PortfolioCurrenciesResponse    v ) {}
-    virtual void onComplete( PortfolioResponse              v ) {}
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, PortfolioCurrenciesResponse    v ) {}
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, PortfolioResponse              v ) {}
+
+    virtual void onError   ( OpenAPI::HttpRequestWorker *worker, QNetworkReply::NetworkError et, QString es )
+    {
+        if (m_pWorker==0)
+        {
+            throw std::runtime_error( std::string("__FUNCTION__") + ": worker is not set" );
+
+            // __FUNCTION__, __func__ - https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=msvc-160
+            // https://stackoverflow.com/questions/15305310/predefined-macros-for-function-name-func
+        }
+
+        if (m_pWorker!=worker)
+            return;
+
+        errorComplete(et, es);
+    }
 
     
-
+    /*
     virtual void onError   ( Empty                          v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
 
     virtual void onError   ( SandboxRegisterResponse        v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
@@ -348,7 +409,7 @@ protected slots:
 
     virtual void onError   ( PortfolioCurrenciesResponse    v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
     virtual void onError   ( PortfolioResponse              v, QNetworkReply::NetworkError et, QString es ) { errorComplete(et, es); }
-    
+    */
 
 
 }; // class OpenApiCompletableFutureBase

@@ -7,6 +7,11 @@
 #include <QDebug>
 #include <QSharedPointer>
 
+#include <iostream>
+#include <iomanip>
+#include <exception>
+#include <stdexcept>
+
 #include <type_traits>
 #include "openapi_completable_future_base.h"
 #include "func.h"
@@ -20,10 +25,10 @@ connect(sender  , &std::remove_pointer<decltype(sender)>::type::signal, \
 */
 
 //----------------------------------------------------------------------------
-#define INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( completableFutureObjPtr, pApi, apiMethod, httpMethod )                      \
-                (completableFutureObjPtr)->connectTo( pApi                                                                            \
-                                                    , &std::remove_pointer<decltype(pApi)>::type:: apiMethod ## httpMethod ## Signal  \
-                                                    , &std::remove_pointer<decltype(pApi)>::type:: apiMethod ## httpMethod ## SignalE \
+#define INVEST_OPENAPI_COMPLETABLE_FUTURE_CONNECT_TO_API( completableFutureObjPtr, pApi, apiMethod, httpMethod )                          \
+                (completableFutureObjPtr)->connectTo( pApi                                                                                \
+                                                    , &std::remove_pointer<decltype(pApi)>::type:: apiMethod ## httpMethod ## SignalFull  \
+                                                    , &std::remove_pointer<decltype(pApi)>::type:: apiMethod ## httpMethod ## SignalEFull \
                                                     )
 
 
@@ -45,6 +50,10 @@ namespace invest_openapi
 
 
 
+class OpenApiImpl;      
+class SanboxOpenApiImpl;
+
+
 
 //----------------------------------------------------------------------------
 template<typename ValueType>
@@ -52,6 +61,10 @@ class OpenApiCompletableFuture : public OpenApiCompletableFutureBase
 {
 
 public:
+
+    friend class OpenApiImpl;      
+    friend class SanboxOpenApiImpl;
+
 
     typedef ValueType value_type;
 
@@ -78,8 +91,14 @@ public:
                   )
     {
         // https://wiki.qt.io/New_Signal_Slot_Syntax
-        slotConnectionComplete = connect( pSource, completeSignal, this, qOverload<value_type>(&OpenApiCompletableFutureBase::onComplete), Qt::QueuedConnection );
-        slotConnectionError    = connect( pSource, errorSignal   , this, qOverload<value_type, QNetworkReply::NetworkError, QString>(&OpenApiCompletableFutureBase::onError), Qt::QueuedConnection );
+
+        slotConnectionComplete = connect( pSource, completeSignal, this
+                                        , qOverload<OpenAPI::HttpRequestWorker*, value_type>(&OpenApiCompletableFutureBase::onComplete), Qt::QueuedConnection 
+                                        );
+
+        slotConnectionError    = connect( pSource, errorSignal   , this
+                                        , qOverload<OpenAPI::HttpRequestWorker*, QNetworkReply::NetworkError, QString>(&OpenApiCompletableFutureBase::onError), Qt::QueuedConnection
+                                        );
     }
 
 
@@ -94,8 +113,19 @@ protected:
     }
 */
 
-    virtual void onComplete( value_type v) override
+    virtual void onComplete( OpenAPI::HttpRequestWorker *worker, value_type v) override
     {
+        if (m_pWorker==0)
+        {
+            throw std::runtime_error( std::string("__FUNCTION__") + ": worker is not set" );
+
+            // __FUNCTION__, __func__ - https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=msvc-160
+            // https://stackoverflow.com/questions/15305310/predefined-macros-for-function-name-func
+        }
+
+        if (m_pWorker!=worker)
+            return;
+
         value = v;
 
         #if defined(INVEST_OPENAPI_DEBUG_DUMP_COMPLETABLE_FUTURE_HANDLER_VALUES)
@@ -103,23 +133,24 @@ protected:
             qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - value: " << value.asJson();
         #endif
 
-        m_complete.store(true, std::memory_order_relaxed);
-        disconnectAll();
+        //std::cout << "Got response, obj : " << (void*)this << ", value: " << value.asJson() << std::endl;
+
+        onCompleteCommon();
     }
 
-    virtual void onError( value_type v, QNetworkReply::NetworkError et, QString es ) override
+    /*
+    virtual void onError( HttpRequestWorker *worker, QNetworkReply::NetworkError et, QString es ) override
     {
-        value = v;
+        // value = v;
 
         #if defined(INVEST_OPENAPI_DEBUG_DUMP_COMPLETABLE_FUTURE_HANDLER_VALUES)
-            qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - v    : " << v.asJson();
-            qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - value: " << value.asJson();
+            // qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - v    : " << v.asJson();
+            // qDebug().nospace().noquote() << "!!! (+) " << __FUNCTION_NAME__ << " - value: " << value.asJson();
         #endif
 
         errorComplete(et, es);
-        disconnectAll();
     }
-
+    */
 
 
 }; // class OpenApiCompletableFuture

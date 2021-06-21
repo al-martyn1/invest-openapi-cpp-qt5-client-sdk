@@ -45,11 +45,11 @@ public:
     void enableResponseCompression();
     void abortRequests();
 
-    void sandboxClearPost(const QString &broker_account_id);
-    void sandboxCurrenciesBalancePost(const SandboxSetCurrencyBalanceRequest &sandbox_set_currency_balance_request, const QString &broker_account_id);
-    void sandboxPositionsBalancePost(const SandboxSetPositionBalanceRequest &sandbox_set_position_balance_request, const QString &broker_account_id);
-    void sandboxRegisterPost(const SandboxRegisterRequest &sandbox_register_request);
-    void sandboxRemovePost(const QString &broker_account_id);
+    HttpRequestWorker* sandboxClearPost(const QString &broker_account_id);
+    HttpRequestWorker* sandboxCurrenciesBalancePost(const SandboxSetCurrencyBalanceRequest &sandbox_set_currency_balance_request, const QString &broker_account_id);
+    HttpRequestWorker* sandboxPositionsBalancePost(const SandboxSetPositionBalanceRequest &sandbox_set_position_balance_request, const QString &broker_account_id);
+    HttpRequestWorker* sandboxRegisterPost(const SandboxRegisterRequest &sandbox_register_request);
+    HttpRequestWorker* sandboxRemovePost(const QString &broker_account_id);
 
 private:
     QString _scheme, _host;
