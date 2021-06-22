@@ -359,7 +359,16 @@ INVEST_OPENAPI_MAIN()
                                                updateScreen();
                                            };
 
-    
+
+    auto requestForInstrumentOperations = [&]( QString figi )
+                                          {
+                                              figi = dicts.findFigiByAnyIdString(figi);
+                                              if (awaitingOperationResponses.find(figi)!=awaitingOperationResponses.end())
+                                                  return; // Already in queue
+                                              auto operationsResponse   = pOpenApi->operations( operationsMaxAge, figi);
+                                              awaitingOperationResponses[figi] = operationsResponse;
+                                          };
+                                           
     QSharedPointer< tkf::OpenApiCompletableFuture < tkf::OrdersResponse > > ordersResponse  = pOpenApi->orders();
 
     QStringList::const_iterator instrumentForOperationsIt = instrumentList.begin();
@@ -397,13 +406,8 @@ INVEST_OPENAPI_MAIN()
 
         QString requestForFigi     = dicts.findFigiByAnyIdString(*instrumentForOperationsIt);
         QString requestForTicker   = dicts.getTickerByFigiChecked(requestForFigi);
-        
-        if (awaitingOperationResponses.find(requestForFigi)!=awaitingOperationResponses.end())
-            continue; // Already in queue
 
-        auto operationsResponse   = pOpenApi->operations( operationsMaxAge, requestForFigi);
-
-        awaitingOperationResponses[requestForFigi] = operationsResponse;
+        requestForInstrumentOperations(requestForFigi);
 
         checkAwaitingOperationResponses();
 

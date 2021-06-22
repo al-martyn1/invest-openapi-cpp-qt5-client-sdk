@@ -149,17 +149,7 @@ INVEST_OPENAPI_MAIN()
 
     QSharedPointer<tkf::IOpenApi> pOpenApi = tkf::createOpenApi( apiConfig, authConfig, loggingConfig );
 
-    tkf::ISanboxOpenApi* pSandboxOpenApi = tkf::getSandboxApi(pOpenApi);
-
-    if (pSandboxOpenApi)
-    {
-        pSandboxOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
-    }
-    else
-    {
-        pOpenApi->setBrokerAccountId( authConfig.getBrokerAccountId() );
-    }
-
+    authConfig.setDefaultBrokerAccountForOpenApi(pOpenApi);
 
 
     tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
@@ -203,7 +193,7 @@ INVEST_OPENAPI_MAIN()
     //return 0;
 
 
-
+    QElapsedTimer eventsTimer;
 
     QWebSocket webSocket;
     console_helpers::SimpleHandleCtrlC ctrlC; // ctrlC.isBreaked()
@@ -218,7 +208,9 @@ INVEST_OPENAPI_MAIN()
             
                 fConnected.store( true, std::memory_order_seq_cst  );
 
-                cout << "# Streaming API Web socket connected" << endl;
+                std::uint32_t connectTimeout = (std::uint32_t)eventsTimer.restart();
+                cout << "# Streaming API Web socket connected, timeout: " << connectTimeout << endl;
+
 
                 QString orderBookSubscriptionText         = pOpenApi->getStreamingApiOrderbookSubscribeJson( orderParams.figi );
                 QString instrumentInfoSubscriptionText    = pOpenApi->getStreamingApiInstrumentInfoSubscribeJson( orderParams.figi );
@@ -313,11 +305,17 @@ INVEST_OPENAPI_MAIN()
 
 
     cout << "# Connecting Streaming API Web socket" << endl;
+
+    eventsTimer.start();
     webSocket.connect( &webSocket, &QWebSocket::connected             , onConnected    );
     webSocket.connect( &webSocket, &QWebSocket::disconnected          , onDisconnected );
     webSocket.connect( &webSocket, &QWebSocket::textMessageReceived   , onMessage      );
 
     webSocket.open( pOpenApi->getStreamingApiNetworkRequest() );
+
+    std::uint32_t openingTimeout = (std::uint32_t)eventsTimer.restart();
+    cout << "# Opening websocket timeout: " << openingTimeout << endl;
+
 
 
     //cout << "# Press Ctrl+C to break process" << endl;
@@ -338,7 +336,8 @@ INVEST_OPENAPI_MAIN()
 
     if (instrumentState.isValid() && instrumentGlass.isValid())
     {
-        cout << "Got instrument streaming info" << endl;
+        std::uint32_t gotSreamingDataTimeout = (std::uint32_t)eventsTimer.restart();
+        cout << "Got instrument streaming info, timeout from streaming request: " << gotSreamingDataTimeout << endl;
 
         if (!instrumentState.isTradeStatusNormalTrading())
         {
@@ -422,6 +421,8 @@ INVEST_OPENAPI_MAIN()
 
             tkf::PlacedOrderInfo   placedOrderInfo;
 
+            eventsTimer.restart();
+
 
             if (orderParams.isOrderTypeLimit())
             {
@@ -447,7 +448,9 @@ INVEST_OPENAPI_MAIN()
                             
             }
 
-            cout << "Response:" << endl;
+            std::uint32_t orderResponseTimeout = (std::uint32_t)eventsTimer.restart();
+
+            cout << "Got response, timeout: " << orderResponseTimeout << endl;
             cout << endl;
 
             cout << "  TrackingId     : " << placedOrderInfo.trackingId << endl;
