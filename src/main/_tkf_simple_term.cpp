@@ -441,7 +441,7 @@ INVEST_OPENAPI_MAIN()
 
 
 
-    while(!ctrlC.isBreaked() )
+    while( !ctrlC.isBreaked() )
     {
         QTest::qWait(1);
 
@@ -462,132 +462,9 @@ INVEST_OPENAPI_MAIN()
 
         }
 
-
-        #if 0
-
-        if (operationsRequestTimer.hasExpired(500))
-        {
-            operationsRequestTimer.restart();
-
-            if (instrumentForOperationsIt==instrumentList.end())
-            {
-                instrumentForOperationsIt = instrumentList.begin();
-                //ordersResponse = pOpenApi->orders();
-                // if (ordersResponse->isFinished())
-                // {
-                //     ordersResponse = pOpenApi->orders(); // send new request for orders
-                // }
-            }
-            else
-            {
-                QDateTime dateTimeNow     = QDateTime::currentDateTime();
-                QDateTime dateTimeBefore  = qt_helpers::dtAddTimeInterval( dateTimeNow, QString("-10YEAR") );
-
-                QString requestForFigi    = dicts.findFigiByAnyIdString(*instrumentForOperationsIt);
-                
-                auto operationsResponse   = pOpenApi->operations(dateTimeBefore, dateTimeNow, requestForFigi);
-            
-            }
-
-        }
-
-
-        if (ordersResponse->isFinished())
-        {
-            // auto responseValue = ordersResponse->value;
-
-    // QList<tkf::Order> orders = responseValue.getPayload();
-    //  
-    // for( auto order : orders )
-    // {
-    //     cout << "----------------------" << endl << endl;
-    //  
-    //     QString figi   = order.getFigi();
-    //     QString ticker = dicts.getTickerByFigiChecked(figi);
-    //  
-    //     cout << "Instrument     : " << ticker << "/" << figi    << endl;
-    //  
-    //     cout << "Order Id       : " << order.getOrderId()       << endl;
-    //     cout << "Operation      : " << order.getOperation()     << endl;
-    //     cout << "Status         : " << order.getStatus()        << endl;
-    //     cout << "Order Type     : " << order.getType()          << endl;
-    //  
-    //     cout << endl;
-    //  
-    //     cout << "Lots Requested : " << order.getRequestedLots() << endl;
-    //     cout << "Lots Executed  : " << order.getExecutedLots() << endl;
-    //  
-    //     cout << endl;
-    //  
-    //     cout << "Price          : " << order.getPrice() << endl;
-
-
-        }
-
-
-        auto foundOpResponseIt = tkf::findOpenApiCompletableFutureFinished( awaitingOperationResponses.begin(), awaitingOperationResponses.end() );
-        if (foundOpResonseIt!=awaitingOperationResponses.end())
-        {
-            auto operationResponse = *foundOpResonseIt;
-
-            awaitingOperationResponses.erase(foundOpResonseIt);
-
-            // auto responseValue = ordersResponse->value;
-        // tkf::checkAbort(operationsResponse);
-        //  
-        // // QList<Operation> getOperations() const;
-        // auto operations = operationsResponse->value.getPayload().getOperations();
-
-
-        // for( auto op : operations )
-        // {
-        //     // QList<OperationTrade> op.getTrades() const;
-        //     // OperationTypeWithCommission getOperationType() const;
-        //  
-        //     QString operationTypeStr   = op.getOperationType().asJson().toUpper();
-        //     QString operationStatusStr = op.getStatus().asJson().toUpper();
-        //  
-        //     if (operationStatusStr!="DONE" && operationStatusStr!="PROGRESS") // DECLINE or INVALID
-        //         continue;
-        //  
-        //     if (operationTypeStr!="BUYCARD" && operationTypeStr!="BUY" && operationTypeStr!="SELL")
-        //         continue;
-        //  
-        //     cout << "Operation: " << operationTypeStr << endl;
-        //     cout << "Status   : " << operationStatusStr << endl;
-        //     cout << "Trades   :"  << endl;
-        //  
-        //  
-        //     auto trades = op.getTrades(); // QList<OperationTrade>
-        //  
-        //     for( auto trade : trades )
-        //     {
-        //         cout << "    " << trade.getQuantity() << " x " << trade.getPrice() << endl;
-        //     }
-
-
-        }
-
-        //IteratorType findOpenApiCompletableFutureFinished( IteratorType b, IteratorType e )
-
-        //if (instrumentForOperationsIt
-
-        #endif
     }
 
 
-
-
-        // operationsResponse->join();
-        //  
-        // tkf::checkAbort(operationsResponse);
-        //  
-        // // QList<Operation> getOperations() const;
-        // auto operations = operationsResponse->value.getPayload().getOperations();
-
-            // QElapsedTimer timer;
-            // timer.start();
-            // auto sandboxRegisterResponseInterval = timer.restart();
     
 
     return 0;

@@ -17,7 +17,7 @@ struct RequestLimits
     const static std::size_t  maxRequestsPerMinute = 120; // Лимит - 120 запросов в минуту
 
 
-    static bool isLimitReached( std::size_t requestCounter, std::size_t limitValue )
+    static bool isLimitReached( std::size_t requestCounter, std::size_t limitValue = maxRequestsPerMinute )
     {
         if (!requestCounter)
             return false;

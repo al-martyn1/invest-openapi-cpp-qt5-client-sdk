@@ -113,6 +113,107 @@ bool isMarketInstrumentActive( const std::map< QString, MarketInstrumentState > 
 
 
 
+
+//----------------------------------------------------------------------------
+enum class MarketInstrumentStateChange
+{
+    becomeNormalTrading,
+    becomeNotTraded
+
+};
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+//! Возвращает true, если статус изменился хотя бы у одного инструмента
+inline
+bool isMarketInstrumentsStateChanged( const std::map< QString, MarketInstrumentState >          &instrumentStatesOld
+                                    , const std::map< QString, MarketInstrumentState >          &instrumentStatesNew
+                                    , const std::map< QString, MarketInstrumentStateChange >    *pInstrumentStateChanges = 0
+                                    )
+{
+    bool gotChanges = false;
+
+    std::map< QString, MarketInstrumentState >::const_iterator nit = instrumentStatesNew.begin();
+    for(; nit != instrumentStatesNew.end(); ++nit )
+    {
+        QString instrumentFigi = nit->first.toUpper();
+
+        std::map< QString, MarketInstrumentState >::const_iterator oit = instrumentStatesOld.find(instrumentFigi);
+
+        if (oit==instrumentStatesOld.end()) // No insrtrument info have before?
+        {
+            // There is no old state branch
+
+            if (nit->second.isTradeStatusNormalTrading()) // New state is NormalTrading?
+            {
+                if (pInstrumentStateChanges)
+                {
+                    std::map< QString, MarketInstrumentStateChange > &instrumentStateChanges = *pInstrumentStateChanges;
+                    instrumentStateChanges[instrumentFigi]                                   =  MarketInstrumentStateChange::becomeNormalTrading;
+                }
+            }
+            else // New state is not NormalTrading - error, or may be somehing else?
+            {
+                if (pInstrumentStateChanges)
+                {
+                    std::map< QString, MarketInstrumentStateChange > &instrumentStateChanges = *pInstrumentStateChanges;
+                    instrumentStateChanges[instrumentFigi]                                   =  MarketInstrumentStateChange::becomeNotTraded;
+                }
+            }
+
+            gotChanges = true;
+
+            continue;
+        }
+
+
+        // Hm-m-m. Instument has prev state
+
+        if (oit->second.isTradeStatusNormalTrading() == nit->second.isTradeStatusNormalTrading())
+        {
+            // We have got a prev state
+            continue; // No change
+        }
+
+
+        // State changed
+        if (oit->second.isTradeStatusNormalTrading()) // old state is NormalTrading
+        {
+            instrumentStateChanges[instrumentFigi] = MarketInstrumentStateChange::becomeNotTraded; // new state not normal
+        }
+        else
+        {
+            instrumentStateChanges[instrumentFigi] = MarketInstrumentStateChange::becomeNormalTrading; // new state is normal
+        }
+
+        gotChanges = true;
+
+    } // for(; nit != instrumentStatesNew.end(); ++nit )
+
+    return gotChanges;
+
+}
+
+//----------------------------------------------------------------------------
+//! Возвращает true, если статус изменился хотя бы у одного инструмента
+inline
+bool isMarketInstrumentsStateChanged( const std::map< QString, MarketInstrumentState >          &instrumentStatesOld
+                                    , const std::map< QString, MarketInstrumentState >          &instrumentStatesNew
+                                    ,       std::map< QString, MarketInstrumentStateChange >    &instrumentStateChanges
+                                    )
+{
+    return isMarketInstrumentsStateChanged( instrumentStatesOld, instrumentStatesNew, &instrumentStateChanges );
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
 //----------------------------------------------------------------------------
 inline
 std::ostream& operator<<( std::ostream &s, MarketInstrumentState mis ) 
@@ -137,6 +238,8 @@ std::ostream& operator<<( std::ostream &s, MarketInstrumentState mis )
 
     return s;
 }
+
+
 
 
 //----------------------------------------------------------------------------
