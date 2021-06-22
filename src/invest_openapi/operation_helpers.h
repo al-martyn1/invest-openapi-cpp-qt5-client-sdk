@@ -288,7 +288,69 @@ bool processAwaitingOperationResponses( QSharedPointer<IOpenApi> pOpenApi
     return noErrors;
 }
 
+//----------------------------------------------------------------------------
+inline 
+bool isOperationExecutedQauntityDiffers( const OpenAPI::Operation &op1, const OpenAPI::Operation &op2 )
+{
+    if (op1.getId()!=op2.getId())
+        return true; // Ваще разные операции попались
 
+    if (op1.getQuantityExecuted()!=op2.getQuantityExecuted())
+        return true; // Операция та же, но число исполненых лотов другое
+
+    return false; // Число исполненых лотов не изменилось
+}
+
+//----------------------------------------------------------------------------
+//! Вектора должны быть отсортированы по дате. Это делается в processAwaitingOperationResponses, тут никак не проверяем
+inline 
+bool isOperationsOrExecutedQauntityDiffers( const std::vector< OpenAPI::Operation > &vec1, const std::vector< OpenAPI::Operation > &vec2 )
+{
+    if (vec1.size()!=vec2.size())
+        return true; // Что-то, да поменялось
+
+    std::vector< OpenAPI::Operation >::const_iterator it1 = vec1.begin(), it2 = vec2.begin();
+    for(; it1!=vec1.end(); ++it1, ++it2)
+    {
+        if (isOperationExecutedQauntityDiffers( *it1, *it2 ))
+            return true;
+    }
+
+    return false; // Вектора такие же, операции в них те же, и количество исполненых лотов не изменилось ни по одной из них
+}
+
+//----------------------------------------------------------------------------
+//! Возвращает true, если состав и/или количество элементов хотя бы в одном эелементе mergeTo изменилось. По содержимому проверяем только id и количество executed лотов.
+inline 
+bool mergeOperationMaps( std::map< QString, std::vector< OpenAPI::Operation > > &mergeTo
+                       , const std::map< QString, std::vector< OpenAPI::Operation > > &mergeFrom
+                       )
+{
+    bool opsChanged = false;
+
+    std::map< QString, std::vector< OpenAPI::Operation > >::const_iterator fit = mergeFrom.begin();
+    for(; fit != mergeFrom.end(); ++fit )
+    {
+        std::map< QString, std::vector< OpenAPI::Operation > >::iterator tit = mergeTo.find(fit->first);
+        if (tit==mergeTo.end())
+        {
+            opsChanged = true;
+            mergeTo[fit->first] = fit->second;
+            continue;
+        }
+
+        // Found
+        if (!opsChanged)
+        {
+            opsChanged = isOperationsOrExecutedQauntityDiffers(tit->second, fit->second);
+        }
+
+        tit->second = fit->second;
+
+    }
+
+    return opsChanged;
+}
 
 
 

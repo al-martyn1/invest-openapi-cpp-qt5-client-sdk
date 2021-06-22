@@ -54,6 +54,8 @@
 #include "invest_openapi/market_instrument_state.h"
 
 #include "invest_openapi/operation_helpers.h"
+#include "invest_openapi/order_helpers.h"
+
 #include "invest_openapi/format_helpers.h"
 #include "invest_openapi/term_helpers.h"
 
@@ -150,9 +152,13 @@ INVEST_OPENAPI_MAIN()
 
     //------------------------------
     // Key - FIGI
-    std::map< QString, tkf::MarketInstrumentState >     instrumentStates;
-    std::map< QString, tkf::MarketGlass           >     instrumentGlasses;
-    std::map< QString, std::vector< tkf::Operation > >  instrumentOperations;
+    std::map< QString, tkf::MarketInstrumentState >                        instrumentStates;
+    std::map< QString, tkf::MarketGlass           >                        instrumentGlasses;
+    std::map< QString, std::vector< tkf::Operation > >                     instrumentOperations;
+    std::map< QString, std::vector<OpenAPI::Order> >                       activeOrders;
+
+    std::map< QString, QSharedPointer< tkf::OpenApiCompletableFuture< tkf::OperationsResponse > > > awaitingOperationResponses;
+    QSharedPointer< tkf::OpenApiCompletableFuture<tkf::OrdersResponse> >   ordersResponse = 0;
 
     //------------------------------
 
@@ -336,7 +342,7 @@ INVEST_OPENAPI_MAIN()
 
 
 
-    std::map< QString, QSharedPointer< tkf::OpenApiCompletableFuture< tkf::OperationsResponse > > > awaitingOperationResponses;
+    
 
     auto checkAwaitingOperationResponses = [&]()
                                            {
@@ -354,7 +360,13 @@ INVEST_OPENAPI_MAIN()
                                                    return;
                                                }
 
-                                               tkf::mergeMap(instrumentOperations, completedOperationsByFigi);
+                                               if (tkf::mergeOperationMaps(instrumentOperations, completedOperationsByFigi))
+                                               {
+                                                   // need to request active placed orders
+                                                   //QSharedPointer<tkf::OrdersResponse>                 
+                                                   ordersResponse = pOpenApi->orders();
+                                               }
+                                               
 
                                                updateScreen();
                                            };
@@ -369,9 +381,7 @@ INVEST_OPENAPI_MAIN()
                                               awaitingOperationResponses[figi] = operationsResponse;
                                           };
                                            
-    QSharedPointer< tkf::OpenApiCompletableFuture < tkf::OrdersResponse > > ordersResponse  = pOpenApi->orders();
-
-    QStringList::const_iterator instrumentForOperationsIt = instrumentList.begin();
+    //
     
 
     /*
@@ -390,7 +400,10 @@ INVEST_OPENAPI_MAIN()
         Текущие ордера надо хранить. Если пришел ответ, и там ордера нет, но есть локально - 
         значит, ордер исполнен, и надо запросить операции по инструменту.
 
-        Теоретически, если запрос по операциям вернул ошибку - надо бы перезапросить
+        Теоретически, если запрос по операциям вернул ошибку - надо бы перезапросить.
+
+
+        По ордерам: надо ли постоянно запрашивать?
 
     
      */
@@ -399,6 +412,8 @@ INVEST_OPENAPI_MAIN()
     operationsRequestTimer.start();
 
     std::size_t requestCounter = 0;
+
+    QStringList::const_iterator instrumentForOperationsIt = instrumentList.begin();
 
     for(; instrumentForOperationsIt!=instrumentList.end(); ++instrumentForOperationsIt, ++requestCounter)
     {
@@ -429,6 +444,24 @@ INVEST_OPENAPI_MAIN()
     while(!ctrlC.isBreaked() )
     {
         QTest::qWait(1);
+
+        if (ordersResponse && ordersResponse->isFinished())
+        {
+            std::map< QString, std::vector<OpenAPI::Order> >  activeOrdersTmp;
+
+            if (!tkf::processCompletedOrdersResponse( ordersResponse, activeOrdersTmp ) )
+            {
+                ordersResponse = pOpenApi->orders(); // rerequest
+            }
+            else
+            {
+                ordersResponse = 0;
+                activeOrders.swap(activeOrdersTmp);
+                // updateScreen();
+            }
+
+        }
+
 
         #if 0
 
