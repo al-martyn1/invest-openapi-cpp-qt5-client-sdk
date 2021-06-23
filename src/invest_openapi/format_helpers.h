@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -13,13 +14,29 @@ namespace invest_openapi
 {
 
 
-// Alignment left    - <0
-//           right   - >0
-//           center  - ==0
+struct FieldFormat
+{
+    std::size_t leftSpace        ;
+    std::size_t rightSpace       ;
+    int         fieldWidth       ; //!< <0 - Elipsis allowed for this field
+    int         alignment        ; //!< left - <0, right - >0, center - ==0
+
+    std::size_t dotAlignment = 0 ; //!< For Decimal's only
+
+    QString     id               = QString(); //!< Field ID - to make fields order more dynamic
+
+    int         captionAlignment = 0 ;
+    QString     caption          = QString(); //!< Not used for generic fields, only for caption
+
+
+}; // struct FieldFormat
+
+
+
 
 //----------------------------------------------------------------------------
 template< typename T > inline
-std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fieldWidthEx, int align, T val )
+std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fieldWidthEx, int align, const T &val )
 {
     std::ostringstream oss;
     oss << val;
@@ -118,7 +135,7 @@ std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fie
 inline
 std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fieldWidth, int align
                         , marty::Decimal d, int precision
-                        , std::size_t dotAlign // Выравнивание по десятчной точке
+                        , std::size_t dotAlign // Выравнивание по десятичной точке
                         )
 {
     precision = format_field_decimalAdjustPrecision(d,precision);
@@ -145,12 +162,11 @@ std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fie
 }
 
 //----------------------------------------------------------------------------
-
 inline
 std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fieldWidth, int align
                         , marty::Decimal d
                         , const marty::Decimal &numberWithRequiredPrecision // priceIncrement is a good candidate
-                        , std::size_t dotAlign // Выравнивание по десятчной точке
+                        , std::size_t dotAlign // Выравнивание по десятичной точке
                         )
 {
     return format_field( leftSpace, rightSpace, fieldWidth, align
@@ -158,6 +174,42 @@ std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fie
                         , dotAlign
                         );
 }
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+template< typename T > inline
+std::string format_field( const FieldFormat &fmt, const T &val )
+{
+    return format_field<T>( fmt.leftSpace, fmt.rightSpace, fmt.fieldWidth, fmt.alignment, val );
+}
+
+//----------------------------------------------------------------------------
+inline
+std::string format_field( const FieldFormat &fmt, marty::Decimal d, int precision = -1 )
+{
+    if (fmt.dotAlignment)
+        return format_field( fmt.leftSpace, fmt.rightSpace, fmt.fieldWidth, fmt.alignment, d, precision, fmt.dotAlignment );
+    else
+        return format_field( fmt.leftSpace, fmt.rightSpace, fmt.fieldWidth, fmt.alignment, d, precision );
+}
+
+//----------------------------------------------------------------------------
+inline
+std::string format_field( const FieldFormat &fmt
+                        , marty::Decimal d
+                        , const marty::Decimal &numberWithRequiredPrecision // priceIncrement is a good candidate
+                        )
+{
+    return format_field( fmt, d, numberWithRequiredPrecision.precision() );
+}
+
+
+
+
 
 
 

@@ -40,7 +40,7 @@
 #include "invest_openapi/order_helpers.h"
 
 #include "invest_openapi/format_helpers.h"
-#include "invest_openapi/term_helpers.h"
+#include "invest_openapi/terminal_helpers.h"
 
 
 //----------------------------------------------------------------------------
@@ -58,26 +58,32 @@ struct InstrumentInfoLineData
 
     static const std::size_t  maxLastOperations = 3;
 
+
     QString   ticker;
 
-    bool      isTraded; // Торгуется ли сейчас?
 
-    Decimal   avgPrice; // Средняя цена покупки - брать из портфолио
-    unsigned  quantity; // Количество бумаг в портфеле - брать из портфолио
+    bool      isTraded; //!< Торгуется ли сейчас? (From streaming MarketInstrumentState)
 
-    Decimal   priceIncrement; // 
+    Decimal   priceIncrement; //!< From streaming MarketInstrumentState
+    unsigned  lotSize       ; //!< From streaming MarketInstrumentState
 
-    Decimal   curPrice    ; // Текущая цена - берём из стакана, если не торгуется - показываем последнюю. Или не показывать?
-    Decimal   bestAskPrice; // берём из стакана
-    Decimal   bestBidPrice; // берём из стакана
-    Decimal   spread      ; // берём из стакана
-    unsigned  spreadPoints; // берём из стакана
 
-    Decimal   lastSellPrice   ; // Цена (средняя) последней продажи. Берём из операций по инструменту
-    unsigned  lastSellQuantity; // Количество executed акций (не лотов). Берём из операций по инструменту
+    Decimal   avgPrice; //!< Средняя цена покупки - брать из портфолио
+    unsigned  quantity; //!< Количество бумаг в портфеле - брать из портфолио
 
-    Decimal   lastBuyPrice    ; // Цена (средняя) последней покупки. Берём из операций по инструменту
-    unsigned  lastBuyQuantity ; // Количество executed акций/бумаг (не лотов). Берём из операций по инструменту
+
+    Decimal   curPrice    ; //!< Текущая цена - берём из стакана, если не торгуется - показываем последнюю. Или не показывать?
+    Decimal   bestAskPrice; //!< берём из стакана
+    Decimal   bestBidPrice; //!< берём из стакана
+    Decimal   spread      ; //!< берём из стакана
+    int       spreadPoints; //!< берём из стакана
+
+
+    Decimal   lastSellPrice   ; //!< Цена (средняя) последней продажи. Берём из операций по инструменту
+    unsigned  lastSellQuantity; //!< Количество executed акций (не лотов). Берём из операций по инструменту
+
+    Decimal   lastBuyPrice    ; //!< Цена (средняя) последней покупки. Берём из операций по инструменту
+    unsigned  lastBuyQuantity ; //!< Количество executed акций/бумаг (не лотов). Берём из операций по инструменту
 
 
     Decimal   minAskPrice; // Цена продажи (в заявке), если заявка установлена, или 0 (выводим прочерк). Берём из orders минимальную по цене заявку на продажу
@@ -93,6 +99,24 @@ struct InstrumentInfoLineData
     std::vector< tkf::Operation >  lastBuyOperations ;
 
 
+    void invalidateMarketStateFields()
+    {
+        isTraded       = false;
+        priceIncrement = Decimal(0);
+        lotSize        = 0;
+    
+    }
+
+    void invalidateMarketGlassFields()
+    {
+        curPrice     = Decimal (0)
+        bestAskPrice = Decimal (0)
+        bestBidPrice = Decimal (0)
+        spread       = Decimal (0)
+        spreadPoints = unsigned(0)
+    }
+
+
     void init( const tkf::DatabaseDictionaries &dicts, QString figi )
     {
         if (!ticker.isEmpty())
@@ -101,18 +125,12 @@ struct InstrumentInfoLineData
         figi     = dicts.findFigiByAnyIdString (figi);
         ticker   = dicts.getTickerByFigiChecked(figi);
 
-        isTraded = false;
+        invalidateMarketStateFields();
 
         avgPrice = Decimal(0);
         quantity = 0;
 
-        priceIncrement = Decimal(0);
-        curPrice       = Decimal(0);
-        bestAskPrice   = Decimal(0);
-        bestBidPrice   = Decimal(0);
-
-        spread         = Decimal(0);
-        spreadPoints   = Decimal(0);
+        invalidateMarketGlassFields();
 
 
         lastSellPrice    = Decimal(0);
@@ -131,12 +149,32 @@ struct InstrumentInfoLineData
     }
 
 
-    void update( const tkf::MarketInstrumentState &marketInstrumentState )
+    void update( const MarketInstrumentState &marketInstrumentState )
     {
-        isTraded = marketInstrumentState.isTradeStatusNormalTrading();
+        isTraded       = marketInstrumentState.isTradeStatusNormalTrading();
+        priceIncrement = marketInstrumentState.priceIncrement;
+        lotSize        = marketInstrumentState.lotSize       ;
     }
 
-    void update()
+    void update( const MarketGlass &marketGlass )
+    {
+        if (priceIncrement==Decimal(0))
+        {
+            curPrice     = Decimal(0)
+            spreadPoints = 0;
+        }
+        else
+        {
+            curPrice     = marketGlass.calcInstrumentPrice(priceIncrement);
+            spreadPoints = marketGlass.getPriceSpreadPoints(priceIncrement);
+        }
+        
+        bestAskPrice = marketGlass.getAskBestPrice();
+        bestBidPrice = marketGlass.getBidBestPrice();
+        spread       = marketGlass.getPriceSpread ();
+
+    }
+
 
 
 }; // struct InstrumentInfoLineData
@@ -147,8 +185,8 @@ struct InstrumentInfoLineData
 /*
     tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
 
-    std::map< QString, tkf::MarketInstrumentState >                        instrumentStates;
-    std::map< QString, tkf::MarketGlass           >                        instrumentGlasses;
+    std::map< QString, tkf::MarketInstrumentState >                        instrumentStates;      [+]
+    std::map< QString, tkf::MarketGlass           >                        instrumentGlasses;     [+]
     std::map< QString, std::vector< tkf::Operation > >                     instrumentOperations;
     std::map< QString, std::vector<OpenAPI::Order> >                       activeOrders;
 */
