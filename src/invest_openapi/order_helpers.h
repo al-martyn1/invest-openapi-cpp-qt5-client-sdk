@@ -1,8 +1,6 @@
 #pragma once
 
 
-
-
 #include <QCoreApplication>
 #include <QString>
 #include <QSettings>
@@ -68,56 +66,6 @@ bool parseOrdersResponse( const OpenAPI::OrdersResponse                     &ord
     return true;
 }
 
-
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-/*
-inline
-void sortOperationsByDateDescending( std::vector< OpenAPI::Operation > & ops )
-{
-    std::stable_sort( ops.begin(), ops.end()
-                    , []( const OpenAPI::Operation &op1, const OpenAPI::Operation &op2 )
-                      {
-                          return op1.getDate() > op2.getDate();
-                      }
-                    );
-}
-*/
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-/*
-template< typename VectorType > inline
-void getSomeOfFirstOperations( std::size_t numOpsToGet
-                             , const VectorType   &src
-                             , VectorType &sells, VectorType &buys
-                             , bool bAppend = false
-                             )
-{
-    if (!bAppend)
-    {
-        sells.clear();
-        buys .clear();
-    }
-
-    getSomeOfFirstOperations( numOpsToGet, src.begin(), src.end(), std::back_inserter(sells), std::back_inserter(buys) );
-}
-*/
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-
-
-
-
-
 //----------------------------------------------------------------------------
 inline // return true if no error, response is valid and parsed ok
 bool processCompletedOrdersResponse( QSharedPointer< OpenApiCompletableFuture<OpenAPI::OrdersResponse> >   ordersResponse
@@ -139,9 +87,100 @@ bool processCompletedOrdersResponse( QSharedPointer< OpenApiCompletableFuture<Op
 
 //----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
+
+
 
 //----------------------------------------------------------------------------
+inline
+bool isOrderOperationTypeSell( const OpenAPI::Order &op )
+{
+    // QString operationTypeStr   = op.getOperationType().asJson().toUpper();
+    // if (operationTypeStr!="SELL")
+    //     return false;
+    // return true;
+
+
+    return op.getOperation().getValue() == OpenAPI::OperationType::eOperationType::SELL;
+
+}
+
+//----------------------------------------------------------------------------
+inline
+void sortOrdersByPriceAscending( std::vector< OpenAPI::Order > & ops )
+{
+    std::stable_sort( ops.begin(), ops.end()
+                    , []( const OpenAPI::Order &op1, const OpenAPI::Order &op2 )
+                      {
+                          return op1.getPrice() < op2.getPrice();
+                      }
+                    );
+}
+//----------------------------------------------------------------------------
+
+inline
+void sortOrdersByPriceDescending( std::vector< OpenAPI::Order > & ops )
+{
+    std::stable_sort( ops.begin(), ops.end()
+                    , []( const OpenAPI::Order &op1, const OpenAPI::Order &op2 )
+                      {
+                          return op1.getPrice() > op2.getPrice();
+                      }
+                    );
+}
+
+//----------------------------------------------------------------------------
+inline
+void sortOrdersByPrice( std::vector< OpenAPI::Order > & ops, SortType sortType )
+{
+    if (sortType==SortType::ascending)
+        sortOrdersByPriceAscending(ops);
+    else
+        sortOrdersByPriceDescending(ops);
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+template< typename SrcIteratorType, typename InserterType > inline
+void splitOrdersByOperationType( SrcIteratorType b, SrcIteratorType e
+                               , InserterType inserterSell, InserterType inserterBuy
+                               )
+{
+    for( ; b!=e; ++b )
+    {
+        if (isOrderOperationTypeSell( *b ) )
+        {
+            *inserterSell++ = *b;
+        }
+        else
+        {
+            *inserterBuy++ = *b;
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+template< typename VectorType > inline
+void splitOrdersByOperationType( const VectorType   &src
+                               , VectorType &sells, VectorType &buys
+                               , bool bAppend = false
+                               )
+{
+    if (!bAppend)
+    {
+        sells.clear();
+        buys .clear();
+    }
+
+    splitOrdersByOperationType( src.begin(), src.end(), std::back_inserter(sells), std::back_inserter(buys) );
+}
+
+//----------------------------------------------------------------------------
+
+
 
 
 

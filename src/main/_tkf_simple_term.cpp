@@ -59,6 +59,10 @@
 #include "invest_openapi/format_helpers.h"
 #include "invest_openapi/term_helpers.h"
 
+#include "invest_openapi/trading_terminal.h"
+
+
+
 
 
 

@@ -128,11 +128,11 @@ enum class MarketInstrumentStateChange
 
 
 //----------------------------------------------------------------------------
-//! Возвращает true, если статус изменился хотя бы у одного инструмента
+//! Р’РѕР·РІСЂР°С‰Р°РµС‚ true, РµСЃР»Рё СЃС‚Р°С‚СѓСЃ РёР·РјРµРЅРёР»СЃСЏ С…РѕС‚СЏ Р±С‹ Сѓ РѕРґРЅРѕРіРѕ РёРЅСЃС‚СЂСѓРјРµРЅС‚Р°
 inline
 bool isMarketInstrumentsStateChanged( const std::map< QString, MarketInstrumentState >          &instrumentStatesOld
                                     , const std::map< QString, MarketInstrumentState >          &instrumentStatesNew
-                                    , const std::map< QString, MarketInstrumentStateChange >    *pInstrumentStateChanges = 0
+                                    ,       std::map< QString, MarketInstrumentStateChange >    *pInstrumentStateChanges = 0
                                     )
 {
     bool gotChanges = false;
@@ -181,14 +181,20 @@ bool isMarketInstrumentsStateChanged( const std::map< QString, MarketInstrumentS
 
 
         // State changed
+
+        MarketInstrumentStateChange newVal = MarketInstrumentStateChange::becomeNormalTrading;
+
         if (oit->second.isTradeStatusNormalTrading()) // old state is NormalTrading
         {
-            instrumentStateChanges[instrumentFigi] = MarketInstrumentStateChange::becomeNotTraded; // new state not normal
+            newVal = MarketInstrumentStateChange::becomeNotTraded; // new state not normal
         }
-        else
+
+        if (pInstrumentStateChanges)
         {
-            instrumentStateChanges[instrumentFigi] = MarketInstrumentStateChange::becomeNormalTrading; // new state is normal
+            std::map< QString, MarketInstrumentStateChange > &instrumentStateChanges = *pInstrumentStateChanges;
+            instrumentStateChanges[instrumentFigi]                                   =  newVal;
         }
+
 
         gotChanges = true;
 
@@ -199,7 +205,7 @@ bool isMarketInstrumentsStateChanged( const std::map< QString, MarketInstrumentS
 }
 
 //----------------------------------------------------------------------------
-//! Возвращает true, если статус изменился хотя бы у одного инструмента
+//! Р’РѕР·РІСЂР°С‰Р°РµС‚ true, РµСЃР»Рё СЃС‚Р°С‚СѓСЃ РёР·РјРµРЅРёР»СЃСЏ С…РѕС‚СЏ Р±С‹ Сѓ РѕРґРЅРѕРіРѕ РёРЅСЃС‚СЂСѓРјРµРЅС‚Р°
 inline
 bool isMarketInstrumentsStateChanged( const std::map< QString, MarketInstrumentState >          &instrumentStatesOld
                                     , const std::map< QString, MarketInstrumentState >          &instrumentStatesNew
