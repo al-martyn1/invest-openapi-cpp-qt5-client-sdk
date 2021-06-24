@@ -87,16 +87,16 @@ struct InstrumentInfoLineData
 
 
     Decimal   minAskPrice; // Цена продажи (в заявке), если заявка установлена, или 0 (выводим прочерк). Берём из orders минимальную по цене заявку на продажу
-    unsigned  askQuantity; // Количество акций/бумаг в заявке. Берём из orders минимальную по цене заявку на продажу
+    unsigned  minAskQuantity; // Количество акций/бумаг в заявке. Берём из orders минимальную по цене заявку на продажу
 
     Decimal   maxBidPrice; // Цена покупки (в заявке), если заявка установлена, или 0 (выводим прочерк). Берём из orders максимальную по цене заявку на покупку
-    unsigned  bidQuantity; // Количество акций/бумаг в заявке. Берём из orders максимальную по цене заявку на покупку
+    unsigned  maxBidQuantity; // Количество акций/бумаг в заявке. Берём из orders максимальную по цене заявку на покупку
 
     std::vector<OpenAPI::Order>    sellOrders;
     std::vector<OpenAPI::Order>    buyOrders ;
 
-    std::vector< tkf::Operation >  lastSellOperations;
-    std::vector< tkf::Operation >  lastBuyOperations ;
+    std::vector< OpenAPI::Operation >  lastSellOperations;
+    std::vector< OpenAPI::Operation >  lastBuyOperations ;
 
 
     void invalidateMarketStateFields()
@@ -109,15 +109,15 @@ struct InstrumentInfoLineData
 
     void invalidateMarketGlassFields()
     {
-        curPrice     = Decimal (0)
-        bestAskPrice = Decimal (0)
-        bestBidPrice = Decimal (0)
-        spread       = Decimal (0)
-        spreadPoints = unsigned(0)
+        curPrice     = Decimal (0);
+        bestAskPrice = Decimal (0);
+        bestBidPrice = Decimal (0);
+        spread       = Decimal (0);
+        spreadPoints = unsigned(0);
     }
 
 
-    void init( const tkf::DatabaseDictionaries &dicts, QString figi )
+    void init( const DatabaseDictionaries &dicts, QString figi )
     {
         if (!ticker.isEmpty())
             return;
@@ -141,10 +141,10 @@ struct InstrumentInfoLineData
 
 
         minAskPrice      = Decimal(0);
-        askQuantity      = 0;         
+        minAskQuantity   = 0;         
 
         maxBidPrice      = Decimal(0);
-        bidQuantity      = 0;         
+        maxBidQuantity   = 0;         
 
     }
 
@@ -175,9 +175,144 @@ struct InstrumentInfoLineData
 
     }
 
+    //! \param operations must be sorted by date in descending order
+    void update( const std::vector< OpenAPI::Operation > &operations )
+    {
+        getSomeOfFirstOperations( maxLastOperations, operations, lastSellOperations, lastBuyOperations, false /* bAppend */ ); 
+
+        if (lastSellOperations.empty())
+        {
+            lastSellPrice    = Decimal(0);
+            lastSellQuantity = 0;
+        }
+        else
+        {
+            lastSellPrice    = lastSellOperations[0].getPrice();
+            lastSellQuantity = lastSellOperations[0].getQuantityExecuted();
+        }
+
+        if (lastBuyOperations.empty())
+        {
+            lastBuyPrice     = Decimal(0);
+            lastBuyQuantity  = 0;
+        }
+        else
+        {
+            lastBuyPrice     = lastBuyOperations[0].getPrice();
+            lastBuyQuantity  = lastBuyOperations[0].getQuantityExecuted();
+        }
+
+    }
+
+    void update( const std::vector<OpenAPI::Order> &orders )
+    {
+        //getPrice()
+        //getRequestedLots()
+
+        tkf::splitOrdersByOperationType( orders, sellOrders, buyOrders, false /* bAppend */ );
+
+        tkf::sortOrdersByPrice( sellOrders, tkf::SortType::ascending  );
+        tkf::sortOrdersByPrice( buyOrders , tkf::SortType::descending );
+
+        if (sellOrders.empty())
+        {
+            minAskPrice    = Decimal(0);
+            minAskQuantity = 0;
+        }
+        else
+        {
+            minAskPrice    = sellOrders[0].getPrice();
+            minAskQuantity = sellOrders[0].getRequestedLots();
+        }
+
+        if (buyOrders.empty())
+        {
+            maxBidPrice    = Decimal(0);
+            maxBidQuantity = 0;
+        }
+        else
+        {
+            maxBidPrice    = buyOrders[0].getPrice();
+            maxBidQuantity = buyOrders[0].getRequestedLots();
+        }
+    
+    }
+
+    static
+    std::string format_caption( const FieldFormat &ff )
+    {
+        return format_field<std::string>( fmt.leftSpace, fmt.rightSpace, fmt.fieldWidth, fmt.captionAlignment, caption.toStdString() );
+    }
+
+    std::string format_field( const FieldFormat &ff ) const
+    {
+        QString Id = id.toUpper();
+
+        if (Id=="TICKER")
+        {
+        }
+        else if (Id=="STATE")
+        {
+        }
+        else if (Id=="PRICE_INC")
+        {
+        }
+        else if (Id=="LOT_SIZE")
+        {
+        }
+        else if (Id=="PAID_PRICE")
+        {
+        }
+        else if (Id=="QUANTITY")
+        {
+        }
+        else if (Id=="CUR_PRICE")
+        {
+        }
+        else if (Id=="BEST_BID")
+        {
+        }
+        else if (Id=="BEST_ASK")
+        {
+        }
+        else if (Id=="SPREAD_POINTS")
+        {
+        }
+        else if (Id=="LAST_BUY_PRICE")
+        {
+        }
+        else if (Id=="LAST_BUY_QUANTITY")
+        {
+        }
+        else if (Id=="LAST_SELL_PRICE")
+        {
+        }
+        else if (Id=="LAST_SELL_QUANTITY")
+        {
+        }
+        else if (Id=="MAX_BID_PRICE")
+        {
+        }
+        else if (Id=="MAX_BID_QUANTITY")
+        {
+        }
+        else if (Id=="MIN_ASK_PRICE")
+        {
+        }
+        else if (Id=="MIN_ASK_QUANTITY")
+        {
+        }
+        // else if (Id=="")
+        // {
+        // }
+
+
+    }
 
 
 }; // struct InstrumentInfoLineData
+
+
 
 
 

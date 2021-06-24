@@ -85,6 +85,8 @@ struct OrderParams
     Decimal               orderSize ; // in pieces, not in lots. Need to convert to lots number
     Decimal               orderPrice; // Need to be adjusted to valid price with priceIncrement
 
+    // Decimal               instrumentPrice; // Для простоты, чтобы не высчитывать заново, сохраняем тут
+
 
 /*
      COMMAND     '+' - покупка
@@ -215,6 +217,36 @@ struct OrderParams
 
          return orderParams;
 
+     }
+
+     //! Return true if price is good (or order request is not limit), or false overwise
+     bool isLimitPriceCorrect(const Decimal &asksMinPrice, const Decimal &bidsMaxPrice) const
+     {
+         if (orderType!=orderTypeLimit)
+             return true;
+
+         if (orderOperationType==operationTypeBuy)
+         {
+             // Если покупаем по лимитной заявке, то цена быть ниже текущей, иначе, возможно, перепутано действие - покупка/продажа
+
+             if (orderPrice >= asksMinPrice )
+             {
+                 // Ошибка в цене и/или типе операции
+                 return false;
+             }
+         }
+         else
+         {
+             // Если продаём по лимитной заявке, то цена быть выше текущей, иначе, возможно, перепутано действие - продажа/покупка
+         
+             if (orderPrice <= bidsMaxPrice )
+             {
+                 // Ошибка в цене и/или типе операции
+                 return false;
+             }
+         }
+                            
+         return true;
      }
 
 

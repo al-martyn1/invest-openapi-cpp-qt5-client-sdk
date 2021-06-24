@@ -304,6 +304,20 @@ INVEST_OPENAPI_MAIN()
             };
 
 
+    auto closeWebSocket = [&]()
+                          {
+                              if (fConnected.load()!=false)
+                              {
+                                 webSocket.close();
+                             
+                                 while(fConnected.load()!=false)
+                                 {
+                                     QTest::qWait(1);
+                                 }
+                             
+                              }
+                          };
+
     cout << "# Connecting Streaming API Web socket" << endl;
 
     eventsTimer.start();
@@ -361,6 +375,13 @@ INVEST_OPENAPI_MAIN()
                                                  , instrumentGlass.getAsksMinPrice()
                                                  , instrumentGlass.getBidsMaxPrice()
                                                  );
+
+            if (!orderParams.isLimitPriceCorrect(instrumentGlass.getAsksMinPrice(), instrumentGlass.getBidsMaxPrice()))
+            {
+                cout<<"!!! Error: may be wrong price taken, or operation type was confused" << endl;
+                closeWebSocket();
+                return 0;
+            }
 
             /*
             if (orderParams.isOrderTypeAuto() && instrumentGlass.getPriceSpreadPoints(instrumentState.priceIncrement)<=1)
@@ -503,21 +524,7 @@ INVEST_OPENAPI_MAIN()
 
 
 
-
-    if (fConnected.load()!=false)
-    {
-       //cout << "# WebSocket forced closing" << endl;
-
-       webSocket.close();
-
-       while(fConnected.load()!=false)
-       {
-           QTest::qWait(1);
-       }
-
-       //cout << "# WebSocket closed" << endl;
-
-    }
+    closeWebSocket();
 
 /*
     connect(&m_webSocket, &QWebSocket::connected, this, &EchoClient::onConnected);

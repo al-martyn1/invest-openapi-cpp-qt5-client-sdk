@@ -1,0 +1,16 @@
+terminal.columns.default.caption
+terminal.columns.default.align.caption = left
+terminal.columns.default.left = 1
+terminal.columns.default.right = 0
+terminal.columns.default.align = right
+
+
+terminal.columns = TICKER,STATE,PRICE_INC,LOT_SIZE,PAID_PRICE,QUANTITY,CUR_PRICE,BEST_BID,BEST_ASK,SPREAD_POINTS,LAST_BUY_PRICE,LAST_BUY_QUANTITY,LAST_SELL_PRICE,LAST_SELL_QUANTITY,MAX_BID_PRICE,MAX_BID_QUANTITY,MIN_ASK_PRICE,MIN_ASK_QUANTITY
+
+;terminal.columns.ID.caption
+;terminal.columns.ID.align.caption
+;terminal.columns.ID.left
+;terminal.columns.ID.right
+;terminal.columns.ID.width
+;terminal.columns.ID.align
+;terminal.columns.ID.align.dot 

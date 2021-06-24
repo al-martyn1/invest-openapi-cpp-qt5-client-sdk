@@ -8,8 +8,13 @@
 #include <QString>
 #include <QSettings>
 
+#include <map>
+#include <vector>
 #include <exception>
 #include <stdexcept>
+
+
+#include "format_helpers.h"
 
 //----------------------------------------------------------------------------
 
@@ -66,27 +71,95 @@ struct TerminalConfig
 
      */
 
+    static
+    const std::map< QString, int >& getAlignmentIdMap()
+    {
+        static std::map< QString, int > m;
+        if (!m.empty())
+            return m;
 
+        m["LEFT"  ] = -1;
+        m["-1"    ] = -1;
 
-/*
-    QString  token;
-    QString  sanboxToken;
-    bool     sandboxMode = false;
+        m["CENTER"] =  0;
+        m["0"     ] =  0;
 
-    QString  brokerAccountId       ;
-    QString  sandboxBrokerAccountId;
+        m["RIGHT" ] =  1;
+        m["1"     ] =  1;
 
+    }
 
+    static
+    QString alignmentToString( int a )
+    {
+        if (a<0) return "LEFT";
+        else if (a>0) return "RIGHT";
+        else return "CENTER";
+    }
+
+    static
+    int alignmentFromString( QString val, QString valName )
+    {
+        auto &m = getAlignmentIdMap();
+        auto it = m.find(val.toUpper());
+        if (it==m.end())
+            throw std::runtime_error( std::string("Invalid value for parameter '") + valName.toStdString() + std::string("' taken") );
+        return it->second;
+    }
+
+    static 
+    FieldFormat getDefaultFieldFormat()
+    {
+        return FieldFormat{ 1 // leftSpace
+                          , 0 // rightSpace
+                          , 0 // fieldWidth
+                          , 1 // alignment - right
+                          , 2 // dotAlignment
+                          };
+    }
+
+    FieldFormat loadFieldFormat( const QSettings &settings, QString columnId, const FieldFormat &defaults )
+    {
+        if (columnId!="default")
+            columnId = columnId.toUpper();
+
+        QString baseName = QString("terminal.columns.") + columnId + QString(".");
+
+        FieldFormat ff;
+
+        ff.id      = columnId;
+        ff.caption = settings.value(baseName + "caption", QVariant(columnId)).toString();
+
+        ff.leftSpace  = (std::size_t)settings.value(baseName + "left" , QVariant((int)defaults.leftSpace)) .toInt();
+        ff.rightSpace = (std::size_t)settings.value(baseName + "right", QVariant((int)defaults.rightSpace)).toInt();
+        ff.fieldWidth =              settings.value(baseName + "width", QVariant((int)defaults.fieldWidth)).toInt();
+
+        ff.dotAlignment = (std::size_t)settings.value(baseName + "align.dot" , QVariant((int)defaults.dotAlignment)).toInt();
+
+        ff.alignment        = alignmentFromString( settings.value(baseName + "align" , QVariant(alignmentToString(defaults.alignment)) ).toString();
+                                                 , baseName + "align"
+                                                 );
+        ff.captionAlignment = alignmentFromString( settings.value(baseName + "align.caption" , QVariant(alignmentToString(defaults.alignment)) ).toString();
+                                                 , baseName + "align.caption"
+                                                 );
+
+    }
 
     void load( const QSettings &settings )
     {
-        token                  = settings.value("token"        ).toString();
-        brokerAccountId        = settings.value("broker-account-id").toString();
 
-        sanboxToken            = settings.value("sandbox-token").toString();
-        sandboxBrokerAccountId = settings.value("sandbox-broker-account-id" ).toString();  
+        QStringList columnsList;
+        columnsList = settings.value("terminal.columns" ).toStringList();
 
-        sandboxMode            = settings.value("sandbox-mode" ).toBool();
+        FieldFormat defaults = getDefaultFieldFormat();
+
+        defaults = loadFieldFormat( settings, "default", defaults );
+
+        for( auto id : columnsList )
+        {
+            fieldsFormat.push_back( loadFieldFormat( settings, id, defaults ) );
+        }
+
     }
 
     void checkValid() const
@@ -95,29 +168,20 @@ struct TerminalConfig
         //     throw std::runtime_error("Token is empty ('token')");
     }
 
-    AuthConfig( const QSettings &settings )
+
+    TerminalConfig( const QSettings &settings )
     {
         load(settings);
         checkValid();
     }
 
-    AuthConfig( const QString &settingsFile )
+    TerminalConfig( const QString &settingsFile )
     {
         QSettings settings(settingsFile, QSettings::IniFormat);
         load(settings);
         checkValid();
     }
 
-    AuthConfig( const QString &tk, const QString &smbxtk, bool sm )
-    {
-        token       = tk;
-        sanboxToken = smbxtk;
-        sandboxMode = sm;
-    }
-
-
-    void setDefaultBrokerAccountForOpenApi( QSharedPointer<IOpenApi> pOpenApi ) const;
-*/
 
 }; // struct TerminalConfig
 
