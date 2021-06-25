@@ -204,10 +204,18 @@ struct InstrumentInfoLineData
 
     }
 
-    void update( const std::vector<OpenAPI::Order> &orders )
+    void update( const std::vector<OpenAPI::Order> &ordersParam )
     {
         //getPrice()
         //getRequestedLots()
+
+        std::vector<OpenAPI::Order> orders;
+        auto inserter = std::back_inserter(orders);
+        for( o : ordersParam )
+        {
+           if (isOrderStatusActiveOrder(o))
+               *inserter++ = o;
+        }
 
         splitOrdersByOperationType( orders, sellOrders, buyOrders, false /* bAppend */ );
 
@@ -329,10 +337,29 @@ struct InstrumentInfoLineData
 
     }
 
+    //------------------------------
+    #define DECLARE_IOA_TRADING_TERMINAL_LINE_DATA_UPDATE_FUNCTION( dataType )                \
+    static                                                                                    \
+    void updateTerminalData( std::map< QString, InstrumentInfoLineData > &terminalData        \
+                           , const DatabaseDictionaries &dicts, QString figi                  \
+                           , const dataType &data                                             \
+                           )                                                                  \
+    {                                                                                         \
+        figi           = figi.toUpper();                                                      \
+        auto &lineData = terminalData[figi];                                                  \
+                                                                                              \
+        lineData.init(dicts, figi); /* Если новый элемент - инициализируется, если существующий - ничего не происходит */ \
+                                                                                              \
+        lineData.update(data);                                                                \
+    }
+
+    DECLARE_IOA_TRADING_TERMINAL_LINE_DATA_UPDATE_FUNCTION(MarketInstrumentState)
+    DECLARE_IOA_TRADING_TERMINAL_LINE_DATA_UPDATE_FUNCTION(MarketGlass)
+    DECLARE_IOA_TRADING_TERMINAL_LINE_DATA_UPDATE_FUNCTION(std::vector< OpenAPI::Operation >)
+    DECLARE_IOA_TRADING_TERMINAL_LINE_DATA_UPDATE_FUNCTION(std::vector<OpenAPI::Order>)
+
 
 }; // struct InstrumentInfoLineData
-
-
 
 
 

@@ -101,7 +101,16 @@ bool isOrderOperationTypeSell( const OpenAPI::Order &op )
 
 
     return op.getOperation().getValue() == OpenAPI::OperationType::eOperationType::SELL;
+}
 
+//----------------------------------------------------------------------------
+inline
+bool isOrderStatusActiveOrder( const OpenAPI::Order &op )
+{
+    auto statusValue = op.getStatus().getValue();
+    return statusValue==OpenAPI::OrderStatus::eOrderStatus::NEW
+        || statusValue==OpenAPI::OrderStatus::eOrderStatus::PARTIALLYFILL // Полагаю, это значит - частично исполнен
+        ;
 }
 
 //----------------------------------------------------------------------------

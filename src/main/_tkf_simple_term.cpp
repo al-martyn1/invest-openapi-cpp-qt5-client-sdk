@@ -168,6 +168,11 @@ INVEST_OPENAPI_MAIN()
     std::map< QString, QSharedPointer< tkf::OpenApiCompletableFuture< tkf::OperationsResponse > > > awaitingOperationResponses;
     QSharedPointer< tkf::OpenApiCompletableFuture<tkf::OrdersResponse> >   ordersResponse = 0;
 
+
+    std::map< QString, tkf::trading_terminal::InstrumentInfoLineData >     terminalData;
+
+
+
     //------------------------------
 
 
@@ -191,18 +196,12 @@ INVEST_OPENAPI_MAIN()
 
                                  if (!tkf::isMarketInstrumentActive(instrumentStates, figi))
                                  {
-                                     cout << "Innactive" << endl;
-                                     return;
+                                     //cout << "Innactive" << endl;
+                                     //return;
                                  }
 
-                                 /*
-                                    Текущая цена
-                                    Цена последней продажы
-                                    Цена последней покупки
-                                    Ближайшая заявка на продажу
-                                    Ближайшая заявка на покупку
-                                 
-                                  */
+                                 // tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, figi, )
+
 
                              };
 
@@ -314,6 +313,8 @@ INVEST_OPENAPI_MAIN()
 
                     instrumentGlasses[marketGlass.figi] = marketGlass;
 
+                    tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, figi, marketGlass);
+
                     updateFigiScreen(marketGlass.figi);
                 }
 
@@ -323,6 +324,8 @@ INVEST_OPENAPI_MAIN()
                     response.fromJson(msg);
 
                     tkf::MarketInstrumentState instrState = tkf::MarketInstrumentState::fromStreamingInstrumentInfoResponse( response );
+
+                    tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, figi, instrState);
 
                     instrumentStates[instrState.figi] = instrState;
 
@@ -356,28 +359,48 @@ INVEST_OPENAPI_MAIN()
                                            {
                                                std::map< QString, std::vector< tkf::Operation > > completedOperationsByFigi;
 
-                                               bool res = tkf::processAwaitingOperationResponses( pOpenApi
-                                                                                                , operationsMaxAge
+                                               // false on first error
+                                               bool res = tkf::processAwaitingOperationResponses( pOpenApi, operationsMaxAge
                                                                                                 , awaitingOperationResponses
                                                                                                 , completedOperationsByFigi
                                                                                                 , statusStr
                                                                                                 );
-                                               if (!res)
+                                               bool needUpdate = false;
+                                               //if (!res)
+                                               if (!completedOperationsByFigi.empty())
                                                {
+                                                   needUpdate = true;
                                                    //updateScreen();
-                                                   return;
+                                                   // return;
                                                }
+
+                                               std::map< QString, std::vector< tkf::Operation > >::const_iterator it = completedOperationsByFigi.begin();
+                                               for( ; it != completedOperationsByFigi.end(); ++it )
+                                               {
+                                                   tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, it->first, it->second );
+                                               }
+
 
                                                if (tkf::mergeOperationMaps(instrumentOperations, completedOperationsByFigi))
                                                {
-                                                   // need to request active placed orders
-                                                   //QSharedPointer<tkf::OrdersResponse>                 
+                                                   // если состав и/или количество элементов хотя бы в одном эелементе mergeTo изменилось
+                                                   // Надо запросить состояние ордеров
+                                                   // !!! Надо запросить портфолио
                                                    ordersResponse = pOpenApi->orders();
                                                }
-                                               
 
-                                               updateScreen();
+                                               it = completedOperationsByFigi.begin();
+                                               for( ; it != completedOperationsByFigi.end(); ++it )
+                                               {
+                                                   updateFigiScreen(it->first);
+                                               }
+
+                                               //if (needUpdate)
+                                               //    updateScreen();
+
+
                                            };
+
 
 
     auto requestForInstrumentOperations = [&]( QString figi )
@@ -465,6 +488,8 @@ INVEST_OPENAPI_MAIN()
             {
                 ordersResponse = 0;
                 activeOrders.swap(activeOrdersTmp);
+
+                /// !!! Нужно сравнить ордера по фигам, и найти те фиги, где поменялось
                 // updateScreen();
             }
 
