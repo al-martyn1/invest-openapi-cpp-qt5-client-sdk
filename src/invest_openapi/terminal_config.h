@@ -71,6 +71,8 @@ struct TerminalConfig
 
      */
 
+
+    //------------------------------
     static
     const std::map< QString, int >& getAlignmentIdMap()
     {
@@ -87,8 +89,11 @@ struct TerminalConfig
         m["RIGHT" ] =  1;
         m["1"     ] =  1;
 
+        return m;
     }
 
+
+    //------------------------------
     static
     QString alignmentToString( int a )
     {
@@ -97,6 +102,8 @@ struct TerminalConfig
         else return "CENTER";
     }
 
+
+    //------------------------------
     static
     int alignmentFromString( QString val, QString valName )
     {
@@ -107,6 +114,8 @@ struct TerminalConfig
         return it->second;
     }
 
+
+    //------------------------------
     static 
     FieldFormat getDefaultFieldFormat()
     {
@@ -118,6 +127,8 @@ struct TerminalConfig
                           };
     }
 
+
+    //------------------------------
     FieldFormat loadFieldFormat( const QSettings &settings, QString columnId, const FieldFormat &defaults )
     {
         if (columnId!="default")
@@ -127,24 +138,28 @@ struct TerminalConfig
 
         FieldFormat ff;
 
-        ff.id      = columnId;
-        ff.caption = settings.value(baseName + "caption", QVariant(columnId)).toString();
+        ff.id               = columnId;
+        ff.caption          = settings.value(baseName + "caption", QVariant(columnId)).toString();
 
-        ff.leftSpace  = (std::size_t)settings.value(baseName + "left" , QVariant((int)defaults.leftSpace)) .toInt();
-        ff.rightSpace = (std::size_t)settings.value(baseName + "right", QVariant((int)defaults.rightSpace)).toInt();
-        ff.fieldWidth =              settings.value(baseName + "width", QVariant((int)defaults.fieldWidth)).toInt();
+        ff.leftSpace        = (std::size_t)settings.value(baseName + "left" , QVariant((int)defaults.leftSpace)) .toInt();
+        ff.rightSpace       = (std::size_t)settings.value(baseName + "right", QVariant((int)defaults.rightSpace)).toInt();
+        ff.fieldWidth       =              settings.value(baseName + "width", QVariant((int)defaults.fieldWidth)).toInt();
 
-        ff.dotAlignment = (std::size_t)settings.value(baseName + "align.dot" , QVariant((int)defaults.dotAlignment)).toInt();
+        ff.dotAlignment     = (std::size_t)settings.value(baseName + "align.dot" , QVariant((int)defaults.dotAlignment)).toInt();
 
-        ff.alignment        = alignmentFromString( settings.value(baseName + "align" , QVariant(alignmentToString(defaults.alignment)) ).toString();
+        ff.alignment        = alignmentFromString( settings.value(baseName + "align" , QVariant(alignmentToString(defaults.alignment)) ).toString()
                                                  , baseName + "align"
                                                  );
-        ff.captionAlignment = alignmentFromString( settings.value(baseName + "align.caption" , QVariant(alignmentToString(defaults.alignment)) ).toString();
+        ff.captionAlignment = alignmentFromString( settings.value(baseName + "align.caption" , QVariant(alignmentToString(defaults.alignment)) ).toString()
                                                  , baseName + "align.caption"
                                                  );
 
+        return ff;
+
     }
 
+
+    //------------------------------
     void load( const QSettings &settings )
     {
 
@@ -162,6 +177,8 @@ struct TerminalConfig
 
     }
 
+
+    //------------------------------
     void checkValid() const
     {
         // if (token.isEmpty())
@@ -169,18 +186,23 @@ struct TerminalConfig
     }
 
 
+    //------------------------------
     TerminalConfig( const QSettings &settings )
     {
         load(settings);
         checkValid();
     }
 
+
+    //------------------------------
     TerminalConfig( const QString &settingsFile )
     {
         QSettings settings(settingsFile, QSettings::IniFormat);
         load(settings);
         checkValid();
     }
+
+    //------------------------------
 
 
 }; // struct TerminalConfig

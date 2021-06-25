@@ -18,29 +18,29 @@
 #include <QTest>
 #include <QElapsedTimer>
 
-#include "invest_openapi/invest_openapi.h"
-#include "invest_openapi/factory.h"
-#include "invest_openapi/openapi_completable_future.h"
+#include "invest_openapi.h"
+#include "factory.h"
+#include "openapi_completable_future.h"
 
-#include "invest_openapi/database_config.h"
-#include "invest_openapi/database_manager.h"
-#include "invest_openapi/qt_time_helpers.h"
+#include "database_config.h"
+#include "database_manager.h"
+#include "qt_time_helpers.h"
 
-#include "invest_openapi/db_utils.h"
-#include "invest_openapi/ioa_utils.h"
-#include "invest_openapi/ioa_ostream.h"
-#include "invest_openapi/ioa_db_dictionaries.h"
+#include "db_utils.h"
+#include "ioa_utils.h"
+#include "ioa_ostream.h"
+#include "ioa_db_dictionaries.h"
 
-#include "invest_openapi/openapi_limits.h"
+#include "openapi_limits.h"
 
-#include "invest_openapi/market_glass.h"
-#include "invest_openapi/market_instrument_state.h"
+#include "market_glass.h"
+#include "market_instrument_state.h"
 
-#include "invest_openapi/operation_helpers.h"
-#include "invest_openapi/order_helpers.h"
+#include "operation_helpers.h"
+#include "order_helpers.h"
 
-#include "invest_openapi/format_helpers.h"
-#include "invest_openapi/terminal_helpers.h"
+#include "format_helpers.h"
+#include "terminal_helpers.h"
 
 
 //----------------------------------------------------------------------------
@@ -160,7 +160,7 @@ struct InstrumentInfoLineData
     {
         if (priceIncrement==Decimal(0))
         {
-            curPrice     = Decimal(0)
+            curPrice     = Decimal(0);
             spreadPoints = 0;
         }
         else
@@ -209,10 +209,10 @@ struct InstrumentInfoLineData
         //getPrice()
         //getRequestedLots()
 
-        tkf::splitOrdersByOperationType( orders, sellOrders, buyOrders, false /* bAppend */ );
+        splitOrdersByOperationType( orders, sellOrders, buyOrders, false /* bAppend */ );
 
-        tkf::sortOrdersByPrice( sellOrders, tkf::SortType::ascending  );
-        tkf::sortOrdersByPrice( buyOrders , tkf::SortType::descending );
+        sortOrdersByPrice( sellOrders, SortType::ascending  );
+        sortOrdersByPrice( buyOrders , SortType::descending );
 
         if (sellOrders.empty())
         {
@@ -238,71 +238,91 @@ struct InstrumentInfoLineData
     
     }
 
-    static
-    std::string format_caption( const FieldFormat &ff )
-    {
-        return format_field<std::string>( fmt.leftSpace, fmt.rightSpace, fmt.fieldWidth, fmt.captionAlignment, caption.toStdString() );
-    }
-
     std::string format_field( const FieldFormat &ff ) const
     {
-        QString Id = id.toUpper();
+        QString id = ff.id.toUpper();
 
-        if (Id=="TICKER")
+        using invest_openapi::format_field;
+
+        if (id=="TICKER")
         {
+            return format_field( ff, ticker.toStdString() );
         }
-        else if (Id=="STATE")
+        else if (id=="STATE")
         {
+            return format_field( ff, isTraded ? "T" : "-" );
         }
-        else if (Id=="PRICE_INC")
+        else if (id=="PRICE_INC")
         {
+            if (priceIncrement==Decimal(0))
+                return format_field( ff, "-" );
+
+            return format_field( ff, priceIncrement );
         }
-        else if (Id=="LOT_SIZE")
+        else if (id=="LOT_SIZE")
         {
+            if (lotSize==0)
+                return format_field( ff, "-" );
+
+            return format_field( ff, lotSize );
         }
-        else if (Id=="PAID_PRICE")
+        else if (id=="PAID_PRICE") //------------------------------------------
         {
+            return format_field( ff, "-" );
         }
-        else if (Id=="QUANTITY")
+        else if (id=="QUANTITY")
         {
+            return format_field( ff, "-" );
         }
-        else if (Id=="CUR_PRICE")
+        else if (id=="CUR_PRICE")
         {
+            return format_field( ff, "-" );
         }
-        else if (Id=="BEST_BID")
+        else if (id=="BEST_BID")
         {
+            return format_field( ff, "-" );
         }
-        else if (Id=="BEST_ASK")
+        else if (id=="BEST_ASK")
         {
+            return format_field( ff, "-" );
         }
-        else if (Id=="SPREAD_POINTS")
+        else if (id=="SPREAD_POINTS")
         {
+            return format_field( ff, "-" );
         }
-        else if (Id=="LAST_BUY_PRICE")
+        else if (id=="LAST_BUY_PRICE")
         {
+            return format_field( ff, "-" );
         }
-        else if (Id=="LAST_BUY_QUANTITY")
+        else if (id=="LAST_BUY_QUANTITY")
         {
+            return format_field( ff, "-" );
         }
-        else if (Id=="LAST_SELL_PRICE")
+        else if (id=="LAST_SELL_PRICE")
         {
+            return format_field( ff, "-" );
         }
-        else if (Id=="LAST_SELL_QUANTITY")
+        else if (id=="LAST_SELL_QUANTITY")
         {
+            return format_field( ff, "-" );
         }
-        else if (Id=="MAX_BID_PRICE")
+        else if (id=="MAX_BID_PRICE")
         {
+            return format_field( ff, "-" );
         }
-        else if (Id=="MAX_BID_QUANTITY")
+        else if (id=="MAX_BID_QUANTITY")
         {
+            return format_field( ff, "-" );
         }
-        else if (Id=="MIN_ASK_PRICE")
+        else if (id=="MIN_ASK_PRICE")
         {
+            return format_field( ff, "-" );
         }
-        else if (Id=="MIN_ASK_QUANTITY")
+        else if (id=="MIN_ASK_QUANTITY")
         {
+            return format_field( ff, "-" );
         }
-        // else if (Id=="")
+        // else if (id=="")
         // {
         // }
 

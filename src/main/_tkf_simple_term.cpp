@@ -102,8 +102,9 @@ INVEST_OPENAPI_MAIN()
 
 
 
-    auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
-    auto authConfig    = tkf::AuthConfig   ( authConfigFullFileName );
+    auto apiConfig     = tkf::ApiConfig      ( apiConfigFullFileName  );
+    auto authConfig    = tkf::AuthConfig     ( authConfigFullFileName );
+    auto termConfig    = tkf::TerminalConfig ( terminalConfigFullFileName );
 
 
 

@@ -1,11 +1,50 @@
 terminal.columns.default.caption
-terminal.columns.default.align.caption = left
+terminal.columns.default.align.caption = center
 terminal.columns.default.left = 1
 terminal.columns.default.right = 0
 terminal.columns.default.align = right
+terminal.columns.default.align.dot = 4
 
 
-terminal.columns = TICKER,STATE,PRICE_INC,LOT_SIZE,PAID_PRICE,QUANTITY,CUR_PRICE,BEST_BID,BEST_ASK,SPREAD_POINTS,LAST_BUY_PRICE,LAST_BUY_QUANTITY,LAST_SELL_PRICE,LAST_SELL_QUANTITY,MAX_BID_PRICE,MAX_BID_QUANTITY,MIN_ASK_PRICE,MIN_ASK_QUANTITY
+terminal.columns = TICKER,ISTATE,PRICE_INC,LOT_SIZE,PAID_PRICE,QUANTITY,CUR_PRICE,BEST_BID,BEST_ASK,SPREAD_POINTS,LAST_BUY_PRICE,LAST_BUY_QUANTITY,LAST_SELL_PRICE,LAST_SELL_QUANTITY,MAX_BID_PRICE,MAX_BID_QUANTITY,MIN_ASK_PRICE,MIN_ASK_QUANTITY
+
+
+terminal.columns.TICKER.caption          = Ticker
+terminal.columns.TICKER.align.caption    = left
+;terminal.columns.TICKER.left
+;terminal.columns.TICKER.right
+terminal.columns.TICKER.width            = -8
+terminal.columns.TICKER.align            = left
+;terminal.columns.TICKER.align.dot 
+
+
+; ISTATE - Instrument State - A - Activity - Instrument Activity - Is Instrument Active
+terminal.columns.ISTATE.caption           = A
+;terminal.columns.ISTATE.align.caption    = center
+;terminal.columns.ISTATE.left
+;terminal.columns.ISTATE.right
+terminal.columns.ISTATE.width             = 1
+;terminal.columns.ISTATE.align
+;terminal.columns.ISTATE.align.dot 
+
+
+terminal.columns.PRICE_INC.caption       = PrInc
+;terminal.columns.PRICE_INC.align.caption
+;terminal.columns.PRICE_INC.left
+;terminal.columns.PRICE_INC.right
+terminal.columns.PRICE_INC.width         = 6
+;terminal.columns.PRICE_INC.align
+;terminal.columns.PRICE_INC.align.dot 
+
+
+terminal.columns.ID.caption              = LotSz
+;terminal.columns.ID.align.caption
+;terminal.columns.ID.left
+;terminal.columns.ID.right
+terminal.columns.ID.width                = 5
+;terminal.columns.ID.align
+;terminal.columns.ID.align.dot 
+
 
 ;terminal.columns.ID.caption
 ;terminal.columns.ID.align.caption
@@ -14,3 +53,69 @@ terminal.columns = TICKER,STATE,PRICE_INC,LOT_SIZE,PAID_PRICE,QUANTITY,CUR_PRICE
 ;terminal.columns.ID.width
 ;terminal.columns.ID.align
 ;terminal.columns.ID.align.dot 
+
+
+;terminal.columns.ID.caption
+;terminal.columns.ID.align.caption
+;terminal.columns.ID.left
+;terminal.columns.ID.right
+;terminal.columns.ID.width
+;terminal.columns.ID.align
+;terminal.columns.ID.align.dot 
+
+
+;terminal.columns.ID.caption
+;terminal.columns.ID.align.caption
+;terminal.columns.ID.left
+;terminal.columns.ID.right
+;terminal.columns.ID.width
+;terminal.columns.ID.align
+;terminal.columns.ID.align.dot 
+
+
+;terminal.columns.ID.caption
+;terminal.columns.ID.align.caption
+;terminal.columns.ID.left
+;terminal.columns.ID.right
+;terminal.columns.ID.width
+;terminal.columns.ID.align
+;terminal.columns.ID.align.dot 
+
+
+;terminal.columns.ID.caption
+;terminal.columns.ID.align.caption
+;terminal.columns.ID.left
+;terminal.columns.ID.right
+;terminal.columns.ID.width
+;terminal.columns.ID.align
+;terminal.columns.ID.align.dot 
+
+
+;terminal.columns.ID.caption
+;terminal.columns.ID.align.caption
+;terminal.columns.ID.left
+;terminal.columns.ID.right
+;terminal.columns.ID.width
+;terminal.columns.ID.align
+;terminal.columns.ID.align.dot 
+
+
+;terminal.columns.ID.caption
+;terminal.columns.ID.align.caption
+;terminal.columns.ID.left
+;terminal.columns.ID.right
+;terminal.columns.ID.width
+;terminal.columns.ID.align
+;terminal.columns.ID.align.dot 
+
+
+;terminal.columns.ID.caption
+;terminal.columns.ID.align.caption
+;terminal.columns.ID.left
+;terminal.columns.ID.right
+;terminal.columns.ID.width
+;terminal.columns.ID.align
+;terminal.columns.ID.align.dot 
+
+
+

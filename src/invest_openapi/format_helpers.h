@@ -207,31 +207,23 @@ std::string format_field( const FieldFormat &fmt
     return format_field( fmt, d, numberWithRequiredPrecision.precision() );
 }
 
+//----------------------------------------------------------------------------
 
 
 
 
+//----------------------------------------------------------------------------
+inline
+std::string format_field_caption( const FieldFormat &fmt )
+{
+    QString caption = fmt.caption;
+    if (caption.isEmpty())
+        caption = fmt.id;
 
+    return format_field<std::string>( fmt.leftSpace, fmt.rightSpace, fmt.fieldWidth, fmt.captionAlignment, caption.toStdString() );
+}
 
-/*
-
-template< class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
-inline std::basic_string< CharT, Traits, Allocator >
-makeExpandString( const std::basic_string< CharT, Traits, Allocator > &str, std::size_t expandToSize, CharT ch = (CharT)' ' )
-
-
-template< class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
-inline std::basic_string< CharT, Traits, Allocator >
-expandAtFront( const std::basic_string< CharT, Traits, Allocator > &str, std::size_t expandToSize, CharT ch = (CharT)' ')
-
-
-template< class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
-inline std::basic_string< CharT, Traits, Allocator >
-expandAtBack( const std::basic_string< CharT, Traits, Allocator > &str, std::size_t expandToSize, CharT ch = (CharT)' ')
-
-
-*/
-
+//----------------------------------------------------------------------------
 
 
 
