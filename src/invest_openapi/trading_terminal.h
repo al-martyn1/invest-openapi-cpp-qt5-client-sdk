@@ -211,7 +211,7 @@ struct InstrumentInfoLineData
 
         std::vector<OpenAPI::Order> orders;
         auto inserter = std::back_inserter(orders);
-        for( o : ordersParam )
+        for( const auto &o : ordersParam )
         {
            if (isOrderStatusActiveOrder(o))
                *inserter++ = o;
@@ -276,64 +276,79 @@ struct InstrumentInfoLineData
         }
         else if (id=="PAID_PRICE") //------------------------------------------
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         else if (id=="QUANTITY")
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         else if (id=="CUR_PRICE")
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         else if (id=="BEST_BID")
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         else if (id=="BEST_ASK")
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         else if (id=="SPREAD_POINTS")
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         else if (id=="LAST_BUY_PRICE")
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         else if (id=="LAST_BUY_QUANTITY")
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         else if (id=="LAST_SELL_PRICE")
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         else if (id=="LAST_SELL_QUANTITY")
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         else if (id=="MAX_BID_PRICE")
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         else if (id=="MAX_BID_QUANTITY")
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         else if (id=="MIN_ASK_PRICE")
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         else if (id=="MIN_ASK_QUANTITY")
         {
-            return format_field( ff, "-" );
+            //return format_field( ff, "-" );
+            return format_field( ff, "N/I" );
         }
         // else if (id=="")
         // {
         // }
 
+        return format_field( ff, "N/I" );
 
     }
 

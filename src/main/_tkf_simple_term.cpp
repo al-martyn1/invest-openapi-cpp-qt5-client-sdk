@@ -164,16 +164,31 @@ INVEST_OPENAPI_MAIN()
     std::map< QString, tkf::MarketGlass           >                        instrumentGlasses;
     std::map< QString, std::vector< tkf::Operation > >                     instrumentOperations;
     std::map< QString, std::vector<OpenAPI::Order> >                       activeOrders;
+    std::map< QString, int >                                               instrumentLineNumbers;
+
+    std::map< QString, tkf::trading_terminal::InstrumentInfoLineData >     terminalData;
+
+    QString statusStr;
+
 
     std::map< QString, QSharedPointer< tkf::OpenApiCompletableFuture< tkf::OperationsResponse > > > awaitingOperationResponses;
     QSharedPointer< tkf::OpenApiCompletableFuture<tkf::OrdersResponse> >   ordersResponse = 0;
 
 
-    std::map< QString, tkf::trading_terminal::InstrumentInfoLineData >     terminalData;
-
-
 
     //------------------------------
+    {
+        int n = 0;
+
+        for( auto figi : instrumentList)
+        {
+            figi = dicts.findFigiByAnyIdString(figi);
+            instrumentLineNumbers[figi] = n;
+            ++n;
+        }
+    }
+    //------------------------------
+
 
 
 
@@ -185,23 +200,27 @@ INVEST_OPENAPI_MAIN()
 
     std::atomic<bool> fConnected = false;
 
-    QString statusStr;
+    
 
+
+
+    //termConfig
 
     auto printFigiInfoLine = [&]( QString figi )
                              {
-                                 cout << tkf::format_field( 0 /* leftSpace */ , 2 /* rightSpace */ , 12 /* fieldWidth */ , -1, figi );
+                                 // cout << tkf::format_field( 0 /* leftSpace */ , 2 /* rightSpace */ , 12 /* fieldWidth */ , -1, figi );
 
                                  figi = dicts.findFigiByAnyIdString(figi);
 
-                                 if (!tkf::isMarketInstrumentActive(instrumentStates, figi))
+                                 std::map< QString, tkf::trading_terminal::InstrumentInfoLineData >::const_iterator tdIt = terminalData.find(figi);
+                                 if (tdIt == terminalData.end())
+                                     return;
+
+                                 std::vector< tkf::FieldFormat >::const_iterator fit = termConfig.fieldsFormat.begin();
+                                 for(; fit != termConfig.fieldsFormat.end(); ++fit)
                                  {
-                                     //cout << "Innactive" << endl;
-                                     //return;
+                                     cout << tdIt->second.format_field( *fit );
                                  }
-
-                                 // tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, figi, )
-
 
                              };
 
@@ -209,6 +228,9 @@ INVEST_OPENAPI_MAIN()
 
     auto updateScreen =      [&]( )
                              {
+                                 //std::ostream& 
+                                 tkf::termClearScreen( cout /* , unsigned numLines = 50 */ );
+
                                  cout << "Status: " << statusStr << endl;
 
                                  cout << endl;
@@ -218,6 +240,7 @@ INVEST_OPENAPI_MAIN()
                                      //QString figi = dicts.findFigiByAnyIdString(figi);
 
                                      printFigiInfoLine( figi );
+                                     cout << endl;
                                  }
 
                                  cout << endl;
@@ -232,6 +255,12 @@ INVEST_OPENAPI_MAIN()
 
                                  updateScreen();
 
+                             };
+
+
+    auto updateStatusStr  =  [&]()
+                             {
+                                 updateScreen();
                              };
 
 
@@ -262,7 +291,8 @@ INVEST_OPENAPI_MAIN()
 
                 statusStr = "Connected";
 
-                updateScreen();
+                // updateScreen();
+                updateStatusStr();
 
             };
 
@@ -278,7 +308,7 @@ INVEST_OPENAPI_MAIN()
 
                 statusStr = "Disconnected";
 
-                updateScreen();
+                updateStatusStr();
             };
 
 
@@ -300,8 +330,7 @@ INVEST_OPENAPI_MAIN()
 
                     statusStr = QString("Streaming error: ") + streamingError.getPayload().getMessage();
 
-                    //updateFigiScreen(marketGlass.figi);
-                    updateScreen();
+                    updateStatusStr();
                 }
 
                 else if (eventName=="orderbook")
@@ -313,7 +342,7 @@ INVEST_OPENAPI_MAIN()
 
                     instrumentGlasses[marketGlass.figi] = marketGlass;
 
-                    tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, figi, marketGlass);
+                    tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, marketGlass.figi, marketGlass);
 
                     updateFigiScreen(marketGlass.figi);
                 }
@@ -325,7 +354,7 @@ INVEST_OPENAPI_MAIN()
 
                     tkf::MarketInstrumentState instrState = tkf::MarketInstrumentState::fromStreamingInstrumentInfoResponse( response );
 
-                    tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, figi, instrState);
+                    tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, instrState.figi, instrState);
 
                     instrumentStates[instrState.figi] = instrState;
 
@@ -359,11 +388,12 @@ INVEST_OPENAPI_MAIN()
                                            {
                                                std::map< QString, std::vector< tkf::Operation > > completedOperationsByFigi;
 
+                                               QString newStatusStr;
                                                // false on first error
                                                bool res = tkf::processAwaitingOperationResponses( pOpenApi, operationsMaxAge
                                                                                                 , awaitingOperationResponses
                                                                                                 , completedOperationsByFigi
-                                                                                                , statusStr
+                                                                                                , newStatusStr
                                                                                                 );
                                                bool needUpdate = false;
                                                //if (!res)
@@ -395,9 +425,11 @@ INVEST_OPENAPI_MAIN()
                                                    updateFigiScreen(it->first);
                                                }
 
-                                               //if (needUpdate)
-                                               //    updateScreen();
-
+                                               if (statusStr!=newStatusStr)
+                                               {
+                                                  statusStr = newStatusStr;
+                                                  updateStatusStr();
+                                               }
 
                                            };
 
@@ -461,8 +493,6 @@ INVEST_OPENAPI_MAIN()
 
     while(!awaitingOperationResponses.empty())
         checkAwaitingOperationResponses();
-
-    return 0;
 
 
 

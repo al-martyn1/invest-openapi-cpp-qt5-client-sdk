@@ -92,9 +92,6 @@ INVEST_OPENAPI_MAIN()
     using std::cout;
     using std::endl;
 
-    cout<<"# Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
-
-    cout << "#" << endl;
 
     namespace tkf=invest_openapi;
     using tkf::config_helpers::lookupForConfigFile;
@@ -108,10 +105,6 @@ INVEST_OPENAPI_MAIN()
     auto dbConfigFullFileName      = lookupForConfigFile( "database.properties", lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto instrumentsConfigFullFileName = lookupForConfigFile( "instruments.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
 
-    cout << "# Log  Config File: "<< logConfigFullFileName   << endl;
-    cout << "# API  Config File: "<< apiConfigFullFileName   << endl;
-    cout << "# Auth Config File: "<< authConfigFullFileName  << endl;
-    cout << "# Instruments Cfg File: "<< instrumentsConfigFullFileName << endl;
 
     auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
     auto authConfig    = tkf::AuthConfig   ( authConfigFullFileName );
@@ -129,7 +122,6 @@ INVEST_OPENAPI_MAIN()
     auto loggingConfig = *pLoggingConfig;
 
 
-    cout << "# Main DB name: " << pDatabaseConfig->dbMainFilename << endl;
 
     QSharedPointer<QSqlDatabase> pMainSqlDb = QSharedPointer<QSqlDatabase>( new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")) );
     pMainSqlDb->setDatabaseName( pDatabaseConfig->dbMainFilename );
@@ -171,6 +163,7 @@ INVEST_OPENAPI_MAIN()
 
     cout << endl;
     cout << endl;
+    cout << "--------------------------" << endl;
     cout << "Order Parameters:" << endl;
 
     cout << "  Operation  : " << orderParams.getOperationTypeString() << endl;
