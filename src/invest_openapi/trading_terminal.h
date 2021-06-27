@@ -21,6 +21,8 @@
 #include "invest_openapi.h"
 #include "factory.h"
 #include "openapi_completable_future.h"
+#include "invest_openapi/ioa_db_dictionaries.h"
+
 
 #include "database_config.h"
 #include "database_manager.h"
@@ -41,6 +43,9 @@
 
 #include "format_helpers.h"
 #include "terminal_helpers.h"
+
+#include "invest_openapi/terminal_config.h"
+
 
 
 //----------------------------------------------------------------------------
@@ -376,17 +381,308 @@ struct InstrumentInfoLineData
 
 }; // struct InstrumentInfoLineData
 
+//----------------------------------------------------------------------------
 
 
 
-/*
-    tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
 
-    std::map< QString, tkf::MarketInstrumentState >                        instrumentStates;      [+]
-    std::map< QString, tkf::MarketGlass           >                        instrumentGlasses;     [+]
-    std::map< QString, std::vector< tkf::Operation > >                     instrumentOperations;
-    std::map< QString, std::vector<OpenAPI::Order> >                       activeOrders;
-*/
+
+
+//----------------------------------------------------------------------------
+class TradingTerminalData
+{
+
+protected:
+
+    QStringList                                                            instrumentList;
+    std::map< QString, int >                                               instrumentNumbers;
+    DatabaseDictionaries                                                  *pDicts;
+
+    std::map< QString, MarketInstrumentState >                             instrumentStates;
+    std::map< QString, MarketGlass           >                             instrumentGlasses;
+    std::map< QString, std::vector< OpenAPI::Operation > >                 instrumentOperations;
+    std::map< QString, std::vector< OpenAPI::Order > >                     activeOrders;
+
+    QString                                                                statusStr;
+    QDateTime                                                              statusChangedDateTime;
+
+    QSharedPointer<TerminalConfig>                                         pTermConfig;
+
+    std::map< QString, InstrumentInfoLineData >                            terminalLinesData;
+
+    //------------------------------
+
+    std::set< QString > updatedFigis;
+    bool statusUpdated = false;
+
+    //------------------------------
+
+    template< typename ValType >
+    bool updateVal( ValType &val, ValType newVal ) const //!< Возвращает true, если значение поменялось
+    {
+        bool res = false;
+
+        if ( val!=newVal )
+            res = true;
+
+        val = newVal;
+
+        return res;
+    }
+
+
+    //------------------------------
+    bool updateFigiDataImpl( MarketInstrumentState &curData, const MarketInstrumentState &newData )
+    {
+        bool changed = false;
+
+        // Тупо чекаем, что нужно почекать
+        auto curTradeStatusValue = curData.tradeStatus.getValue();
+        changed |= updateVal( curTradeStatusValue, newData.tradeStatus.getValue() );
+
+        changed |= updateVal( curData.priceIncrement, newData.priceIncrement );
+        changed |= updateVal( curData.lotSize       , newData.lotSize );
+
+        curData = newData; // И присваиваем всё скопом
+
+        return changed;
+    }
+
+    bool updateFigiDataImpl( MarketGlass &curData, const MarketGlass &newData )
+    {
+        curData = newData;
+        return true;
+    }
+
+    bool updateFigiDataImpl( std::vector< OpenAPI::Operation > &curData, const std::vector< OpenAPI::Operation > &newData )
+    {
+        curData = newData; // UNDONE
+        return true;
+    }
+
+    bool updateFigiDataImpl( std::vector< OpenAPI::Order > &curData, const std::vector< OpenAPI::Order > &newData )
+    {
+        curData = newData; // UNDONE
+        return true;
+    }
+
+
+
+public:
+
+
+    //------------------------------
+    TradingTerminalData( DatabaseDictionaries *pd )
+    : instrumentList       ()
+    , instrumentNumbers    ()
+    , pDicts               (pd)
+    , instrumentStates     ()
+    , instrumentGlasses    ()
+    , instrumentOperations ()
+    , activeOrders         ()
+    , statusStr            ()
+    , statusChangedDateTime()
+    , pTermConfig          (0)
+    , terminalLinesData    ()
+    {
+    }
+   
+    TradingTerminalData( DatabaseDictionaries *pd, QStringList il )
+    : instrumentList       ()
+    , instrumentNumbers    ()
+    , pDicts               (pd)
+    , instrumentStates     ()
+    , instrumentGlasses    ()
+    , instrumentOperations ()
+    , activeOrders         ()
+    , statusStr            ()
+    , statusChangedDateTime()
+    , pTermConfig          (0)
+    , terminalLinesData    ()
+    {
+        setInstrumentList( il );
+    }
+
+
+    //------------------------------
+    void setStatus( QString str )
+    {
+        statusStr             = str;
+        statusChangedDateTime = QDateTime::currentDateTime();
+        statusUpdated         = true;
+    }
+
+    QString getStatus() const           { return statusStr; }
+    QDateTime getStatusDateTime() const { return statusChangedDateTime; }
+
+
+    //------------------------------
+    void setConfig( QSharedPointer<TerminalConfig> cfg )
+    {
+        pTermConfig = cfg;
+    }
+
+
+    //------------------------------
+    bool addInstrument( QString figi )
+    {
+        figi = pDicts->findFigiByAnyIdString(figi);
+
+        if (instrumentNumbers.find(figi)!=instrumentNumbers.end())
+            return false;
+
+        instrumentNumbers[figi] = (int)instrumentList.size();
+        instrumentList.push_back(figi);
+
+        auto &lineData = terminalLinesData[figi];
+        
+        lineData.init( *pDicts, figi );
+
+        return true;
+    }
+
+    void setInstrumentList( QStringList il )
+    {
+         for( auto figi : il)
+         {
+             addInstrument(figi);
+         }
+    }
+
+    //------------------------------
+
+    QStringList::const_iterator instrumentListBegin() const { return instrumentList.begin(); }
+    QStringList::const_iterator instrumentListEnd  () const { return instrumentList.end  (); }
+
+    int getFigiCount( ) const { return instrumentNumbers.size(); }
+
+    int getFigiIndex( QString figi ) const
+    {
+        figi.toUpper();
+
+        std::map< QString, int >::const_iterator it = instrumentNumbers.find(figi);
+        if (it==instrumentNumbers.end())
+            return -1;
+
+        return it->second;
+    }
+
+    QString getFigiByIndex( int idx ) const
+    {
+        std::size_t szIdx = (std::size_t)idx;
+        if (szIdx>=(std::size_t)instrumentList.size())
+            throw std::runtime_error("TradingTerminalData::getFigiByIndex: Instrument index is out of range");
+        return instrumentList[szIdx];
+    }
+
+    //------------------------------
+    bool isStatusChanged() const { return statusUpdated; }
+
+    bool isFigiChanged()   const { return !updatedFigis.empty(); } 
+
+    bool isFigiChanged( QString figi ) const
+    {
+        figi.toUpper();
+
+        return updatedFigis.find(figi)!=updatedFigis.end();
+    } 
+
+    //------------------------------
+
+    void clearChangedFlags()
+    {
+        statusUpdated = false;
+        updatedFigis.clear();
+    }
+
+
+    //------------------------------
+    std::size_t getMainViewColsCount() const
+    {
+        return pTermConfig->fieldsFormat.size();
+    }
+
+
+    std::vector< std::size_t > getMainViewColSizes() const
+    {
+        std::vector< std::size_t > res;
+
+        std::size_t i = 0;
+        for(; i!=pTermConfig->fieldsFormat.size(); ++i)
+        {
+            res.push_back( pTermConfig->fieldsFormat[i].getSummaryWidth() );
+        }
+
+        return res;
+    }
+
+    std::string formatMainViewColCaption( std::size_t colNo ) const
+    {
+        if (colNo>=pTermConfig->fieldsFormat.size())
+            throw std::runtime_error( "TradingTerminalData::formatCaption: column index is out of range" );
+        
+        return format_field_caption( pTermConfig->fieldsFormat[colNo] );
+    }
+
+
+    // std::string format_field( const FieldFormat &ff ) const
+    
+
+
+    /*
+    bool update( QString figi                                                                 
+               , const MarketInstrumentState &data                                                         
+               )                                                                              
+    {                                                                                         
+        figi           = figi.toUpper();                                                      
+                                                                                              
+        auto &figiData = instrumentStates [figi];                                                      
+        if (updateFigiDataImpl(figiData,data))                                                
+        {                                                                                     
+            updatedFigis.insert(figi);                                                        
+            auto &lineData = terminalLinesData[figi];                                         
+            lineData.update(data);                                                            
+                                                                                              
+            return true;                                                                      
+        }                                                                                     
+                                                                                              
+        return false;                                                                         
+    }
+    */
+
+    #define DECLARE_IOA_TRADING_TERMINAL_DATA_UPDATE_FUNCTION( dataType, mapName )            \
+    bool update( QString figi                                                                 \
+               , const dataType &data                                                         \
+               )                                                                              \
+    {                                                                                         \
+        figi           = figi.toUpper();                                                      \
+                                                                                              \
+        auto &figiData = mapName [figi];                                                      \
+        if (updateFigiDataImpl(figiData,data))                                                \
+        {                                                                                     \
+            updatedFigis.insert(figi);                                                        \
+            auto &lineData = terminalLinesData[figi];                                         \
+            lineData.update(data);                                                            \
+                                                                                              \
+            return true;                                                                      \
+        }                                                                                     \
+                                                                                              \
+        return false;                                                                         \
+    }
+
+
+    DECLARE_IOA_TRADING_TERMINAL_DATA_UPDATE_FUNCTION( MarketInstrumentState             , instrumentStates     )
+    DECLARE_IOA_TRADING_TERMINAL_DATA_UPDATE_FUNCTION( MarketGlass                       , instrumentGlasses    )
+    DECLARE_IOA_TRADING_TERMINAL_DATA_UPDATE_FUNCTION( std::vector< OpenAPI::Operation > , instrumentOperations )
+    DECLARE_IOA_TRADING_TERMINAL_DATA_UPDATE_FUNCTION( std::vector< OpenAPI::Order >     , activeOrders         )
+
+}; // class TradingTerminalData
+
+//----------------------------------------------------------------------------
+
+
+
+
 
 
 

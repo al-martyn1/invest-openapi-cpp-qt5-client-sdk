@@ -2,6 +2,7 @@ terminal.columns.default.caption
 terminal.columns.default.align.caption = center
 terminal.columns.default.left = 1
 terminal.columns.default.right = 0
+terminal.columns.default.width = -4
 terminal.columns.default.align = right
 terminal.columns.default.align.dot = 4
 

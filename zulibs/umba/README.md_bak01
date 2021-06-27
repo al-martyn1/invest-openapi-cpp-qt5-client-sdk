@@ -1,0 +1,18 @@
+
+@cond ProjectDoxyfication
+@addtogroup _UMBA_CORE
+My Main Page                         {#index}
+============
+
+Bla-bla UMBA project item
+@endcond
+
+@cond ProjectDoxyfication
+My Main Page                         {#mainpage}
+
+Bla-bla UMBA lib main page
+
+@endcond
+
+
+Test README.md библиотеки UMBA

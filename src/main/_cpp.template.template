@@ -2,6 +2,11 @@
     \brief 
  */
 
+//NOTE: Umba headers must be first, at least "umba/umba.h"
+#include "umba/umba.h"
+#include "umba/simple_formatter.h"
+
+
 #include <iostream>
 #include <exception>
 #include <stdexcept>

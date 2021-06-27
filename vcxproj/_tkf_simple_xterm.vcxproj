@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{2862D50D-8969-45E3-9305-74AF7022EBA7}</ProjectGuid>
+    <ProjectGuid>{AD5E19B0-2628-4211-8B22-4334941B8037}</ProjectGuid>
     <Keyword>Qt4VSv1.0</Keyword>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -49,22 +49,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\_$(ProjectName)\</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\zulibs;$(SolutionDir)\zulibs\sfmt\inc;$(ProjectDir)\..\..;$(ProjectDir)\./src</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\xlibs\sfmt\inc;$(ProjectDir)\..\..;$(ProjectDir)\./src;$(ProjectDir)\./xlibs;$(ProjectDir)\.\xlibs\sfmt\inc</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\_$(ProjectName)\</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\zulibs;$(SolutionDir)\zulibs\sfmt\inc;$(ProjectDir)\..\..;$(ProjectDir)\./src</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\xlibs\sfmt\inc;$(ProjectDir)\..\..;$(ProjectDir)\./src;$(ProjectDir)\./xlibs;$(ProjectDir)\.\xlibs\sfmt\inc</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\_$(ProjectName)\</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\zulibs;$(SolutionDir)\zulibs\sfmt\inc;$(ProjectDir)\..\..;$(ProjectDir)\./src</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\xlibs\sfmt\inc;$(ProjectDir)\..\..;$(ProjectDir)\./src;$(ProjectDir)\./xlibs;$(ProjectDir)\.\xlibs\sfmt\inc</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\_out\msvc2017\$(PlatformShortName)\$(Configuration)\_$(ProjectName)\</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\zulibs;$(SolutionDir)\zulibs\sfmt\inc;$(ProjectDir)\..\..;$(ProjectDir)\./src</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\xlibs\sfmt\inc;$(ProjectDir)\..\..;$(ProjectDir)\./src;$(ProjectDir)\./xlibs;$(ProjectDir)\.\xlibs\sfmt\inc</IncludePath>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
     <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
@@ -191,7 +191,7 @@
     </QtMoc>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\main\%(TEST_NAME)%.cpp" />
+    <ClCompile Include="..\src\main\_tkf_simple_xterm.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

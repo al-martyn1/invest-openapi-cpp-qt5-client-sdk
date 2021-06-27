@@ -29,6 +29,15 @@ struct FieldFormat
     QString     caption          = QString(); //!< Not used for generic fields, only for caption
 
 
+
+    std::size_t getSummaryWidth() const
+    {
+        std::size_t w = (std::size_t)( fieldWidth>0 ? fieldWidth : -fieldWidth );
+        return leftSpace + rightSpace + w;
+    }
+
+
+
 }; // struct FieldFormat
 
 
@@ -220,7 +229,11 @@ std::string format_field_caption( const FieldFormat &fmt )
     if (caption.isEmpty())
         caption = fmt.id;
 
-    return format_field<std::string>( fmt.leftSpace, fmt.rightSpace, fmt.fieldWidth, fmt.captionAlignment, caption.toStdString() );
+    int fieldWidth = fmt.fieldWidth;
+    if (fieldWidth>0)
+        fieldWidth = -fieldWidth; // Allow elipsis for captions
+
+    return format_field<std::string>( fmt.leftSpace, fmt.rightSpace, fieldWidth, fmt.captionAlignment, caption.toStdString() );
 }
 
 //----------------------------------------------------------------------------
