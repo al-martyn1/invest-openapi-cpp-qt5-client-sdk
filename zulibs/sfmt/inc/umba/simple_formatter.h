@@ -1139,10 +1139,11 @@ public:
         virtual void terminalMove2LinePos( int pos )  override { m_pFormatter->m_charWriter->terminalMove2LinePos( pos ); }
         virtual void terminalMove2Pos( int x, int y ) override { m_pFormatter->m_charWriter->terminalMove2Pos( x, y ); }
 
-        virtual void terminalClearLineRemaining() override { m_pFormatter->m_charWriter->terminalClearLineRemaining(); }
-        virtual void terminalClearRemaining(int maxLines = -1)     override { m_pFormatter->m_charWriter->terminalClearRemaining(maxLines); }
+        virtual void terminalClearLine( int maxPosToClear=-1 ) override { m_pFormatter->m_charWriter->terminalClearLine(maxPosToClear); }
+        virtual void terminalClearRemaining(int maxLines = -1) override { m_pFormatter->m_charWriter->terminalClearRemaining(maxLines); }
 
         virtual void terminalSetSpinnerMode( bool m ) override { m_pFormatter->m_charWriter->terminalSetSpinnerMode(m); }
+        virtual void terminalSetCaret( int csz ) override { m_pFormatter->m_charWriter->terminalSetCaret( csz ); }
 
     
     protected:
@@ -1806,7 +1807,9 @@ SimpleFormatter& clear_screen( SimpleFormatter& fmt )
 //-----------------------------------------------------------------------------
 UMBA_SIMPLE_FORMATTER_BEGIN_IMPLEMENT_INT_MANIP(clear) // Очищаем нужное количество строк, считая текущую. Текущую очищаем от текущей позиции. Если 0 - то ничего не очищаем
 {
-    if (i==0)
+    if (i<0)
+        fmt.getCharWritter()->terminalClearRemaining( -1 );
+    else if (i==0)
         return fmt;
     else
         fmt.getCharWritter()->terminalClearRemaining( i-1 );
@@ -1814,6 +1817,14 @@ UMBA_SIMPLE_FORMATTER_BEGIN_IMPLEMENT_INT_MANIP(clear) // Очищаем нуж�
     return fmt;
 }
 UMBA_SIMPLE_FORMATTER_END_IMPLEMENT_INT_MANIP(clear)
+
+//-----------------------------------------------------------------------------
+UMBA_SIMPLE_FORMATTER_BEGIN_IMPLEMENT_INT_MANIP(clear_line) // Очищаем N позиций в строке, начиная с текущей. Если <0 - очищаем до конца
+{
+    fmt.getCharWritter()->terminalClearLine( i );
+    return fmt;
+}
+UMBA_SIMPLE_FORMATTER_END_IMPLEMENT_INT_MANIP(clear_line)
 
 //-----------------------------------------------------------------------------
 inline
@@ -1899,6 +1910,16 @@ UMBA_SIMPLE_FORMATTER_BEGIN_IMPLEMENT_INT2_MANIP(spinner)
     return fmt;
 }
 UMBA_SIMPLE_FORMATTER_END_IMPLEMENT_INT2_MANIP(spinner)
+
+//-----------------------------------------------------------------------------
+UMBA_SIMPLE_FORMATTER_BEGIN_IMPLEMENT_INT_MANIP(caret)
+{
+    fmt.getCharWritter()->terminalSetCaret(i);
+    return fmt;
+}
+UMBA_SIMPLE_FORMATTER_END_IMPLEMENT_INT_MANIP(caret)
+
+
 
 
 

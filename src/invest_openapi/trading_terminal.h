@@ -183,6 +183,8 @@ struct InstrumentInfoLineData
     //! \param operations must be sorted by date in descending order
     void update( const std::vector< OpenAPI::Operation > &operations )
     {
+        lastSellOperations.clear();
+        lastBuyOperations.clear();
         getSomeOfFirstOperations( maxLastOperations, operations, lastSellOperations, lastBuyOperations, false /* bAppend */ ); 
 
         if (lastSellOperations.empty())
@@ -220,8 +222,14 @@ struct InstrumentInfoLineData
         {
            if (isOrderStatusActiveOrder(o))
                *inserter++ = o;
+           else
+           {
+               //std::cerr << "Bad order status, FIGI: " << o.getFigi() << ", Status: " << o.getStatus().asJson() << std::endl;
+           }
         }
 
+        sellOrders.clear();
+        buyOrders.clear();
         splitOrdersByOperationType( orders, sellOrders, buyOrders, false /* bAppend */ );
 
         sortOrdersByPrice( sellOrders, SortType::ascending  );
@@ -261,21 +269,19 @@ struct InstrumentInfoLineData
         {
             return format_field( ff, ticker.toStdString() );
         }
-        else if (id=="STATE")
+        else if (id=="ISTATE")
         {
             return format_field( ff, isTraded ? "T" : "-" );
         }
         else if (id=="PRICE_INC")
         {
-            if (priceIncrement==Decimal(0))
-                return format_field( ff, "-" );
+            if (priceIncrement==Decimal(0)) return format_field( ff, "-" );
 
             return format_field( ff, priceIncrement );
         }
         else if (id=="LOT_SIZE")
         {
-            if (lotSize==0)
-                return format_field( ff, "-" );
+            if (lotSize==0) return format_field( ff, "-" );
 
             return format_field( ff, lotSize );
         }
@@ -291,63 +297,76 @@ struct InstrumentInfoLineData
         }
         else if (id=="CUR_PRICE")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (curPrice==Decimal(0))
+                return format_field( ff, "-" );
+
+            return format_field( ff, curPrice );
         }
         else if (id=="BEST_BID")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (bestBidPrice==Decimal(0)) return format_field( ff, "-" );
+
+            return format_field( ff, bestBidPrice );
         }
         else if (id=="BEST_ASK")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (bestAskPrice==Decimal(0)) return format_field( ff, "-" );
+
+            return format_field( ff, bestAskPrice );
         }
         else if (id=="SPREAD_POINTS")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (spreadPoints<1) return format_field( ff, "-" );
+
+            return format_field( ff, spreadPoints );
         }
         else if (id=="LAST_BUY_PRICE")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (lastBuyPrice==Decimal(0)) return format_field( ff, "-" );
+
+            return format_field( ff, lastBuyPrice );
         }
         else if (id=="LAST_BUY_QUANTITY")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (lastBuyQuantity==0) return format_field( ff, "-" );
+
+            return format_field( ff, lastBuyQuantity );
         }
         else if (id=="LAST_SELL_PRICE")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (lastSellPrice==Decimal(0)) return format_field( ff, "-" );
+
+            return format_field( ff, lastSellPrice );
         }
         else if (id=="LAST_SELL_QUANTITY")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (lastSellQuantity==0) return format_field( ff, "-" );
+
+            return format_field( ff, lastSellQuantity );
         }
         else if (id=="MAX_BID_PRICE")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (maxBidPrice==Decimal(0)) return format_field( ff, "-" );
+
+            return format_field( ff, maxBidPrice );
         }
         else if (id=="MAX_BID_QUANTITY")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (maxBidQuantity==0) return format_field( ff, "-" );
+
+            return format_field( ff, maxBidQuantity );
         }
         else if (id=="MIN_ASK_PRICE")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (minAskPrice==Decimal(0)) return format_field( ff, "-" );
+
+            return format_field( ff, minAskPrice );
         }
         else if (id=="MIN_ASK_QUANTITY")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (minAskQuantity==0) return format_field( ff, "-" );
+
+            return format_field( ff, minAskQuantity );
         }
         // else if (id=="")
         // {
@@ -481,7 +500,7 @@ public:
     , instrumentOperations ()
     , activeOrders         ()
     , statusStr            ()
-    , statusChangedDateTime()
+    , statusChangedDateTime(QDateTime::currentDateTime())
     , pTermConfig          (0)
     , terminalLinesData    ()
     {
@@ -496,7 +515,7 @@ public:
     , instrumentOperations ()
     , activeOrders         ()
     , statusStr            ()
-    , statusChangedDateTime()
+    , statusChangedDateTime(QDateTime::currentDateTime())
     , pTermConfig          (0)
     , terminalLinesData    ()
     {
@@ -512,8 +531,14 @@ public:
         statusUpdated         = true;
     }
 
-    QString getStatus() const           { return statusStr; }
+    QString   getStatus() const           { return statusStr; }
     QDateTime getStatusDateTime() const { return statusChangedDateTime; }
+    QString   getStatusDateTimeStr() const 
+    {
+        std::ostringstream oss;
+        oss << statusChangedDateTime;
+        return QString::fromStdString(oss.str());
+    }
 
 
     //------------------------------
@@ -623,6 +648,28 @@ public:
         
         return format_field_caption( pTermConfig->fieldsFormat[colNo] );
     }
+
+    std::string formatMainViewField( QString figi, std::size_t colNo ) const
+    {
+        if (colNo>=pTermConfig->fieldsFormat.size())
+            throw std::runtime_error( "TradingTerminalData::formatMainViewField: column index is out of range" );
+
+
+        figi = pDicts->findFigiByAnyIdString(figi);
+
+        std::map< QString, InstrumentInfoLineData >::const_iterator it = terminalLinesData.find(figi);
+
+        if (it==terminalLinesData.end())
+            return "???";
+
+        return it->second.format_field(pTermConfig->fieldsFormat[colNo]);
+    }
+
+    std::string formatMainViewField( int figiIdx, std::size_t colNo ) const
+    {
+        return formatMainViewField( getFigiByIndex(figiIdx), colNo );
+    }
+
 
 
     // std::string format_field( const FieldFormat &ff ) const

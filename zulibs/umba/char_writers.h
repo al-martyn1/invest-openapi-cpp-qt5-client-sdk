@@ -477,13 +477,18 @@ public:
         beforeWriteChar( ch );
 
         m_stream.put(ch);
-        char tmp[] = { ch, 0 };
+        
 
         #if defined(WIN32) || defined(_WIN32)
-        if (&m_stream==&std::cout || &m_stream==&std::cerr)
-        {
-            OutputDebugStringA( tmp );
-        }
+
+            #ifndef UMBA_CHAR_WRITTERS_DISABLE_OUTPUT_TO_DEBUGGER
+                if (&m_stream==&std::cout || &m_stream==&std::cerr)
+                {
+                    char tmp[] = { ch, 0 };
+                    OutputDebugStringA( tmp );
+                }
+            #endif
+
         #endif
 
         if (isTerminal() && ch=='\n')
@@ -705,6 +710,37 @@ protected:
 public:
 
     
+    //! Установка каретки (курсора) консоли. 0 - выключена, 1 - полоска внизу, 2 - половина, 3 - во всю высоту
+    virtual void terminalSetCaret( int csz ) override
+    {
+        if (m_consoleType==term::UMBA_CONSOLETYPE_ANSI_TERMINAL)
+        {
+            //UNDONE: !!!
+        }
+        #if defined(WIN32) || defined(_WIN32)
+        else if (m_consoleType==term::UMBA_CONSOLETYPE_WINDOWS_CONSOLE && m_hCon!=INVALID_HANDLE_VALUE)
+        {
+            CONSOLE_CURSOR_INFO ci{ 25, TRUE };
+            switch(csz)
+            {
+                case 0: ci.bVisible = FALSE;
+                        break;
+
+                case 1: ci.dwSize   = 25;
+                        break;
+
+                case 2: ci.dwSize   = 55; // 60; // 50;
+                        break;
+
+                default: 
+                        ci.dwSize   = 100;
+            }
+
+            SetConsoleCursorInfo( m_hCon, &ci );
+
+        }
+        #endif
+    }
 
     virtual void terminalSetSpinnerMode( bool m ) override
     {
@@ -804,7 +840,8 @@ public:
         #endif
     }
 
-    virtual void terminalClearLineRemaining() override
+    //! Очистить в текущей строке N позиции от текущего положения
+    virtual void terminalClearLine( int maxPosToClear=-1 ) override
     {
         if (m_consoleType==term::UMBA_CONSOLETYPE_ANSI_TERMINAL)
         {
@@ -817,10 +854,16 @@ public:
             COORD conSize   = getConsoleScreenSize();
             if (conSize.X!=0 && conSize.Y!=0)
             {
-                if (curCoords.X<conSize.X)
+                int numPositionsToClear = conSize.X - curCoords.X;
+                if (numPositionsToClear>0 && maxPosToClear>=0 && numPositionsToClear>maxPosToClear)
+                {
+                    numPositionsToClear = maxPosToClear;
+                }
+
+                if (numPositionsToClear>0)
                 {
                     DWORD charsWritten = 0;
-                    FillConsoleOutputCharacter( m_hCon, (TCHAR)' ', conSize.X - curCoords.X - 1, curCoords, &charsWritten);
+                    FillConsoleOutputCharacter( m_hCon, (TCHAR)' ', numPositionsToClear, curCoords, &charsWritten);
                 }
             }
         }

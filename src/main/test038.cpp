@@ -61,8 +61,6 @@ umba::StdStreamCharWriter coutWriter(std::cout);
 umba::StdStreamCharWriter cerrWriter(std::cerr);
 umba::NulCharWriter       nulWriter;
 
-
-
 umba::SimpleFormatter          tout(&coutWriter); // terminal out - like cout
 
 
@@ -106,6 +104,20 @@ INVEST_OPENAPI_MAIN()
          spinner_endl       - Завершает вывод спиннера. Очищает старое содержимое, если предыдущий вывод был длинным. Если вывод перенаправлен, выводит endl
 
      */
+
+    #ifdef WIN32
+
+        CONSOLE_CURSOR_INFO ci;
+        auto m_hCon = ::GetStdHandle( STD_OUTPUT_HANDLE );
+        BOOL res = GetConsoleCursorInfo( m_hCon, &ci );
+        tout << "Caret size: " << ci.dwSize << endl;
+
+    #endif
+
+    tout << term::caret(0) << "Caret is OFF" << endl;
+    tout << term::caret(1) << "Caret is small" << endl;
+    tout << term::caret(2) << "Caret is mid" << endl;
+    tout << term::caret(3) << "Caret is high" << endl;
 
     tout << term::spinner(spinnerCounter, 4) << "Very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very long spinner text" << term::spinner_endl;
 

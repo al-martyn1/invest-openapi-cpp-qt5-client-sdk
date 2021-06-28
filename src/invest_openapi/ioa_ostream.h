@@ -67,7 +67,8 @@ std::ostream& operator<<( std::ostream& os, const QDateTime &v )
         return os;
     }
 
-    os << qt_helpers::dateTimeToDbString(v); // .toStdString();
+    // os << qt_helpers::dateTimeToDbString(v); // .toStdString();
+    os << v.toString("yyyy-MM-dd hh:mm:ss.zzz");
 
     return os;
 }

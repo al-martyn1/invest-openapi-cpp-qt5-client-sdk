@@ -69,7 +69,6 @@
 
 
 
-
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
@@ -83,9 +82,6 @@ INVEST_OPENAPI_MAIN()
     using std::cout;
     using std::endl;
 
-    // cout<<"# Path to exe   : "<<QCoreApplication::applicationDirPath().toStdString()<<endl;
-
-    // cout << "#" << endl;
 
     namespace tkf=invest_openapi;
     using tkf::config_helpers::lookupForConfigFile;
@@ -111,6 +107,8 @@ INVEST_OPENAPI_MAIN()
     QSharedPointer<tkf::DatabaseConfig> pDatabaseConfig = QSharedPointer<tkf::DatabaseConfig>( new tkf::DatabaseConfig(dbConfigFullFileName, tkf::DatabasePlacementStrategyDefault()) );
 
     QSharedPointer<tkf::LoggingConfig>  pLoggingConfig  = QSharedPointer<tkf::LoggingConfig> ( new tkf::LoggingConfig(logConfigFullFileName) );
+
+    QSharedPointer<tkf::TerminalConfig> pTermConfig     = QSharedPointer<tkf::TerminalConfig>( new tkf::TerminalConfig(termConfig) );
 
     pLoggingConfig->debugSqlQueries = false;
 
@@ -148,46 +146,29 @@ INVEST_OPENAPI_MAIN()
     tkf::DatabaseDictionaries dicts = tkf::DatabaseDictionaries(pMainDbMan);
 
 
-    QStringList instrumentList;
-    {
-        QSettings settings(instrumentsConfigFullFileName, QSettings::IniFormat);
-        instrumentList = settings.value("instruments" ).toStringList();
-    }
-
     const QString operationsMaxAge = "10YEAR";
 
     // Custom code goes here
 
     //------------------------------
-    // Key - FIGI
-    std::map< QString, tkf::MarketInstrumentState >                        instrumentStates;
-    std::map< QString, tkf::MarketGlass           >                        instrumentGlasses;
-    std::map< QString, std::vector< tkf::Operation > >                     instrumentOperations;
-    std::map< QString, std::vector<OpenAPI::Order> >                       activeOrders;
-    std::map< QString, int >                                               instrumentLineNumbers;
 
-    std::map< QString, tkf::trading_terminal::InstrumentInfoLineData >     terminalData;
+    tkf::trading_terminal::TradingTerminalData    terminalData( &dicts );
 
-    QString statusStr;
+    terminalData.setConfig(pTermConfig);
+
+    {
+        QSettings settings(instrumentsConfigFullFileName, QSettings::IniFormat);
+        QStringList instrumentList = settings.value("instruments" ).toStringList();
+        terminalData.setInstrumentList(instrumentList);
+    }
+
 
 
     std::map< QString, QSharedPointer< tkf::OpenApiCompletableFuture< tkf::OperationsResponse > > > awaitingOperationResponses;
-    QSharedPointer< tkf::OpenApiCompletableFuture<tkf::OrdersResponse> >   ordersResponse = 0;
-
-
+    QSharedPointer< tkf::OpenApiCompletableFuture<tkf::OrdersResponse> >                            ordersResponse = 0;
 
     //------------------------------
-    {
-        int n = 0;
 
-        for( auto figi : instrumentList)
-        {
-            figi = dicts.findFigiByAnyIdString(figi);
-            instrumentLineNumbers[figi] = n;
-            ++n;
-        }
-    }
-    //------------------------------
 
 
 
@@ -208,10 +189,16 @@ INVEST_OPENAPI_MAIN()
 
     auto printFigiInfoLine = [&]( QString figi )
                              {
+                                 
                                  // cout << tkf::format_field( 0 /* leftSpace */ , 2 /* rightSpace */ , 12 /* fieldWidth */ , -1, figi );
 
-                                 figi = dicts.findFigiByAnyIdString(figi);
+                                 for( std::size_t nCol=0; nCol!=terminalData.getMainViewColsCount(); ++nCol)
+                                 {
+                                     cout << terminalData.formatMainViewField( figi, nCol ); // << endl;
+                                 }
 
+
+                                 /*
                                  std::map< QString, tkf::trading_terminal::InstrumentInfoLineData >::const_iterator tdIt = terminalData.find(figi);
                                  if (tdIt == terminalData.end())
                                      return;
@@ -221,6 +208,7 @@ INVEST_OPENAPI_MAIN()
                                  {
                                      cout << tdIt->second.format_field( *fit );
                                  }
+                                 */
 
                              };
 
@@ -228,22 +216,33 @@ INVEST_OPENAPI_MAIN()
 
     auto updateScreen =      [&]( )
                              {
-                                 //std::ostream& 
                                  tkf::termClearScreen( cout /* , unsigned numLines = 50 */ );
 
-                                 cout << "Status: " << statusStr << endl;
+                                 cout << "[" << terminalData.getStatusDateTime() << "] " << terminalData.getStatus() << endl;
 
                                  cout << endl;
 
-                                 for( auto figi : instrumentList )
+                                 
+                                 for( std::size_t nCol=0; nCol!=terminalData.getMainViewColsCount(); ++nCol)
                                  {
-                                     //QString figi = dicts.findFigiByAnyIdString(figi);
+                                     cout << terminalData.formatMainViewColCaption(nCol); // << endl;
+                                 }
+                                 cout << endl;
 
+
+
+                                 int nFigis = terminalData.getFigiCount();
+                                 int nFigi  = 0;
+                                 for(; nFigi<nFigis; ++nFigi)
+                                 {
+                                     auto figi = terminalData.getFigiByIndex(nFigi);
                                      printFigiInfoLine( figi );
                                      cout << endl;
                                  }
 
                                  cout << endl;
+
+                                 terminalData.clearChangedFlags();
 
                              };
 
@@ -267,15 +266,16 @@ INVEST_OPENAPI_MAIN()
 
     auto onConnected = [&]()
             {
-                using std::cout;  using std::endl;
             
                 fConnected.store( true, std::memory_order_seq_cst  );
 
                 //std::map< QString, std::vector<tkf::OrderParams> >::const_iterator it = figiOrders.begin();
-                for( auto figi : instrumentList )
+                
+                //for( auto figi : instrumentList )
+                auto it = terminalData.instrumentListBegin();
+                for(; it!=terminalData.instrumentListEnd(); ++it)
                 {
-                    //cout << "onConnected: figi: <" << figi << ">, size: " << figi.size() << endl;
-
+                    QString figi = *it;
                     figi = dicts.findFigiByAnyIdString(figi);
 
                     QString orderBookSubscriptionText         = pOpenApi->getStreamingApiOrderbookSubscribeJson( figi );
@@ -288,8 +288,7 @@ INVEST_OPENAPI_MAIN()
                     webSocket.sendTextMessage( orderBookSubscriptionText );
                 }
 
-
-                statusStr = "Connected";
+                terminalData.setStatus("Connected");
 
                 // updateScreen();
                 updateStatusStr();
@@ -298,15 +297,13 @@ INVEST_OPENAPI_MAIN()
 
     auto onDisconnected = [&]()
             {
-                using std::cout;  using std::endl;
-            
                 fConnected.store( false, std::memory_order_seq_cst  );
 
                 // Try to reconnect
 
                 webSocket.open( pOpenApi->getStreamingApiNetworkRequest() );
 
-                statusStr = "Disconnected";
+                terminalData.setStatus("Disconnected");
 
                 updateStatusStr();
             };
@@ -316,7 +313,6 @@ INVEST_OPENAPI_MAIN()
 
     auto onMessage = [&]( QString msg )
             {
-                using std::cout;  using std::endl;
 
                 tkf::GenericStreamingResponse response;
                 response.fromJson(msg);
@@ -328,7 +324,8 @@ INVEST_OPENAPI_MAIN()
                     tkf::StreamingError streamingError;
                     streamingError.fromJson(msg);
 
-                    statusStr = QString("Streaming error: ") + streamingError.getPayload().getMessage();
+                    //statusStr = QString("Streaming error: ") + streamingError.getPayload().getMessage();
+                    terminalData.setStatus(QString("Streaming error: ") + streamingError.getPayload().getMessage());
 
                     updateStatusStr();
                 }
@@ -340,9 +337,11 @@ INVEST_OPENAPI_MAIN()
 
                     tkf::MarketGlass marketGlass = tkf::MarketGlass::fromStreamingOrderbookResponse(response);
 
-                    instrumentGlasses[marketGlass.figi] = marketGlass;
+                    terminalData.update( marketGlass.figi, marketGlass );
 
-                    tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, marketGlass.figi, marketGlass);
+                    //instrumentGlasses[marketGlass.figi] = marketGlass;
+
+                    //tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, marketGlass.figi, marketGlass);
 
                     updateFigiScreen(marketGlass.figi);
                 }
@@ -354,9 +353,11 @@ INVEST_OPENAPI_MAIN()
 
                     tkf::MarketInstrumentState instrState = tkf::MarketInstrumentState::fromStreamingInstrumentInfoResponse( response );
 
-                    tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, instrState.figi, instrState);
+                    // tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, instrState.figi, instrState);
 
-                    instrumentStates[instrState.figi] = instrState;
+                    // instrumentStates[instrState.figi] = instrState;
+
+                    terminalData.update( instrState.figi, instrState );
 
                     updateFigiScreen(instrState.figi);
                 }
@@ -395,22 +396,15 @@ INVEST_OPENAPI_MAIN()
                                                                                                 , completedOperationsByFigi
                                                                                                 , newStatusStr
                                                                                                 );
-                                               bool needUpdate = false;
-                                               //if (!res)
-                                               if (!completedOperationsByFigi.empty())
-                                               {
-                                                   needUpdate = true;
-                                                   //updateScreen();
-                                                   // return;
-                                               }
+
 
                                                std::map< QString, std::vector< tkf::Operation > >::const_iterator it = completedOperationsByFigi.begin();
                                                for( ; it != completedOperationsByFigi.end(); ++it )
                                                {
-                                                   tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, it->first, it->second );
+                                                   terminalData.update( it->first, it->second );
                                                }
 
-
+                                               /*
                                                if (tkf::mergeOperationMaps(instrumentOperations, completedOperationsByFigi))
                                                {
                                                    // если состав и/или количество элементов хотя бы в одном эелементе mergeTo изменилось
@@ -430,6 +424,9 @@ INVEST_OPENAPI_MAIN()
                                                   statusStr = newStatusStr;
                                                   updateStatusStr();
                                                }
+                                               */
+
+                                               updateScreen();
 
                                            };
 
@@ -476,9 +473,9 @@ INVEST_OPENAPI_MAIN()
 
     std::size_t requestCounter = 0;
 
-    QStringList::const_iterator instrumentForOperationsIt = instrumentList.begin();
+    QStringList::const_iterator instrumentForOperationsIt = terminalData.instrumentListBegin(); // instrumentList.begin();
 
-    for(; instrumentForOperationsIt!=instrumentList.end(); ++instrumentForOperationsIt, ++requestCounter)
+    for(; instrumentForOperationsIt!=terminalData.instrumentListEnd(); ++instrumentForOperationsIt, ++requestCounter)
     {
         tkf::checkWaitOnRequestsLimit( operationsRequestTimer, requestCounter );
 
@@ -508,19 +505,25 @@ INVEST_OPENAPI_MAIN()
 
         if (ordersResponse && ordersResponse->isFinished())
         {
-            std::map< QString, std::vector<OpenAPI::Order> >  activeOrdersTmp;
+            std::map< QString, std::vector<OpenAPI::Order> >  activeOrders;
 
-            if (!tkf::processCompletedOrdersResponse( ordersResponse, activeOrdersTmp ) )
+            if (!tkf::processCompletedOrdersResponse( ordersResponse, activeOrders ) )
             {
                 ordersResponse = pOpenApi->orders(); // rerequest
             }
             else
             {
                 ordersResponse = 0;
-                activeOrders.swap(activeOrdersTmp);
+                //activeOrders.swap(activeOrdersTmp);
+
+                std::map< QString, std::vector<OpenAPI::Order> >::const_iterator it = activeOrders.begin();
+                for( ; it!=activeOrders.end(); ++it)
+                {
+                    terminalData.update( it->first, it->second );
+                }
 
                 /// !!! Нужно сравнить ордера по фигам, и найти те фиги, где поменялось
-                // updateScreen();
+                updateScreen();
             }
 
         }

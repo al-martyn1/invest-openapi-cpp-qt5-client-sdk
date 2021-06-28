@@ -23,10 +23,15 @@ class SimpleHandleCtrlC
     static
     BOOL WINAPI consoleCtrlHandler( DWORD dwCtrlType )
     {
-        if (dwCtrlType == CTRL_C_EVENT)
+        if (dwCtrlType==CTRL_C_EVENT)
         {
             breaked = true;
             qDebug() << "!!! Breaked by Ctrl+C at " << QDateTime::currentDateTime();
+        }
+        else if (dwCtrlType==CTRL_CLOSE_EVENT)
+        {
+            breaked = true;
+            qDebug() << "!!! Breaked by [X] at " << QDateTime::currentDateTime();
         }
        
         return FALSE;

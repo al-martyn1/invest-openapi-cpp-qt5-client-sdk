@@ -5,10 +5,12 @@
 //NOTE: Umba headers must be first, at least "umba/umba.h"
 #include "umba/umba.h"
 #include "umba/simple_formatter.h"
+#include "umba/char_writers.h"
 
 
 #include <iostream>
 #include <ostream>
+#include <sstream>
 #include <exception>
 #include <stdexcept>
 #include <vector>
@@ -70,6 +72,11 @@
 
 
 
+umba::StdStreamCharWriter      coutWriter(std::cout);
+umba::StdStreamCharWriter      cerrWriter(std::cerr);
+umba::NulCharWriter            nulWriter;
+
+umba::SimpleFormatter          tout(&coutWriter); // terminal out - like cout
 
 
 
@@ -83,9 +90,11 @@ INVEST_OPENAPI_MAIN()
     QCoreApplication::setOrganizationName("al-martyn1");
     QCoreApplication::setOrganizationDomain("https://github.com/al-martyn1/");
 
-    using std::cerr;
-    using std::cout;
-    using std::endl;
+    // using std::cerr;
+    // using std::cout;
+    // using std::endl;
+
+    using namespace umba::omanip;
 
 
     namespace tkf=invest_openapi;
@@ -131,7 +140,7 @@ INVEST_OPENAPI_MAIN()
     if (!pMainSqlDb->open())
     {
       //qDebug() 
-      cerr << pMainSqlDb->lastError().text() << endl;
+      // cerr << pMainSqlDb->lastError().text() << endl;
       return 0;
     }
 
@@ -171,6 +180,7 @@ INVEST_OPENAPI_MAIN()
 
     std::map< QString, QSharedPointer< tkf::OpenApiCompletableFuture< tkf::OperationsResponse > > > awaitingOperationResponses;
     QSharedPointer< tkf::OpenApiCompletableFuture<tkf::OrdersResponse> >                            ordersResponse = 0;
+    QDateTime                                                                                       lastOrdersResponseLocalDateTime = QDateTime::currentDateTime();
 
     //------------------------------
 
@@ -195,10 +205,18 @@ INVEST_OPENAPI_MAIN()
     auto printFigiInfoLine = [&]( QString figi )
                              {
                                  
-                                 
                                  // cout << tkf::format_field( 0 /* leftSpace */ , 2 /* rightSpace */ , 12 /* fieldWidth */ , -1, figi );
 
-                                 figi = dicts.findFigiByAnyIdString(figi);
+                                 std::vector< std::size_t > mvColSizes = terminalData.getMainViewColSizes();
+
+                                 std::size_t xPos = 0;
+
+                                 for( std::size_t nCol=0; nCol!=terminalData.getMainViewColsCount(); xPos+=mvColSizes[nCol], ++nCol)
+                                 {
+                                     tout << term::move2lpos(xPos) << term::clear_line((int)mvColSizes[nCol]);
+                                     tout << terminalData.formatMainViewField( figi, nCol ); // << endl;
+                                 }
+
 
                                  /*
                                  std::map< QString, tkf::trading_terminal::InstrumentInfoLineData >::const_iterator tdIt = terminalData.find(figi);
@@ -218,19 +236,30 @@ INVEST_OPENAPI_MAIN()
 
     auto updateScreen =      [&]( )
                              {
-                                 tkf::termClearScreen( cout /* , unsigned numLines = 50 */ );
+                                 // tkf::termClearScreen( cout /* , unsigned numLines = 50 */ );
 
-                                 cout << "[" << terminalData.getStatusDateTime() << "] " << terminalData.getStatus() << endl;
+                                 tout << term::caret(0);
 
-                                 cout << endl;
+                                 tout << term::move2abs0 ;
 
+                                 tout << "[" << terminalData.getStatusDateTimeStr().toStdString() << "] " << terminalData.getStatus().toStdString(); // << endl;
+                                 tout << term::clear(2);
+
+                                 tout << term::move2down;
+                                 tout << term::move2down;
+
+                                 std::vector< std::size_t > mvColSizes = terminalData.getMainViewColSizes();
+
+                                 std::size_t xPos = 0;
                                  
-                                 for( std::size_t nCol=0; nCol!=terminalData.getMainViewColsCount(); ++nCol)
+                                 for( std::size_t nCol=0; nCol!=terminalData.getMainViewColsCount(); xPos+=mvColSizes[nCol], ++nCol)
                                  {
-                                     cout << terminalData.formatMainViewColCaption(nCol); // << endl;
+                                     tout << term::move2lpos(xPos) << term::clear_line((int)mvColSizes[nCol]);
+                                     tout << terminalData.formatMainViewColCaption(nCol); // << endl;
                                  }
-                                 cout << endl;
+                                 tout << term::move2down;
 
+                                 // move2lpos(x)
 
 
                                  int nFigis = terminalData.getFigiCount();
@@ -239,10 +268,14 @@ INVEST_OPENAPI_MAIN()
                                  {
                                      auto figi = terminalData.getFigiByIndex(nFigi);
                                      printFigiInfoLine( figi );
-                                     cout << endl;
+
+                                     tout << term::move2down;
                                  }
 
-                                 cout << endl;
+                                 tout << term::move2down;
+                                 tout << term::clear(-1);
+
+                                 tout << term::caret(1);
 
                                  terminalData.clearChangedFlags();
 
@@ -406,6 +439,9 @@ INVEST_OPENAPI_MAIN()
                                                    terminalData.update( it->first, it->second );
                                                }
 
+                                               if (terminalData.isFigiChanged() && ordersResponse==0)
+                                                   ordersResponse = pOpenApi->orders();
+
                                                /*
                                                if (tkf::mergeOperationMaps(instrumentOperations, completedOperationsByFigi))
                                                {
@@ -516,6 +552,7 @@ INVEST_OPENAPI_MAIN()
             else
             {
                 ordersResponse = 0;
+                lastOrdersResponseLocalDateTime = QDateTime::currentDateTime();
                 //activeOrders.swap(activeOrdersTmp);
 
                 std::map< QString, std::vector<OpenAPI::Order> >::const_iterator it = activeOrders.begin();
@@ -530,7 +567,37 @@ INVEST_OPENAPI_MAIN()
 
         }
 
+        QDateTime dtNow = QDateTime::currentDateTime();
+
+        if ( (dtNow.toMSecsSinceEpoch() - lastOrdersResponseLocalDateTime.toMSecsSinceEpoch()) > 30000)
+        {
+            // Список заявок не обновлялся больше 30 секуннд
+            if (ordersResponse==0)
+            {
+                ordersResponse = pOpenApi->orders(); // rerequest
+            }
+        }
+
     }
+
+
+    /*
+       1) Нужно бы сделать настройку логов, и объект, который кутишные логи логгирует.
+          Никакой ротации? Или как сделаем, при каждом сообщении - переоткрываем, а ротацию, кто хочет, делает сторонними средствами?
+
+       2) Запрос портфеля, и запрос по валютам портфеля.
+
+       3) Нужно оптимизировать отображение, это не дело, что сейчас происходит
+
+       4) Нужен ввод заявок
+          Вообще ввод:
+              https://docs.microsoft.com/en-us/windows/console/readconsoleinput
+              https://docs.microsoft.com/en-us/windows/console/input-record-str
+              https://docs.microsoft.com/en-us/windows/console/reading-input-buffer-events
+
+       5) Нужно подумать по поводу цветов - монохром очень скучен
+
+     */
 
 
     

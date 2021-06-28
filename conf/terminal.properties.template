@@ -4,17 +4,17 @@ terminal.columns.default.left = 1
 terminal.columns.default.right = 0
 terminal.columns.default.width = -4
 terminal.columns.default.align = right
-terminal.columns.default.align.dot = 4
+terminal.columns.default.align.dot = 0
 
 
-terminal.columns = TICKER,ISTATE,PRICE_INC,LOT_SIZE,PAID_PRICE,QUANTITY,CUR_PRICE,BEST_BID,BEST_ASK,SPREAD_POINTS,LAST_BUY_PRICE,LAST_BUY_QUANTITY,LAST_SELL_PRICE,LAST_SELL_QUANTITY,MAX_BID_PRICE,MAX_BID_QUANTITY,MIN_ASK_PRICE,MIN_ASK_QUANTITY
+terminal.columns = TICKER,ISTATE,PRICE_INC,LOT_SIZE,PAID_PRICE,QUANTITY,CUR_PRICE,BEST_BID,SPREAD_POINTS,BEST_ASK,LAST_BUY_PRICE,LAST_BUY_QUANTITY,LAST_SELL_PRICE,LAST_SELL_QUANTITY,MAX_BID_PRICE,MAX_BID_QUANTITY,MIN_ASK_PRICE,MIN_ASK_QUANTITY,SPREAD_POINTS,CUR_PRICE,TICKER
 
 
 terminal.columns.TICKER.caption          = Ticker
 terminal.columns.TICKER.align.caption    = left
 ;terminal.columns.TICKER.left
 ;terminal.columns.TICKER.right
-terminal.columns.TICKER.width            = -8
+terminal.columns.TICKER.width            = -6
 terminal.columns.TICKER.align            = left
 ;terminal.columns.TICKER.align.dot 
 
@@ -38,13 +38,139 @@ terminal.columns.PRICE_INC.width         = 6
 ;terminal.columns.PRICE_INC.align.dot 
 
 
-terminal.columns.ID.caption              = LotSz
-;terminal.columns.ID.align.caption
-;terminal.columns.ID.left
-;terminal.columns.ID.right
-terminal.columns.ID.width                = 5
-;terminal.columns.ID.align
-;terminal.columns.ID.align.dot 
+terminal.columns.LOT_SIZE.caption        = LotSz
+;terminal.columns.LOT_SIZE.align.caption
+;terminal.columns.LOT_SIZE.left
+;terminal.columns.LOT_SIZE.right
+terminal.columns.LOT_SIZE.width          = 5
+;terminal.columns.LOT_SIZE.align
+;terminal.columns.LOT_SIZE.align.dot 
+
+
+terminal.columns.PAID_PRICE.caption      = Prtf_Price
+;terminal.columns.PAID_PRICE.align.caption
+;terminal.columns.PAID_PRICE.left
+;terminal.columns.PAID_PRICE.right
+terminal.columns.PAID_PRICE.width        = 10
+;terminal.columns.PAID_PRICE.align
+;terminal.columns.PAID_PRICE.align.dot 
+
+
+terminal.columns.QUANTITY.caption        = Q_Prtf
+;terminal.columns.QUANTITY.align.caption
+;terminal.columns.QUANTITY.left
+;terminal.columns.QUANTITY.right
+terminal.columns.QUANTITY.width          = 8
+;terminal.columns.QUANTITY.align
+;terminal.columns.QUANTITY.align.dot 
+
+
+terminal.columns.CUR_PRICE.caption       = Price_Cur
+;terminal.columns.CUR_PRICE.align.caption
+;terminal.columns.CUR_PRICE.left
+;terminal.columns.CUR_PRICE.right
+terminal.columns.CUR_PRICE.width         = 10
+;terminal.columns.CUR_PRICE.align
+;terminal.columns.CUR_PRICE.align.dot 
+
+
+terminal.columns.BEST_BID.caption        = Best_Bid
+;terminal.columns.BEST_BID.align.caption
+;terminal.columns.BEST_BID.left
+;terminal.columns.BEST_BID.right
+terminal.columns.BEST_BID.width          = 10
+;terminal.columns.BEST_BID.align
+;terminal.columns.BEST_BID.align.dot 
+
+
+terminal.columns.BEST_ASK.caption        = Best_Ask
+;terminal.columns.BEST_ASK.align.caption
+;terminal.columns.BEST_ASK.left
+;terminal.columns.BEST_ASK.right
+terminal.columns.BEST_ASK.width          = 10
+;terminal.columns.BEST_ASK.align
+;terminal.columns.BEST_ASK.align.dot 
+
+
+terminal.columns.SPREAD_POINTS.caption   = Spr
+;terminal.columns.SPREAD_POINTS.align.caption
+;terminal.columns.SPREAD_POINTS.left
+;terminal.columns.SPREAD_POINTS.right
+terminal.columns.SPREAD_POINTS.width     = 3
+;terminal.columns.SPREAD_POINTS.align
+;terminal.columns.SPREAD_POINTS.align.dot 
+
+
+terminal.columns.LAST_BUY_PRICE.caption  = LastBuyPr
+;terminal.columns.LAST_BUY_PRICE.align.caption
+;terminal.columns.LAST_BUY_PRICE.left
+;terminal.columns.LAST_BUY_PRICE.right
+terminal.columns.LAST_BUY_PRICE.width    = 10
+;terminal.columns.LAST_BUY_PRICE.align
+;terminal.columns.LAST_BUY_PRICE.align.dot 
+
+
+terminal.columns.LAST_BUY_QUANTITY.caption = Q_Buy
+;terminal.columns.LAST_BUY_QUANTITY.align.caption
+;terminal.columns.LAST_BUY_QUANTITY.left
+;terminal.columns.LAST_BUY_QUANTITY.right
+terminal.columns.LAST_BUY_QUANTITY.width   = 6
+;terminal.columns.LAST_BUY_QUANTITY.align
+;terminal.columns.LAST_BUY_QUANTITY.align.dot 
+
+
+terminal.columns.LAST_SELL_PRICE.caption   = LastSellPr
+;terminal.columns.LAST_SELL_PRICE.align.caption
+;terminal.columns.LAST_SELL_PRICE.left
+;terminal.columns.LAST_SELL_PRICE.right
+terminal.columns.LAST_SELL_PRICE.width     = 10
+;terminal.columns.LAST_SELL_PRICE.align
+;terminal.columns.LAST_SELL_PRICE.align.dot 
+
+
+terminal.columns.LAST_SELL_QUANTITY.caption = Q_Sell
+;terminal.columns.LAST_SELL_QUANTITY.align.caption
+;terminal.columns.LAST_SELL_QUANTITY.left
+;terminal.columns.LAST_SELL_QUANTITY.right
+terminal.columns.LAST_SELL_QUANTITY.width   = 6
+;terminal.columns.LAST_SELL_QUANTITY.align
+;terminal.columns.LAST_SELL_QUANTITY.align.dot 
+
+
+terminal.columns.MAX_BID_PRICE.caption      = CurBidPr
+;terminal.columns.MAX_BID_PRICE.align.caption
+;terminal.columns.MAX_BID_PRICE.left
+;terminal.columns.MAX_BID_PRICE.right
+terminal.columns.MAX_BID_PRICE.width        = 10
+;terminal.columns.MAX_BID_PRICE.align
+;terminal.columns.MAX_BID_PRICE.align.dot 
+
+
+terminal.columns.MAX_BID_QUANTITY.caption   = Q_Bid
+;terminal.columns.MAX_BID_QUANTITY.align.caption
+;terminal.columns.MAX_BID_QUANTITY.left
+;terminal.columns.MAX_BID_QUANTITY.right
+terminal.columns.MAX_BID_QUANTITY.width     = 6
+;terminal.columns.MAX_BID_QUANTITY.align
+;terminal.columns.MAX_BID_QUANTITY.align.dot 
+
+
+terminal.columns.MIN_ASK_PRICE.caption      = CurAskPr
+;terminal.columns.MIN_ASK_PRICE.align.caption
+;terminal.columns.MIN_ASK_PRICE.left
+;terminal.columns.MIN_ASK_PRICE.right
+terminal.columns.MIN_ASK_PRICE.width        = 10
+;terminal.columns.MIN_ASK_PRICE.align
+;terminal.columns.MIN_ASK_PRICE.align.dot 
+
+
+terminal.columns.MIN_ASK_QUANTITY.caption   = Q_Ask
+;terminal.columns.MIN_ASK_QUANTITY.align.caption
+;terminal.columns.MIN_ASK_QUANTITY.left
+;terminal.columns.MIN_ASK_QUANTITY.right
+terminal.columns.MIN_ASK_QUANTITY.width     = 6
+;terminal.columns.MIN_ASK_QUANTITY.align
+;terminal.columns.MIN_ASK_QUANTITY.align.dot 
 
 
 ;terminal.columns.ID.caption

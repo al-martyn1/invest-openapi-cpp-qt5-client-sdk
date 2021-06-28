@@ -61,8 +61,6 @@ umba::StdStreamCharWriter coutWriter(std::cout);
 umba::StdStreamCharWriter cerrWriter(std::cerr);
 umba::NulCharWriter       nulWriter;
 
-
-
 umba::SimpleFormatter          tout(&coutWriter); // terminal out - like cout
 
 

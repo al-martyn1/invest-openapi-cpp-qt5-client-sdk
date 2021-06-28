@@ -242,6 +242,9 @@ UMBA_INTERFACE ICharWriter
      */
 
 
+    //! Установка каретки (курсора) консоли. 0 - выключена, 1 - полоска внизу, 2 - половина, 3 - во всю высоту
+    virtual void terminalSetCaret( int csz ) {}
+
     //! Helper для спиннера
     virtual void terminalSetSpinnerMode( bool m ) {}
 
@@ -257,8 +260,8 @@ UMBA_INTERFACE ICharWriter
     //! Перейти на заданную позицию в текущей строке
     virtual void terminalMove2LinePos( int pos ) {}
 
-    //! Очистить текущую строку до конца
-    virtual void terminalClearLineRemaining() {}
+    //! Очистить в текущей строке N позиции от текущего положения
+    virtual void terminalClearLine( int n=-1 ) {}
 
     //! Очистить текущую строку до конца, и очистить всё, что ниже, но не больше, чем maxLines - для ускорения
     virtual void terminalClearRemaining( int maxLines = -1 ) {}
