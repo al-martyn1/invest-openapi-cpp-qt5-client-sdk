@@ -65,6 +65,7 @@ struct InstrumentInfoLineData
 
 
     QString   ticker;
+    QString   figi  ;
 
 
     bool      isTraded; //!< Торгуется ли сейчас? (From streaming MarketInstrumentState)
@@ -74,7 +75,8 @@ struct InstrumentInfoLineData
 
 
     Decimal   avgPrice; //!< Средняя цена покупки - брать из портфолио
-    unsigned  quantity; //!< Количество бумаг в портфеле - брать из портфолио
+    Decimal   expYield; //!< Ожидаемая доходность - брать из портфолио
+    int       quantity; //!< Количество бумаг в портфеле - брать из портфолио
 
 
     Decimal   curPrice    ; //!< Текущая цена - берём из стакана, если не торгуется - показываем последнюю. Или не показывать?
@@ -121,22 +123,26 @@ struct InstrumentInfoLineData
         spreadPoints = unsigned(0);
     }
 
+    void invalidatePortfolioFields()
+    {
+        // брать из портфолио
+        avgPrice = Decimal(0);
+        expYield = Decimal(0);
+        quantity = 0;
+    }
 
-    void init( const DatabaseDictionaries &dicts, QString figi )
+
+    void init( const DatabaseDictionaries &dicts, QString _figi )
     {
         if (!ticker.isEmpty())
             return;
 
-        figi     = dicts.findFigiByAnyIdString (figi);
+        figi     = dicts.findFigiByAnyIdString (_figi);
         ticker   = dicts.getTickerByFigiChecked(figi);
 
         invalidateMarketStateFields();
-
-        avgPrice = Decimal(0);
-        quantity = 0;
-
+        invalidatePortfolioFields();
         invalidateMarketGlassFields();
-
 
         lastSellPrice    = Decimal(0);
         lastSellQuantity = 0;
@@ -153,6 +159,12 @@ struct InstrumentInfoLineData
 
     }
 
+    void update( const OpenAPI::PortfolioPosition &portfolioPosition )
+    {
+        avgPrice = portfolioPosition.getAveragePositionPrice().getValue();
+        expYield = portfolioPosition.getExpectedYield().getValue();
+        quantity = int(portfolioPosition.getBalance());
+    }
 
     void update( const MarketInstrumentState &marketInstrumentState )
     {
@@ -265,11 +277,23 @@ struct InstrumentInfoLineData
 
         using invest_openapi::format_field;
 
-        if (id=="TICKER")
+        if (id=="VB" || id=="VB1" || id=="VB2" || id=="VB3")
+        {
+            return format_field( ff, "|" );
+        }
+        else if (id=="SP" || id=="SP1" || id=="SP2" || id=="SP3")
+        {
+            return format_field( ff, " " );
+        }
+        else if (id=="TICKER")
         {
             return format_field( ff, ticker.toStdString() );
         }
-        else if (id=="ISTATE")
+        else if (id=="FIGI")
+        {
+            return format_field( ff, figi.toStdString() );
+        }
+        else if (id=="INSTR_STATE")
         {
             return format_field( ff, isTraded ? "T" : "-" );
         }
@@ -285,15 +309,23 @@ struct InstrumentInfoLineData
 
             return format_field( ff, lotSize );
         }
-        else if (id=="PAID_PRICE") //------------------------------------------
+        else if (id=="PORTFOLIO_PRICE")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (avgPrice==Decimal(0))
+                return format_field( ff, "-" );
+
+            return format_field( ff, avgPrice );
         }
-        else if (id=="QUANTITY")
+        else if (id=="PORTFOLIO_EXPECTED_YELD")
         {
-            //return format_field( ff, "-" );
-            return format_field( ff, "N/I" );
+            if (expYield==Decimal(0))
+                return format_field( ff, "-" );
+
+            return format_field( ff, expYield, 1 );
+        }
+        else if (id=="PORTFOLIO_QUANTITY")
+        {
+            return format_field( ff, quantity );
         }
         else if (id=="CUR_PRICE")
         {
@@ -421,6 +453,7 @@ protected:
     std::map< QString, MarketGlass           >                             instrumentGlasses;
     std::map< QString, std::vector< OpenAPI::Operation > >                 instrumentOperations;
     std::map< QString, std::vector< OpenAPI::Order > >                     activeOrders;
+    std::map< QString, OpenAPI::PortfolioPosition >                        currentPortfolio;
 
     QString                                                                statusStr;
     QDateTime                                                              statusChangedDateTime;
@@ -480,6 +513,12 @@ protected:
     }
 
     bool updateFigiDataImpl( std::vector< OpenAPI::Order > &curData, const std::vector< OpenAPI::Order > &newData )
+    {
+        curData = newData; // UNDONE
+        return true;
+    }
+
+    bool updateFigiDataImpl( OpenAPI::PortfolioPosition &curData, const OpenAPI::PortfolioPosition &newData )
     {
         curData = newData; // UNDONE
         return true;
@@ -672,6 +711,28 @@ public:
 
 
 
+    void update( const std::map< QString, std::vector<OpenAPI::Order> >  &activeOrders )
+    {
+        std::map< QString, std::vector<OpenAPI::Order> >::const_iterator it = activeOrders.begin();
+        for( ; it!=activeOrders.end(); ++it)
+        {
+            update( it->first, it->second );
+        }
+    }
+
+    void update( const std::map< QString, OpenAPI::PortfolioPosition >  &portfolioPositions )
+    {
+        std::map< QString, OpenAPI::PortfolioPosition >::const_iterator it = portfolioPositions.begin();
+        for( ; it!=portfolioPositions.end(); ++it)
+        {
+            update( it->first, it->second );
+        }
+    }
+
+
+    
+
+
     // std::string format_field( const FieldFormat &ff ) const
     
 
@@ -722,6 +783,12 @@ public:
     DECLARE_IOA_TRADING_TERMINAL_DATA_UPDATE_FUNCTION( MarketGlass                       , instrumentGlasses    )
     DECLARE_IOA_TRADING_TERMINAL_DATA_UPDATE_FUNCTION( std::vector< OpenAPI::Operation > , instrumentOperations )
     DECLARE_IOA_TRADING_TERMINAL_DATA_UPDATE_FUNCTION( std::vector< OpenAPI::Order >     , activeOrders         )
+
+    DECLARE_IOA_TRADING_TERMINAL_DATA_UPDATE_FUNCTION( OpenAPI::PortfolioPosition        , currentPortfolio     )
+
+    
+
+    
 
 }; // class TradingTerminalData
 

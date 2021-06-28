@@ -7,7 +7,68 @@ terminal.columns.default.align = right
 terminal.columns.default.align.dot = 0
 
 
-terminal.columns = TICKER,ISTATE,PRICE_INC,LOT_SIZE,PAID_PRICE,QUANTITY,CUR_PRICE,BEST_BID,SPREAD_POINTS,BEST_ASK,LAST_BUY_PRICE,LAST_BUY_QUANTITY,LAST_SELL_PRICE,LAST_SELL_QUANTITY,MAX_BID_PRICE,MAX_BID_QUANTITY,MIN_ASK_PRICE,MIN_ASK_QUANTITY,SPREAD_POINTS,CUR_PRICE,TICKER
+
+; Basic column types - separators
+
+terminal.columns.VB.caption           = |
+terminal.columns.VB.align.caption     = center
+terminal.columns.VB.left              = 0
+terminal.columns.VB.right             = 0
+terminal.columns.VB.width             = 1
+terminal.columns.VB.align             = center
+
+terminal.columns.VB1.caption           = |
+terminal.columns.VB1.align.caption     = center
+terminal.columns.VB1.left              = 0
+terminal.columns.VB1.right             = 0
+terminal.columns.VB1.width             = 1
+terminal.columns.VB1.align             = center
+
+terminal.columns.VB2.caption          = |
+terminal.columns.VB2.align.caption    = right
+terminal.columns.VB2.left             = 1
+terminal.columns.VB2.right            = 0
+terminal.columns.VB2.width            = 1
+terminal.columns.VB2.align            = center
+
+terminal.columns.VB3.caption          = |
+terminal.columns.VB3.align.caption    = center
+terminal.columns.VB3.left             = 1
+terminal.columns.VB3.right            = 1
+terminal.columns.VB3.width            = 1
+terminal.columns.VB3.align            = center
+
+terminal.columns.SP.caption           = _
+terminal.columns.SP.align.caption     = center
+terminal.columns.SP.left              = 0
+terminal.columns.SP.right             = 0
+terminal.columns.SP.width             = 1
+terminal.columns.SP.align             = center
+
+terminal.columns.SP1.caption           = _
+terminal.columns.SP1.align.caption     = center
+terminal.columns.SP1.left              = 0
+terminal.columns.SP1.right             = 0
+terminal.columns.SP1.width             = 1
+terminal.columns.SP1.align             = center
+
+terminal.columns.SP3.caption          = _
+terminal.columns.SP3.align.caption    = center
+terminal.columns.SP3.left             = 1
+terminal.columns.SP3.right            = 1
+terminal.columns.SP3.width            = 1
+terminal.columns.SP3.align            = center
+
+
+
+;                       FIGI,
+terminal.columns = TICKER,INSTR_STATE,PRICE_INC,LOT_SIZE,PORTFOLIO_QUANTITY,PORTFOLIO_EXPECTED_YELD,\
+VB1,PORTFOLIO_PRICE,CUR_PRICE,\
+VB2,BEST_BID,SP,SP,SP,SPREAD_POINTS,BEST_ASK,\
+VB2,LAST_BUY_QUANTITY,LAST_BUY_PRICE,LAST_SELL_PRICE,LAST_SELL_QUANTITY,SP,\
+VB,MAX_BID_QUANTITY,MAX_BID_PRICE,SP,SP,SP,SPREAD_POINTS,MIN_ASK_PRICE,MIN_ASK_QUANTITY,\
+VB2,CUR_PRICE,SP,PORTFOLIO_PRICE,SP,TICKER
+
 
 
 terminal.columns.TICKER.caption          = Ticker
@@ -19,14 +80,23 @@ terminal.columns.TICKER.align            = left
 ;terminal.columns.TICKER.align.dot 
 
 
-; ISTATE - Instrument State - A - Activity - Instrument Activity - Is Instrument Active
-terminal.columns.ISTATE.caption           = A
-;terminal.columns.ISTATE.align.caption    = center
-;terminal.columns.ISTATE.left
-;terminal.columns.ISTATE.right
-terminal.columns.ISTATE.width             = 1
-;terminal.columns.ISTATE.align
-;terminal.columns.ISTATE.align.dot 
+terminal.columns.FIGI.caption          = FIGI
+terminal.columns.FIGI.align.caption    = center
+;terminal.columns.FIGI.left
+;terminal.columns.FIGI.right
+terminal.columns.FIGI.width            = 12
+terminal.columns.FIGI.align            = right
+;terminal.columns.FIGI.align.dot 
+
+
+; INSTR_STATE - Instrument State - A - Activity - Instrument Activity - Is Instrument Active
+terminal.columns.INSTR_STATE.caption           = A
+;terminal.columns.INSTR_STATE.align.caption    = center
+;terminal.columns.INSTR_STATE.left
+;terminal.columns.INSTR_STATE.right
+terminal.columns.INSTR_STATE.width             = 1
+;terminal.columns.INSTR_STATE.align
+;terminal.columns.INSTR_STATE.align.dot 
 
 
 terminal.columns.PRICE_INC.caption       = PrInc
@@ -47,22 +117,32 @@ terminal.columns.LOT_SIZE.width          = 5
 ;terminal.columns.LOT_SIZE.align.dot 
 
 
-terminal.columns.PAID_PRICE.caption      = Prtf_Price
-;terminal.columns.PAID_PRICE.align.caption
-;terminal.columns.PAID_PRICE.left
-;terminal.columns.PAID_PRICE.right
-terminal.columns.PAID_PRICE.width        = 10
-;terminal.columns.PAID_PRICE.align
-;terminal.columns.PAID_PRICE.align.dot 
+terminal.columns.PORTFOLIO_PRICE.caption      = Price_Prtf
+;terminal.columns.PORTFOLIO_PRICE.align.caption
+;terminal.columns.PORTFOLIO_PRICE.left
+;terminal.columns.PORTFOLIO_PRICE.right
+terminal.columns.PORTFOLIO_PRICE.width        = 10
+;terminal.columns.PORTFOLIO_PRICE.align
+;terminal.columns.PORTFOLIO_PRICE.align.dot 
 
 
-terminal.columns.QUANTITY.caption        = Q_Prtf
-;terminal.columns.QUANTITY.align.caption
-;terminal.columns.QUANTITY.left
-;terminal.columns.QUANTITY.right
-terminal.columns.QUANTITY.width          = 8
-;terminal.columns.QUANTITY.align
-;terminal.columns.QUANTITY.align.dot 
+terminal.columns.PORTFOLIO_QUANTITY.caption        = Q_Prtf
+;terminal.columns.PORTFOLIO_QUANTITY.align.caption
+;terminal.columns.PORTFOLIO_QUANTITY.left
+terminal.columns.PORTFOLIO_QUANTITY.right          = 2
+terminal.columns.PORTFOLIO_QUANTITY.width          = 8
+;terminal.columns.PORTFOLIO_QUANTITY.align
+;terminal.columns.PORTFOLIO_QUANTITY.align.dot 
+
+
+terminal.columns.PORTFOLIO_EXPECTED_YELD.caption        = ExpYeld
+;terminal.columns.PORTFOLIO_EXPECTED_YELD.align.caption
+;terminal.columns.PORTFOLIO_EXPECTED_YELD.left
+terminal.columns.PORTFOLIO_EXPECTED_YELD.right          = 1
+; Если доведётся ворочать большими суммами, то тут надо увеличить ширину хотя бы до 10ти знаков. У меня и с восьмью знаками слишком много места слева остаётся
+terminal.columns.PORTFOLIO_EXPECTED_YELD.width          = 8 
+;terminal.columns.PORTFOLIO_EXPECTED_YELD.align
+terminal.columns.PORTFOLIO_EXPECTED_YELD.align.dot      = 0
 
 
 terminal.columns.CUR_PRICE.caption       = Price_Cur
@@ -97,7 +177,7 @@ terminal.columns.SPREAD_POINTS.caption   = Spr
 ;terminal.columns.SPREAD_POINTS.left
 ;terminal.columns.SPREAD_POINTS.right
 terminal.columns.SPREAD_POINTS.width     = 3
-;terminal.columns.SPREAD_POINTS.align
+terminal.columns.SPREAD_POINTS.align     = center
 ;terminal.columns.SPREAD_POINTS.align.dot 
 
 

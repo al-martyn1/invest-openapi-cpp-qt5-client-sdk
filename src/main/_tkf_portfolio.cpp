@@ -59,6 +59,7 @@ INVEST_OPENAPI_MAIN()
     qDebug().nospace().noquote() << "Log  Config File: "<< logConfigFullFileName  ;
     qDebug().nospace().noquote() << "API  Config File: "<< apiConfigFullFileName  ;
     qDebug().nospace().noquote() << "Auth Config File: "<< authConfigFullFileName ;
+    qDebug().nospace().noquote() << "" ;
 
     auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
     auto authConfig    = tkf::AuthConfig   ( authConfigFullFileName );
@@ -88,51 +89,62 @@ INVEST_OPENAPI_MAIN()
 
     for( auto pos : portfolioPositions )
     {
-        qDebug().nospace().noquote() << "";
+        #if 0
 
-        marty::Decimal balance = pos.getBalance();
-        marty::Decimal blocked = pos.getBlocked();
-        std::string balanceStr = balance.toString();
-        if (blocked!=0)
-        {
-            balanceStr += std::string(" ( ") + blocked.toString() + std::string(" blocked)");
-        }
+            // Old version
 
-        // QString getIsin()
-        // MoneyAmount getExpectedYield() const; ???
-        // MoneyAmount getAveragePositionPrice() const;
-        // MoneyAmount getAveragePositionPriceNoNkd() const;
+            qDebug().nospace().noquote() << "";
+           
+            marty::Decimal balance = pos.getBalance();
+            marty::Decimal blocked = pos.getBlocked();
+            std::string balanceStr = balance.toString();
+            if (blocked!=0)
+            {
+                balanceStr += std::string(" ( ") + blocked.toString() + std::string(" blocked)");
+            }
+           
+            cout << pos.getFigi() << " - " << balanceStr                  << ", " 
+                 << "price: " << pos.getAveragePositionPrice()            << ", " 
+                 // << "price NoNkd: " << pos.getAveragePositionPriceNoNkd() << ", " 
+                 << pos.getInstrumentType() 
+                 << ", " 
+                 << pos.getTicker() 
+                 << " - " << pos.getName()
+                 << endl
+                 ;
 
-        cout << pos.getFigi() << " - " << balanceStr                  << ", " 
-             << "price: " << pos.getAveragePositionPrice()            << ", " 
-             // << "price NoNkd: " << pos.getAveragePositionPriceNoNkd() << ", " 
-             << pos.getInstrumentType() 
-             << ", " 
-             << pos.getTicker() 
-             << " - " << pos.getName()
-             << endl
-             ;
+        #else
 
-        /*
-        qDebug().nospace().noquote() << pos.getTicker() << " (" << pos.getFigi() << ") - " 
-                                     << pos.getInstrumentType().asJson() << ": " << QString::fromStdString(balanceStr)
-                                     << " - " << pos.getName();
-        */
+            // New version, more detailed and accurate
+
+            cout << pos.getTicker() << "/" << pos.getFigi() << ", "
+                 << "Balance: " << pos.getBalance() << ", "
+                 << "Blocked: " << pos.getBlocked() << " - "
+                 << "AvgPrice: " << pos.getAveragePositionPrice() << ", "
+                 // << "AvgPriceNoNkd: " << pos.getAveragePositionPriceNoNkd() << " - " // Хз чо, валидных значений не видел в своём портфеле
+                 << "ExpectedYeld: " << pos.getExpectedYield() << " - "
+                 << "Lots: " << pos.getLots() << " - " // Дублирует Balance с учётом размера лота
+                 << pos.getInstrumentType() << " - "
+                 << pos.getName()
+                 << endl;
+
+        #endif
     }
 
 
     /*
-    qint32 getLots() const;
-    void setLots(const qint32 &lots);
+    [X] QString getFigi() const;
+    [X] QString getTicker() const;
+    [X] InstrumentType getInstrumentType() const;
+    [X] marty::Decimal getBalance() const;
+    [X] marty::Decimal getBlocked() const;
+    [X] MoneyAmount getExpectedYield() const;
+    [X] qint32 getLots() const;
+    [X] MoneyAmount getAveragePositionPrice() const;
+    [X] MoneyAmount getAveragePositionPriceNoNkd() const;
+    [X] QString getName() const;
 
-    MoneyAmount getAveragePositionPrice() const;
-    void setAveragePositionPrice(const MoneyAmount &average_position_price);
 
-    MoneyAmount getAveragePositionPriceNoNkd() const;
-    void setAveragePositionPriceNoNkd(const MoneyAmount &average_position_price_no_nkd);
-
-    QString getName() const;
-    void setName(const QString &name);
     */
 
     return 0;

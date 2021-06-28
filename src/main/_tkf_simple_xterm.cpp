@@ -62,6 +62,7 @@
 
 #include "invest_openapi/operation_helpers.h"
 #include "invest_openapi/order_helpers.h"
+#include "invest_openapi/portfolio_helpers.h"
 
 #include "invest_openapi/format_helpers.h"
 #include "invest_openapi/terminal_helpers.h"
@@ -177,10 +178,21 @@ INVEST_OPENAPI_MAIN()
     }
 
 
+    // terminalData полностью инициализированна
+
 
     std::map< QString, QSharedPointer< tkf::OpenApiCompletableFuture< tkf::OperationsResponse > > > awaitingOperationResponses;
+
     QSharedPointer< tkf::OpenApiCompletableFuture<tkf::OrdersResponse> >                            ordersResponse = 0;
     QDateTime                                                                                       lastOrdersResponseLocalDateTime = QDateTime::currentDateTime();
+
+    // Сразу запросим, чего откладывать в долгий ящик
+    QSharedPointer< tkf::OpenApiCompletableFuture<tkf::PortfolioResponse> >                         portfolioResponse = pOpenApi->portfolio();
+    QDateTime                                                                                       lastPortfolioResponseLocalDateTime = QDateTime::currentDateTime();
+    
+    QSharedPointer< tkf::OpenApiCompletableFuture<tkf::PortfolioCurrenciesResponse> >               portfolioCurrenciesResponse = 0;
+    QDateTime                                                                                       lastPortfolioCurrenciesResponseLocalDateTime = QDateTime::currentDateTime();
+    
 
     //------------------------------
 
@@ -506,6 +518,8 @@ INVEST_OPENAPI_MAIN()
     
      */
 
+    // Запрашиваем операции для всех инструментов
+
     QElapsedTimer operationsRequestTimer;
     operationsRequestTimer.start();
 
@@ -541,6 +555,8 @@ INVEST_OPENAPI_MAIN()
     {
         QTest::qWait(1);
 
+        bool bUpdateScreen = false;
+
         if (ordersResponse && ordersResponse->isFinished())
         {
             std::map< QString, std::vector<OpenAPI::Order> >  activeOrders;
@@ -553,32 +569,64 @@ INVEST_OPENAPI_MAIN()
             {
                 ordersResponse = 0;
                 lastOrdersResponseLocalDateTime = QDateTime::currentDateTime();
-                //activeOrders.swap(activeOrdersTmp);
-
-                std::map< QString, std::vector<OpenAPI::Order> >::const_iterator it = activeOrders.begin();
-                for( ; it!=activeOrders.end(); ++it)
-                {
-                    terminalData.update( it->first, it->second );
-                }
+                terminalData.update( activeOrders );
 
                 /// !!! Нужно сравнить ордера по фигам, и найти те фиги, где поменялось
-                updateScreen();
+                bUpdateScreen = true;
+                
             }
+        } // ordersResponse
 
+
+        if (portfolioResponse && portfolioResponse->isFinished())
+        {
+            std::map< QString, OpenAPI::PortfolioPosition >  portfolioPositions;
+
+            if (!tkf::processCompletedPortfolioResponse(portfolioResponse, portfolioPositions))
+            {
+                portfolioResponse = pOpenApi->portfolio(); // rerequest
+            }
+            else
+            {
+                portfolioResponse = 0;
+                lastPortfolioResponseLocalDateTime = QDateTime::currentDateTime();
+                terminalData.update( portfolioPositions );
+                bUpdateScreen = true;
+            }
+        } // portfolioResponse
+
+
+        if (bUpdateScreen)
+        {
+            updateScreen();
         }
+
 
         QDateTime dtNow = QDateTime::currentDateTime();
 
+
+
         if ( (dtNow.toMSecsSinceEpoch() - lastOrdersResponseLocalDateTime.toMSecsSinceEpoch()) > 30000)
         {
-            // Список заявок не обновлялся больше 30 секуннд
+            // Список заявок не обновлялся больше 30 секунд
             if (ordersResponse==0)
             {
                 ordersResponse = pOpenApi->orders(); // rerequest
             }
         }
 
-    }
+
+        if ( (dtNow.toMSecsSinceEpoch() - lastPortfolioResponseLocalDateTime.toMSecsSinceEpoch()) > 30000)
+        {
+            // Портфель не обновлялся больше 30 секунд
+            if (portfolioResponse==0)
+            {
+                portfolioResponse = pOpenApi->portfolio(); // rerequest
+            }
+        }
+
+
+    } // while( !ctrlC.isBreaked() )
 
 
     /*

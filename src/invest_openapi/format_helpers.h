@@ -96,7 +96,7 @@ std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fie
     }
 
     strRes = marty_cpp::expandAtBack ( strRes, strRes.size()+rightSpace );
-    strRes = marty_cpp::expandAtFront( strRes, strRes.size()+leftSpace+rightSpace );
+    strRes = marty_cpp::expandAtFront( strRes, strRes.size()+leftSpace  );
 
     return strRes;
 }
@@ -226,8 +226,12 @@ inline
 std::string format_field_caption( const FieldFormat &fmt )
 {
     QString caption = fmt.caption;
+
     if (caption.isEmpty())
         caption = fmt.id;
+
+    if (caption=="_")
+        caption = " ";
 
     int fieldWidth = fmt.fieldWidth;
     if (fieldWidth>0)
