@@ -229,19 +229,6 @@ INVEST_OPENAPI_MAIN()
                                      tout << terminalData.formatMainViewField( figi, nCol ); // << endl;
                                  }
 
-
-                                 /*
-                                 std::map< QString, tkf::trading_terminal::InstrumentInfoLineData >::const_iterator tdIt = terminalData.find(figi);
-                                 if (tdIt == terminalData.end())
-                                     return;
-
-                                 std::vector< tkf::FieldFormat >::const_iterator fit = termConfig.fieldsFormat.begin();
-                                 for(; fit != termConfig.fieldsFormat.end(); ++fit)
-                                 {
-                                     cout << tdIt->second.format_field( *fit );
-                                 }
-                                 */
-
                              };
 
 
@@ -400,10 +387,6 @@ INVEST_OPENAPI_MAIN()
 
                     terminalData.update( marketGlass.figi, marketGlass );
 
-                    //instrumentGlasses[marketGlass.figi] = marketGlass;
-
-                    //tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, marketGlass.figi, marketGlass);
-
                     updateFigiScreen(marketGlass.figi);
                 }
 
@@ -413,10 +396,6 @@ INVEST_OPENAPI_MAIN()
                     response.fromJson(msg);
 
                     tkf::MarketInstrumentState instrState = tkf::MarketInstrumentState::fromStreamingInstrumentInfoResponse( response );
-
-                    // tkf::trading_terminal::InstrumentInfoLineData::updateTerminalData(terminalData, dicts, instrState.figi, instrState);
-
-                    // instrumentStates[instrState.figi] = instrState;
 
                     terminalData.update( instrState.figi, instrState );
 
@@ -434,11 +413,7 @@ INVEST_OPENAPI_MAIN()
                     //cout << msg << endl;
                 }
 
-                // std::map< QString, tkf::MarketInstrumentState >  marketInstrumentState;
-
                 // https://bcs-express.ru/novosti-i-analitika/o-chem-mogut-rasskazat-birzhevoi-stakan-i-lenta-sdelok
-
-
 
             };
 
@@ -467,28 +442,6 @@ INVEST_OPENAPI_MAIN()
 
                                                if (terminalData.isFigiChanged() && ordersResponse==0)
                                                    ordersResponse = pOpenApi->orders();
-
-                                               /*
-                                               if (tkf::mergeOperationMaps(instrumentOperations, completedOperationsByFigi))
-                                               {
-                                                   // если состав и/или количество элементов хотя бы в одном эелементе mergeTo изменилось
-                                                   // Надо запросить состояние ордеров
-                                                   // !!! Надо запросить портфолио
-                                                   ordersResponse = pOpenApi->orders();
-                                               }
-
-                                               it = completedOperationsByFigi.begin();
-                                               for( ; it != completedOperationsByFigi.end(); ++it )
-                                               {
-                                                   updateFigiScreen(it->first);
-                                               }
-
-                                               if (statusStr!=newStatusStr)
-                                               {
-                                                  statusStr = newStatusStr;
-                                                  updateStatusStr();
-                                               }
-                                               */
 
                                                updateScreen();
 
@@ -641,7 +594,7 @@ INVEST_OPENAPI_MAIN()
 
 
 
-        if ( (dtNow.toMSecsSinceEpoch() - lastOrdersResponseLocalDateTime.toMSecsSinceEpoch()) > 30000)
+        if ( (dtNow.toMSecsSinceEpoch() - lastOrdersResponseLocalDateTime.toMSecsSinceEpoch()) > 10000)
         {
             // Список заявок не обновлялся больше 30 секунд
             if (ordersResponse==0)
@@ -651,7 +604,7 @@ INVEST_OPENAPI_MAIN()
         }
 
 
-        if ( (dtNow.toMSecsSinceEpoch() - lastPortfolioResponseLocalDateTime.toMSecsSinceEpoch()) > 30000)
+        if ( (dtNow.toMSecsSinceEpoch() - lastPortfolioResponseLocalDateTime.toMSecsSinceEpoch()) > 10000)
         {
             // Портфель не обновлялся больше 30 секунд
             if (portfolioResponse==0)
@@ -660,7 +613,7 @@ INVEST_OPENAPI_MAIN()
             }
         }
 
-        if ( (dtNow.toMSecsSinceEpoch() - lastPortfolioCurrenciesResponseLocalDateTime.toMSecsSinceEpoch()) > 30000)
+        if ( (dtNow.toMSecsSinceEpoch() - lastPortfolioCurrenciesResponseLocalDateTime.toMSecsSinceEpoch()) > 10000)
         {
             // Портфель не обновлялся больше 30 секунд
             if (portfolioCurrenciesResponse==0)
@@ -677,18 +630,13 @@ INVEST_OPENAPI_MAIN()
        1) Нужно бы сделать настройку логов, и объект, который кутишные логи логгирует.
           Никакой ротации? Или как сделаем, при каждом сообщении - переоткрываем, а ротацию, кто хочет, делает сторонними средствами?
 
-       2) Запрос портфеля, и запрос по валютам портфеля.
+       2) Нужно оптимизировать отображение, это не дело, что сейчас происходит - чутка сделано
 
-       3) Нужно оптимизировать отображение, это не дело, что сейчас происходит
+       3) Нужен ввод заявок - начал думать
 
-       4) Нужен ввод заявок
-          Вообще ввод:
-
-       5) Нужно подумать по поводу цветов - монохром очень скучен
+       4) Нужно подумать по поводу цветов - монохром очень скучен
 
      */
-
-
     
 
     return 0;
