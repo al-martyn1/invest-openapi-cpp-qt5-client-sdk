@@ -272,6 +272,9 @@ INVEST_OPENAPI_MAIN()
 
                                  std::size_t xPos = 0;
                                  
+
+                                 // Caption
+
                                  for( std::size_t nCol=0; nCol!=terminalData.getMainViewColsCount(); xPos+=mvColSizes[nCol], ++nCol)
                                  {
                                      tout << term::move2lpos(xPos) << term::clear_line((int)mvColSizes[nCol]);
@@ -282,12 +285,15 @@ INVEST_OPENAPI_MAIN()
                                  // move2lpos(x)
 
 
+                                 // Body
+
                                  int nFigis = terminalData.getFigiCount();
                                  int nFigi  = 0;
                                  for(; nFigi<nFigis; ++nFigi)
                                  {
                                      auto figi = terminalData.getFigiByIndex(nFigi);
-                                     printFigiInfoLine( figi );
+                                     if (terminalData.isFigiChanged(figi))
+                                         printFigiInfoLine( figi );
 
                                      tout << term::move2down;
                                  }
