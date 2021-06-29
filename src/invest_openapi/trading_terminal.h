@@ -458,6 +458,8 @@ protected:
     QString                                                                statusStr;
     QDateTime                                                              statusChangedDateTime;
 
+    std::map< QString, CurrencyPosition >                                  currencyPositions;
+
     QSharedPointer<TerminalConfig>                                         pTermConfig;
 
     std::map< QString, InstrumentInfoLineData >                            terminalLinesData;
@@ -578,6 +580,52 @@ public:
         oss << statusChangedDateTime;
         return QString::fromStdString(oss.str());
     }
+
+    //------------------------------
+
+    QString getCurrenciesStr() const
+    {
+        QString resStr;
+
+        std::map< QString, CurrencyPosition >::const_iterator it = currencyPositions.begin();
+        for(; it != currencyPositions.end(); ++it)
+        {
+            marty::Decimal balance = it->second.getBalance();
+            if (balance==marty::Decimal(0))
+                continue;
+
+            std::ostringstream oss;
+
+            oss << it->first << ": " << it->second.getBalance().rounded(2, marty::Decimal::RoundingMethod::roundMath );
+
+            marty::Decimal blocked = it->second.getBlocked();
+            if (blocked!=marty::Decimal(0))
+                oss << " (" << blocked.rounded(2, marty::Decimal::RoundingMethod::roundMath ) << ")";
+
+            oss << ";";
+
+            if (!resStr.isEmpty())
+            {
+                resStr += " ";
+            }
+
+            resStr += QString::fromStdString(oss.str());
+        
+        }
+
+        if (resStr.isEmpty())
+        {
+            if (currencyPositions.empty())
+                resStr = "Currency Positions Not Available";
+            else
+                resStr = "Balance is zero";
+        }
+
+        return resStr;
+    }
+
+
+    //std::map< QString, CurrencyPosition >                                  currencyPositions;
 
 
     //------------------------------
@@ -710,6 +758,13 @@ public:
     }
 
 
+
+    //------------------------------
+
+    void update( const std::map< QString, CurrencyPosition > &m )
+    {
+        currencyPositions = m;
+    }
 
     void update( const std::map< QString, std::vector<OpenAPI::Order> >  &activeOrders )
     {

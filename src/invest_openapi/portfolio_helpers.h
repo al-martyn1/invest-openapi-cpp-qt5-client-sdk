@@ -112,6 +112,80 @@ bool processCompletedPortfolioResponse( QSharedPointer< OpenApiCompletableFuture
 
 
 
+
+
+// PortfolioCurrenciesResponse
+// Currencies getPayload() const;
+
+// Currencies
+// QList<CurrencyPosition> getCurrencies() const;
+
+// CurrencyPosition
+// Currency getCurrency() const;
+// marty::Decimal getBalance() const;
+// marty::Decimal getBlocked() const;
+
+// Currency
+// QString asJson() const override;
+// Currency::eCurrency getValue() const;
+
+//----------------------------------------------------------------------------
+//! 
+inline
+void parsePortfolioCurrencies( const QList<CurrencyPosition>          &positions
+                             , std::map< QString, CurrencyPosition >  &parseToMap
+                             )
+{
+    for( const auto &p : positions )
+    {
+        parseToMap[p.getCurrency().asJson().toUpper()] = p;
+    }
+}
+
+//----------------------------------------------------------------------------
+//! Return true if response is valid, and payload is also valid
+inline
+bool parsePortfolioCurrenciesResponse( const OpenAPI::PortfolioCurrenciesResponse  &portfolioCurrenciesResponse
+                                     , std::map< QString, CurrencyPosition >       &parseToMap
+                                     )
+{
+    if (!portfolioCurrenciesResponse.isSet() || !portfolioCurrenciesResponse.isValid())
+        return false;
+
+    if (!portfolioCurrenciesResponse.is_payload_Set() || !portfolioCurrenciesResponse.is_payload_Valid())
+        return false;
+
+    parsePortfolioCurrencies( portfolioCurrenciesResponse.getPayload().getCurrencies()
+                            , parseToMap
+                            );
+
+    return true;
+}
+
+//----------------------------------------------------------------------------
+inline // return true if no error, response is valid and parsed ok
+bool processCompletedPortfolioCurrenciesResponse( QSharedPointer< OpenApiCompletableFuture<OpenAPI::PortfolioCurrenciesResponse> >  portfolioCurrenciesResponse
+                                                , std::map< QString, CurrencyPosition >                                            &parseToMap
+                                                )
+{
+    if (!portfolioCurrenciesResponse)
+        throw("invest_openapi::processCompletedPortfolioCurrenciesResponse: portfolioCurrenciesResponse is zero");
+
+    //if (!ordersResponse->isFinished())
+    //    return false;
+
+    if (!portfolioCurrenciesResponse->isResultValid())
+        return false;
+
+    return parsePortfolioCurrenciesResponse( portfolioCurrenciesResponse->result(), parseToMap );
+
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
 } // namespace invest_openapi
 
 //----------------------------------------------------------------------------

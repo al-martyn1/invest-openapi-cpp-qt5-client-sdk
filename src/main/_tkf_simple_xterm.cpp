@@ -190,7 +190,7 @@ INVEST_OPENAPI_MAIN()
     QSharedPointer< tkf::OpenApiCompletableFuture<tkf::PortfolioResponse> >                         portfolioResponse = pOpenApi->portfolio();
     QDateTime                                                                                       lastPortfolioResponseLocalDateTime = QDateTime::currentDateTime();
     
-    QSharedPointer< tkf::OpenApiCompletableFuture<tkf::PortfolioCurrenciesResponse> >               portfolioCurrenciesResponse = 0;
+    QSharedPointer< tkf::OpenApiCompletableFuture<tkf::PortfolioCurrenciesResponse> >               portfolioCurrenciesResponse = pOpenApi->portfolioCurrencies();
     QDateTime                                                                                       lastPortfolioCurrenciesResponseLocalDateTime = QDateTime::currentDateTime();
     
 
@@ -259,6 +259,14 @@ INVEST_OPENAPI_MAIN()
 
                                  tout << term::move2down;
                                  tout << term::move2down;
+
+
+                                 tout << terminalData.getCurrenciesStr().toStdString();
+                                 tout << term::clear(2);
+
+                                 tout << term::move2down;
+                                 tout << term::move2down;
+
 
                                  std::vector< std::size_t > mvColSizes = terminalData.getMainViewColSizes();
 
@@ -596,11 +604,32 @@ INVEST_OPENAPI_MAIN()
         } // portfolioResponse
 
 
+        if (portfolioCurrenciesResponse && portfolioCurrenciesResponse->isFinished())
+        {
+            std::map< QString, OpenAPI::CurrencyPosition >  currencyPositions;
+
+            if (!tkf::processCompletedPortfolioCurrenciesResponse(portfolioCurrenciesResponse, currencyPositions))
+            {
+                portfolioCurrenciesResponse = pOpenApi->portfolioCurrencies(); // rerequest
+            }
+            else
+            {
+                portfolioCurrenciesResponse = 0;
+                lastPortfolioCurrenciesResponseLocalDateTime = QDateTime::currentDateTime();
+                terminalData.update( currencyPositions );
+                bUpdateScreen = true;
+            }
+        } // portfolioCurrenciesResponse
+
+
         if (bUpdateScreen)
         {
             updateScreen();
         }
 
+
+
+        //------------------------------
 
         QDateTime dtNow = QDateTime::currentDateTime();
 
@@ -625,6 +654,15 @@ INVEST_OPENAPI_MAIN()
             }
         }
 
+        if ( (dtNow.toMSecsSinceEpoch() - lastPortfolioCurrenciesResponseLocalDateTime.toMSecsSinceEpoch()) > 30000)
+        {
+            // Портфель не обновлялся больше 30 секунд
+            if (portfolioCurrenciesResponse==0)
+            {
+                portfolioCurrenciesResponse = pOpenApi->portfolioCurrencies(); // rerequest
+            }
+        }
+
 
     } // while( !ctrlC.isBreaked() )
 
@@ -639,9 +677,6 @@ INVEST_OPENAPI_MAIN()
 
        4) Нужен ввод заявок
           Вообще ввод:
-              https://docs.microsoft.com/en-us/windows/console/readconsoleinput
-              https://docs.microsoft.com/en-us/windows/console/input-record-str
-              https://docs.microsoft.com/en-us/windows/console/reading-input-buffer-events
 
        5) Нужно подумать по поводу цветов - монохром очень скучен
 
