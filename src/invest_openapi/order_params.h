@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <string>
 #include <exception>
 #include <stdexcept>
 #include <vector>
@@ -292,15 +294,113 @@ struct OrderParams
 
 
 //----------------------------------------------------------------------------
-
-
-
 inline
-int parseOrderParams( const std::vector<std::string> &paramsVec
+bool isOrderParamsStringSpecialChar( char ch )
+{
+    switch(ch)
+    {
+        case '+': 
+        case '-': 
+        case '!': 
+             return true;
+
+        default:
+             return false;
+    }
+}
+
+//----------------------------------------------------------------------------
+inline 
+std::string prepareOrderParamsString( const std::string &str )
+{
+    std::string resStr;
+
+    for( auto ch : str )
+    {
+        if (!resStr.empty() && isOrderParamsStringSpecialChar(resStr.back()) && ch!=' ')
+        {
+            resStr.append(1, ' ');
+        }
+
+        resStr.append(1, ch );
+    }
+
+    return resStr;
+}
+
+//----------------------------------------------------------------------------
+inline 
+std::vector<std::string> splitOrderParamsString( const std::string &str )
+{
+    auto isEmptyString = []( const std::string &str ) -> bool
+                         {
+                             for( auto ch : str)
+                             {
+                                 if (ch!=' ')
+                                     return false;
+                             }
+
+                             return true;
+                         };
+
+    std::stringstream iss(str);
+
+    std::string tmp;
+
+    std::vector<std::string> resVec;
+
+    while(std::getline(iss,tmp,' '))
+    {
+        if (!isEmptyString(tmp))
+            resVec.push_back(tmp);
+    }
+
+    return resVec;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::string mergeOrderParams( const std::vector<std::string> &paramsVec )
+{
+    std::string resStr;
+
+    for( const auto &s : paramsVec)
+    {
+        if (!resStr.empty())
+        {
+            if (!s.empty() && s[0]!=' ')
+                resStr.append(1, ' ');
+        }
+
+        resStr.append(s);
+    }
+
+    return resStr;
+}
+
+//----------------------------------------------------------------------------
+inline
+std::string prepareOrderParams( const std::string &str )
+{
+    return prepareOrderParamsString( str );
+}
+
+//----------------------------------------------------------------------------
+inline
+std::string prepareOrderParams( const std::vector<std::string> &paramsVec )
+{
+    return prepareOrderParamsString( mergeOrderParams(paramsVec) );
+}
+
+//----------------------------------------------------------------------------
+inline
+int parseOrderParams( std::vector<std::string> paramsVec
                      , const invest_openapi::DatabaseDictionaries &dicts
                      , OrderParams &orderParams
                      )
 {
+    paramsVec = splitOrderParamsString( prepareOrderParams(paramsVec) );
+
     int errIdx = -1;
 
     std::vector<std::string>::const_iterator pit = paramsVec.begin();

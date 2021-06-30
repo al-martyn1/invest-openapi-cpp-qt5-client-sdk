@@ -102,9 +102,9 @@ public:
                                    || (irInBuf[i].Event.KeyEvent.wVirtualKeyCode==0x56 /* V key */  && flagOnlyCtrlPressed) // Ctrl+V - modern mode
                                     )
                             {
-                                // Нужно прочитать буфер обмена в текстовом режиме и скормить его содержимое в результирующий вектор
-                                // Tab - заменяем на пробел, никакие другие контрольные символы, кроме Enter 0x0D не пропускаем, и 
-                                // пропускаем только то, что <128
+                                // РќСѓР¶РЅРѕ РїСЂРѕС‡РёС‚Р°С‚СЊ Р±СѓС„РµСЂ РѕР±РјРµРЅР° РІ С‚РµРєСЃС‚РѕРІРѕРј СЂРµР¶РёРјРµ Рё СЃРєРѕСЂРјРёС‚СЊ РµРіРѕ СЃРѕРґРµСЂР¶РёРјРѕРµ РІ СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰РёР№ РІРµРєС‚РѕСЂ
+                                // Tab - Р·Р°РјРµРЅСЏРµРј РЅР° РїСЂРѕР±РµР», РЅРёРєР°РєРёРµ РґСЂСѓРіРёРµ РєРѕРЅС‚СЂРѕР»СЊРЅС‹Рµ СЃРёРјРІРѕР»С‹, РєСЂРѕРјРµ Enter 0x0D РЅРµ РїСЂРѕРїСѓСЃРєР°РµРј, Рё 
+                                // РїСЂРѕРїСѓСЃРєР°РµРј С‚РѕР»СЊРєРѕ С‚Рѕ, С‡С‚Рѕ <128
 
                                 // https://stackoverflow.com/questions/14762456/getclipboarddatacf-text
 
@@ -127,7 +127,7 @@ public:
 
                                         switch(ch)
                                         {
-                                            case 0x09: // автокомплит при вставке из буфера - недопустим, поэтому просто заменяем на пробел
+                                            case 0x09: // Р°РІС‚РѕРєРѕРјРїР»РёС‚ РїСЂРё РІСЃС‚Р°РІРєРµ РёР· Р±СѓС„РµСЂР° - РЅРµРґРѕРїСѓСЃС‚РёРј, РїРѕСЌС‚РѕРјСѓ РїСЂРѕСЃС‚Рѕ Р·Р°РјРµРЅСЏРµРј РЅР° РїСЂРѕР±РµР»
                                                  resVec.insert( resVec.end(), 1, ' ' );
                                                  break;
 
@@ -156,8 +156,8 @@ public:
                             {
                                 // https://ru.wikipedia.org/wiki/ASCII
                                 // 0x0B - VT - vertical tab
-                                // Используем как алтернативный вариант для автокомплита
-                                // Основной вариант - по обычному табу - 0x09 - TAB
+                                // РСЃРїРѕР»СЊР·СѓРµРј РєР°Рє Р°Р»С‚РµСЂРЅР°С‚РёРІРЅС‹Р№ РІР°СЂРёР°РЅС‚ РґР»СЏ Р°РІС‚РѕРєРѕРјРїР»РёС‚Р°
+                                // РћСЃРЅРѕРІРЅРѕР№ РІР°СЂРёР°РЅС‚ - РїРѕ РѕР±С‹С‡РЅРѕРјСѓ С‚Р°Р±Сѓ - 0x09 - TAB
                                 resVec.insert( resVec.end(), irInBuf[i].Event.KeyEvent.wRepeatCount, 0x0B );
                             }
                             else if (irInBuf[i].Event.KeyEvent.uChar.AsciiChar!=0)
@@ -186,13 +186,13 @@ public:
 
 
 //----------------------------------------------------------------------------
-//! Базовый класс для простецкого редактирования строки в терминале - никакого курсора тудым-сюдым, только можно стирать Backspace'ом, 
-/*! Зато автокомплит искаропки поддерживается
-    Но не поддерживается ничего, кроме базового ASCII.
-    Зато поддерживается автоматическое преобразование регистра вводимых символов.
-    В общем, огранниченный редактор для специфических применений.
+//! Р‘Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ РґР»СЏ РїСЂРѕСЃС‚РµС†РєРѕРіРѕ СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ СЃС‚СЂРѕРєРё РІ С‚РµСЂРјРёРЅР°Р»Рµ - РЅРёРєР°РєРѕРіРѕ РєСѓСЂСЃРѕСЂР° С‚СѓРґС‹Рј-СЃСЋРґС‹Рј, С‚РѕР»СЊРєРѕ РјРѕР¶РЅРѕ СЃС‚РёСЂР°С‚СЊ Backspace'РѕРј, 
+/*! Р—Р°С‚Рѕ Р°РІС‚РѕРєРѕРјРїР»РёС‚ РёСЃРєР°СЂРѕРїРєРё РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ
+    РќРѕ РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ РЅРёС‡РµРіРѕ, РєСЂРѕРјРµ Р±Р°Р·РѕРІРѕРіРѕ ASCII.
+    Р—Р°С‚Рѕ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРµ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ СЂРµРіРёСЃС‚СЂР° РІРІРѕРґРёРјС‹С… СЃРёРјРІРѕР»РѕРІ.
+    Р’ РѕР±С‰РµРј, РѕРіСЂР°РЅРЅРёС‡РµРЅРЅС‹Р№ СЂРµРґР°РєС‚РѕСЂ РґР»СЏ СЃРїРµС†РёС„РёС‡РµСЃРєРёС… РїСЂРёРјРµРЅРµРЅРёР№.
  */
-class SimpleTerminalLineEdit
+class SimpleTerminalLineEditImplBase
 {
     std::string    line;
     std::string    autocompletionString;
@@ -200,10 +200,10 @@ class SimpleTerminalLineEdit
     int            caseConvertMode       = 0; // <0 - lower, 0 - keep, >0 - upper
 
     //! \param text can be modified in this event handler
-    virtual void onTextModified ( SimpleTerminalLineEdit *pEdit, std::string &text ) { }
+    virtual void onTextModified ( SimpleTerminalLineEditImplBase *pEdit, std::string &text ) { }
 
     //! Return true if buffer must kept after this call (buffer can be filled with new text by the setText function or by modifying param text)
-    virtual bool onEditCompleted( SimpleTerminalLineEdit *pEdit, std::string &text ) { return false; } 
+    virtual bool onEditCompleted( SimpleTerminalLineEditImplBase *pEdit, std::string &text ) { return false; } 
 
 public: 
 
@@ -255,7 +255,7 @@ public:
     void        setText(  const std::string &t ) { line = t; }
     void        clrText() { line.clear(); }
 
-    // Текст автокомплита, на самом деле. Просто слишком длинно получалось get/set/clr_AutocompletionText
+    // РўРµРєСЃС‚ Р°РІС‚РѕРєРѕРјРїР»РёС‚Р°, РЅР° СЃР°РјРѕРј РґРµР»Рµ. РџСЂРѕСЃС‚Рѕ СЃР»РёС€РєРѕРј РґР»РёРЅРЅРѕ РїРѕР»СѓС‡Р°Р»РѕСЃСЊ get/set/clr_AutocompletionText
     std::string getAclt() const { return autocompletionString; }
     void        setAclt(  const std::string &t ) { autocompletionString = t; }
     void        clrAclt() { autocompletionString.clear(); }
@@ -266,8 +266,8 @@ public:
     {
         for( auto ch : input )
         {
-            if (!isAsciiKeyChar(ch))
-                continue;
+            //if (!isAsciiKeyChar(ch))
+            //    continue;
 
             if (isBackspaceKeyChar(ch))
             {
@@ -281,7 +281,10 @@ public:
             {
                 bool bKeep = onEditCompleted( this, line );
                 if (!bKeep)
+                {
                     line.clear();
+                    onTextModified( this, line );
+                }
             }
             else if (isAutocompletionKeyChar(ch))
             {
@@ -294,11 +297,12 @@ public:
             }
             else if (isAsciiKeyChar(ch))
             {
-                line.append(1, (char)ch);
+                line.append(1, caseConvert((char)ch) );
+                onTextModified( this, line );
             }
             else
             {
-                // Хрень какая-толькопришла, просто игнорим
+                // РҐСЂРµРЅСЊ РєР°РєР°СЏ-С‚Рѕ РїСЂРёС€Р»Р°, РїСЂРѕСЃС‚Рѕ РёРіРЅРѕСЂРёРј
             }
         
         } // for( auto i : input )
@@ -312,7 +316,7 @@ public:
     // virtual bool onEditCompleted( SimpleTerminalLineEdit *pEdit, std::string &text ) { return false; } 
 
 
-}; // class SimpleTerminalLineEdit
+}; // class SimpleTerminalLineEditImplBase
 
 //----------------------------------------------------------------------------
 
@@ -321,36 +325,49 @@ public:
 
 //----------------------------------------------------------------------------
 template< typename ModifiedHadler, typename CompleteHandler >
-class SimpleTerminalLineEditImplBase : public SimpleTerminalLineEdit
+class SimpleTerminalLineEdit : public SimpleTerminalLineEditImplBase
 {
     ModifiedHadler        modifiedHadler;
     CompleteHandler       completeHandler;
 
 public:
 
-    SimpleTerminalLineEditImplBase( ModifiedHadler mh,  CompleteHandler ch )
-    : modifiedHadler(mh)
+    SimpleTerminalLineEdit( ModifiedHadler mh,  CompleteHandler ch )
+    : SimpleTerminalLineEditImplBase()
+    , modifiedHadler(mh)
     , completeHandler(ch)
     {}
 
 protected:
 
     //! \param text can be modified in this event handler
-    virtual void onTextModified ( SimpleTerminalLineEdit *pEdit, std::string &text ) override
+    virtual void onTextModified ( SimpleTerminalLineEditImplBase *pEdit, std::string &text ) override
     {
         modifiedHadler( pEdit, text );
     }
 
     //! Return true if buffer must kept after this call (buffer can be filled with new text by the setText function or by modifying param text)
-    virtual bool onEditCompleted( SimpleTerminalLineEdit *pEdit, std::string &text ) override
+    virtual bool onEditCompleted( SimpleTerminalLineEditImplBase *pEdit, std::string &text ) override
     {
         return completeHandler( pEdit, text );
     }
 
 
-}; // class SimpleTerminalLineEditImplBase
+}; // class SimpleTerminalLineEdit
+
+//----------------------------------------------------------------------------
 
 
+
+//----------------------------------------------------------------------------
+template< typename ModifiedHadler, typename CompleteHandler >
+inline
+SimpleTerminalLineEdit<ModifiedHadler, CompleteHandler> makeSimpleTerminalLineEdit( ModifiedHadler modifiedHadler, CompleteHandler completeHandler )
+{
+    return SimpleTerminalLineEdit<ModifiedHadler, CompleteHandler>(modifiedHadler, completeHandler);
+}
+
+//----------------------------------------------------------------------------
 
 
 

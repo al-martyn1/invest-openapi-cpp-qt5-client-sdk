@@ -2,6 +2,11 @@
     \brief 
  */
 
+//NOTE: Umba headers must be first, at least "umba/umba.h"
+#include "umba/umba.h"
+#include "umba/char_writers.h"
+#include "umba/simple_formatter.h"
+
 #include <iostream>
 #include <exception>
 #include <stdexcept>
@@ -50,25 +55,61 @@
 
 #include "invest_openapi/terminal_input.h"
 
+#include "invest_openapi/order_params.h"
+
+
+umba::StdStreamCharWriter coutWriter(std::cout);
+umba::StdStreamCharWriter cerrWriter(std::cerr);
+umba::NulCharWriter       nulWriter;
+
+umba::SimpleFormatter          tout(&coutWriter); // terminal out - like cout
+
+
 
 INVEST_OPENAPI_MAIN()
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("test039");
+    QCoreApplication::setApplicationName("test040");
     QCoreApplication::setApplicationVersion("1.0");
 
     QCoreApplication::setOrganizationName("al-martyn1");
     QCoreApplication::setOrganizationDomain("https://github.com/al-martyn1/");
 
-    using std::cout;
-    using std::endl;
-
     // Custom code goes here
-    
+
     namespace tkf=invest_openapi;
+    
+    using namespace umba::omanip;
+
 
     console_helpers::SimpleHandleCtrlC ctrlC; // ctrlC.isBreaked()
     tkf::SimpleTerminalInput simpleInput;
+
+    auto onEditTextModified = [&]( tkf::SimpleTerminalLineEditImplBase *pEdit, std::string &text )
+                              {
+                                  if (text=="AUTO")
+                                      pEdit->setAclt("COMPLETION TEXT");
+                                  else if (text=="R")
+                                      pEdit->setAclt("OSN");
+
+                                  tout << term::move2line0;
+                                  tout << text << term::clear(2);
+                              };
+
+    auto onEditTextComplete = [&](tkf::SimpleTerminalLineEditImplBase *pEdit, std::string &text )
+                              {
+                                  tout << term::move2line0;
+
+                                  auto tmp = tkf::mergeOrderParams(tkf::splitOrderParamsString( tkf::prepareOrderParams(text) ));
+                                  tout << tmp << endl;
+
+                                  return false;
+                              };
+
+    auto lineEdit = tkf::makeSimpleTerminalLineEdit( onEditTextModified, onEditTextComplete );
+
+    lineEdit.setCaseConvert(1); // upper case
+
 
     while( !ctrlC.isBreaked() )
     {
@@ -76,17 +117,11 @@ INVEST_OPENAPI_MAIN()
 
         std::vector<int> input = simpleInput.readInput();
 
-        for(auto i : input)
-        {
-            cout << "Input: " << i;
-
-            if (i>=' ' && i<127)
-               cout << " '" << (char)i << "'";
-
-            cout << endl;
-        }
+        if (!input.empty()) // to stop only when input is not empty
+           lineEdit.processInput( input );
 
     }
+
     
     return 0;
 }

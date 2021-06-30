@@ -151,9 +151,22 @@ INVEST_OPENAPI_MAIN()
         argsVec.push_back(argv[i]);
 
 
+    // argsVec = std::vector< std::string >{ "-NVTK", "5", "1569.5" };
+
+    QElapsedTimer eventsTimer;
+    eventsTimer.start();
+
+
     tkf::OrderParams orderParams;
 
-    int orderParamsParsingRes = tkf::parseOrderParams( argsVec, dicts, orderParams );
+    int orderParamsParsingRes = tkf::parseOrderParams( tkf::splitOrderParamsString( tkf::prepareOrderParams(argsVec) )
+                                                     , dicts, orderParams
+                                                     );
+    // return 0;
+    std::uint32_t parsingTimeout = (std::uint32_t)eventsTimer.restart();
+    cout << "# Parsing params timeout: " << parsingTimeout << endl;
+
+
     if (orderParamsParsingRes<0)
     {
         std::cerr << "Error: invalid argument #" << -orderParamsParsingRes << endl;
@@ -186,7 +199,6 @@ INVEST_OPENAPI_MAIN()
     //return 0;
 
 
-    QElapsedTimer eventsTimer;
 
     QWebSocket webSocket;
     console_helpers::SimpleHandleCtrlC ctrlC; // ctrlC.isBreaked()
@@ -313,7 +325,7 @@ INVEST_OPENAPI_MAIN()
 
     cout << "# Connecting Streaming API Web socket" << endl;
 
-    eventsTimer.start();
+    eventsTimer.restart();
     webSocket.connect( &webSocket, &QWebSocket::connected             , onConnected    );
     webSocket.connect( &webSocket, &QWebSocket::disconnected          , onDisconnected );
     webSocket.connect( &webSocket, &QWebSocket::textMessageReceived   , onMessage      );

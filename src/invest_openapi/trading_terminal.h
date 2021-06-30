@@ -650,6 +650,8 @@ public:
         
         lineData.init( *pDicts, figi );
 
+        updatedFigis.insert(figi);
+
         return true;
     }
 
@@ -705,6 +707,33 @@ public:
     {
         statusUpdated = false;
         updatedFigis.clear();
+    }
+
+    //------------------------------
+
+    std::set<QString> getTickersLikeThis( QString t ) const
+    {
+        std::set<QString> resSet;
+
+        for( auto figi : instrumentList )
+        {
+            auto ticker = pDicts->getTickerByFigi(figi);
+            if (ticker.isEmpty())
+                continue;
+
+            if (ticker.startsWith(t, Qt::CaseInsensitive))
+                resSet.insert(ticker);
+        }
+
+        return resSet;
+    }
+
+    QString getTickerLikeThis( QString t ) const
+    {
+        std::set<QString> tickers = getTickersLikeThis( t );
+        if (tickers.size()!=1)
+            return QString();
+        return *tickers.begin();
     }
 
 

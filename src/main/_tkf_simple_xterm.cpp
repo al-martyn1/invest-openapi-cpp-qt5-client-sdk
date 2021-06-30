@@ -210,10 +210,6 @@ INVEST_OPENAPI_MAIN()
 
     
 
-
-
-    //termConfig
-
     auto printFigiInfoLine = [&]( QString figi )
                              {
                                  
@@ -296,20 +292,9 @@ INVEST_OPENAPI_MAIN()
 
 
 
-    auto updateFigiScreen =  [&]( QString figi )
-                             {
-                                 // Do something for FIGI
+    auto updateFigiScreen =  [&]( QString figi ) { updateScreen(); };
 
-                                 updateScreen();
-
-                             };
-
-
-    auto updateStatusStr  =  [&]()
-                             {
-                                 updateScreen();
-                             };
-
+    auto updateStatusStr  =  [&]() { updateScreen(); };
 
 
     auto onConnected = [&]()
@@ -317,9 +302,6 @@ INVEST_OPENAPI_MAIN()
             
                 fConnected.store( true, std::memory_order_seq_cst  );
 
-                //std::map< QString, std::vector<tkf::OrderParams> >::const_iterator it = figiOrders.begin();
-                
-                //for( auto figi : instrumentList )
                 auto it = terminalData.instrumentListBegin();
                 for(; it!=terminalData.instrumentListEnd(); ++it)
                 {
@@ -338,7 +320,6 @@ INVEST_OPENAPI_MAIN()
 
                 terminalData.setStatus("Connected");
 
-                // updateScreen();
                 updateStatusStr();
 
             };
@@ -418,8 +399,6 @@ INVEST_OPENAPI_MAIN()
             };
 
 
-
-    
 
     auto checkAwaitingOperationResponses = [&]()
                                            {
@@ -512,8 +491,6 @@ INVEST_OPENAPI_MAIN()
 
 
 
-
-    //cout << "# Connecting Streaming API Web socket" << endl;
     tkf::connectStreamingWebSocket( pOpenApi, webSocket, onConnected, onDisconnected, onMessage );
 
 
