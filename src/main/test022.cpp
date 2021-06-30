@@ -78,14 +78,14 @@ INVEST_OPENAPI_MAIN()
     auto apiConfigFullFileName     = lookupForConfigFile( "config.properties"  , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto authConfigFullFileName    = lookupForConfigFile( "auth.properties"    , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto dbConfigFullFileName      = lookupForConfigFile( "database.properties", lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
-    auto balanceConfigFullFileName = lookupForConfigFile( "balance.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
+    auto balanceConfigFullFileName = lookupForConfigFile( "instruments.properties", lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
     auto test022FullFileName       = lookupForConfigFile( "test022.properties" , lookupConfSubfolders, FileReadable(), QCoreApplication::applicationDirPath(), true, -1 );
 
     qDebug().nospace().noquote() << "Log  Config File: "<< logConfigFullFileName  ;
     qDebug().nospace().noquote() << "API  Config File: "<< apiConfigFullFileName  ;
     qDebug().nospace().noquote() << "Auth Config File: "<< authConfigFullFileName ;
     qDebug().nospace().noquote() << "DB   Config     : "<< dbConfigFullFileName   ;
-    qDebug().nospace().noquote() << "Balance Config  : "<< balanceConfigFullFileName;
+    qDebug().nospace().noquote() << "Instruments Config: "<< balanceConfigFullFileName;
     qDebug().nospace().noquote() << "Test022 Cfg File: "<< test022FullFileName    ;
 
     auto apiConfig     = tkf::ApiConfig    ( apiConfigFullFileName  );
