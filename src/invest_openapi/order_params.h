@@ -311,6 +311,55 @@ bool isOrderParamsStringSpecialChar( char ch )
 
 //----------------------------------------------------------------------------
 inline 
+bool prepareOrderIsIdString( const std::string &str )
+{
+    auto isNumericString = []( const std::string &str ) -> bool
+                         {
+                             for( auto ch : str)
+                             {
+                                 if (ch=='.' || ch==',')
+                                     continue; 
+                                 if (ch>='0' && ch<='9')
+                                     continue; 
+                                 return false;
+                             }
+
+                             return true;
+                         };
+
+    if (isNumericString(str))
+        return false;
+
+    auto isAlphaChar = []( char ch ) -> bool
+                         {
+                             if ( (ch>='a' && ch<='z') || (ch>='A' && ch<='Z') )
+                                 return true;
+                             return false;
+                         };
+
+    auto isDigitChar = []( char ch ) -> bool
+                         {
+                             if ( (ch>='0' && ch<='9') )
+                                 return true;
+                             return false;
+                         };
+
+    for( auto ch : str)
+    {
+        if (ch!='_' && !isAlphaChar(ch) && !isDigitChar(ch) )
+            return false;
+    }
+
+    return true;
+
+}
+
+
+//----------------------------------------------------------------------------
+
+
+
+inline 
 std::string prepareOrderParamsString( const std::string &str )
 {
     std::string resStr;
@@ -360,7 +409,7 @@ std::vector<std::string> splitOrderParamsString( const std::string &str )
 
 //----------------------------------------------------------------------------
 inline
-std::string mergeOrderParams( const std::vector<std::string> &paramsVec )
+std::string mergeOrderParamsString( const std::vector<std::string> &paramsVec )
 {
     std::string resStr;
 
@@ -389,7 +438,7 @@ std::string prepareOrderParams( const std::string &str )
 inline
 std::string prepareOrderParams( const std::vector<std::string> &paramsVec )
 {
-    return prepareOrderParamsString( mergeOrderParams(paramsVec) );
+    return prepareOrderParamsString( mergeOrderParamsString(paramsVec) );
 }
 
 //----------------------------------------------------------------------------

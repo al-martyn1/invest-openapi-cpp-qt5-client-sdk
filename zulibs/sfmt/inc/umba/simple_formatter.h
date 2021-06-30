@@ -1417,6 +1417,13 @@ SgrColorManipHelper coloring( umba::term::colors::SgrColor clr )
 }
 
 //-----------------------------------------------------------------------------
+inline
+SgrColorManipHelper color( umba::term::colors::SgrColor clr )
+{
+    return SgrColorManipHelper( coloringColorImpl, clr );
+}
+
+//-----------------------------------------------------------------------------
 
 
 //-----------------------------------------------------------------------------

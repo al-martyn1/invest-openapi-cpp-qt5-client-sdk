@@ -466,8 +466,10 @@ protected:
 
     //------------------------------
 
-    std::set< QString > updatedFigis;
-    bool statusUpdated = false;
+    std::set< QString >   updatedFigis;
+    bool statusUpdated    = false;
+
+    bool captionUpdated   = true;
 
     //------------------------------
 
@@ -701,11 +703,14 @@ public:
         return updatedFigis.find(figi)!=updatedFigis.end();
     } 
 
+    bool isCaptionChanged() const { return captionUpdated; }
+
     //------------------------------
 
     void clearChangedFlags()
     {
-        statusUpdated = false;
+        statusUpdated   = false;
+        captionUpdated  = false;
         updatedFigis.clear();
     }
 
@@ -717,7 +722,7 @@ public:
 
         for( auto figi : instrumentList )
         {
-            auto ticker = pDicts->getTickerByFigi(figi);
+            QString ticker = pDicts->getTickerByFigi( figi );
             if (ticker.isEmpty())
                 continue;
 
@@ -730,10 +735,10 @@ public:
 
     QString getTickerLikeThis( QString t ) const
     {
-        std::set<QString> tickers = getTickersLikeThis( t );
-        if (tickers.size()!=1)
+        std::set<QString> ids = getTickersLikeThis( t );
+        if (ids.size()!=1)
             return QString();
-        return *tickers.begin();
+        return *ids.begin();
     }
 
 

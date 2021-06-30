@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-
+#include <functional>
 
 #if defined(WIN32) || defined(_WIN32)
 
@@ -196,8 +196,9 @@ class SimpleTerminalLineEditImplBase
 {
     std::string    line;
     std::string    autocompletionString;
-    char           autocompletionKeyCode = 0x09; // TAB
-    int            caseConvertMode       = 0; // <0 - lower, 0 - keep, >0 - upper
+    char           autocompletionKeyCode   = 0x09; // TAB
+    int            caseConvertMode         = 0; // <0 - lower, 0 - keep, >0 - upper
+    int            allowLeadingSpacesMode  = false; // Leading spaces not allowed
 
     //! \param text can be modified in this event handler
     virtual void onTextModified ( SimpleTerminalLineEditImplBase *pEdit, std::string &text ) { }
@@ -205,8 +206,16 @@ class SimpleTerminalLineEditImplBase
     //! Return true if buffer must kept after this call (buffer can be filled with new text by the setText function or by modifying param text)
     virtual bool onEditCompleted( SimpleTerminalLineEditImplBase *pEdit, std::string &text ) { return false; } 
 
+    //! Updates View
+    virtual void onUpdateView   ( const SimpleTerminalLineEditImplBase *pEdit, const std::string &text ) { }
+
 public: 
 
+
+    void updateView()
+    {
+        onUpdateView(  this, line );
+    }
 
     static char toUpper( char ch )
     {
@@ -239,6 +248,9 @@ public:
 
     void setCaseConvert( int cc ) { caseConvertMode = cc;   }
     int  getCaseConvert( ) const  { return caseConvertMode; }
+
+    bool getAllowLeadingSpaces(        ) const { return allowLeadingSpacesMode; }
+    void setAllowLeadingSpaces( bool a )       { allowLeadingSpacesMode = a; }
 
 
     //! Return false if std, true if alter key used
@@ -275,16 +287,25 @@ public:
                 {
                     line.erase( line.size()-1 );
                     onTextModified( this, line );
+                    updateView();
                 }
             }
             else if (isEnterKeyChar(ch))
             {
+                auto linePrevStr = line;
+
                 bool bKeep = onEditCompleted( this, line );
                 if (!bKeep)
                 {
                     line.clear();
-                    onTextModified( this, line );
                 }
+
+                if (linePrevStr!=line)
+                {
+                    onTextModified( this, line );
+                    updateView();
+                }
+
             }
             else if (isAutocompletionKeyChar(ch))
             {
@@ -293,12 +314,33 @@ public:
                     line.append(autocompletionString);
                     autocompletionString.clear();
                     onTextModified( this, line );
+                    updateView();
                 }
             }
             else if (isAsciiKeyChar(ch))
             {
-                line.append(1, caseConvert((char)ch) );
-                onTextModified( this, line );
+                // bool isChSpace = (ch==' ');
+                // if (allowLeadingSpacesMode)
+                //     isChSpace = false; // force not space
+                //  
+                // // if ( space && empty) doNothing();
+                // // if ( !space || !empty) doJob();
+                //  
+                // if ( ((char)ch)!=' ' && !line.empty())
+                // {}
+                //  
+                // allowLeadingSpacesMode
+
+                if (line.empty() && (ch==' ') && !allowLeadingSpacesMode)
+                {
+                    // do nothing
+                }
+                else
+                {
+                    line.append(1, caseConvert((char)ch) );
+                    onTextModified( this, line );
+                    updateView();
+                }
             }
             else
             {
@@ -324,8 +366,78 @@ public:
 
 
 //----------------------------------------------------------------------------
-template< typename ModifiedHadler, typename CompleteHandler >
+template< typename ModifiedHadler, typename CompleteHandler, typename UpdateViewHadler >
 class SimpleTerminalLineEdit : public SimpleTerminalLineEditImplBase
+{
+    ModifiedHadler        modifiedHadler;
+    CompleteHandler       completeHandler;
+    UpdateViewHadler      updateViewHadler;
+
+public:
+
+    SimpleTerminalLineEdit( ModifiedHadler mh,  CompleteHandler ch, UpdateViewHadler uvh )
+    : SimpleTerminalLineEditImplBase()
+    , modifiedHadler(mh)
+    , completeHandler(ch)
+    , updateViewHadler(uvh)
+    {}
+
+protected:
+
+    //! \param text can be modified in this event handler
+    virtual void onTextModified ( SimpleTerminalLineEditImplBase *pEdit, std::string &text ) override
+    {
+        modifiedHadler( pEdit, text );
+    }
+
+    //! Return true if buffer must kept after this call (buffer can be filled with new text by the setText function or by modifying param text)
+    virtual bool onEditCompleted( SimpleTerminalLineEditImplBase *pEdit, std::string &text ) override
+    {
+        return completeHandler( pEdit, text );
+    }
+
+    virtual void onUpdateView   ( const SimpleTerminalLineEditImplBase *pEdit, const std::string &text ) override
+    {
+        updateViewHadler( pEdit, text );
+    }
+
+
+}; // class SimpleTerminalLineEdit
+
+//----------------------------------------------------------------------------
+
+
+
+//----------------------------------------------------------------------------
+/*
+template< typename ModifiedHadler
+        , typename CompleteHandler
+        > inline
+SimpleTerminalLineEdit<ModifiedHadler, CompleteHandler, ModifiedHadler> 
+makeSimpleTerminalLineEdit( ModifiedHadler modifiedHadler, CompleteHandler completeHandler, ModifiedHadler updateViewHadler )
+{
+    return SimpleTerminalLineEdit<ModifiedHadler, CompleteHandler, ModifiedHadler>(modifiedHadler, completeHandler, updateViewHadler);
+}
+*/
+//----------------------------------------------------------------------------
+template< typename ModifiedHadler
+        , typename CompleteHandler
+        , typename UpdateViewHadler
+        > inline
+SimpleTerminalLineEdit<ModifiedHadler, CompleteHandler, UpdateViewHadler> 
+makeSimpleTerminalLineEdit( ModifiedHadler modifiedHadler, CompleteHandler completeHandler, UpdateViewHadler updateViewHadler )
+{
+    return SimpleTerminalLineEdit<ModifiedHadler, CompleteHandler, UpdateViewHadler>(modifiedHadler, completeHandler, updateViewHadler);
+}
+
+//----------------------------------------------------------------------------
+
+
+
+
+/*
+//----------------------------------------------------------------------------
+class SimpleTerminalLineEditStdFunctionDriven : public SimpleTerminalLineEditImplBase
 {
     ModifiedHadler        modifiedHadler;
     CompleteHandler       completeHandler;
@@ -354,22 +466,7 @@ protected:
 
 
 }; // class SimpleTerminalLineEdit
-
-//----------------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------------
-template< typename ModifiedHadler, typename CompleteHandler >
-inline
-SimpleTerminalLineEdit<ModifiedHadler, CompleteHandler> makeSimpleTerminalLineEdit( ModifiedHadler modifiedHadler, CompleteHandler completeHandler )
-{
-    return SimpleTerminalLineEdit<ModifiedHadler, CompleteHandler>(modifiedHadler, completeHandler);
-}
-
-//----------------------------------------------------------------------------
-
-
+*/
 
 
 //----------------------------------------------------------------------------

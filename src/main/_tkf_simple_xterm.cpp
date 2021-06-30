@@ -64,6 +64,8 @@
 #include "invest_openapi/order_helpers.h"
 #include "invest_openapi/portfolio_helpers.h"
 
+#include "invest_openapi/order_params.h"
+
 #include "invest_openapi/format_helpers.h"
 #include "invest_openapi/terminal_helpers.h"
 
@@ -71,6 +73,7 @@
 
 #include "invest_openapi/terminal_config.h"
 
+#include "invest_openapi/terminal_input.h"
 
 
 umba::StdStreamCharWriter      coutWriter(std::cout);
@@ -168,6 +171,7 @@ INVEST_OPENAPI_MAIN()
     //------------------------------
 
     tkf::trading_terminal::TradingTerminalData    terminalData( &dicts );
+    
 
     terminalData.setConfig(pTermConfig);
 
@@ -194,21 +198,61 @@ INVEST_OPENAPI_MAIN()
     QDateTime                                                                                       lastPortfolioCurrenciesResponseLocalDateTime = QDateTime::currentDateTime();
     
 
-    //------------------------------
-
-
-
-
-
+    tkf::SimpleTerminalLineEditImplBase  *pTerminalInputEdit = 0;
 
     //------------------------------
+
+
+
+    auto normalColor        = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::white , umba::term::colors::black, false, false, false );
+    auto statusColor        = normalColor; // UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::white , umba::term::colors::black, false, false, false );
+    auto captionColor       = normalColor; // UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::yellow, umba::term::colors::black, false, false, false );
+    auto editorColor        = normalColor; //UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::cyan  , umba::term::colors::black, false, false, false );
+    auto editorHintColor    = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::cyan  , umba::term::colors::black, false, false, false );
+    auto editorCursorColor  = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::white , umba::term::colors::black, false, false, false );
+    // auto editorCursorColor  = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::black , umba::term::colors::cyan , false, false, false );
+
+    // UMBA_TERM_COLORS_MAKE_COMPOSITE( fgColor, bgColor, fBright, fInvert, fBlink )
+    //umba::term::colors::white
+
+    //------------------------------
+
+    tout << term::caret(0);
+
+
+
+    //------------------------------
+
     QWebSocket webSocket;
-    console_helpers::SimpleHandleCtrlC ctrlC; // ctrlC.isBreaked()
-
+    console_helpers::SimpleHandleCtrlC    ctrlC; // ctrlC.isBreaked()
+    tkf::SimpleTerminalInput              simpleInput;
 
     std::atomic<bool> fConnected = false;
 
+
+
+    //------------------------------
     
+    auto printEditorText = [&]( const std::string &text, const std::string &autocompleteHint )
+                             {
+                                 // tout << text << term::clear(2);
+                                 //tout << text << term::clear(2);
+
+                                 tout << term::move2line0;
+                                 tout << ">"; // Prompt
+                                 tout << color(editorColor) << text;
+                                 
+                                 if (!autocompleteHint.empty())
+                                 {
+                                     tout << color(editorHintColor) << autocompleteHint;
+                                 }
+                                 
+                                 tout << color(editorCursorColor);
+                                 
+                                 tout << "_" << color(normalColor) << " " << term::clear(2);
+
+                             };
+
 
     auto printFigiInfoLine = [&]( QString figi )
                              {
@@ -233,7 +277,7 @@ INVEST_OPENAPI_MAIN()
                              {
                                  // tkf::termClearScreen( cout /* , unsigned numLines = 50 */ );
 
-                                 tout << term::caret(0);
+                                 // tout << term::caret(0);
 
                                  tout << term::move2abs0 ;
 
@@ -257,12 +301,17 @@ INVEST_OPENAPI_MAIN()
                                  
 
                                  // Caption
+                                 // tout << color()
 
-                                 for( std::size_t nCol=0; nCol!=terminalData.getMainViewColsCount(); xPos+=mvColSizes[nCol], ++nCol)
+                                 if (terminalData.isCaptionChanged())
                                  {
-                                     tout << term::move2lpos(xPos) << term::clear_line((int)mvColSizes[nCol]);
-                                     tout << terminalData.formatMainViewColCaption(nCol); // << endl;
+                                     for( std::size_t nCol=0; nCol!=terminalData.getMainViewColsCount(); xPos+=mvColSizes[nCol], ++nCol)
+                                     {
+                                         tout << term::move2lpos(xPos) << term::clear_line((int)mvColSizes[nCol]);
+                                         tout << terminalData.formatMainViewColCaption(nCol); // << endl;
+                                     }
                                  }
+
                                  tout << term::move2down;
 
                                  // move2lpos(x)
@@ -284,7 +333,12 @@ INVEST_OPENAPI_MAIN()
                                  tout << term::move2down;
                                  tout << term::clear(-1);
 
-                                 tout << term::caret(1);
+
+                                 if (pTerminalInputEdit)
+                                     pTerminalInputEdit->updateView();
+                                 //printEditorText(text);
+
+                                 // tout << term::caret(1);
 
                                  terminalData.clearChangedFlags();
 
@@ -295,6 +349,66 @@ INVEST_OPENAPI_MAIN()
     auto updateFigiScreen =  [&]( QString figi ) { updateScreen(); };
 
     auto updateStatusStr  =  [&]() { updateScreen(); };
+
+
+
+    auto onEditTextModified = [&]( tkf::SimpleTerminalLineEditImplBase *pEdit, std::string &text )
+                              {
+                                  //printEditorText(text);
+                                  auto tmpText = tkf::prepareOrderParamsString( text );
+
+                                  if (tmpText.empty())
+                                      return;
+
+                                  if (tmpText[0]=='-' || tmpText[0]=='+')
+                                  {
+                                      // We got an 'place order' command
+
+                                      std::vector<std::string> orderParamsStrVec = tkf::splitOrderParamsString( tmpText );
+
+                                      if ( orderParamsStrVec.size()>1 ) // at least 2 and last - is id
+                                      {
+                                          auto idCandy = orderParamsStrVec.back();
+                                          if ( tkf::prepareOrderIsIdString(idCandy) )
+                                          {
+                                              QString qIdCandy  = QString::fromStdString(idCandy);
+                                              QString qFoundId   = terminalData.getTickerLikeThis( qIdCandy );
+                                              if (!qFoundId.isEmpty())
+                                              {
+                                                  QString hintStr = qFoundId;
+                                                  hintStr.remove( 0, qIdCandy.size() );
+                                                  hintStr += " ";
+                                                  pEdit->setAclt(hintStr.toStdString());
+                                              }
+                                          }
+                                      }
+                                  }
+
+                              };
+
+    auto onEditTextComplete = [&](tkf::SimpleTerminalLineEditImplBase *pEdit, std::string &text )
+                              {
+                                  auto tmp = tkf::mergeOrderParamsString(tkf::splitOrderParamsString( tkf::prepareOrderParams(text) ));
+
+                                  terminalData.setStatus(QString::fromStdString(tmp));
+
+                                  updateStatusStr();
+                                  // printEditorText(text);
+
+                                  return false;
+                              };
+
+    auto onEditUpdateView = [&]( const tkf::SimpleTerminalLineEditImplBase *pEdit, const std::string &text )
+                              {
+                                  printEditorText( text, pEdit->getAclt() );
+                              };
+
+    
+    auto lineEdit = tkf::makeSimpleTerminalLineEdit( onEditTextModified, onEditTextComplete, onEditUpdateView );
+
+    lineEdit.setCaseConvert(1); // upper case
+
+    pTerminalInputEdit = &lineEdit;
 
 
     auto onConnected = [&]()
@@ -466,6 +580,8 @@ INVEST_OPENAPI_MAIN()
 
     // Запрашиваем операции для всех инструментов
 
+    terminalData.setStatus("Initializing");
+
     QElapsedTimer operationsRequestTimer;
     operationsRequestTimer.start();
 
@@ -563,6 +679,11 @@ INVEST_OPENAPI_MAIN()
             updateScreen();
         }
 
+
+        std::vector<int> input = simpleInput.readInput();
+
+        if (!input.empty()) // to stop only when input is not empty
+           lineEdit.processInput( input );
 
 
         //------------------------------

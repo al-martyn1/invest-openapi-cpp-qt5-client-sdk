@@ -150,7 +150,8 @@ protected:
             return b->price;
         }
 
-        throw std::runtime_error(std::string("invest_openapi::MarketGlass::") + thMsg);
+        //UNDONE: !!! Need to save message to log
+        // throw std::runtime_error(std::string("invest_openapi::MarketGlass::") + thMsg);
 
         return Decimal(0);
     }

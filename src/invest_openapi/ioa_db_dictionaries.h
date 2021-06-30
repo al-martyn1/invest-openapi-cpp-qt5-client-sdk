@@ -429,16 +429,24 @@ public:
     }
 
     //------------------------------
-    QString getTickerByFigiChecked( QString figi ) const
+    QString getTickerByFigi( QString figi ) const
     {
         QString ticker;
 
         if (findInMap( figiToTicker, figi.toUpper(), ticker ))
             return ticker;
 
-        throw std::runtime_error("getTickerByFigiChecked: FIGI not found");
+        return ticker;
+    }
 
-        return QString();
+    QString getTickerByFigiChecked( QString figi ) const
+    {
+        QString ticker = getTickerByFigi(figi);
+
+        if (ticker.isEmpty())
+            throw std::runtime_error("getTickerByFigiChecked: FIGI not found");
+
+        return ticker;
     }
 
     //------------------------------

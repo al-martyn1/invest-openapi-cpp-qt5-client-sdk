@@ -81,9 +81,45 @@ INVEST_OPENAPI_MAIN()
     
     using namespace umba::omanip;
 
+    // UMBA_TERM_COLORS_MAKE_COMPOSITE( fgColor, bgColor, fBright, fInvert, fBlink )
+
+    auto normalColor        = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::white   , umba::term::colors::black, false, false, false );
+    auto statusColor        = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::white   , umba::term::colors::black, false, false, false );
+    auto captionColor       = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::yellow  , umba::term::colors::black, false, false, false );
+    auto editorColor        = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::cyan    , umba::term::colors::black, false, false, false );
+    //auto editorCursorColor  = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::black , umba::term::colors::magenta, false, false, false );
+    auto editorCursorColor  = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::black   , umba::term::colors::cyan , false, false, false );
+
+    auto redColor           = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::red     , umba::term::colors::black, false, false, false );
+    auto greenColor         = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::green   , umba::term::colors::black, false, false, false );
+    auto yellowColor        = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::yellow  , umba::term::colors::black, false, false, false );
+    auto blueColor          = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::blue    , umba::term::colors::black, false, false, false );
+    auto magentaColor       = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::magenta , umba::term::colors::black, false, false, false );
+    auto cyanColor          = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::cyan    , umba::term::colors::black, false, false, false );
+    auto whiteColor         = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::white   , umba::term::colors::black, false, false, false );
+
+    auto redBrColor         = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::red     , umba::term::colors::black, true , false, false );
+    auto greenBrColor       = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::green   , umba::term::colors::black, true , false, false );
+    auto yellowBrColor      = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::yellow  , umba::term::colors::black, true , false, false );
+    auto blueBrColor        = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::blue    , umba::term::colors::black, true , false, false );
+    auto magentaBrColor     = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::magenta , umba::term::colors::black, true , false, false );
+    auto cyanBrColor        = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::cyan    , umba::term::colors::black, true , false, false );
+    auto whiteBrColor       = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::white   , umba::term::colors::black, true , false, false );
+    //auto Color           = UMBA_TERM_COLORS_MAKE_COMPOSITE( umba::term::colors::   , umba::term::colors::black, false, false, false );
+
+
+
 
     console_helpers::SimpleHandleCtrlC ctrlC; // ctrlC.isBreaked()
     tkf::SimpleTerminalInput simpleInput;
+
+    auto onEditTextUpdateView = [&]( const tkf::SimpleTerminalLineEditImplBase *pEdit, const std::string &text )
+                              {
+                                  if (!pEdit) return;
+                                  tout << term::move2line0;
+                                  tout << ">"; // Prompt
+                                  tout << color(greenColor) << text << color(redColor) << " " << color(normalColor) << " " << term::clear(2);
+                              };
 
     auto onEditTextModified = [&]( tkf::SimpleTerminalLineEditImplBase *pEdit, std::string &text )
                               {
@@ -91,25 +127,25 @@ INVEST_OPENAPI_MAIN()
                                       pEdit->setAclt("COMPLETION TEXT");
                                   else if (text=="R")
                                       pEdit->setAclt("OSN");
-
-                                  tout << term::move2line0;
-                                  tout << text << term::clear(2);
                               };
 
     auto onEditTextComplete = [&](tkf::SimpleTerminalLineEditImplBase *pEdit, std::string &text )
                               {
                                   tout << term::move2line0;
 
-                                  auto tmp = tkf::mergeOrderParams(tkf::splitOrderParamsString( tkf::prepareOrderParams(text) ));
+                                  auto tmp = tkf::mergeOrderParamsString(tkf::splitOrderParamsString( tkf::prepareOrderParams(text) ));
                                   tout << tmp << endl;
 
                                   return false;
                               };
 
-    auto lineEdit = tkf::makeSimpleTerminalLineEdit( onEditTextModified, onEditTextComplete );
+    auto lineEdit = tkf::makeSimpleTerminalLineEdit( onEditTextModified, onEditTextComplete, onEditTextUpdateView );
 
     lineEdit.setCaseConvert(1); // upper case
 
+
+    // onEditTextUpdateView( 0, std::string() );
+    lineEdit.updateView();
 
     while( !ctrlC.isBreaked() )
     {
