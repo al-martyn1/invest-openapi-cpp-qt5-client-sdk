@@ -460,6 +460,16 @@ INVEST_OPENAPI_MAIN()
                                       return true; // Keep string for further editing
                                   }
 
+                                  if ( !terminalData.getInstrumentMarketGlass(orderParams.figi, instrumentGlass) )
+                                  {
+                                      oss << "Order Request: '" << canonicalOrderRequestString 
+                                          <<"': Error: no instrument Bids/Asks info"; // << endl;
+                                      terminalData.setStatus(QString::fromStdString(oss.str()));
+                                      updateStatusStr();
+                                      return true; // Keep string for further editing
+                                  }
+
+
                                   unsigned numLots = orderParams.calcNumLots( instrumentState.lotSize );
                                  
                                   orderParams = orderParams.getAdjusted( instrumentGlass.getPriceSpreadPoints(instrumentState.priceIncrement)
