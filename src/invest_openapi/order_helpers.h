@@ -26,6 +26,8 @@
 #include "openapi_limits.h"
 #include "cpp_helpers.h"
 
+#include "order_params.h"
+
 
 //----------------------------------------------------------------------------
 namespace invest_openapi
@@ -188,6 +190,63 @@ void splitOrdersByOperationType( const VectorType   &src
 }
 
 //----------------------------------------------------------------------------
+
+
+
+struct OrderRequestData
+{
+    std::string    orderInputParams;
+    std::string    orderAdjustedParams;
+
+    OrderParams    orderParams;
+
+    QElapsedTimer  operationTimer;
+
+    QSharedPointer< OpenApiCompletableFuture< OpenAPI::MarketOrderResponse > >      marketOrderResponse = 0;
+    QSharedPointer< OpenApiCompletableFuture< OpenAPI::LimitOrderResponse  > >      limitOrderResponse  = 0;
+
+
+    bool isMarketOrderRequest() const { return (marketOrderResponse!=0); }
+    bool isLimitOrderRequest () const { return (limitOrderResponse!=0); }
+    bool hasActiveRequest    () const { return isMarketOrderRequest() || isLimitOrderRequest(); }
+
+
+    bool isCompleted() const
+    {
+        if (marketOrderResponse!=0) return marketOrderResponse->isCompleted();
+        if (limitOrderResponse !=0) return limitOrderResponse ->isCompleted();
+        return false;
+    }
+
+    bool isFinished() const // Same as isCompleted
+    {
+        if (marketOrderResponse!=0) return marketOrderResponse->isFinished();
+        if (limitOrderResponse !=0) return limitOrderResponse ->isFinished();
+        return false;
+    }
+
+    bool isCompletionError() const
+    {
+        if (marketOrderResponse!=0) return marketOrderResponse->isCompletionError();
+        if (limitOrderResponse !=0) return limitOrderResponse ->isCompletionError();
+        return false;
+    }
+
+    bool isResultValid() const // Same as isCompletionError
+    {
+        if (marketOrderResponse!=0) return marketOrderResponse->isResultValid();
+        if (limitOrderResponse !=0) return limitOrderResponse ->isResultValid();
+        return false;
+    }
+
+
+
+
+}; // OrderRequestData
+
+
+
+
 
 
 

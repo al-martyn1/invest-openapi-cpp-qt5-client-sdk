@@ -75,6 +75,10 @@
 
 #include "invest_openapi/terminal_input.h"
 
+#include "invest_openapi/placed_order_info.h"
+
+
+
 
 umba::StdStreamCharWriter      coutWriter(std::cout);
 umba::StdStreamCharWriter      cerrWriter(std::cerr);
@@ -196,6 +200,9 @@ INVEST_OPENAPI_MAIN()
     
     QSharedPointer< tkf::OpenApiCompletableFuture<tkf::PortfolioCurrenciesResponse> >               portfolioCurrenciesResponse = pOpenApi->portfolioCurrencies();
     QDateTime                                                                                       lastPortfolioCurrenciesResponseLocalDateTime = QDateTime::currentDateTime();
+
+
+    std::map< std::string, tkf::OrderRequestData >     activeOrderRequests;
     
 
     tkf::SimpleTerminalLineEditImplBase  *pTerminalInputEdit = 0;
@@ -348,7 +355,13 @@ INVEST_OPENAPI_MAIN()
 
     auto updateFigiScreen =  [&]( QString figi ) { updateScreen(); };
 
-    auto updateStatusStr  =  [&]() { updateScreen(); };
+    auto updateStatusStr  =  [&]() 
+                             { 
+                                 tout << term::move2abs0 ;
+
+                                 tout << "[" << terminalData.getStatusDateTimeStr().toStdString() << "] " << terminalData.getStatus().toStdString(); // << endl;
+                                 tout << term::clear(2);
+                             };
 
 
 
@@ -364,6 +377,8 @@ INVEST_OPENAPI_MAIN()
                                   {
                                       // We got an 'place order' command
 
+                                      bool acltSet = false;
+
                                       std::vector<std::string> orderParamsStrVec = tkf::splitOrderParamsString( tmpText );
 
                                       if ( orderParamsStrVec.size()>1 ) // at least 2 and last - is id
@@ -373,30 +388,139 @@ INVEST_OPENAPI_MAIN()
                                           {
                                               QString qIdCandy  = QString::fromStdString(idCandy);
                                               QString qFoundId   = terminalData.getTickerLikeThis( qIdCandy );
-                                              if (!qFoundId.isEmpty())
+                                              if (!qFoundId.isEmpty() && qFoundId.size()>qIdCandy.size() )
                                               {
                                                   QString hintStr = qFoundId;
                                                   hintStr.remove( 0, qIdCandy.size() );
                                                   hintStr += " ";
                                                   pEdit->setAclt(hintStr.toStdString());
+                                                  acltSet = true;
                                               }
                                           }
                                       }
+
+                                      if (!acltSet)
+                                      {
+                                          pEdit->clrAclt();
+                                      }
+
                                   }
 
                               };
 
-    auto onEditTextComplete = [&](tkf::SimpleTerminalLineEditImplBase *pEdit, std::string &text )
+
+    auto onEditTextComplete = [&](tkf::SimpleTerminalLineEditImplBase *pEdit, std::string &text ) -> bool
                               {
-                                  auto tmp = tkf::mergeOrderParamsString(tkf::splitOrderParamsString( tkf::prepareOrderParams(text) ));
+                                  auto canonicalOrderRequestString = tkf::mergeOrderParamsString(tkf::splitOrderParamsString( tkf::prepareOrderParams(text) ));
 
-                                  terminalData.setStatus(QString::fromStdString(tmp));
+                                  tkf::OrderParams orderParams;
 
-                                  updateStatusStr();
-                                  // printEditorText(text);
+                                  int parsingRes = tkf::parseOrderParams( tkf::splitOrderParamsString( tkf::prepareOrderParams(canonicalOrderRequestString) )
+                                                                        , dicts, orderParams
+                                                                        );
 
-                                  return false;
+                                  std::ostringstream oss;
+
+                                  if (parsingRes<0)
+                                  {
+                                      oss << "Order Request: '" << canonicalOrderRequestString 
+                                          <<"': Error: invalid or missing argument #" << -parsingRes; // << endl;
+                                      terminalData.setStatus(QString::fromStdString(oss.str()));
+                                      updateStatusStr();
+                                      return true; // Keep string for further editing
+                                  }
+
+                                  tkf::MarketInstrumentState   instrumentState;
+                                  tkf::MarketGlass             instrumentGlass;
+
+                                  if ( !terminalData.getInstrumentMarketState(orderParams.figi, instrumentState) || !instrumentState.isTradeStatusNormalTrading() )
+                                  {
+                                      oss << "Order Request: '" << canonicalOrderRequestString 
+                                          <<"': Error: instrument is not currently in trading"; // << endl;
+                                      terminalData.setStatus(QString::fromStdString(oss.str()));
+                                      updateStatusStr();
+                                      return true; // Keep string for further editing
+                                  }
+
+                                  if ( instrumentState.lotSize == 0 )
+                                  {
+                                      oss << "Order Request: '" << canonicalOrderRequestString 
+                                          <<"': Error: unknown instrument lot size"; // << endl;
+                                      terminalData.setStatus(QString::fromStdString(oss.str()));
+                                      updateStatusStr();
+                                      return true; // Keep string for further editing
+                                  }
+
+                                  if ( instrumentState.priceIncrement==0 )
+                                  {
+                                      oss << "Order Request: '" << canonicalOrderRequestString 
+                                          <<"': Error: unknown instrument price increment"; // << endl;
+                                      terminalData.setStatus(QString::fromStdString(oss.str()));
+                                      updateStatusStr();
+                                      return true; // Keep string for further editing
+                                  }
+
+                                  unsigned numLots = orderParams.calcNumLots( instrumentState.lotSize );
+                                 
+                                  orderParams = orderParams.getAdjusted( instrumentGlass.getPriceSpreadPoints(instrumentState.priceIncrement)
+                                                                       , instrumentState.priceIncrement
+                                                                       , instrumentGlass.getAsksMinPrice()
+                                                                       , instrumentGlass.getBidsMaxPrice()
+                                                                       );
+                                 
+                                  if (!orderParams.isLimitPriceCorrect(instrumentGlass.getAsksMinPrice(), instrumentGlass.getBidsMaxPrice()))
+                                  {
+                                      oss << "Order Request: '" << canonicalOrderRequestString 
+                                          <<"': Error: may be wrong price taken, or operation type was confused"; // << endl;
+                                      terminalData.setStatus(QString::fromStdString(oss.str()));
+                                      updateStatusStr();
+                                      return true; // Keep string for further editing
+                                  }
+
+
+                                  // Тут начинаем веселье
+
+                                  if (activeOrderRequests.find(canonicalOrderRequestString)!=activeOrderRequests.end())
+                                  {
+                                      oss << "Order Request: '" << canonicalOrderRequestString 
+                                          <<"': Error: order is already in progress"; // << endl;
+                                      terminalData.setStatus(QString::fromStdString(oss.str()));
+                                      updateStatusStr();
+                                      return true; // Keep string for further editing
+                                  }
+
+
+                                  tkf::OrderRequestData &newOrderRequestData = activeOrderRequests[ canonicalOrderRequestString ];
+
+                                  newOrderRequestData.orderInputParams    = canonicalOrderRequestString;
+                                  newOrderRequestData.orderAdjustedParams = orderParams.toString();
+                                  newOrderRequestData.orderParams         = orderParams;
+                                  
+                                  newOrderRequestData.operationTimer.start();
+
+                                  if (orderParams.isOrderTypeLimit())
+                                  {
+                                      newOrderRequestData.limitOrderResponse = pOpenApi->ordersLimitOrder( orderParams.figi
+                                                                                                         , orderParams.getOpenApiOperationType()
+                                                                                                         , numLots, orderParams.orderPrice
+                                                                                                         );
+                                  }
+                                  else
+                                  {
+                                      newOrderRequestData.marketOrderResponse = pOpenApi->ordersMarketOrder( orderParams.figi
+                                                                                                         , orderParams.getOpenApiOperationType()
+                                                                                                         , numLots
+                                                                                                         );
+                                  }
+
+                                  oss << "Order Request: '" << canonicalOrderRequestString 
+                                      <<"': queued with actual value '" << newOrderRequestData.orderAdjustedParams << "'";
+                                  terminalData.setStatus(QString::fromStdString(oss.str()));
+                                      updateStatusStr();
+                                  return false; // Allow new input
+
                               };
+
 
     auto onEditUpdateView = [&]( const tkf::SimpleTerminalLineEditImplBase *pEdit, const std::string &text )
                               {
@@ -550,9 +674,105 @@ INVEST_OPENAPI_MAIN()
                                               auto operationsResponse   = pOpenApi->operations( operationsMaxAge, figi);
                                               awaitingOperationResponses[figi] = operationsResponse;
                                           };
-                                           
-    //
-    
+
+
+    auto checkActiveOrderRequests = [&]()
+                                    {
+                                        // std::map< std::string, tkf::OrderRequestData > aliveRequests
+
+                                        std::map< std::string, tkf::OrderRequestData >::const_iterator it = activeOrderRequests.begin();
+
+                                        for( ; it!=activeOrderRequests.end(); ++it)
+                                        {
+                                            if (!it->second.isFinished())
+                                                continue;
+
+                                            if (!it->second.isResultValid())
+                                            {
+                                                std::ostringstream oss;
+
+                                                oss << "Order Request: '" << it->first << "' (completed in " << it->second.operationTimer.elapsed() << "ms): "
+                                                    << "Error: ";
+
+                                                if (it->second.isLimitOrderRequest())
+                                                {
+                                                    oss << it->second.limitOrderResponse->getErrorMessage().toStdString();
+                                                }
+                                                else
+                                                {
+                                                    oss << it->second.marketOrderResponse->getErrorMessage().toStdString();
+                                                }
+                                            
+                                                terminalData.setStatus(QString::fromStdString(oss.str()));
+                                                updateStatusStr();
+
+                                                activeOrderRequests.erase( it );
+
+                                                return; // Остальное - как-нибудь потом
+
+                                            }
+
+                                            // Good state
+
+                                            tkf::PlacedOrderInfo   placedOrderInfo;
+
+                                            if (it->second.isLimitOrderRequest())
+                                            {
+                                                placedOrderInfo = tkf::PlacedOrderInfo::fromOrderResponse(it->second.limitOrderResponse->result());
+                                            }
+                                            else
+                                            {
+                                                placedOrderInfo = tkf::PlacedOrderInfo::fromOrderResponse(it->second.marketOrderResponse->result());
+                                            }
+
+                                            std::ostringstream oss;
+
+                                            oss << "Order Request: '" << it->first << "' (completed in " << it->second.operationTimer.elapsed() << "ms): "
+                                                << "Success. "
+                                                << "Trk ID: " << placedOrderInfo.trackingId.toStdString() << ". "
+                                                << "Op Status: " << placedOrderInfo.status.toStdString() << ". "
+                                                << "Order ID: " << placedOrderInfo.orderId.toStdString() << ". "
+                                                << "Order Status: " << placedOrderInfo.orderStatus.asJson().toStdString() << ". "
+                                                ;
+
+                                            terminalData.setStatus(QString::fromStdString(oss.str()));
+                                            updateStatusStr();
+
+                                            activeOrderRequests.erase( it );
+
+                                            // placedOrderInfo - наверное нужно куда-то сохранить
+
+                                            return; // Остальное - как-нибудь потом
+                                        
+                                        }
+                                    };
+
+/*
+
+                                      oss << "Order Request: '" << canonicalOrderRequestString 
+                                          <<"': Error: order is already in progress"; // << endl;
+                                      terminalData.setStatus(QString::fromStdString(oss.str()));
+                                      return true; // Keep string for further editing
+
+
+
+    std::string    orderInputParams;
+    std::string    orderAdjustedParams;
+
+    OrderParams    orderParams;
+
+    QElapsedTimer  operationTimer;
+
+    QSharedPointer< OpenApiCompletableFuture< OpenAPI::MarketOrderResponse > >      marketOrderResponse = 0;
+    QSharedPointer< OpenApiCompletableFuture< OpenAPI::LimitOrderResponse  > >      limitOrderResponse  = 0;
+
+
+    bool isMarketOrderRequest() const { return (marketOrderResponse!=0); }
+    bool isLimitOrderRequest () const { return (limitOrderResponse!=0); }
+    bool hasActiveRequest    () const { return isMarketOrderRequest() || isLimitOrderRequest(); }
+
+*/
+                                    
 
     /*
         Делать запрос по ордерам один раз в конце списка инструментов - не дело.
@@ -616,6 +836,8 @@ INVEST_OPENAPI_MAIN()
         QTest::qWait(1);
 
         bool bUpdateScreen = false;
+
+        checkActiveOrderRequests();
 
         if (ordersResponse && ordersResponse->isFinished())
         {

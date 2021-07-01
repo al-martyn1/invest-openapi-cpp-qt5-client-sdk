@@ -366,6 +366,9 @@ std::string prepareOrderParamsString( const std::string &str )
 
     for( auto ch : str )
     {
+        if (ch>='a' && ch<='z')
+            ch = ch - 'a' + 'A';
+
         if (!resStr.empty() && isOrderParamsStringSpecialChar(resStr.back()) && ch!=' ')
         {
             resStr.append(1, ' ');

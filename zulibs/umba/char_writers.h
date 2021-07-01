@@ -862,6 +862,7 @@ public:
 
                 if (numPositionsToClear>0)
                 {
+                    term::win32::setConsoleTextAttribute( m_hCon, FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE );
                     DWORD charsWritten = 0;
                     FillConsoleOutputCharacter( m_hCon, (TCHAR)' ', numPositionsToClear, curCoords, &charsWritten);
                 }
@@ -902,6 +903,7 @@ public:
                 if (maxLines>=0)
                     remainingLines = maxLines;
 
+                term::win32::setConsoleTextAttribute( m_hCon, FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE );
                 FillConsoleOutputCharacter( m_hCon, (TCHAR)' ', (conSize.X - curCoords.X) + (remainingLines)*conSize.X , curCoords, &charsWritten);
             }
         }

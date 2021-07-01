@@ -726,8 +726,10 @@ public:
             if (ticker.isEmpty())
                 continue;
 
-            if (ticker.startsWith(t, Qt::CaseInsensitive))
+            if (ticker.startsWith(t, Qt::CaseInsensitive)  /* && ticker.size()>t.size() */  )
+            {
                 resSet.insert(ticker);
+            }
         }
 
         return resSet;
@@ -739,6 +741,34 @@ public:
         if (ids.size()!=1)
             return QString();
         return *ids.begin();
+    }
+
+
+    //------------------------------
+    bool getInstrumentMarketState( QString figi, MarketInstrumentState &st ) const
+    {
+        figi = pDicts->findFigiByAnyIdString(figi);
+
+        std::map< QString, MarketInstrumentState >::const_iterator it = instrumentStates.find(figi);
+        if (it==instrumentStates.end())
+            return false;
+
+        st = it->second;
+
+        return true;
+    }
+
+    bool getInstrumentMarketGlass( QString figi, MarketGlass &gl ) const
+    {
+        figi = pDicts->findFigiByAnyIdString(figi);
+
+        std::map< QString, MarketGlass >::const_iterator it = instrumentGlasses.find(figi);
+        if (it==instrumentGlasses.end())
+            return false;
+
+        gl = it->second;
+
+        return true;
     }
 
 
