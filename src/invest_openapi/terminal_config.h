@@ -33,6 +33,15 @@ struct TerminalConfig
 
     std::vector< FieldFormat >  fieldsFormat;
 
+    bool hbreakCaptionBefore = false;
+    bool hbreakCaptionAfter  = false;
+    bool hbreakTableAfter    = false;
+    int  hbreakRegular       = 0;
+
+    QString hbreakStyleCaptionBefore;
+    QString hbreakStyleCaptionAfter ;
+    QString hbreakStyleTableAfter   ;
+    QString hbreakStyleRegular      ;
 
 
     /*
@@ -160,6 +169,20 @@ struct TerminalConfig
 
 
     //------------------------------
+    QString loadHBreakStyle( const QSettings &settings, const QString &styleName ) const
+    {
+        QString style = settings.value( styleName, QVariant(QString(" ")) ).toString();
+
+        if (style.isEmpty())
+            style = QString(" ");
+
+        if (style.size()>1)
+            style.remove( 1, style.size()-1 );
+
+        return style;
+    }
+
+
     void load( const QSettings &settings )
     {
 
@@ -175,6 +198,42 @@ struct TerminalConfig
             fieldsFormat.push_back( loadFieldFormat( settings, id, defaults ) );
         }
 
+        hbreakCaptionBefore = settings.value("terminal.hbreaks.caption.before", QVariant(false) ).toBool();
+        hbreakCaptionAfter  = settings.value("terminal.hbreaks.caption.after" , QVariant(false) ).toBool();
+        hbreakTableAfter    = settings.value("terminal.hbreaks.table.after"   , QVariant(false) ).toBool();
+
+        hbreakRegular       = settings.value("terminal.hbreaks.regular", QVariant(int(0)) ).toInt();
+
+        hbreakStyleCaptionBefore = loadHBreakStyle( settings, "terminal.hbreaks.style.caption.before");
+        hbreakStyleCaptionAfter  = loadHBreakStyle( settings, "terminal.hbreaks.style.caption.after");
+        hbreakStyleTableAfter    = loadHBreakStyle( settings, "terminal.hbreaks.style.table.after");
+        hbreakStyleRegular       = loadHBreakStyle( settings, "terminal.hbreaks.style.regular");
+
+    }
+
+    char getHBreakStyleChar( const QString &style ) const
+    {
+        std::string str = style.toStdString();
+        if (str.empty())
+            return ' ';
+
+        return str[0];
+    }
+
+    std::string getHBreak( const QString &name, std::size_t len ) const
+    {
+        char ch = ' ';
+
+        if (name=="caption.before")
+            ch = getHBreakStyleChar(hbreakStyleCaptionBefore);
+        else if (name=="caption.after")
+            ch = getHBreakStyleChar(hbreakStyleCaptionAfter);
+        else if (name=="table.after")
+            ch = getHBreakStyleChar(hbreakStyleTableAfter);
+        else if (name=="regular")
+            ch = getHBreakStyleChar(hbreakStyleRegular);
+
+        return std::string( len, ch );
     }
 
 

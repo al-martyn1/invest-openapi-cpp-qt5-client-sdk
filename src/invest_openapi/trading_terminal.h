@@ -773,6 +773,22 @@ public:
 
 
     //------------------------------
+    std::vector< std::size_t > calcColPositionsBySizes( const std::vector< std::size_t > &sizesVec ) const
+    {
+        std::vector< std::size_t > posVec;
+
+        std::size_t pos = 0;
+
+        for( auto sz: sizesVec)
+        {
+            posVec.push_back(pos);
+            pos += sz;
+        }
+
+        return posVec;
+    }
+
+    //------------------------------
     std::size_t getMainViewColsCount() const
     {
         return pTermConfig->fieldsFormat.size();
@@ -790,6 +806,24 @@ public:
         }
 
         return res;
+    }
+
+    std::vector< std::size_t > getMainViewColPositions() const
+    {
+        return calcColPositionsBySizes( getMainViewColSizes() );
+    }
+
+    std::size_t getMainViewTotalWidth() const
+    {
+        std::vector< std::size_t > sizes = getMainViewColSizes();
+        if (sizes.empty())
+            return 0;
+
+        std::vector< std::size_t > positions = calcColPositionsBySizes(sizes);
+        if (positions.empty())
+            return 0;
+
+        return positions.back() + sizes.back();
     }
 
     std::string formatMainViewColCaption( std::size_t colNo ) const

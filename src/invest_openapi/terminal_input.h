@@ -313,9 +313,9 @@ public:
                 if (linePrevStr!=line)
                 {
                     onTextModified( this, line );
-                    updateView();
                 }
 
+                updateView();
             }
             else if (ch==0x0A)
             {

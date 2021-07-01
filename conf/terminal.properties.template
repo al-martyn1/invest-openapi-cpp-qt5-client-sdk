@@ -1,4 +1,16 @@
-terminal.columns.default.caption
+terminal.hbreaks.caption.before = true
+terminal.hbreaks.caption.after  = true
+terminal.hbreaks.table.after    = true
+terminal.hbreaks.regular        = 4
+
+terminal.hbreaks.style.caption.before = -
+terminal.hbreaks.style.caption.after  = -
+terminal.hbreaks.style.table.after    = -
+terminal.hbreaks.style.regular        = -
+
+
+
+;terminal.columns.default.caption
 terminal.columns.default.align.caption = center
 terminal.columns.default.left = 1
 terminal.columns.default.right = 0
@@ -17,12 +29,12 @@ terminal.columns.VB.right             = 0
 terminal.columns.VB.width             = 1
 terminal.columns.VB.align             = center
 
-terminal.columns.VB1.caption           = |
-terminal.columns.VB1.align.caption     = center
-terminal.columns.VB1.left              = 0
-terminal.columns.VB1.right             = 0
-terminal.columns.VB1.width             = 1
-terminal.columns.VB1.align             = center
+terminal.columns.VB1.caption          = |
+terminal.columns.VB1.align.caption    = center
+terminal.columns.VB1.left             = 0
+terminal.columns.VB1.right            = 0
+terminal.columns.VB1.width            = 1
+terminal.columns.VB1.align            = center
 
 terminal.columns.VB2.caption          = |
 terminal.columns.VB2.align.caption    = right
@@ -45,12 +57,12 @@ terminal.columns.SP.right             = 0
 terminal.columns.SP.width             = 1
 terminal.columns.SP.align             = center
 
-terminal.columns.SP1.caption           = _
-terminal.columns.SP1.align.caption     = center
-terminal.columns.SP1.left              = 0
-terminal.columns.SP1.right             = 0
-terminal.columns.SP1.width             = 1
-terminal.columns.SP1.align             = center
+terminal.columns.SP1.caption          = _
+terminal.columns.SP1.align.caption    = center
+terminal.columns.SP1.left             = 0
+terminal.columns.SP1.right            = 0
+terminal.columns.SP1.width            = 1
+terminal.columns.SP1.align            = center
 
 terminal.columns.SP3.caption          = _
 terminal.columns.SP3.align.caption    = center
@@ -64,8 +76,8 @@ terminal.columns.SP3.align            = center
 ;                       FIGI,
 terminal.columns = TICKER,INSTR_STATE,PRICE_INC,LOT_SIZE,PORTFOLIO_QUANTITY,PORTFOLIO_EXPECTED_YELD,\
 VB1,PORTFOLIO_PRICE,CUR_PRICE,\
-VB2,BEST_BID,SP,SP,SP,SPREAD_POINTS,BEST_ASK,\
 VB2,LAST_BUY_QUANTITY,LAST_BUY_PRICE,LAST_SELL_PRICE,LAST_SELL_QUANTITY,SP,\
+VB2,BEST_BID,SP,SP,SP,SPREAD_POINTS,BEST_ASK,\
 VB,MAX_BID_QUANTITY,MAX_BID_PRICE,SP,SP,SP,SPREAD_POINTS,MIN_ASK_PRICE,MIN_ASK_QUANTITY,\
 VB2,CUR_PRICE,SP,PORTFOLIO_PRICE,SP,INSTR_STATE,TICKER
 

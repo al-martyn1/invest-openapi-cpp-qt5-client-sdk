@@ -245,6 +245,44 @@ INVEST_OPENAPI_MAIN()
                                  // tout << text << term::clear(2);
                                  //tout << text << term::clear(2);
 
+                                 tout << term::move2abs0 ;
+
+                                 tout << term::move2down;
+                                 tout << term::move2down;
+
+                                 tout << term::move2down;
+                                 tout << term::move2down;
+
+                                 // Caption
+
+                                 if (pTermConfig->hbreakCaptionBefore)
+                                     tout << term::move2down;
+                                 if (pTermConfig->hbreakCaptionAfter)
+                                     tout << term::move2down;
+
+                                 tout << term::move2down;
+
+                                 // Body
+
+                                 int nFigis = terminalData.getFigiCount();
+                                 int nFigi  = 0;
+                                 for(; nFigi<nFigis; ++nFigi)
+                                 {
+                                     if (pTermConfig->hbreakStyleRegular!=0 && nFigi && nFigi!=(nFigis-1) && (nFigi%pTermConfig->hbreakRegular)==0)
+                                     {
+                                         tout << term::move2down;
+                                     }
+
+                                     tout << term::move2down;
+                                 }
+
+                                 if (pTermConfig->hbreakTableAfter)
+                                 {
+                                     tout << term::move2down;
+                                 }
+
+                                 tout << term::move2down;
+
                                  tout << term::move2line0;
                                  tout << ">"; // Prompt
                                  tout << color(editorColor) << text;
@@ -305,6 +343,8 @@ INVEST_OPENAPI_MAIN()
                                  std::vector< std::size_t > mvColSizes = terminalData.getMainViewColSizes();
 
                                  std::size_t xPos = 0;
+
+                                 std::size_t mainViewTotalWidth = terminalData.getMainViewTotalWidth();
                                  
 
                                  // Caption
@@ -312,11 +352,31 @@ INVEST_OPENAPI_MAIN()
 
                                  if (terminalData.isCaptionChanged())
                                  {
+                                     if (pTermConfig->hbreakCaptionBefore)
+                                     {
+                                         tout << pTermConfig->getHBreak("caption.before", mainViewTotalWidth);
+                                         tout << term::move2down;
+                                     }
+
                                      for( std::size_t nCol=0; nCol!=terminalData.getMainViewColsCount(); xPos+=mvColSizes[nCol], ++nCol)
                                      {
                                          tout << term::move2lpos(xPos) << term::clear_line((int)mvColSizes[nCol]);
                                          tout << terminalData.formatMainViewColCaption(nCol); // << endl;
                                      }
+
+                                     if (pTermConfig->hbreakCaptionAfter)
+                                     {
+                                         tout << term::move2down;
+                                         tout << pTermConfig->getHBreak("caption.after", mainViewTotalWidth);
+                                     }
+
+                                 }
+                                 else
+                                 {
+                                     if (pTermConfig->hbreakCaptionBefore)
+                                         tout << term::move2down;
+                                     if (pTermConfig->hbreakCaptionAfter)
+                                         tout << term::move2down;
                                  }
 
                                  tout << term::move2down;
@@ -330,6 +390,13 @@ INVEST_OPENAPI_MAIN()
                                  int nFigi  = 0;
                                  for(; nFigi<nFigis; ++nFigi)
                                  {
+                                     if (pTermConfig->hbreakStyleRegular!=0 && nFigi && nFigi!=(nFigis-1) && (nFigi%pTermConfig->hbreakRegular)==0)
+                                     {
+                                         if (terminalData.isCaptionChanged())
+                                             tout << pTermConfig->getHBreak("regular", mainViewTotalWidth);
+                                         tout << term::move2down;
+                                     }
+
                                      auto figi = terminalData.getFigiByIndex(nFigi);
                                      if (terminalData.isFigiChanged(figi))
                                          printFigiInfoLine( figi );
@@ -337,12 +404,21 @@ INVEST_OPENAPI_MAIN()
                                      tout << term::move2down;
                                  }
 
+                                 if (pTermConfig->hbreakTableAfter)
+                                 {
+                                     if (terminalData.isCaptionChanged())
+                                         tout << pTermConfig->getHBreak("table.after", mainViewTotalWidth);
+                                     tout << term::move2down;
+                                 }
+
                                  tout << term::move2down;
-                                 tout << term::clear(-1);
 
 
-                                 if (pTerminalInputEdit)
-                                     pTerminalInputEdit->updateView();
+                                 // tout << term::clear(-1); // Не надо ничего очищать
+
+
+                                 // if (pTerminalInputEdit)
+                                 //    pTerminalInputEdit->updateView(); // редактор, когда надо, сам себя обновляет
                                  //printEditorText(text);
 
                                  // tout << term::caret(1);
@@ -373,11 +449,15 @@ INVEST_OPENAPI_MAIN()
                                   if (tmpText.empty())
                                       return;
 
-                                  if (tmpText[0]=='-' || tmpText[0]=='+')
+                                  bool acltSet = false;
+
+                                  if (!text.empty() && text.back()==' ') 
+                                  {
+                                      // В оригинальном тексте надопоследней позиции - пробел, значит никаких подсказок не нужно
+                                  }
+                                  else if (tmpText[0]=='-' || tmpText[0]=='+')
                                   {
                                       // We got an 'place order' command
-
-                                      bool acltSet = false;
 
                                       std::vector<std::string> orderParamsStrVec = tkf::splitOrderParamsString( tmpText );
 
@@ -398,12 +478,11 @@ INVEST_OPENAPI_MAIN()
                                               }
                                           }
                                       }
+                                  }
 
-                                      if (!acltSet)
-                                      {
-                                          pEdit->clrAclt();
-                                      }
-
+                                  if (!acltSet)
+                                  {
+                                      pEdit->clrAclt();
                                   }
 
                               };
@@ -526,7 +605,7 @@ INVEST_OPENAPI_MAIN()
                                   oss << "Order Request: '" << canonicalOrderRequestString 
                                       <<"': queued with actual value '" << newOrderRequestData.orderAdjustedParams << "'";
                                   terminalData.setStatus(QString::fromStdString(oss.str()));
-                                      updateStatusStr();
+                                  updateStatusStr();
                                   return false; // Allow new input
 
                               };
@@ -840,6 +919,8 @@ INVEST_OPENAPI_MAIN()
     tkf::connectStreamingWebSocket( pOpenApi, webSocket, onConnected, onDisconnected, onMessage );
 
 
+    pTerminalInputEdit->updateView();
+
 
     while( !ctrlC.isBreaked() )
     {
@@ -960,11 +1041,42 @@ INVEST_OPENAPI_MAIN()
        1) Нужно бы сделать настройку логов, и объект, который кутишные логи логгирует.
           Никакой ротации? Или как сделаем, при каждом сообщении - переоткрываем, а ротацию, кто хочет, делает сторонними средствами?
 
-       2) Нужно оптимизировать отображение, это не дело, что сейчас происходит - чутка сделано
+       2) Нужно оптимизировать отображение, это не дело, что сейчас происходит.
+          - чутка сделано
 
        3) Нужен ввод заявок - начал думать
+          - сделано
 
        4) Нужно подумать по поводу цветов - монохром очень скучен
+
+          Вариант - считываем QStringList, и затем ручками парсим, формат примерно такой:
+            
+            red, white-bg, bright, invert, blink
+
+            где: red       - цвет символа
+                 white-bg  - цвет фона
+                 bright    - яркость
+                 invert    - инверсия фона и цвета символа
+                 blink     - мигающий
+
+            цвет фона, яркость, инверсия, мигание - опциональны
+
+            bright, invert, blink - флаги
+
+            bright - вроде работает в виндовой консоли, invert, blink - хз - затачивалось 
+            всё под возможности ANSI-терминалов с Escape-последовательностями, 
+            для работы с STMки по UARTу с терминалом типа putty
+
+       5) Ещё нужен процентик, насколько текущая цена больше/меньше средней по портфелю.
+          Оно ещё влезает, а ещё что-то уже совсем с трудом
+
+       6) Поля, в которых сейчас отображается количество лотов, а надо бы - количество акций - 
+          я хочу полностью от этих сраных лотов отвязаться - с ним постоянно путанница.
+
+          Q_Buy, Q_Sell - вроде уже в штуках
+          Q_Bid, Q_Ask  - в лотах - остались только эти, похоже
+
+       7) Нужно ещё обдумать защиты от дурака
 
      */
     
