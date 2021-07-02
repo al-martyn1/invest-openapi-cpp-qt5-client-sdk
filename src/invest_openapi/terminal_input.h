@@ -209,6 +209,7 @@ class SimpleTerminalLineEditImplBase
     char           autocompletionKeyCode   = 0x09; // TAB
     int            caseConvertMode         = 0; // <0 - lower, 0 - keep, >0 - upper
     int            allowLeadingSpacesMode  = false; // Leading spaces not allowed
+    int            allowMultipleSpacesMode = false; // Multiple spaces not allowed
 
     //! \param text can be modified in this event handler
     virtual void onTextModified ( SimpleTerminalLineEditImplBase *pEdit, std::string &text ) { }
@@ -261,6 +262,9 @@ public:
 
     bool getAllowLeadingSpaces(        ) const { return allowLeadingSpacesMode; }
     void setAllowLeadingSpaces( bool a )       { allowLeadingSpacesMode = a; }
+
+    bool getAllowMultipleSpaces(        ) const { return allowMultipleSpacesMode; }
+    void setAllowMultipleSpaces( bool a )       { allowMultipleSpacesMode = a; }
 
 
     //! Return false if std, true if alter key used
@@ -317,7 +321,13 @@ public:
 
                 updateView();
             }
-            else if (ch==0x0A)
+            else if (ch==0x0A) // clear line command (from clipboard linefeed)
+            {
+                line.clear();
+                onTextModified( this, line );
+                updateView();
+            }
+            else if (ch==0x1B) // clear line - Escape pressed
             {
                 line.clear();
                 onTextModified( this, line );
@@ -331,6 +341,19 @@ public:
                     autocompletionString.clear();
                     onTextModified( this, line );
                     updateView();
+                }
+                else
+                {
+                    if (!line.empty() && line.back()==' ' && !allowMultipleSpacesMode)
+                    {
+                        // do nothing
+                    }
+                    else if (!line.empty())
+                    {
+                        line.append(1, ' ' );
+                        onTextModified( this, line );
+                        updateView();
+                    }
                 }
             }
             else if (isAsciiKeyChar(ch))
@@ -348,6 +371,10 @@ public:
                 // allowLeadingSpacesMode
 
                 if (line.empty() && (ch==' ') && !allowLeadingSpacesMode)
+                {
+                    // do nothing
+                }
+                else if (!line.empty() && line.back()==' ' && (ch==' ') && !allowMultipleSpacesMode)
                 {
                     // do nothing
                 }
