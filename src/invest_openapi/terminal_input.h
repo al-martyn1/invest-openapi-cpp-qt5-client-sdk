@@ -1,5 +1,8 @@
 #pragma once
 
+#include "umba/umba.h"
+#include "umba/debug_helpers.h"
+
 
 #include <vector>
 #include <string>
@@ -30,6 +33,9 @@ class SimpleTerminalInput
 
     #endif
 
+    bool divAsTab = true; // кнопка '/' на цифровой клавиатуре работает как Tab. Сейчас это очень удобное поведение, 
+                          // но в каких-то случаях возможно надо бы отключить эту фичу
+
 
 public:
 
@@ -41,6 +47,9 @@ public:
 
         #endif
     }
+
+    void setDivAsTab( bool b ) { divAsTab = b; }
+    bool getDivAsTab( ) const  { return divAsTab; }
 
 
     //! Non-blocking reading of keys pressed
@@ -94,12 +103,17 @@ public:
                             bool flagOnlyAltPressed   = !flagCtrlPressed &&  flagAltPressed && !flagShiftPressed;
                             bool flagOnlyShiftPressed = !flagCtrlPressed && !flagAltPressed &&  flagShiftPressed;
 
-                            if (irInBuf[i].Event.KeyEvent.wVirtualKeyCode==0x43 && flagOnlyCtrlPressed) // Ctrl+C pressed
+
+                            // Ctrl+C pressed
+                            if (irInBuf[i].Event.KeyEvent.wVirtualKeyCode==0x43 && flagOnlyCtrlPressed) 
                             {
                                 GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
                             }
-                            else if ( (irInBuf[i].Event.KeyEvent.wVirtualKeyCode==VK_INSERT && flagOnlyShiftPressed) // Shift+Ins - classic mode
-                                   || (irInBuf[i].Event.KeyEvent.wVirtualKeyCode==0x56 /* V key */  && flagOnlyCtrlPressed) // Ctrl+V - modern mode
+
+                            // Shift+Ins - classic mode
+                            else if ( (irInBuf[i].Event.KeyEvent.wVirtualKeyCode==VK_INSERT && flagOnlyShiftPressed) 
+                            // Ctrl+V - modern mode
+                                   || (irInBuf[i].Event.KeyEvent.wVirtualKeyCode==0x56 /* V key */  && flagOnlyCtrlPressed) 
                                     )
                             {
                                 // Нужно прочитать буфер обмена в текстовом режиме и скормить его содержимое в результирующий вектор
@@ -159,6 +173,10 @@ public:
                                 CloseClipboard();
 
                             }
+
+                            // VK_SPACE в сочетании с Ctrl или Shift - работает как VTab
+                            // Используем как альтернативный вариант для автокомплита
+                            // Основной вариант - по обычному табу - 0x09 - TAB
                             else if ( irInBuf[i].Event.KeyEvent.wVirtualKeyCode==VK_SPACE /* 0x20 */ 
                                    // && flagAltPressed // Alt+Space - windows native hotkey
                                    && (flagCtrlPressed || flagShiftPressed) // Use Ctrl+Space or Shift+Space instead
@@ -166,18 +184,67 @@ public:
                             {
                                 // https://ru.wikipedia.org/wiki/ASCII
                                 // 0x0B - VT - vertical tab
-                                // Используем как алтернативный вариант для автокомплита
-                                // Основной вариант - по обычному табу - 0x09 - TAB
                                 resVec.insert( resVec.end(), irInBuf[i].Event.KeyEvent.wRepeatCount, 0x0B );
                             }
+
+                            // DEL 0x7F delete - https://ru.wikipedia.org/wiki/ASCII
+                            // В строковом редакторе без возможности перемещаться влево-вправо и вставлять символы - ведёт себя как Backspace
+                            else if ( irInBuf[i].Event.KeyEvent.wVirtualKeyCode==VK_DELETE)
+                            {
+                                resVec.insert( resVec.end(), irInBuf[i].Event.KeyEvent.wRepeatCount, 0x7F );
+                            }
+
+                            // Стрелка вверх. Генерируем код 0x18 - в Far в ASCII-таблице он отображается как стрелка вверх, поэтому его и задействуем,
+                            // а вообще - это CAN 0x18 cancel
+                            else if ( irInBuf[i].Event.KeyEvent.wVirtualKeyCode==VK_UP)
+                            {
+                                resVec.insert( resVec.end(), irInBuf[i].Event.KeyEvent.wRepeatCount, 0x18 ); // VK_UP
+                            }
+
+                            // Стрелка вниз. Генерируем код 0x19 - в Far в ASCII-таблице он отображается как стрелка вниз, поэтому его и задействуем,
+                            // а вообще - это EM 0x19 end of medium
+                            else if ( irInBuf[i].Event.KeyEvent.wVirtualKeyCode==VK_DOWN)
+                            {
+                                resVec.insert( resVec.end(), irInBuf[i].Event.KeyEvent.wRepeatCount, 0x19 ); // VK_DOWN
+                            }
+
+                            // Кнопку '/' на цифровой клавиатуре удобно использовать, как Tab.
+                            else if ( irInBuf[i].Event.KeyEvent.wVirtualKeyCode==VK_DIVIDE)
+                            {
+                                if (divAsTab)
+                                    resVec.insert( resVec.end(), irInBuf[i].Event.KeyEvent.wRepeatCount, 0x09 );
+                                else
+                                    resVec.insert( resVec.end(), irInBuf[i].Event.KeyEvent.wRepeatCount, '/' );
+                            }
+
+                            // Ascii chars
                             else if (irInBuf[i].Event.KeyEvent.uChar.AsciiChar!=0)
                             {
                                 resVec.insert( resVec.end(), irInBuf[i].Event.KeyEvent.wRepeatCount, irInBuf[i].Event.KeyEvent.uChar.AsciiChar);
                             }
-                        }
-                    }
-                }
-            }
+
+
+                            #if 0
+
+                                // Пытаюсь поймать тут непонятно откуда возникающие фантомные символы, которые никто не вводил
+                               
+                                if (!resVec.empty() && (resVec.back()=='{' || resVec.back()=='}' || resVec.back()==';') )
+                                {
+                                    umba::debugBreak();
+                                }
+
+                            #endif
+
+
+                        } // if (irInBuf[i].Event.KeyEvent.bKeyDown)
+
+                    } // case KEY_EVENT:
+
+                } // switch(irInBuf[i].EventType)
+
+            } // for(auto i=0u; i!=32u; ++i)
+
+            // umba::debugBreak()
 
             return resVec;
 
@@ -211,6 +278,18 @@ class SimpleTerminalLineEditImplBase
     int            allowLeadingSpacesMode  = false; // Leading spaces not allowed
     int            allowMultipleSpacesMode = false; // Multiple spaces not allowed
 
+
+    bool           historyMode = false; // Up/Down - листаем историю, включается только когда строка полностью пуста
+                                        // Нажатие любой клавиши, кроме Up/Down - отключает режим истории
+
+    std::size_t    historyPos = 0;      // Текущий индекс при пролистывании истории
+
+    std::vector<std::string>  inputHistory;
+
+
+    //------------------------------
+    // Event handlers
+
     //! \param text can be modified in this event handler
     virtual void onTextModified ( SimpleTerminalLineEditImplBase *pEdit, std::string &text ) { }
 
@@ -219,6 +298,29 @@ class SimpleTerminalLineEditImplBase
 
     //! Updates View
     virtual void onUpdateView   ( const SimpleTerminalLineEditImplBase *pEdit, const std::string &text ) { }
+
+
+    //------------------------------
+    // Utilities
+
+    void putToHistory( const std::string &s )
+    {
+        // Старые элементы "всплывают" при повторном использовании
+        std::vector<std::string>::const_iterator it = inputHistory.begin();
+        for(; it!=inputHistory.end(); ++it)
+        {
+            if (s==*it)
+            {
+                inputHistory.erase(it);
+                break; // В нормальной ситуации повторов быть не должно. А если кто напортачил, тот ССЗБ
+            }
+        }
+
+        inputHistory.push_back(s); // Добавляем в конец - "новейшая история"
+
+    }
+
+
 
 public: 
 
@@ -272,7 +374,7 @@ public:
     void setAutocompletionKeyAlter( bool bAlter )  { autocompletionKeyCode = bAlter ? 0x0B : 0x09; }
 
     bool isAutocompletionKeyChar( char ch ) const  { return ch==autocompletionKeyCode; } 
-    bool isBackspaceKeyChar     ( char ch ) const  { return ch==0x08; } // BS 08 backspace
+    bool isBackspaceKeyChar     ( char ch ) const  { return ch==0x08 || ch==0x7F; } // BS 08 backspace or DEL 0x7F delete
     bool isEnterKeyChar         ( char ch ) const  { return ch==0x0D; } // CR 13 
     bool isAsciiKeyChar         ( char ch ) const  { return ch>=' ' && ch<0x7F; } // Basic ASCII
 
@@ -295,6 +397,123 @@ public:
             //if (!isAsciiKeyChar(ch))
             //    continue;
 
+
+/*
+    bool           historyMode = false; // Up/Down - листаем историю, включается только когда строка полностью пуста
+                                        // Нажатие любой клавиши, кроме Up/Down - отключает режим истории
+
+    std::size_t    historyPos = 0;      // Текущий индекс при пролистывании истории
+
+    std::vector<std::string>  inputHistory;
+
+    resVec.insert( resVec.end(), irInBuf[i].Event.KeyEvent.wRepeatCount, 0x18 ); // VK_UP
+    resVec.insert( resVec.end(), irInBuf[i].Event.KeyEvent.wRepeatCount, 0x19 ); VK_DOWN
+
+    putToHistory( const std::string &s )
+*/
+
+            if (ch==0x18 || ch==0x19) // VK_UP or VK_DOWN
+            {
+                if (!historyMode)
+                {
+                    if (!line.empty()) // History mode стартует, только если ничего не введено
+                        continue;
+
+                    if (inputHistory.empty()) // На пустой истории - не стартуем
+                        continue;
+
+                    if (ch==0x18) // VK_UP
+                    {
+                        historyMode = true; // Размотка истории начинается только клавишей VK_UP
+                        historyPos = inputHistory.size(); // Ниже будет декремент, и начнем с последнего элемента вектора
+                    }
+                    else // VK_DOWN
+                    {
+                        // ничего не делаем
+                    }
+                }
+
+
+                if (!historyMode) // Если не смогли стартовать исторический режим, толькопросто уходим в игнор
+                    continue; 
+
+
+                // Исторический режим активен
+                
+                if (ch==0x18) // VK_UP
+                {
+                    if (historyPos!=0) // Если до начала истории не добрались, то - работаем, иначе - сидим на месте
+                    {
+                        --historyPos;
+                        line = inputHistory[historyPos];
+                        // autocompletionString.clear(); 
+                        onTextModified( this, line );
+                        updateView();
+                    }
+                }
+                else // VK_DOWN
+                {
+                    if (historyPos<inputHistory.size())
+                        ++historyPos;
+
+                    if (historyPos>=inputHistory.size())
+                    {
+                        if (!line.empty())
+                        {
+                            line.clear();
+                            onTextModified( this, line );
+                            updateView();
+                        }
+
+                        historyMode = false; // Выключаем исторический режим - если будет надо, он опять включится по VK_UP
+                    }
+                    else // мотаем обратно
+                    {
+                        line = inputHistory[historyPos];
+                        // autocompletionString.clear(); 
+                        onTextModified( this, line );
+                        updateView();
+                    }
+                }
+                
+                continue;
+
+            }
+
+
+            // Какие-то другие кнопки - сбрасываем historyMode
+            historyMode = false;
+
+
+            if (isEnterKeyChar(ch))
+            {
+                if (line.empty())
+                    continue;
+
+                //auto linePrevStr = line;
+
+                bool bKeep = onEditCompleted( this, line );
+                if (!bKeep)
+                {
+                    putToHistory(line);
+                    line.clear();
+                }
+
+                autocompletionString.clear();
+
+                // if (linePrevStr!=line)
+                // {
+                //     onTextModified( this, line );
+                // }
+
+                updateView();
+
+                continue;
+            }
+
+
+
+
             if (isBackspaceKeyChar(ch))
             {
                 if (!line.empty())
@@ -304,32 +523,17 @@ public:
                     updateView();
                 }
             }
-            else if (isEnterKeyChar(ch))
-            {
-                auto linePrevStr = line;
-
-                bool bKeep = onEditCompleted( this, line );
-                if (!bKeep)
-                {
-                    line.clear();
-                }
-
-                if (linePrevStr!=line)
-                {
-                    onTextModified( this, line );
-                }
-
-                updateView();
-            }
             else if (ch==0x0A) // clear line command (from clipboard linefeed)
             {
                 line.clear();
+                autocompletionString.clear();
                 onTextModified( this, line );
                 updateView();
             }
             else if (ch==0x1B) // clear line - Escape pressed
             {
                 line.clear();
+                autocompletionString.clear();
                 onTextModified( this, line );
                 updateView();
             }

@@ -77,7 +77,7 @@
 
 #include "invest_openapi/placed_order_info.h"
 
-
+#include "invest_openapi/logging.h"
 
 
 umba::StdStreamCharWriter      coutWriter(std::cout);
@@ -137,6 +137,15 @@ INVEST_OPENAPI_MAIN()
     auto loggingConfig = *pLoggingConfig;
 
 
+    std::map<QString, QString> logHandlers = pLoggingConfig->getLogHandlers( logConfigFullFileName );
+
+    tkf::initLogging( logHandlers
+                    , pLoggingConfig->logDateTimeFormat
+                    , pLoggingConfig->logLevel
+                    , pLoggingConfig->logContext
+                    );
+
+    qDebug() << "Logging initialized";
 
     auto dataLogFullFilename = pLoggingConfig->getDataLogFullName( logConfigFullFileName, "", "test.dat" );
 
@@ -284,17 +293,19 @@ INVEST_OPENAPI_MAIN()
                                  tout << term::move2down;
 
                                  tout << term::move2line0;
-                                 tout << ">"; // Prompt
-                                 tout << color(editorColor) << text;
+                                 tout << color(pTermConfig->colors.inputPrompt) << ">"; // Prompt
+                                 tout << color(pTermConfig->colors.inputText  ) << text;
                                  
                                  if (!autocompleteHint.empty())
                                  {
-                                     tout << color(editorHintColor) << autocompleteHint;
+                                     tout << color(pTermConfig->colors.inputHint  ) << autocompleteHint;
                                  }
                                  
                                  tout << color(editorCursorColor);
                                  
-                                 tout << "_" << color(normalColor) << " " << term::clear(2);
+                                 tout << color(pTermConfig->colors.inputCaret ) << "_" << color(normalColor) << " " << term::clear(2);
+
+                                 //pTermConfig->colors.
 
                              };
 
@@ -311,7 +322,11 @@ INVEST_OPENAPI_MAIN()
                                  for( std::size_t nCol=0; nCol!=terminalData.getMainViewColsCount(); xPos+=mvColSizes[nCol], ++nCol)
                                  {
                                      tout << term::move2lpos(xPos) << term::clear_line((int)mvColSizes[nCol]);
-                                     tout << terminalData.formatMainViewField( figi, nCol ); // << endl;
+
+                                     auto cellClr  = umba::term::colors::white;
+                                     auto cellText = terminalData.formatMainViewField( figi, nCol, &cellClr );
+                                     tout << color(cellClr) << cellText
+                                          << color(pTermConfig->colors.tableText);
                                  }
 
                              };
@@ -354,20 +369,24 @@ INVEST_OPENAPI_MAIN()
                                  {
                                      if (pTermConfig->hbreakCaptionBefore)
                                      {
+                                         tout << color(pTermConfig->colors.captionHBreakBefore);
                                          tout << pTermConfig->getHBreak("caption.before", mainViewTotalWidth);
+                                         tout << color(pTermConfig->colors.tableText);
                                          tout << term::move2down;
                                      }
 
                                      for( std::size_t nCol=0; nCol!=terminalData.getMainViewColsCount(); xPos+=mvColSizes[nCol], ++nCol)
                                      {
                                          tout << term::move2lpos(xPos) << term::clear_line((int)mvColSizes[nCol]);
-                                         tout << terminalData.formatMainViewColCaption(nCol); // << endl;
+                                         tout << color(pTermConfig->colors.caption) << terminalData.formatMainViewColCaption(nCol); // << endl;
                                      }
 
                                      if (pTermConfig->hbreakCaptionAfter)
                                      {
                                          tout << term::move2down;
+                                         tout << color(pTermConfig->colors.captionHBreakAfter );
                                          tout << pTermConfig->getHBreak("caption.after", mainViewTotalWidth);
+                                         tout << color(pTermConfig->colors.tableText);
                                      }
 
                                  }
@@ -393,7 +412,11 @@ INVEST_OPENAPI_MAIN()
                                      if (pTermConfig->hbreakStyleRegular!=0 && nFigi && nFigi!=(nFigis-1) && (nFigi%pTermConfig->hbreakRegular)==0)
                                      {
                                          if (terminalData.isCaptionChanged())
+                                         {
+                                             tout << color(pTermConfig->colors.tableRegularHBreak);
                                              tout << pTermConfig->getHBreak("regular", mainViewTotalWidth);
+                                             tout << color(pTermConfig->colors.tableText);
+                                         }
                                          tout << term::move2down;
                                      }
 
@@ -407,7 +430,11 @@ INVEST_OPENAPI_MAIN()
                                  if (pTermConfig->hbreakTableAfter)
                                  {
                                      if (terminalData.isCaptionChanged())
+                                     {
+                                         tout << color(pTermConfig->colors.tableHBreakAfter);
                                          tout << pTermConfig->getHBreak("table.after", mainViewTotalWidth);
+                                         tout << color(pTermConfig->colors.tableText);
+                                     }
                                      tout << term::move2down;
                                  }
 
@@ -444,6 +471,23 @@ INVEST_OPENAPI_MAIN()
     auto onEditTextModified = [&]( tkf::SimpleTerminalLineEditImplBase *pEdit, std::string &text )
                               {
                                   //printEditorText(text);
+
+                                  if (text.empty())
+                                      return;
+
+                                  if (text[0]=='=')
+                                  {
+                                      // На клавиатуре минус '-' работает без шифта, с шифтом - даёт '_'
+                                      // Плюс же, наоборот, получается с шифтом, без шифта - выдаётся '='
+                                      // Довольно неудобно гонять шифт туда-сюда, тем более, что никакой нагрузки на символ '=' пока нет.
+                                      // Поэтому - корректируем ввод
+                                      // Текст нам даден по ссылке, и мы можем его модифицировать, как минимум - менять одни символы на другие
+                                      // (покакрайней мере, так предполагалось во время реализации редактора строки, и вроде должно работать)
+
+                                      text[0] = '+';
+                                  }
+
+
                                   auto tmpText = tkf::prepareOrderParamsString( text );
 
                                   if (tmpText.empty())
@@ -451,11 +495,13 @@ INVEST_OPENAPI_MAIN()
 
                                   bool acltSet = false;
 
-                                  if (!text.empty() && text.back()==' ') 
+                                  if ( /* !text.empty() &&  */ text.back()==' ') // оригинальный текст не пустой, проверка добавлена
                                   {
-                                      // В оригинальном тексте надопоследней позиции - пробел, значит никаких подсказок не нужно
+                                      // В оригинальном тексте на последней позиции - пробел, значит никаких подсказок не нужно
+                                      return;
                                   }
-                                  else if (tmpText[0]=='-' || tmpText[0]=='+')
+
+                                  if (tmpText[0]=='-' || tmpText[0]=='+')
                                   {
                                       // We got an 'place order' command
 
@@ -509,8 +555,21 @@ INVEST_OPENAPI_MAIN()
                                       return true; // Keep string for further editing
                                   }
 
+
+                                  if (pTermConfig->readOnlyMode)
+                                  {
+                                      oss << "Order Request: '" << canonicalOrderRequestString 
+                                          <<"': OK, but not sent due 'terminal.read-only' option";
+                                      terminalData.setStatus(QString::fromStdString(oss.str()));
+
+                                      return false; // Commnd Ok, allow to clear input
+                                  }
+
+
+
                                   tkf::MarketInstrumentState   instrumentState;
                                   tkf::MarketGlass             instrumentGlass;
+
 
                                   if ( !terminalData.getInstrumentMarketState(orderParams.figi, instrumentState) || !instrumentState.isTradeStatusNormalTrading() )
                                   {
@@ -578,6 +637,29 @@ INVEST_OPENAPI_MAIN()
                                       return true; // Keep string for further editing
                                   }
 
+                                  //NOTE: !!! debugging
+                                  // Temporary exit, for input debugging without real server calls
+                                  // return false; // Allow new input
+
+
+                                  // На самом деле досюда мы не доберёмся
+
+                                  bool newInstrument = false;
+
+                                  /*
+
+                                  if (terminalData.isKnownInstrument(orderParams.figi))
+                                  {
+                                      if ( !terminalData.addInstrument( orderParams.figi ) )
+                                      {
+                                          newInstrument = true;
+
+                                          // Нужно добавить инструмент в подписки на веб-сокете
+                                      }
+                                      
+                                  }
+                                  */
+
 
                                   tkf::OrderRequestData &newOrderRequestData = activeOrderRequests[ canonicalOrderRequestString ];
 
@@ -605,7 +687,18 @@ INVEST_OPENAPI_MAIN()
                                   oss << "Order Request: '" << canonicalOrderRequestString 
                                       <<"': queued with actual value '" << newOrderRequestData.orderAdjustedParams << "'";
                                   terminalData.setStatus(QString::fromStdString(oss.str()));
-                                  updateStatusStr();
+
+
+                                  if (!newInstrument)
+                                  {
+                                      updateStatusStr();
+                                  }
+                                  else
+                                  {
+                                      updateScreen(); // Full update
+                                  }
+                                  
+
                                   return false; // Allow new input
 
                               };
@@ -1080,6 +1173,13 @@ INVEST_OPENAPI_MAIN()
           и получаешь огромное количество, которое продается по текущей цене.
 
        8) Почему-то LastBuyPr/LastSellPr не обновляются.
+
+       9) ( *
+          } ;
+
+          Фантомно возникают
+
+       10) После окончания торгов почему-то не убрались заявки
 
      */
     

@@ -82,3 +82,4 @@ tmp
 /*.vspx
 /ivt
 /conf/*.properties
+/_logs/_tkf_simple_xterm/*.log

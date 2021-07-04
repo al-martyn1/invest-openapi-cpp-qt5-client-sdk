@@ -13,6 +13,7 @@
 #include <optional>
 #include <atomic>
 #include <deque>
+#include <cmath>
 
 #include <QString>
 #include <QTest>
@@ -271,7 +272,54 @@ struct InstrumentInfoLineData
     
     }
 
-    std::string format_field( const FieldFormat &ff ) const
+
+    static
+    int sign( int val )
+    {
+        if (val<0) return -1;
+        else if (val>0) return 1;
+        return 0;
+    }
+
+    static
+    int abs( int val )
+    {
+        if (val<0) return -val;
+        return val;
+    }
+
+    //------------------------------
+    std::string formatFieldAbsHelper( const FieldFormat &ff, bool allowAbsVals, int *pSignOut
+                                    , int val
+                                    ) const
+    {
+        if (!allowAbsVals || !pSignOut)
+            return invest_openapi::format_field( ff, val );
+
+
+        *pSignOut = sign(val);
+        return invest_openapi::format_field( ff, this->abs(val) );
+    }
+
+    std::string formatFieldAbsHelper( const FieldFormat &ff, bool allowAbsVals, int *pSignOut
+                                    , Decimal val, int precision = -1
+                                    ) const
+    {
+        if (!allowAbsVals || !pSignOut)
+            return invest_openapi::format_field( ff, val, precision );
+
+
+        *pSignOut = val.sign();
+        return invest_openapi::format_field( ff, val.abs(), precision );
+    }
+
+
+    //------------------------------
+    std::string format_field( const FieldFormat &ff
+                            , QSharedPointer<TerminalConfig> pTermConfig
+                            , bool allowAbsVals
+                            , int *pSignOut
+                            ) const
     {
         QString id = ff.id.toUpper();
 
@@ -321,11 +369,13 @@ struct InstrumentInfoLineData
             if (expYield==Decimal(0))
                 return format_field( ff, "-" );
 
-            return format_field( ff, expYield, 1 );
+            //return format_field( ff, expYield, 1 );
+            return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, expYield, 1 );
         }
         else if (id=="PORTFOLIO_QUANTITY")
         {
-            return format_field( ff, quantity );
+            // return format_field( ff, quantity );
+            return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, quantity );
         }
         else if (id=="CUR_PRICE")
         {
@@ -654,6 +704,8 @@ public:
 
         updatedFigis.insert(figi);
 
+        captionUpdated = true; // На самом деле оно заставляет перерисовывать все рамки
+
         return true;
     }
 
@@ -664,6 +716,24 @@ public:
              addInstrument(figi);
          }
     }
+
+    bool isKnownInstrument( QString figi ) const
+    {
+        figi = pDicts->findFigiByAnyIdString(figi);
+
+        for( auto fg : instrumentList )
+        {
+            if (fg==figi)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // addInstrument( QString figi )
+    
 
     //------------------------------
 
@@ -794,7 +864,6 @@ public:
         return pTermConfig->fieldsFormat.size();
     }
 
-
     std::vector< std::size_t > getMainViewColSizes() const
     {
         std::vector< std::size_t > res;
@@ -826,6 +895,8 @@ public:
         return positions.back() + sizes.back();
     }
 
+    //------------------------------
+
     std::string formatMainViewColCaption( std::size_t colNo ) const
     {
         if (colNo>=pTermConfig->fieldsFormat.size())
@@ -834,7 +905,11 @@ public:
         return format_field_caption( pTermConfig->fieldsFormat[colNo] );
     }
 
-    std::string formatMainViewField( QString figi, std::size_t colNo ) const
+    std::string formatMainViewField( QString figi, std::size_t colNo
+                                   #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+                                   , umba::term::colors::SgrColor *pColorOut = 0 
+                                   #endif
+                                   ) const
     {
         if (colNo>=pTermConfig->fieldsFormat.size())
             throw std::runtime_error( "TradingTerminalData::formatMainViewField: column index is out of range" );
@@ -845,16 +920,65 @@ public:
         std::map< QString, InstrumentInfoLineData >::const_iterator it = terminalLinesData.find(figi);
 
         if (it==terminalLinesData.end())
+        {
+            #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+            if (pColorOut)
+               *pColorOut = pTermConfig->colors.genericNormal;
+            #endif
             return "???";
+        }
 
-        return it->second.format_field(pTermConfig->fieldsFormat[colNo]);
+
+        bool allowAbsVals = true;
+
+        #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+        if (!pColorOut)
+            allowAbsVals = false;
+        #endif
+
+        if (!pTermConfig->colors.hasLessColor() || !pTermConfig->colors.hasGreaterColor())
+            allowAbsVals = false;
+
+        int valSign = 0;
+
+        std::string resStr = it->second.format_field(pTermConfig->fieldsFormat[colNo], pTermConfig, allowAbsVals, &valSign );
+
+        #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+        if (pColorOut)
+        {
+            if (valSign<0)
+               *pColorOut = pTermConfig->colors.genericLess;
+            else if (valSign>0)
+               *pColorOut = pTermConfig->colors.genericGreater;
+            else
+               *pColorOut = pTermConfig->colors.genericNormal;
+        }
+        #endif
+
+        return resStr;
+
     }
 
-    std::string formatMainViewField( int figiIdx, std::size_t colNo ) const
+    std::string formatMainViewField( int figiIdx, std::size_t colNo
+                                   #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+                                   , umba::term::colors::SgrColor *pColorOut = 0
+                                   #endif
+                                   ) const
     {
-        return formatMainViewField( getFigiByIndex(figiIdx), colNo );
+        return formatMainViewField( getFigiByIndex(figiIdx), colNo
+                                  #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+                                  , pColorOut
+                                  #endif
+                                  );
     }
+/*
+    std::string format_field( const FieldFormat &ff
+                            , QSharedPointer<TerminalConfig> pTermConfig
+                            , bool allowAbsVals
+                            , int *pSignOut
+                            ) const
 
+*/
 
 
     //------------------------------

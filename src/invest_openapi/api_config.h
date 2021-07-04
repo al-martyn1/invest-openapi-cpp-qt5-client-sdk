@@ -29,10 +29,6 @@ struct ApiConfig
     QString  urlSandbox;
     QString  urlStreaming;
 
-    //bool debugRequests ;
-    //bool debugResponses;
-
-
 
     void load( const QSettings &settings )
     {
@@ -47,9 +43,6 @@ struct ApiConfig
 
         if (!urlSandbox.isEmpty() && urlSandbox.back()=='/')
             urlSandbox.chop(1);
-
-        //debugRequests  = settings.value("app.debug.dump.requests" , QVariant(false)).toBool();
-        //debugResponses = settings.value("app.debug.dump.responses", QVariant(false)).toBool();
 
     }
 

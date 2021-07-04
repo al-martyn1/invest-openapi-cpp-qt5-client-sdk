@@ -16,6 +16,8 @@
 
 #include "format_helpers.h"
 
+#include "terminal_helpers.h"
+
 //----------------------------------------------------------------------------
 
 
@@ -26,12 +28,95 @@ namespace invest_openapi
 {
 
 
+struct TerminalColors
+{
+
+    #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+
+        umba::term::colors::SgrColor    caption                = umba::term::colors::white;
+        umba::term::colors::SgrColor    captionHBreakBefore    = umba::term::colors::white;
+        umba::term::colors::SgrColor    captionHBreakAfter     = umba::term::colors::white;
+        umba::term::colors::SgrColor    tableHBreakAfter       = umba::term::colors::white;
+        umba::term::colors::SgrColor    tableRegularHBreak     = umba::term::colors::white;
+        umba::term::colors::SgrColor    tableText              = umba::term::colors::white;
+
+        umba::term::colors::SgrColor    inputPrompt    = umba::term::colors::white;
+        umba::term::colors::SgrColor    inputText      = umba::term::colors::white;
+        umba::term::colors::SgrColor    inputHint      = umba::term::colors::white;
+        umba::term::colors::SgrColor    inputCaret     = umba::term::colors::white;
+
+        umba::term::colors::SgrColor    genericNormal  = umba::term::colors::white;
+        umba::term::colors::SgrColor    genericLess    = umba::term::colors::white;
+        umba::term::colors::SgrColor    genericGreater = umba::term::colors::white;
+
+    #endif
+
+
+    bool hasLessColor() const
+    {
+        #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+
+            if (genericLess!=umba::term::colors::white && genericLess!=genericNormal)
+                return true;
+
+        #endif
+
+        return false;
+
+    }
+
+    bool hasGreaterColor() const
+    {
+        #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+
+            if (genericLess!=umba::term::colors::white && genericLess!=genericNormal)
+                return true;
+
+        #endif
+
+        return false;
+
+    }
+
+
+    void load( const QSettings &settings )
+    {
+        #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+
+            caption              = termColorFromQStringList( settings.value("terminal.colors.caption.text"     , "white" ).toStringList() );
+
+            captionHBreakBefore  = termColorFromQStringList( settings.value("terminal.colors.caption.hbreak.before"     , "white" ).toStringList() );
+            captionHBreakAfter   = termColorFromQStringList( settings.value("terminal.colors.caption.hbreak.after"      , "white" ).toStringList() );
+            tableHBreakAfter     = termColorFromQStringList( settings.value("terminal.colors.table.hbreak.after"        , "white" ).toStringList() );
+            tableRegularHBreak   = termColorFromQStringList( settings.value("terminal.colors.table.hbreak.regular"      , "white" ).toStringList() );
+
+            tableText            = termColorFromQStringList( settings.value("terminal.colors.table.text"                , "white" ).toStringList() );
+
+
+            inputPrompt    = termColorFromQStringList( settings.value("terminal.colors.input.prompt", "white" ).toStringList() );
+            inputText      = termColorFromQStringList( settings.value("terminal.colors.input.text"  , "white" ).toStringList() );
+            inputHint      = termColorFromQStringList( settings.value("terminal.colors.input.hint"  , "white" ).toStringList() );
+            inputCaret     = termColorFromQStringList( settings.value("terminal.colors.input.caret" , "white" ).toStringList() );
+
+            genericNormal  = termColorFromQStringList( settings.value("terminal.colors.normal"      , "white" ).toStringList() );
+            genericLess    = termColorFromQStringList( settings.value("terminal.colors.less"        , "white" ).toStringList() );
+            genericGreater = termColorFromQStringList( settings.value("terminal.colors.greater"     , "white" ).toStringList() );
+
+        #endif
+        
+    }
+
+}; // struct TerminalColors
+
 
 //----------------------------------------------------------------------------
 struct TerminalConfig
 {
+    bool                        readOnlyMode; // Do not send any active requests such an orders
 
     std::vector< FieldFormat >  fieldsFormat;
+
+    TerminalColors              colors;
 
     bool hbreakCaptionBefore = false;
     bool hbreakCaptionAfter  = false;
@@ -42,6 +127,8 @@ struct TerminalConfig
     QString hbreakStyleCaptionAfter ;
     QString hbreakStyleTableAfter   ;
     QString hbreakStyleRegular      ;
+
+
 
 
     /*
@@ -185,6 +272,10 @@ struct TerminalConfig
 
     void load( const QSettings &settings )
     {
+
+        readOnlyMode = settings.value("terminal.read-only", QVariant(false) ).toBool();
+        
+        colors.load(settings);
 
         QStringList columnsList;
         columnsList = settings.value("terminal.columns" ).toStringList();

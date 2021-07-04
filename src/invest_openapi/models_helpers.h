@@ -170,6 +170,7 @@ void dumpHttpResponse( const QNetworkReply &reply )
     //qDebug().nospace().noquote() << pQIODevice->readAll();
     qDebug().nospace().noquote() << pQIODevice->peek(4*1024*1024); // peek 4 Mb data max
     qDebug().nospace().noquote() << "--- RESPONSE END";
+    qDebug().nospace().noquote() << "";
     
 }
 

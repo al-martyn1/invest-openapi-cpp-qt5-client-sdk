@@ -1,3 +1,37 @@
+;terminal.read-only              = true
+terminal.read-only              = false
+
+
+terminal.colors.caption.text          = magenta
+;terminal.colors.caption.hbreak.before = blue
+;terminal.colors.caption.hbreak.after  = blue
+;terminal.colors.table.hbreak.after    = blue
+;terminal.colors.table.hbreak.regular  = blue
+terminal.colors.caption.hbreak.before = cyan
+terminal.colors.caption.hbreak.after  = cyan
+terminal.colors.table.hbreak.after    = cyan
+terminal.colors.table.hbreak.regular  = cyan
+terminal.colors.table.text            = white
+
+
+terminal.colors.input.prompt    = red, bright
+terminal.colors.input.text      = white
+terminal.colors.input.hint      = magenta, bg_cyan
+terminal.colors.input.caret     = yellow
+
+; terminal.colors.input.
+; terminal.colors.input.
+; , bright
+
+terminal.colors.normal          = white
+terminal.colors.less            = red
+terminal.colors.greater         = green
+
+
+
+
+
+
 terminal.hbreaks.caption.before = true
 terminal.hbreaks.caption.after  = true
 terminal.hbreaks.table.after    = true
@@ -141,15 +175,15 @@ terminal.columns.PORTFOLIO_PRICE.width        = 10
 terminal.columns.PORTFOLIO_QUANTITY.caption        = Q_Prtf
 ;terminal.columns.PORTFOLIO_QUANTITY.align.caption
 ;terminal.columns.PORTFOLIO_QUANTITY.left
-terminal.columns.PORTFOLIO_QUANTITY.right          = 2
-terminal.columns.PORTFOLIO_QUANTITY.width          = 8
+terminal.columns.PORTFOLIO_QUANTITY.right          = 0
+terminal.columns.PORTFOLIO_QUANTITY.width          = 6
 ;terminal.columns.PORTFOLIO_QUANTITY.align
 ;terminal.columns.PORTFOLIO_QUANTITY.align.dot 
 
 
 terminal.columns.PORTFOLIO_EXPECTED_YELD.caption        = ExpYeld
 ;terminal.columns.PORTFOLIO_EXPECTED_YELD.align.caption
-;terminal.columns.PORTFOLIO_EXPECTED_YELD.left
+terminal.columns.PORTFOLIO_EXPECTED_YELD.left           = 1
 terminal.columns.PORTFOLIO_EXPECTED_YELD.right          = 1
 ; Если доведётся ворочать большими суммами, то тут надо увеличить ширину хотя бы до 10ти знаков. У меня и с восьмью знаками слишком много места слева остаётся
 terminal.columns.PORTFOLIO_EXPECTED_YELD.width          = 8 

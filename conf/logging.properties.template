@@ -1,11 +1,30 @@
+; This is a default values
+
+; logging.log.file.name.datetime.format = yyyy_MM_dd-hh_mm_ss
+; logging.log.file.name.date.format     = yyyy_MM_dd
+; logging.log.file.name.time.format     = hh_mm_ss
+
+; logging.log.datetime.format           = yyyy-MM-dd hh:mm:ss.zzz
+
+
+; logging.log.handlers = cerr,file
+logging.log.handlers = file
+
+logging.log.file.name = $(ConfDir)/../_logs/$(AppName)/$(DateTime).log
+;logging.log.file.name = $(HomeDir)/tkf/logs/$(AppName)/$(DateTime).log
+
+logging.log.context = false
+;logging.log.context = true
+logging.log.level   = 7
+
+
 logging.debug.dump.requests  = true
 logging.debug.dump.responses = true
-logging.debug.dump.sql       = true
+;logging.debug.dump.sql       = true
 
 ;logging.debug.dump.requests  = false
 ;logging.debug.dump.responses = false
-;logging.debug.dump.sql       = false
-
+logging.debug.dump.sql       = false
 
 
 logging.data.base-folder = ../_data_logs
