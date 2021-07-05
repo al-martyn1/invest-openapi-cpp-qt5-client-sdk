@@ -198,7 +198,7 @@ struct LoggingConfig
             else if (h=="file")
                 handlersMap[h] = getLogFileName(configFullName);
             else
-                throw std::runtime_error( std::string("invest_openapi::LoggingConfig::load: unknown log handler: '") + h.toStdString() + std::string("' in 'logHandlers' member") );
+                throw std::runtime_error( std::string("invest_openapi::LoggingConfig::getLogHandlers: unknown log handler: '") + h.toStdString() + std::string("' in 'logHandlers' member") );
         }
 
         return handlersMap;

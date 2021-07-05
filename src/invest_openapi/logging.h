@@ -103,23 +103,23 @@ void logMessageOutput(QtMsgType type, const QMessageLogContext &context, const Q
                                        , "DEBUG " // 7
                                        };
     
-    int logLevel = 0;
+    int msgLogLevel = 0;
 
     switch (type)
     {
-        case QtFatalMsg   : logLevel = 0; break;
-        // No alert level : loglevel = 1;
-        case QtCriticalMsg: logLevel = 2; break;
-        // No error level : loglevel = 3;
-        case QtWarningMsg : logLevel = 4; break;
-        // No notice level: loglevel = 5;
-        case QtInfoMsg    : logLevel = 6; break;
-        case QtDebugMsg   : logLevel = 7; break;
+        case QtFatalMsg   : msgLogLevel = 0; break;
+        // No alert level : msgLogLevel = 1;
+        case QtCriticalMsg: msgLogLevel = 2; break;
+        // No error level : msgLogLevel = 3;
+        case QtWarningMsg : msgLogLevel = 4; break;
+        // No notice level: msgLogLevel = 5;
+        case QtInfoMsg    : msgLogLevel = 6; break;
+        case QtDebugMsg   : msgLogLevel = 7; break;
 
-        default           : logLevel = 7;
+        default           : msgLogLevel = 7;
     }
 
-    if (logLevel>getCurrentLogLevel())
+    if (msgLogLevel>getCurrentLogLevel())
         return;
 
 
@@ -133,7 +133,7 @@ void logMessageOutput(QtMsgType type, const QMessageLogContext &context, const Q
         dtString = QString("[") + dtNow.toString(dtFormat) + QString("] ");
     }
 
-    QString llString = QString("[") + QString(levelNames[logLevel]) + QString("] ");
+    QString llString = QString("[") + QString(levelNames[msgLogLevel]) + QString("] ");
 
 
     QString contextString;
@@ -190,7 +190,7 @@ void logMessageOutput(QtMsgType type, const QMessageLogContext &context, const Q
 
             QString logFileName = lit->second;
 
-            QFile qfLog = QFile( logFileName );
+            QFile qfLog( logFileName );
 
             // https://doc.qt.io/qt-5/qiodevice.html
             // https://doc.qt.io/qt-5/qiodevice.html#OpenModeFlag-enum
@@ -225,12 +225,16 @@ void initLogging( const std::map<QString, QString> &handlers
     if (handlers.empty())
         return;
 
+    qInstallMessageHandler(0); // Reset logger function - if our function already installed, we also disable it to prevent the concurent access to settings
+
+    QTest::qWait(10);
+
     logging::impl::getCurrentLogHandlers()       = handlers;
     logging::impl::getCurrentLogDateTimeFormat() = logDateTimeFormat;
     logging::impl::getCurrentLogLevel()          = logLevel;
     logging::impl::getCurrentLogContextValue()   = logWithContext;
 
-    qInstallMessageHandler(logging::impl::logMessageOutput);
+    qInstallMessageHandler(&logging::impl::logMessageOutput);
 
 }
 
