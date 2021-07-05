@@ -14,9 +14,10 @@
 #include <stdexcept>
 
 
+#include "terminal_helpers.h"
+
 #include "format_helpers.h"
 
-#include "terminal_helpers.h"
 
 //----------------------------------------------------------------------------
 
@@ -249,6 +250,12 @@ struct TerminalConfig
         ff.captionAlignment = alignmentFromString( settings.value(baseName + "align.caption" , QVariant(alignmentToString(defaults.alignment)) ).toString()
                                                  , baseName + "align.caption"
                                                  );
+
+        #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+
+            ff.color = termColorFromQStringList( settings.value( baseName + "color" , "black" ).toStringList() );
+
+        #endif
 
         return ff;
 

@@ -42,8 +42,8 @@
 #include "operation_helpers.h"
 #include "order_helpers.h"
 
-#include "format_helpers.h"
 #include "terminal_helpers.h"
+#include "format_helpers.h"
 
 #include "invest_openapi/terminal_config.h"
 
@@ -73,6 +73,8 @@ struct InstrumentInfoLineData
 
     Decimal   priceIncrement; //!< From streaming MarketInstrumentState
     unsigned  lotSize       ; //!< From streaming MarketInstrumentState
+
+    int       pricePrecision = 2;
 
 
     Decimal   avgPrice; //!< Средняя цена покупки - брать из портфолио
@@ -112,6 +114,8 @@ struct InstrumentInfoLineData
         isTraded       = false;
         priceIncrement = Decimal(0);
         lotSize        = 0;
+
+        pricePrecision = 2;
     
     }
 
@@ -172,6 +176,12 @@ struct InstrumentInfoLineData
         isTraded       = marketInstrumentState.isTradeStatusNormalTrading();
         priceIncrement = marketInstrumentState.priceIncrement;
         lotSize        = marketInstrumentState.lotSize       ;
+
+        if (priceIncrement!=Decimal(0))
+        {
+            pricePrecision = priceIncrement.precision();
+        }
+
     }
 
     void update( const MarketGlass &marketGlass )
@@ -362,7 +372,7 @@ struct InstrumentInfoLineData
             if (avgPrice==Decimal(0))
                 return format_field( ff, "-" );
 
-            return format_field( ff, avgPrice );
+            return format_field( ff, avgPrice, pricePrecision );
         }
         else if (id=="PORTFOLIO_EXPECTED_YELD")
         {
@@ -382,7 +392,14 @@ struct InstrumentInfoLineData
             if (curPrice==Decimal(0))
                 return format_field( ff, "-" );
 
-            return format_field( ff, curPrice );
+            if (avgPrice.zer() || curPrice.zer())
+               return format_field( ff, curPrice, pricePrecision );
+
+            auto priceDelta = curPrice - avgPrice;
+            if (pSignOut)
+               *pSignOut = priceDelta.sgn();
+
+            return format_field( ff, curPrice, pricePrecision );
         }
         else if (id=="BEST_BID")
         {
@@ -406,7 +423,7 @@ struct InstrumentInfoLineData
         {
             if (lastBuyPrice==Decimal(0)) return format_field( ff, "-" );
 
-            return format_field( ff, lastBuyPrice );
+            return format_field( ff, lastBuyPrice, pricePrecision );
         }
         else if (id=="LAST_BUY_QUANTITY")
         {
@@ -418,7 +435,7 @@ struct InstrumentInfoLineData
         {
             if (lastSellPrice==Decimal(0)) return format_field( ff, "-" );
 
-            return format_field( ff, lastSellPrice );
+            return format_field( ff, lastSellPrice, pricePrecision );
         }
         else if (id=="LAST_SELL_QUANTITY")
         {
@@ -430,25 +447,25 @@ struct InstrumentInfoLineData
         {
             if (maxBidPrice==Decimal(0)) return format_field( ff, "-" );
 
-            return format_field( ff, maxBidPrice );
+            return format_field( ff, maxBidPrice, pricePrecision );
         }
         else if (id=="MAX_BID_QUANTITY")
         {
-            if (maxBidQuantity==0) return format_field( ff, "-" );
+            if (maxBidQuantity==0 || lotSize==0) return format_field( ff, "-" );
 
-            return format_field( ff, maxBidQuantity );
+            return format_field( ff, maxBidQuantity*lotSize );
         }
         else if (id=="MIN_ASK_PRICE")
         {
             if (minAskPrice==Decimal(0)) return format_field( ff, "-" );
 
-            return format_field( ff, minAskPrice );
+            return format_field( ff, minAskPrice, pricePrecision );
         }
         else if (id=="MIN_ASK_QUANTITY")
         {
-            if (minAskQuantity==0) return format_field( ff, "-" );
+            if (minAskQuantity==0 || lotSize==0) return format_field( ff, "-" );
 
-            return format_field( ff, minAskQuantity );
+            return format_field( ff, minAskQuantity*lotSize );
         }
         // else if (id=="")
         // {
@@ -941,17 +958,26 @@ public:
 
         int valSign = 0;
 
-        std::string resStr = it->second.format_field(pTermConfig->fieldsFormat[colNo], pTermConfig, allowAbsVals, &valSign );
+        auto fieldFormat = pTermConfig->fieldsFormat[colNo];
+
+        std::string resStr = it->second.format_field( fieldFormat, pTermConfig, allowAbsVals, &valSign );
 
         #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
         if (pColorOut)
         {
-            if (valSign<0)
-               *pColorOut = pTermConfig->colors.genericLess;
-            else if (valSign>0)
-               *pColorOut = pTermConfig->colors.genericGreater;
+            if (fieldFormat.hasCustomColor())
+            {
+                *pColorOut = pTermConfig->fieldsFormat[colNo].color;
+            }
             else
-               *pColorOut = pTermConfig->colors.genericNormal;
+            {
+                if (valSign<0)
+                   *pColorOut = pTermConfig->colors.genericLess;
+                else if (valSign>0)
+                   *pColorOut = pTermConfig->colors.genericGreater;
+                else
+                   *pColorOut = pTermConfig->colors.genericNormal;
+            }
         }
         #endif
 

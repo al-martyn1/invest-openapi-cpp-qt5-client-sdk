@@ -29,11 +29,29 @@ struct FieldFormat
     QString     caption          = QString(); //!< Not used for generic fields, only for caption
 
 
+    #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+
+        umba::term::colors::SgrColor   color = 0; // black used as no color value
+
+    #endif
 
     std::size_t getSummaryWidth() const
     {
         std::size_t w = (std::size_t)( fieldWidth>0 ? fieldWidth : -fieldWidth );
         return leftSpace + rightSpace + w;
+    }
+
+    bool hasCustomColor() const
+    {
+        #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+
+            return color!=0;
+
+        #else
+
+            return false;
+
+        #endif
     }
 
 
@@ -135,6 +153,8 @@ std::string format_field( std::size_t leftSpace, std::size_t rightSpace, int fie
     // Числа никогда не обрезаем
     if (fieldWidth<0)
         fieldWidth = -fieldWidth;
+
+    d.round( precision, marty::Decimal::RoundingMethod::roundMath );
 
     return format_field<std::string>( leftSpace, rightSpace, fieldWidth, align, d.toString( precision ) );
 

@@ -56,8 +56,8 @@
 #include "invest_openapi/operation_helpers.h"
 #include "invest_openapi/order_helpers.h"
 
-#include "invest_openapi/format_helpers.h"
 #include "invest_openapi/terminal_helpers.h"
+#include "invest_openapi/format_helpers.h"
 
 #include "invest_openapi/trading_terminal.h"
 

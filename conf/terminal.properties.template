@@ -112,8 +112,8 @@ terminal.columns = TICKER,INSTR_STATE,PRICE_INC,LOT_SIZE,PORTFOLIO_QUANTITY,PORT
 VB1,PORTFOLIO_PRICE,CUR_PRICE,\
 VB2,LAST_BUY_QUANTITY,LAST_BUY_PRICE,LAST_SELL_PRICE,LAST_SELL_QUANTITY,SP,\
 VB2,BEST_BID,SP,SP,SP,SPREAD_POINTS,BEST_ASK,\
-VB,MAX_BID_QUANTITY,MAX_BID_PRICE,SP,SP,SP,SPREAD_POINTS,MIN_ASK_PRICE,MIN_ASK_QUANTITY,\
-VB2,CUR_PRICE,SP,PORTFOLIO_PRICE,SP,INSTR_STATE,TICKER
+VB,MAX_BID_QUANTITY,MAX_BID_PRICE,SP,SP,CUR_PRICE,MIN_ASK_PRICE,MIN_ASK_QUANTITY,\
+VB2,SP,PORTFOLIO_PRICE,SP,INSTR_STATE,TICKER
 
 
 
@@ -186,7 +186,7 @@ terminal.columns.PORTFOLIO_EXPECTED_YELD.caption        = ExpYeld
 terminal.columns.PORTFOLIO_EXPECTED_YELD.left           = 1
 terminal.columns.PORTFOLIO_EXPECTED_YELD.right          = 1
 ; Если доведётся ворочать большими суммами, то тут надо увеличить ширину хотя бы до 10ти знаков. У меня и с восьмью знаками слишком много места слева остаётся
-terminal.columns.PORTFOLIO_EXPECTED_YELD.width          = 8 
+terminal.columns.PORTFOLIO_EXPECTED_YELD.width          = 9 
 ;terminal.columns.PORTFOLIO_EXPECTED_YELD.align
 terminal.columns.PORTFOLIO_EXPECTED_YELD.align.dot      = 0
 
@@ -198,6 +198,9 @@ terminal.columns.CUR_PRICE.caption       = Price_Cur
 terminal.columns.CUR_PRICE.width         = 10
 ;terminal.columns.CUR_PRICE.align
 ;terminal.columns.CUR_PRICE.align.dot 
+terminal.columns.CUR_PRICE.color         = yellow
+;terminal.columns.CUR_PRICE.color         = cyan
+;terminal.columns.CUR_PRICE.color         = blue
 
 
 terminal.columns.BEST_BID.caption        = Best_Bid
@@ -225,6 +228,7 @@ terminal.columns.SPREAD_POINTS.caption   = Spr
 terminal.columns.SPREAD_POINTS.width     = 3
 terminal.columns.SPREAD_POINTS.align     = center
 ;terminal.columns.SPREAD_POINTS.align.dot 
+terminal.columns.SPREAD_POINTS.color     = magenta
 
 
 terminal.columns.LAST_BUY_PRICE.caption  = LastBuyPr
