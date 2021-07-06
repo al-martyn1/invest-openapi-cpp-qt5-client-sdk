@@ -68,7 +68,7 @@ protected:
 
         if (!pApi) //-V668
         {
-            throw std::runtime_error("Something goes wrong");
+            throw std::runtime_error("Something goes wrong in getApiImpl");
             return QSharedPointer<ApiType>(pApi);
         }
 

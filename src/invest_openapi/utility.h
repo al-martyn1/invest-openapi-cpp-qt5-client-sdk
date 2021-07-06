@@ -373,7 +373,7 @@ void checkAbort( const QSharedPointer< OpenApiCompletableFuture< T > > &val )
 
     dumpIfError(val);
 
-    throw std::runtime_error("Something goes wrong");
+    throw std::runtime_error("checkAbort: Something goes wrong");
 }
 
 //----------------------------------------------------------------------------
