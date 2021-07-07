@@ -169,6 +169,7 @@ INVEST_OPENAPI_MAIN()
 
     std::map< QString, marty::Decimal   >                    portfolioFigiBalance;
     std::map< QString, std::map< QString, marty::Decimal > > portfolioFigiAveragePrice;
+    std::map< QString, std::map< QString, marty::Decimal > > portfolioFigiExpectedYield;
 
     for( auto pos : portfolio )
     {
@@ -180,6 +181,13 @@ INVEST_OPENAPI_MAIN()
 
         portfolioFigiAveragePrice[posFigi][moneyAmountCurrency] = moneyAmount.getValue();
 
+
+        auto expectedYield = pos.getExpectedYield();
+        QString expectedYieldCurrency  = expectedYield.getCurrency().asJson().toUpper();
+
+        portfolioFigiExpectedYield[posFigi][expectedYieldCurrency] = expectedYield.getValue();
+
+
         //portfolioFigiAveragePrice[ posFigi ] = pos.getAveragePositionPrice();
 
         // pos.getBlocked(); - Хз, что такое, заблокировано по какой-то причине
@@ -189,132 +197,7 @@ INVEST_OPENAPI_MAIN()
     }
 
 
-    //#if defined(I_AM_A_DEBILOID)
 
-        std::map< QString, tkf::Candle > figiLastCandle; // Последняя пятиминутная свеча для данной фиги - 
-                                                         // хз, я не не понял/не нашел, как получить текущую стоимость 
-                                                         // инструмента, поэтому буду использовать среднее открытия/закрытия свечи
-       
-        // Получаем текущую цену по инструментам
-
-        // Когда я выводил портфолио (_tkf_portfolio.cpp), я почему-то не стал выводить стоимость инструмента, которая там была.
-        // И потом, когда я стал писать этот тест, я пребывал в уверенности, что нет способа получить текущую стоимость.
-        // Поэтому наколбасил кучу кода получения стоимости через свечи.
-        // Но потом таки дошло.
-        // Ну, нет hood'а без бобра - зато на свечках потренировался
-
-        // На самом деле в инструменте фигурирует средняя стоимость, которая расчитывается потомцене покупки.
-        // Так что текущую стоимость таки по свечкам определяем
-
-        for( auto figi : balanceConfig.figis ) 
-        {
-            cout << "Processing " << figi;
-            if (tkf::dictionaryGetValue(tickerToFigi, figi, figi)) {}
-            else if (tkf::dictionaryGetValue(isinToFigi, figi, figi)) {}
-       
-            cout << ", FIGI: " << figi << endl;
-       
-            QDateTime curDateTime = QDateTime::currentDateTime().toUTC();
-       
-            std::vector<QDateTime> candleDateTimes;
-       
-            // Самые последние - в начале
-            candleDateTimes.push_back(curDateTime);
-            {
-                QDate todayBeginDate = curDateTime.date();
-
-                QDateTime todayBeginDateTime = QDateTime( curDateTime.date(), QTime(0, 0, 0, 0 ), Qt::UTC );
-                //todayBeginDateTime.setDate(todayBeginDate);
-                candleDateTimes.push_back(todayBeginDateTime);
-                curDateTime = todayBeginDateTime;
-            }
-       
-            for( unsigned i=0; i!=12; ++i )
-            {
-                //QDate prevDate = curDateTime.date().addDays(-1);
-                //QDateTime prevDateTime; prevDateTime.setDate(prevDate);
-                QDateTime prevDateTime = qt_helpers::dtAddTimeInterval( curDateTime, "-1DAY" );
-                candleDateTimes.push_back(prevDateTime);
-                curDateTime = prevDateTime;
-            }
-       
-            std::reverse( candleDateTimes.begin(), candleDateTimes.end() );
-       
-            // Самые последние - теперь в конце
-
-            cout << "Query candles for dates:" << endl;
-            for( std::vector<QDateTime>::const_iterator it = candleDateTimes.begin(); it != candleDateTimes.end(); ++it)
-            {
-                cout << "    " << *it << endl;
-            }
-            cout << endl;
-       
-            // Получаем пятиминутные свечи за последние 12 дней (самые длинные каникулы меньше, поэтому что-то да получим)
-            // Это нужно, чтобы узнать актуальную стоимость инструмента
-       
-            std::vector<tkf::Candle> instrumentCandles;
-       
-            for( unsigned i=0; i!=(candleDateTimes.size()-1); ++i )
-            {
-                QDateTime startDateTime = candleDateTimes[i];
-                QDateTime endDateTime   = candleDateTimes[i+1];
-
-                if (startDateTime>endDateTime)
-                {
-                    std::swap(startDateTime,endDateTime);
-                }
-
-
-                auto // CandlesResponse
-                candlesRes = pOpenApi->marketCandles( figi, startDateTime, endDateTime, "5MIN" );
-               
-                candlesRes->join();
-       
-                tkf::checkAbort(candlesRes);
-       
-                auto candles = tkf::makeVectorFromList(candlesRes->value.getPayload().getCandles());
-       
-                instrumentCandles.insert( instrumentCandles.end(), candles.begin(), candles.end() );
-       
-                // 1 запрос - 0.2 секунды (примерно, на практике)
-                // Притормаживаем на 0.3 секунды, чтобы уложиться в лимит 120 запросов в минуту
-                // Итого 7.5 секунды на инструмент
-
-                // На самом деле, лучше не учитывать среднее время выполнения запроса - вдруг они могут
-                // проскакивать быстрее. Итого - задержка на 0.5 сек. А если работает терминал, то он тоже
-                // чего-то запрашивает, дадим ему половину времени. Итого - 1 сек задержка.
-
-                if (slowMode)
-                    QTest::qWait(5000); // У нас паралелльно идёт закачка свеч, чтобы не сломать её
-                else
-                    QTest::qWait(1000);
-                    // QTest::qWait(375);
-                
-            }
-       
-            // Сортируем по убыванию - первая свечка - самая последняя по дате
-            std::stable_sort( instrumentCandles.begin(), instrumentCandles.end(), tkf::WithGetTimeGreater<tkf::Candle>() );
-       
-            if (!instrumentCandles.empty())
-            {
-                cout << "First candle DateTime: " << instrumentCandles[0]                         .getTime() << endl;
-                cout << "Last  candle DateTime: " << instrumentCandles[instrumentCandles.size()-1].getTime() << endl;
-       
-                cout << "----------------------------------------------------------------------------" << endl;
-                cout << endl << endl << endl;
-       
-                figiLastCandle[figi] = instrumentCandles[0];
-            }
-            else
-            {
-                // Ooops, инструмент не торговался последние 15 дней
-                // Пока мы работаем без базы по свечам и остальному, всё берём в онлайне
-                // поэтому сорян
-            }
-       
-        } // for( auto figi : balanceConfig.figis ) 
-
-    //#endif
     //bool dictionaryGetValue( const std::map<K,V> &d, V &vOut, const K &k )
 
     std::map< QString, std::set<QString> > foundOperationTypes   ; // by FIGI, set of ops
@@ -465,8 +348,8 @@ INVEST_OPENAPI_MAIN()
         {
             const QString &currentCurrency = *figiCurrencyIt;
 
-            std::map< QString, marty::Decimal >::const_iterator curIt = portfolioFigiCurrencyAveragePrice.find(currentCurrency);
-            if (curIt == portfolioFigiCurrencyAveragePrice.end())
+            std::map< QString, marty::Decimal >::const_iterator avgPriceByCurrencyIt /* curIt */  = portfolioFigiCurrencyAveragePrice.find(currentCurrency);
+            if (avgPriceByCurrencyIt == portfolioFigiCurrencyAveragePrice.end())
                 continue;
 
             std::map< QString, marty::Decimal   >::const_iterator figiBalanceIt = portfolioFigiBalance.find(figi);
@@ -475,7 +358,7 @@ INVEST_OPENAPI_MAIN()
 
             instrumentCurrency = currentCurrency;
 
-            auto cost = curIt->second * figiBalanceIt->second;
+            auto cost = avgPriceByCurrencyIt->second * figiBalanceIt->second;
 
             // figiCurrencyTotalBalance[currentCurrency] += cost;
 
@@ -489,41 +372,44 @@ INVEST_OPENAPI_MAIN()
         }
 
 
-        std::map< QString, tkf::Candle >::const_iterator figiCandleIt = figiLastCandle.find(figi);
-        if (!instrumentCurrency.isEmpty() && figiCandleIt != figiLastCandle.end())
+
+        std::map< QString, marty::Decimal   >::const_iterator figiBalanceIt = portfolioFigiBalance.find(figi);
+        if (figiBalanceIt != portfolioFigiBalance.end())
         {
-            std::map< QString, marty::Decimal   >::const_iterator figiBalanceIt = portfolioFigiBalance.find(figi);
-            if (figiBalanceIt != portfolioFigiBalance.end())
-            {
-                // figiBalanceIt->second
+            // figiBalanceIt->second
 
-                #if defined(DETAILED_REPORT)
-                cout << "Instrument Current Portfolio Cost" << endl;
-                #endif
-               
-                auto avgCurrentPrice = ( figiCandleIt->second.getO() + figiCandleIt->second.getC() ) / marty::Decimal(2);
+            #if defined(DETAILED_REPORT)
+            cout << "Instrument Current Portfolio Cost" << endl;
+            #endif
 
-                auto cost = avgCurrentPrice * figiBalanceIt->second;
+            // Считаем среднюю текущую цену инструмента по данным свечи
+            // auto avgCurrentPrice = ( figiCandleIt->second.getO() + figiCandleIt->second.getC() ) / marty::Decimal(2);
 
-                figiCurrencyTotalBalance[instrumentCurrency] += cost;
-               
-                #if defined(DETAILED_REPORT)
-                cout << "    " << instrumentCurrency << " : " << figiBalanceIt->second << " x " << avgCurrentPrice << " = " << cost << endl;
-                #endif
+            // Считаем текущую стоимость портфеля
+            auto cost = instrumentPositionsAverageCost  /* portfolioFigiAveragePrice[figi][instrumentCurrency] */
+                      + portfolioFigiExpectedYield[figi][instrumentCurrency];
 
-                auto deltaCost = cost - instrumentPositionsAverageCost;
 
-                // instrumentPositionsAverageCost - 100%
+            // Стоимость инструментов в портфеле прибавляем к балансу
+            figiCurrencyTotalBalance[instrumentCurrency] += cost;
+           
+            #if defined(DETAILED_REPORT)
+            cout << "    " << instrumentCurrency << " : " << figiBalanceIt->second << " x " << avgCurrentPrice << " = " << cost << endl;
+            #endif
 
-                // auto deltaCostPercent = 100 * deltaCost / instrumentPositionsAverageCost;
-                //auto deltaCostPercent = marty::Decimal(100) * deltaCost / instrumentPositionsAverageCost;
-                marty::Decimal deltaCostPercent = 0;
-                if (instrumentPositionsAverageCost!=0)
-                    deltaCostPercent = deltaCost.getPercentOf(instrumentPositionsAverageCost);
+            // auto deltaCost = cost - instrumentPositionsAverageCost;
+            auto deltaCost = portfolioFigiExpectedYield[figi][instrumentCurrency];
 
-                cout << "Profit (current)" << endl
-                     << "    " << instrumentCurrency << " : " << deltaCost << " - " << deltaCostPercent << "%" << endl;
-            }
+            // instrumentPositionsAverageCost - 100%
+
+            // auto deltaCostPercent = 100 * deltaCost / instrumentPositionsAverageCost;
+            //auto deltaCostPercent = marty::Decimal(100) * deltaCost / instrumentPositionsAverageCost;
+            marty::Decimal deltaCostPercent = 0;
+            if (instrumentPositionsAverageCost!=0)
+                deltaCostPercent = deltaCost.getPercentOf(instrumentPositionsAverageCost);
+
+            cout << "Profit (current)" << endl
+                 << "    " << instrumentCurrency << " : " << deltaCost << " - " << deltaCostPercent << "%" << endl;
         }
 
 

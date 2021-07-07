@@ -1015,6 +1015,16 @@ INVEST_OPENAPI_MAIN()
     pTerminalInputEdit->updateView();
 
 
+    auto processInput = [&]()
+                        {
+                            std::vector<int> input = simpleInput.readInput();
+                           
+                            if (!input.empty()) // to stop only when input is not empty
+                               lineEdit.processInput( input );
+                        };
+
+
+
     while( !ctrlC.isBreaked() )
     {
         QTest::qWait(1);
@@ -1086,10 +1096,7 @@ INVEST_OPENAPI_MAIN()
         }
 
 
-        std::vector<int> input = simpleInput.readInput();
-
-        if (!input.empty()) // to stop only when input is not empty
-           lineEdit.processInput( input );
+        processInput();
 
 
         //------------------------------
