@@ -182,6 +182,14 @@ struct InstrumentInfoLineData
             pricePrecision = priceIncrement.precision();
         }
 
+        if (!isTraded)
+        {
+            bestAskPrice = Decimal(0);
+            bestBidPrice = Decimal(0);
+            spread       = Decimal(0);
+            spreadPoints = 0;
+        }
+
     }
 
     void update( const MarketGlass &marketGlass )
@@ -419,27 +427,32 @@ struct InstrumentInfoLineData
 
             return format_field( ff, spreadPoints );
         }
+
+
+        // Last Buy/Sell and they quantity - если инструмент не торгуется, выводим пустышку
+        // Просто это мощный блок информации, и когда он не очищен, то возникает дисонанс с другими полями
+
         else if (id=="LAST_BUY_PRICE")
         {
-            if (lastBuyPrice==Decimal(0)) return format_field( ff, "-" );
+            if (lastBuyPrice==Decimal(0) || !isTraded) return format_field( ff, "-" );
 
             return format_field( ff, lastBuyPrice, pricePrecision );
         }
         else if (id=="LAST_BUY_QUANTITY")
         {
-            if (lastBuyQuantity==0) return format_field( ff, "-" );
+            if (lastBuyQuantity==0 || !isTraded) return format_field( ff, "-" );
 
             return format_field( ff, lastBuyQuantity );
         }
         else if (id=="LAST_SELL_PRICE")
         {
-            if (lastSellPrice==Decimal(0)) return format_field( ff, "-" );
+            if (lastSellPrice==Decimal(0) || !isTraded) return format_field( ff, "-" );
 
             return format_field( ff, lastSellPrice, pricePrecision );
         }
         else if (id=="LAST_SELL_QUANTITY")
         {
-            if (lastSellQuantity==0) return format_field( ff, "-" );
+            if (lastSellQuantity==0 || !isTraded) return format_field( ff, "-" );
 
             return format_field( ff, lastSellQuantity );
         }
@@ -510,6 +523,16 @@ struct InstrumentInfoLineData
 class TradingTerminalData
 {
 
+public:
+
+    enum class ConnectionState
+    {
+        disconnected = 0,
+        connecting   = 1,
+        connected    = 2
+    };
+
+
 protected:
 
     QStringList                                                            instrumentList;
@@ -525,6 +548,9 @@ protected:
     QString                                                                statusStr;
     QDateTime                                                              statusChangedDateTime;
 
+    ConnectionState                                                        connectionStatus;
+    QDateTime                                                              connectionStatusChangedDateTime;
+
     std::map< QString, CurrencyPosition >                                  currencyPositions;
 
     QSharedPointer<TerminalConfig>                                         pTermConfig;
@@ -534,7 +560,8 @@ protected:
     //------------------------------
 
     std::set< QString >   updatedFigis;
-    bool statusUpdated    = false;
+    bool statusUpdated             = false;
+    bool connectionStatusUpdated   = false;
 
     bool captionUpdated   = true;
 
@@ -611,7 +638,8 @@ public:
     , activeOrders         ()
     , statusStr            ()
     , statusChangedDateTime(QDateTime::currentDateTime())
-    , pTermConfig          (0)
+    , connectionStatus     (ConnectionState::disconnected)
+    , connectionStatusChangedDateTime(QDateTime::currentDateTime())
     , terminalLinesData    ()
     {
     }
@@ -626,6 +654,8 @@ public:
     , activeOrders         ()
     , statusStr            ()
     , statusChangedDateTime(QDateTime::currentDateTime())
+    , connectionStatus     (ConnectionState::disconnected)
+    , connectionStatusChangedDateTime(QDateTime::currentDateTime())
     , pTermConfig          (0)
     , terminalLinesData    ()
     {
@@ -642,11 +672,59 @@ public:
     }
 
     QString   getStatus() const           { return statusStr; }
-    QDateTime getStatusDateTime() const { return statusChangedDateTime; }
+    QDateTime getStatusDateTime() const   { return statusChangedDateTime; }
     QString   getStatusDateTimeStr() const 
     {
         std::ostringstream oss;
         oss << statusChangedDateTime;
+        return QString::fromStdString(oss.str());
+    }
+/*
+    enum class ConnectionState
+    {
+        disconnected,
+        connecting  ,
+        connected
+    };
+*/
+    void setConnectionState( ConnectionState st )
+    {
+        connectionStatus                = st;
+        connectionStatusChangedDateTime = QDateTime::currentDateTime();
+        connectionStatusUpdated         = true;
+    }
+
+    QString   getConnectionStateStr() const
+    {
+        switch(connectionStatus)
+        {
+            case ConnectionState::disconnected: return "Disconnected" ;
+            case ConnectionState::connecting  : return "Connecting...";
+            case ConnectionState::connected   : return "Connected"    ;
+            default                           : return "Unknown"      ;
+        };
+    }
+
+    #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+    umba::term::colors::SgrColor getConnectionStateColor() const
+    {
+        
+        switch(connectionStatus)
+        {
+            case ConnectionState::disconnected: return pTermConfig->colors.getStateColor(0);
+            case ConnectionState::connecting  : return pTermConfig->colors.getStateColor(1);
+            case ConnectionState::connected   : return pTermConfig->colors.getStateColor(2);
+            default                           : return pTermConfig->colors.getStateColor(0);
+        };
+    }
+    #endif
+
+    QDateTime getConnectionStateDateTime() const { return connectionStatusChangedDateTime; }
+
+    QString   getConnectionStateDateTimeStr() const 
+    {
+        std::ostringstream oss;
+        oss << connectionStatusChangedDateTime;
         return QString::fromStdString(oss.str());
     }
 
@@ -780,6 +858,8 @@ public:
 
     //------------------------------
     bool isStatusChanged() const { return statusUpdated; }
+
+    bool isConnectionStatusChanged() const { return connectionStatusUpdated; }
 
     bool isFigiChanged()   const { return !updatedFigis.empty(); } 
 

@@ -50,6 +50,11 @@ struct TerminalColors
         umba::term::colors::SgrColor    genericLess    = umba::term::colors::white;
         umba::term::colors::SgrColor    genericGreater = umba::term::colors::white;
 
+        umba::term::colors::SgrColor    stateGenericBad      = umba::term::colors::white;
+        umba::term::colors::SgrColor    stateGenericWarning  = umba::term::colors::white;
+        umba::term::colors::SgrColor    stateGenericNormal   = umba::term::colors::white;
+        umba::term::colors::SgrColor    stateGenericGood     = umba::term::colors::white;
+
     #endif
 
 
@@ -103,9 +108,32 @@ struct TerminalColors
             genericLess    = termColorFromQStringList( settings.value("terminal.colors.less"        , "white" ).toStringList() );
             genericGreater = termColorFromQStringList( settings.value("terminal.colors.greater"     , "white" ).toStringList() );
 
+
+            stateGenericBad     = termColorFromQStringList( settings.value("terminal.colors.generic.bad"         , "white" ).toStringList() );
+            stateGenericWarning = termColorFromQStringList( settings.value("terminal.colors.generic.warning"     , "white" ).toStringList() );
+            stateGenericNormal  = termColorFromQStringList( settings.value("terminal.colors.generic.normal"      , "white" ).toStringList() );
+            stateGenericGood    = termColorFromQStringList( settings.value("terminal.colors.generic.good"        , "white" ).toStringList() );
+
         #endif
         
     }
+
+    #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
+        umba::term::colors::SgrColor getStateColor( int state ) const
+        {
+            
+            switch(state)
+            {
+                case 0 : return stateGenericBad    ;
+                case 1 : return stateGenericWarning;
+                case 2 : return stateGenericNormal ;
+                case 3 : return stateGenericGood   ;
+                default: return stateGenericBad    ;
+            }
+       
+        }
+    #endif
+
 
 }; // struct TerminalColors
 

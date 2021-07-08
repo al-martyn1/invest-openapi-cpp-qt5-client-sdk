@@ -69,11 +69,9 @@
 #include "invest_openapi/terminal_helpers.h"
 #include "invest_openapi/format_helpers.h"
 
-#include "invest_openapi/trading_terminal.h"
-
 #include "invest_openapi/terminal_config.h"
-
 #include "invest_openapi/terminal_input.h"
+#include "invest_openapi/trading_terminal.h"
 
 #include "invest_openapi/placed_order_info.h"
 
@@ -106,6 +104,9 @@ INVEST_OPENAPI_MAIN()
 
 
     namespace tkf=invest_openapi;
+    namespace trd=invest_openapi::trading_terminal;
+
+ 
     using tkf::config_helpers::lookupForConfigFile;
     using tkf::config_helpers::FileReadable;
 
@@ -251,16 +252,26 @@ INVEST_OPENAPI_MAIN()
     
     auto printEditorText = [&]( const std::string &text, const std::string &autocompleteHint )
                              {
-                                 // tout << text << term::clear(2);
-                                 //tout << text << term::clear(2);
 
                                  tout << term::move2abs0 ;
 
+
+                                 // Ready to print connection state
                                  tout << term::move2down;
                                  tout << term::move2down;
 
+
+                                 // Ready to print status
                                  tout << term::move2down;
                                  tout << term::move2down;
+
+
+                                 // Ready to print balance
+                                 tout << term::move2down;
+                                 tout << term::move2down;
+
+
+                                 // Ready to print table
 
                                  // Caption
 
@@ -341,6 +352,22 @@ INVEST_OPENAPI_MAIN()
 
                                  tout << term::move2abs0 ;
 
+                                 auto connectionStateColor = terminalData.getConnectionStateColor();
+
+                                 // Ready to print connection state
+                                 tout << "[" << terminalData.getConnectionStateDateTimeStr().toStdString() << "] " 
+                                      << color(connectionStateColor)
+                                      << terminalData.getConnectionStateStr().toStdString() // << endl;
+                                      << color( pTermConfig->colors.getStateColor(2) )
+                                      ;
+                                 tout << term::clear(2);
+
+
+                                 tout << term::move2down;
+                                 tout << term::move2down;
+
+
+                                 // Ready to print status
                                  tout << "[" << terminalData.getStatusDateTimeStr().toStdString() << "] " << terminalData.getStatus().toStdString(); // << endl;
                                  tout << term::clear(2);
 
@@ -348,12 +375,15 @@ INVEST_OPENAPI_MAIN()
                                  tout << term::move2down;
 
 
+                                 // Ready to print balance
                                  tout << terminalData.getCurrenciesStr().toStdString();
                                  tout << term::clear(2);
 
                                  tout << term::move2down;
                                  tout << term::move2down;
 
+
+                                 // Ready to print table
 
                                  std::vector< std::size_t > mvColSizes = terminalData.getMainViewColSizes();
 
@@ -462,8 +492,22 @@ INVEST_OPENAPI_MAIN()
                              { 
                                  tout << term::move2abs0 ;
 
+
+                                 // Ready to print connection state
+                                 tout << term::move2down;
+                                 tout << term::move2down;
+
+
+                                 // Ready to print status
                                  tout << "[" << terminalData.getStatusDateTimeStr().toStdString() << "] " << terminalData.getStatus().toStdString(); // << endl;
                                  tout << term::clear(2);
+
+                                 tout << term::move2down;
+                                 tout << term::move2down;
+
+
+                                 // Ready to print balance
+
                              };
 
 
@@ -738,7 +782,7 @@ INVEST_OPENAPI_MAIN()
                     webSocket.sendTextMessage( orderBookSubscriptionText );
                 }
 
-                terminalData.setStatus("Connected");
+                terminalData.setConnectionState( trd::TradingTerminalData::ConnectionState::connected );
 
                 updateStatusStr();
 
@@ -746,13 +790,15 @@ INVEST_OPENAPI_MAIN()
 
     auto onDisconnected = [&]()
             {
+                terminalData.setConnectionState( trd::TradingTerminalData::ConnectionState::disconnected );
+
                 fConnected.store( false, std::memory_order_seq_cst  );
 
                 // Try to reconnect
 
                 webSocket.open( pOpenApi->getStreamingApiNetworkRequest() );
 
-                terminalData.setStatus("Disconnected");
+                //terminalData.setConnectionState( tkf::TradingTerminalData::ConnectionState::connecting );
 
                 updateStatusStr();
             };
@@ -929,31 +975,6 @@ INVEST_OPENAPI_MAIN()
                                         }
                                     };
 
-/*
-
-                                      oss << "Order Request: '" << canonicalOrderRequestString 
-                                          <<"': Error: order is already in progress"; // << endl;
-                                      terminalData.setStatus(QString::fromStdString(oss.str()));
-                                      return true; // Keep string for further editing
-
-
-
-    std::string    orderInputParams;
-    std::string    orderAdjustedParams;
-
-    OrderParams    orderParams;
-
-    QElapsedTimer  operationTimer;
-
-    QSharedPointer< OpenApiCompletableFuture< OpenAPI::MarketOrderResponse > >      marketOrderResponse = 0;
-    QSharedPointer< OpenApiCompletableFuture< OpenAPI::LimitOrderResponse  > >      limitOrderResponse  = 0;
-
-
-    bool isMarketOrderRequest() const { return (marketOrderResponse!=0); }
-    bool isLimitOrderRequest () const { return (limitOrderResponse!=0); }
-    bool hasActiveRequest    () const { return isMarketOrderRequest() || isLimitOrderRequest(); }
-
-*/
                                     
 
     /*
@@ -1008,7 +1029,7 @@ INVEST_OPENAPI_MAIN()
         checkAwaitingOperationResponses();
 
 
-
+    terminalData.setConnectionState( trd::TradingTerminalData::ConnectionState::connecting );
     tkf::connectStreamingWebSocket( pOpenApi, webSocket, onConnected, onDisconnected, onMessage );
 
 
@@ -1023,6 +1044,8 @@ INVEST_OPENAPI_MAIN()
                                lineEdit.processInput( input );
                         };
 
+
+    terminalData.setStatus("Initialized");
 
 
     while( !ctrlC.isBreaked() )
@@ -1263,6 +1286,9 @@ INVEST_OPENAPI_MAIN()
            После окончания торгов почему-то не убрались заявки - Q_Bid/CurBidPr и CurAskPr/Q_Ask
 
            Перво-наперво надо с этим разобраться.
+
+
+       11) Чего-то висит Best_Bid по LSNGP, хотя вроде должен был очистится
 
      */
     
