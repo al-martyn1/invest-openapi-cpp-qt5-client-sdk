@@ -347,34 +347,41 @@ struct InstrumentInfoLineData
         {
             return format_field( ff, "|" );
         }
+
         else if (id=="SP" || id=="SP1" || id=="SP2" || id=="SP3")
         {
             return format_field( ff, " " );
         }
+
         else if (id=="TICKER")
         {
             return format_field( ff, ticker.toStdString() );
         }
+
         else if (id=="FIGI")
         {
             return format_field( ff, figi.toStdString() );
         }
-        else if (id=="INSTR_STATE")
+
+        else if (id=="INSTRUMENT_ACTIVITY_STATE")
         {
             return format_field( ff, isTraded ? "T" : "-" );
         }
+
         else if (id=="PRICE_INC")
         {
             if (priceIncrement==Decimal(0)) return format_field( ff, "-" );
 
             return format_field( ff, priceIncrement );
         }
+
         else if (id=="LOT_SIZE")
         {
             if (lotSize==0) return format_field( ff, "-" );
 
             return format_field( ff, lotSize );
         }
+
         else if (id=="PORTFOLIO_PRICE")
         {
             if (avgPrice==Decimal(0))
@@ -382,7 +389,8 @@ struct InstrumentInfoLineData
 
             return format_field( ff, avgPrice, pricePrecision );
         }
-        else if (id=="PORTFOLIO_EXPECTED_YELD")
+
+        else if (id=="PORTFOLIO_EXPECTED_YIELD")
         {
             if (expYield==Decimal(0))
                 return format_field( ff, "-" );
@@ -390,6 +398,33 @@ struct InstrumentInfoLineData
             //return format_field( ff, expYield, 1 );
             return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, expYield, 1 );
         }
+
+        else if (id=="PORTFOLIO_EXPECTED_YIELD_PERCENT")
+        {
+            // avgPrice * quantity - 100%
+            // expYield
+
+            if (quantity==0 || avgPrice.zer() || expYield.zer())
+                return format_field( ff, "-" );
+            
+
+            auto portfolioCost    = avgPrice * quantity;
+            auto absPortfolioCost = portfolioCost.abs();
+
+            auto profitPercent    = absPortfolioCost.getPercent(expYield);
+
+            if (profitPercent>=Decimal(100))
+                profitPercent.rounded(0, marty::Decimal::RoundingMethod::roundMath );
+
+            else if (profitPercent>=Decimal(10))
+                profitPercent.rounded(1, marty::Decimal::RoundingMethod::roundMath );
+
+            else
+                profitPercent.rounded(2, marty::Decimal::RoundingMethod::roundMath );
+
+            return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, profitPercent, -1 );
+        }
+
         else if (id=="PORTFOLIO_QUANTITY")
         {
             // return format_field( ff, quantity );
@@ -876,8 +911,9 @@ public:
 
     void clearChangedFlags()
     {
-        statusUpdated   = false;
-        captionUpdated  = false;
+        statusUpdated              = false;
+        captionUpdated             = false;
+        connectionStatusUpdated    = false;
         updatedFigis.clear();
     }
 

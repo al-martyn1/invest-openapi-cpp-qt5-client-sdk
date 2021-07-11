@@ -1,3 +1,12 @@
+terminal.columns = \
+TICKER,INSTRUMENT_ACTIVITY_STATE,PRICE_INC,LOT_SIZE,PORTFOLIO_QUANTITY,PORTFOLIO_EXPECTED_YIELD,PORTFOLIO_EXPECTED_YIELD_PERCENT,\
+VB1,PORTFOLIO_PRICE,CUR_PRICE,\
+VB2,LAST_BUY_QUANTITY,LAST_BUY_PRICE,LAST_SELL_PRICE,LAST_SELL_QUANTITY,SP,\
+VB2,BEST_BID,SP,SP,SP,SPREAD_POINTS,BEST_ASK,\
+VB,MAX_BID_QUANTITY,MAX_BID_PRICE,SP,SP,CUR_PRICE,MIN_ASK_PRICE,MIN_ASK_QUANTITY,\
+VB2,SP,PORTFOLIO_PRICE,SP,INSTRUMENT_ACTIVITY_STATE,TICKER
+
+
 ;terminal.read-only              = true
 terminal.read-only              = false
 
@@ -16,19 +25,22 @@ terminal.colors.table.text            = white
 
 terminal.colors.input.prompt    = red, bright
 terminal.colors.input.text      = white
-terminal.colors.input.hint      = magenta, bg_cyan
+;terminal.colors.input.hint      = magenta,bg_cyan
+terminal.colors.input.hint      = cyan
 terminal.colors.input.caret     = yellow
 
-; terminal.colors.input.
-; terminal.colors.input.
-; , bright
+;terminal.colors.input.
+;terminal.colors.input.
+;,bright
 
 terminal.colors.normal          = white
 terminal.colors.less            = red
 terminal.colors.greater         = green
 
-
-
+terminal.colors.generic.bad     = red
+terminal.colors.generic.warning = magenta
+terminal.colors.generic.normal  = white
+terminal.colors.generic.good    = green
 
 
 
@@ -107,13 +119,6 @@ terminal.columns.SP3.align            = center
 
 
 
-;                       FIGI,
-terminal.columns = TICKER,INSTR_STATE,PRICE_INC,LOT_SIZE,PORTFOLIO_QUANTITY,PORTFOLIO_EXPECTED_YELD,\
-VB1,PORTFOLIO_PRICE,CUR_PRICE,\
-VB2,LAST_BUY_QUANTITY,LAST_BUY_PRICE,LAST_SELL_PRICE,LAST_SELL_QUANTITY,SP,\
-VB2,BEST_BID,SP,SP,SP,SPREAD_POINTS,BEST_ASK,\
-VB,MAX_BID_QUANTITY,MAX_BID_PRICE,SP,SP,CUR_PRICE,MIN_ASK_PRICE,MIN_ASK_QUANTITY,\
-VB2,SP,PORTFOLIO_PRICE,SP,INSTR_STATE,TICKER
 
 
 
@@ -135,14 +140,14 @@ terminal.columns.FIGI.align            = right
 ;terminal.columns.FIGI.align.dot 
 
 
-; INSTR_STATE - Instrument State - A - Activity - Instrument Activity - Is Instrument Active
-terminal.columns.INSTR_STATE.caption           = A
-;terminal.columns.INSTR_STATE.align.caption    = center
-;terminal.columns.INSTR_STATE.left
-;terminal.columns.INSTR_STATE.right
-terminal.columns.INSTR_STATE.width             = 1
-;terminal.columns.INSTR_STATE.align
-;terminal.columns.INSTR_STATE.align.dot 
+; INSTRUMENT_ACTIVITY_STATE - 'A' - Activity; values: 'T' - in trading, '-' - not in trading or error or something else
+terminal.columns.INSTRUMENT_ACTIVITY_STATE.caption           = A
+;terminal.columns.INSTRUMENT_ACTIVITY_STATE.align.caption    = center
+;terminal.columns.INSTRUMENT_ACTIVITY_STATE.left
+;terminal.columns.INSTRUMENT_ACTIVITY_STATE.right
+terminal.columns.INSTRUMENT_ACTIVITY_STATE.width             = 1
+;terminal.columns.INSTRUMENT_ACTIVITY_STATE.align
+;terminal.columns.INSTRUMENT_ACTIVITY_STATE.align.dot 
 
 
 terminal.columns.PRICE_INC.caption       = PrInc
@@ -163,11 +168,11 @@ terminal.columns.LOT_SIZE.width          = 5
 ;terminal.columns.LOT_SIZE.align.dot 
 
 
-terminal.columns.PORTFOLIO_PRICE.caption      = Price_Prtf
+terminal.columns.PORTFOLIO_PRICE.caption      = PricePrtf
 ;terminal.columns.PORTFOLIO_PRICE.align.caption
 ;terminal.columns.PORTFOLIO_PRICE.left
 ;terminal.columns.PORTFOLIO_PRICE.right
-terminal.columns.PORTFOLIO_PRICE.width        = 10
+terminal.columns.PORTFOLIO_PRICE.width        = 9
 ;terminal.columns.PORTFOLIO_PRICE.align
 ;terminal.columns.PORTFOLIO_PRICE.align.dot 
 
@@ -181,21 +186,30 @@ terminal.columns.PORTFOLIO_QUANTITY.width          = 6
 ;terminal.columns.PORTFOLIO_QUANTITY.align.dot 
 
 
-terminal.columns.PORTFOLIO_EXPECTED_YELD.caption        = ExpYeld
-;terminal.columns.PORTFOLIO_EXPECTED_YELD.align.caption
-terminal.columns.PORTFOLIO_EXPECTED_YELD.left           = 1
-terminal.columns.PORTFOLIO_EXPECTED_YELD.right          = 1
+terminal.columns.PORTFOLIO_EXPECTED_YIELD.caption        = ExpYield
+;terminal.columns.PORTFOLIO_EXPECTED_YIELD.align.caption
+terminal.columns.PORTFOLIO_EXPECTED_YIELD.left           = 1
+terminal.columns.PORTFOLIO_EXPECTED_YIELD.right          = 1
 ; Если доведётся ворочать большими суммами, то тут надо увеличить ширину хотя бы до 10ти знаков. У меня и с восьмью знаками слишком много места слева остаётся
-terminal.columns.PORTFOLIO_EXPECTED_YELD.width          = 9 
-;terminal.columns.PORTFOLIO_EXPECTED_YELD.align
-terminal.columns.PORTFOLIO_EXPECTED_YELD.align.dot      = 0
+terminal.columns.PORTFOLIO_EXPECTED_YIELD.width          = 9 
+;terminal.columns.PORTFOLIO_EXPECTED_YIELD.align
+terminal.columns.PORTFOLIO_EXPECTED_YIELD.align.dot      = 0
 
 
-terminal.columns.CUR_PRICE.caption       = Price_Cur
+terminal.columns.PORTFOLIO_EXPECTED_YIELD_PERCENT.caption           = %
+terminal.columns.PORTFOLIO_EXPECTED_YIELD_PERCENT.align.caption     = center
+terminal.columns.PORTFOLIO_EXPECTED_YIELD_PERCENT.left              = 1
+terminal.columns.PORTFOLIO_EXPECTED_YIELD_PERCENT.right             = 1
+terminal.columns.PORTFOLIO_EXPECTED_YIELD_PERCENT.width             = 5
+terminal.columns.PORTFOLIO_EXPECTED_YIELD_PERCENT.align             = right
+terminal.columns.PORTFOLIO_EXPECTED_YIELD_PERCENT.align.dot         = 0
+
+
+terminal.columns.CUR_PRICE.caption       = PriceCur
 ;terminal.columns.CUR_PRICE.align.caption
 ;terminal.columns.CUR_PRICE.left
 ;terminal.columns.CUR_PRICE.right
-terminal.columns.CUR_PRICE.width         = 10
+terminal.columns.CUR_PRICE.width         = 9
 ;terminal.columns.CUR_PRICE.align
 ;terminal.columns.CUR_PRICE.align.dot 
 terminal.columns.CUR_PRICE.color         = yellow

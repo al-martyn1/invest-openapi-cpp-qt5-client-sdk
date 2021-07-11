@@ -761,6 +761,20 @@ INVEST_OPENAPI_MAIN()
     pTerminalInputEdit = &lineEdit;
 
 
+
+    QElapsedTimer screenUpdateTimer;
+    screenUpdateTimer.start();
+
+    auto periodicScreenUpdate = [&]()
+                                {
+                                    if (screenUpdateTimer.elapsed() > 400)
+                                    {
+                                        updateScreen();
+                                        screenUpdateTimer.restart();
+                                    }
+                                };
+
+
     auto onConnected = [&]()
             {
             
@@ -785,6 +799,7 @@ INVEST_OPENAPI_MAIN()
                 terminalData.setConnectionState( trd::TradingTerminalData::ConnectionState::connected );
 
                 updateStatusStr();
+                periodicScreenUpdate();
 
             };
 
@@ -801,6 +816,7 @@ INVEST_OPENAPI_MAIN()
                 //terminalData.setConnectionState( tkf::TradingTerminalData::ConnectionState::connecting );
 
                 updateStatusStr();
+                periodicScreenUpdate();
             };
 
 
@@ -834,7 +850,8 @@ INVEST_OPENAPI_MAIN()
 
                     terminalData.update( marketGlass.figi, marketGlass );
 
-                    updateFigiScreen(marketGlass.figi);
+                    // Сделаю просто тупой периодический апдейт по таймеру, иначе зело тормозит, когда много данных прилетает
+                    // updateFigiScreen(marketGlass.figi);
                 }
 
                 else if (eventName=="instrument_info")
@@ -846,7 +863,8 @@ INVEST_OPENAPI_MAIN()
 
                     terminalData.update( instrState.figi, instrState );
 
-                    updateFigiScreen(instrState.figi);
+                    // Сделаю просто тупой периодический апдейт по таймеру, иначе зело тормозит, когда много данных прилетает
+                    // updateFigiScreen(instrState.figi);
                 }
 
                 else if (eventName=="candle")
@@ -975,7 +993,7 @@ INVEST_OPENAPI_MAIN()
                                         }
                                     };
 
-                                    
+
 
     /*
         Делать запрос по ордерам один раз в конце списка инструментов - не дело.
@@ -1004,6 +1022,7 @@ INVEST_OPENAPI_MAIN()
     // Запрашиваем операции для всех инструментов
 
     terminalData.setStatus("Initializing");
+    periodicScreenUpdate();
 
     QElapsedTimer operationsRequestTimer;
     operationsRequestTimer.start();
@@ -1023,15 +1042,20 @@ INVEST_OPENAPI_MAIN()
 
         checkAwaitingOperationResponses();
 
+        periodicScreenUpdate();
+
     }
 
     while(!awaitingOperationResponses.empty())
+    {
         checkAwaitingOperationResponses();
-
+        periodicScreenUpdate();
+    }
 
     terminalData.setConnectionState( trd::TradingTerminalData::ConnectionState::connecting );
+    updateScreen();
     tkf::connectStreamingWebSocket( pOpenApi, webSocket, onConnected, onDisconnected, onMessage );
-
+    periodicScreenUpdate();
 
     pTerminalInputEdit->updateView();
 
@@ -1047,12 +1071,16 @@ INVEST_OPENAPI_MAIN()
 
     terminalData.setStatus("Initialized");
 
+    periodicScreenUpdate();
+
 
     while( !ctrlC.isBreaked() )
     {
         QTest::qWait(1);
 
-        bool bUpdateScreen = false;
+        //bool bUpdateScreen = false;
+
+        periodicScreenUpdate();
 
         checkActiveOrderRequests();
 
@@ -1069,10 +1097,6 @@ INVEST_OPENAPI_MAIN()
                 ordersResponse = 0;
                 lastOrdersResponseLocalDateTime = QDateTime::currentDateTime();
                 terminalData.update( activeOrders );
-
-                /// !!! Нужно сравнить ордера по фигам, и найти те фиги, где поменялось
-                bUpdateScreen = true;
-                
             }
         } // ordersResponse
 
@@ -1090,7 +1114,6 @@ INVEST_OPENAPI_MAIN()
                 portfolioResponse = 0;
                 lastPortfolioResponseLocalDateTime = QDateTime::currentDateTime();
                 terminalData.update( portfolioPositions );
-                bUpdateScreen = true;
             }
         } // portfolioResponse
 
@@ -1108,15 +1131,8 @@ INVEST_OPENAPI_MAIN()
                 portfolioCurrenciesResponse = 0;
                 lastPortfolioCurrenciesResponseLocalDateTime = QDateTime::currentDateTime();
                 terminalData.update( currencyPositions );
-                bUpdateScreen = true;
             }
         } // portfolioCurrenciesResponse
-
-
-        if (bUpdateScreen)
-        {
-            updateScreen();
-        }
 
 
         processInput();
@@ -1289,6 +1305,9 @@ INVEST_OPENAPI_MAIN()
 
 
        11) Чего-то висит Best_Bid по LSNGP, хотя вроде должен был очистится
+
+
+
 
      */
     
