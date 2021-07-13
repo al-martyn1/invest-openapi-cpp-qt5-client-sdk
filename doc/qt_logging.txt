@@ -1,0 +1,6 @@
+#include <QtGlobal>
+
+qCritical(const char *message, ...)
+qDebug(const char *message, ...)
+qFatal(const char *message, ...)
+qInfo(const char *message, ...)

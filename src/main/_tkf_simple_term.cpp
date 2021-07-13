@@ -15,6 +15,7 @@
 #include <atomic>
 #include <deque>
 
+#include <QtGlobal>
 #include <QCoreApplication>
 #include <QString>
 #include <QSettings>

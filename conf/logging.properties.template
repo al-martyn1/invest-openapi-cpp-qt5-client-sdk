@@ -18,12 +18,12 @@ logging.log.context = false
 logging.log.level   = 7
 
 
-logging.debug.dump.requests  = true
-logging.debug.dump.responses = true
+;logging.debug.dump.requests  = true
+;logging.debug.dump.responses = true
 ;logging.debug.dump.sql       = true
 
-;logging.debug.dump.requests  = false
-;logging.debug.dump.responses = false
+logging.debug.dump.requests  = false
+logging.debug.dump.responses = false
 logging.debug.dump.sql       = false
 
 

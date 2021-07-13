@@ -15,6 +15,9 @@
 #include <deque>
 #include <cmath>
 
+
+#include <QtGlobal>
+
 #include <QString>
 #include <QTest>
 #include <QElapsedTimer>
@@ -617,7 +620,7 @@ protected:
 
 
     //------------------------------
-    bool updateFigiDataImpl( MarketInstrumentState &curData, const MarketInstrumentState &newData )
+    bool updateFigiDataImpl( QString figi, MarketInstrumentState &curData, const MarketInstrumentState &newData )
     {
         bool changed = false;
 
@@ -633,25 +636,72 @@ protected:
         return changed;
     }
 
-    bool updateFigiDataImpl( MarketGlass &curData, const MarketGlass &newData )
+    bool updateFigiDataImpl( QString figi, MarketGlass &curData, const MarketGlass &newData )
     {
         curData = newData;
         return true;
     }
 
-    bool updateFigiDataImpl( std::vector< OpenAPI::Operation > &curData, const std::vector< OpenAPI::Operation > &newData )
+    bool updateFigiDataImpl( QString figi, std::vector< OpenAPI::Operation > &curData, const std::vector< OpenAPI::Operation > &newData )
     {
         curData = newData; // UNDONE
         return true;
     }
 
-    bool updateFigiDataImpl( std::vector< OpenAPI::Order > &curData, const std::vector< OpenAPI::Order > &newData )
+    bool updateFigiDataImpl( QString figi, std::vector< OpenAPI::Order > &curData, const std::vector< OpenAPI::Order > &newData )
     {
-        curData = newData; // UNDONE
-        return true;
+
+        for( const auto &order: newData )
+        {
+            qDebug().nospace().noquote() << "Active Order, "
+                                         <<      "FIGI: " << order.getFigi()                   << ", "
+                                         <<       " ID: " << order.getOrderId()                << ", "
+                                         << "Operation: " << order.getOperation().asJson()     << ", "
+                                         <<    "Status: " << order.getStatus().asJson()        << ", "
+                                         <<      "Type: " << order.getType().asJson()          << ", "
+                                         <<  "Req Lots: " << order.getRequestedLots()          << ", "
+                                         <<     "Price: " << order.getPrice().toString().c_str()       ; // << ", "
+                                         
+
+        }
+        
+        //void sortOrdersByPriceDescending( std::vector< OpenAPI::Order > & ops )
+
+        bool eq = true;
+
+        if (curData.size()!=newData.size())
+        {
+            eq = false;
+        }
+        else // sizes are equal
+        {
+            std::vector< OpenAPI::Order > curDataSorted = curData;  sortOrdersById(curDataSorted);
+            std::vector< OpenAPI::Order > newDataSorted = newData;  sortOrdersById(newDataSorted);
+
+            std::vector< OpenAPI::Order >::const_iterator it1 = curDataSorted.begin();
+            std::vector< OpenAPI::Order >::const_iterator it2 = newDataSorted.begin();
+
+            for( ; it1!=curDataSorted.end(); ++it1, ++it2 )
+            {
+                if (it1->getOrderId() != it2->getOrderId())
+                {
+                    eq = false;
+                    break;
+                }
+            }
+        }
+
+
+        if (!eq)
+        {
+            curData = newData;
+        }
+        
+        return !eq;
     }
 
-    bool updateFigiDataImpl( OpenAPI::PortfolioPosition &curData, const OpenAPI::PortfolioPosition &newData )
+
+    bool updateFigiDataImpl( QString figi, OpenAPI::PortfolioPosition &curData, const OpenAPI::PortfolioPosition &newData )
     {
         curData = newData; // UNDONE
         return true;
@@ -699,11 +749,28 @@ public:
 
 
     //------------------------------
+    template< typename MapElemenType >
+    void fillMapKeysWithFigis( std::map< QString, MapElemenType > &m, MapElemenType defValue ) const
+    {
+        for( auto figi : instrumentList )
+        {
+            m[ figi.toUpper() ] = defValue;
+        }
+    }
+
+    //------------------------------
+
+
+
+
+    //------------------------------
     void setStatus( QString str )
     {
         statusStr             = str;
         statusChangedDateTime = QDateTime::currentDateTime();
         statusUpdated         = true;
+
+        qInfo().nospace().noquote() << "Status: " << statusStr;
     }
 
     QString   getStatus() const           { return statusStr; }
@@ -724,9 +791,19 @@ public:
 */
     void setConnectionState( ConnectionState st )
     {
+
         connectionStatus                = st;
         connectionStatusChangedDateTime = QDateTime::currentDateTime();
         connectionStatusUpdated         = true;
+
+        switch(st)
+        {
+            case ConnectionState::disconnected: qInfo().nospace().noquote() << "Connection State: Disconnected"  ; break;
+            case ConnectionState::connecting  : qInfo().nospace().noquote() << "Connection State: Connecting"    ; break;
+            case ConnectionState::connected   : qInfo().nospace().noquote() << "Connection State: Connected (OK)"; break;
+            default:                            qInfo().nospace().noquote() << "Connection State: UNKNOWN"       ; break;
+        }
+
     }
 
     QString   getConnectionStateStr() const
@@ -1177,15 +1254,50 @@ public:
     }
     */
 
+    static QString getTypeNameForLogInUpdateMethod( const MarketInstrumentState             & )    { return QString("Market Instrument State"); }
+    static QString getTypeNameForLogInUpdateMethod( const MarketGlass                       & )    { return QString("Market Glass"); }
+    static QString getTypeNameForLogInUpdateMethod( const std::vector< OpenAPI::Operation > & )    { return QString("Operations List"); }
+    static QString getTypeNameForLogInUpdateMethod( const std::vector< OpenAPI::Order     > & )    { return QString("Active Orders List"); }
+    static QString getTypeNameForLogInUpdateMethod( const OpenAPI::PortfolioPosition        & )    { return QString("Portfolio Position"); }
+
+    static int getSizeForLogInUpdateMethod( const MarketInstrumentState             &  )    { return -1; }
+    static int getSizeForLogInUpdateMethod( const MarketGlass                       &  )    { return -1; }
+    static int getSizeForLogInUpdateMethod( const std::vector< OpenAPI::Operation > &v )    { return (int)v.size(); }
+    static int getSizeForLogInUpdateMethod( const std::vector< OpenAPI::Order     > &v )    { return (int)v.size(); }
+    static int getSizeForLogInUpdateMethod( const OpenAPI::PortfolioPosition        &v )    { return -1; }
+
+
+    // bool updateFigiDataImpl( MarketInstrumentState &curData, const MarketInstrumentState &newData )
+    // bool updateFigiDataImpl( MarketGlass &curData, const MarketGlass &newData )
+    // bool updateFigiDataImpl( std::vector< OpenAPI::Operation > &curData, const std::vector< OpenAPI::Operation > &newData )
+    // bool updateFigiDataImpl( std::vector< OpenAPI::Order > &curData, const std::vector< OpenAPI::Order > &newData )
+    // bool updateFigiDataImpl( OpenAPI::PortfolioPosition &curData, const OpenAPI::PortfolioPosition &newData )
+
+
     #define DECLARE_IOA_TRADING_TERMINAL_DATA_UPDATE_FUNCTION( dataType, mapName )            \
     bool update( QString figi                                                                 \
                , const dataType &data                                                         \
                )                                                                              \
     {                                                                                         \
         figi           = figi.toUpper();                                                      \
+        auto ticker    = pDicts->getTickerByFigiChecked(figi);                                \
+                                                                                              \
+                                                                                              \
+        QString updatedName = getTypeNameForLogInUpdateMethod(data);                          \
+        int numElementsInUpdate = getSizeForLogInUpdateMethod(data);                          \
+        if (numElementsInUpdate<0)                                                            \
+        {                                                                                     \
+            qInfo().nospace().noquote() << "Updating " << updatedName << " for '" << ticker << " (" << figi << ")"; \
+        }                                                                                     \
+        else                                                                                  \
+        {                                                                                     \
+            qInfo().nospace().noquote() << "Updating " << updatedName << " for '" << ticker << " (" << figi << "), number of elements: " << numElementsInUpdate;  \
+        }                                                                                     \
+                                                                                              \
                                                                                               \
         auto &figiData = mapName [figi];                                                      \
-        if (updateFigiDataImpl(figiData,data))                                                \
+                                                                                              \
+        if (updateFigiDataImpl( figi, figiData, data ))                                       \
         {                                                                                     \
             updatedFigis.insert(figi);                                                        \
             auto &lineData = terminalLinesData[figi];                                         \

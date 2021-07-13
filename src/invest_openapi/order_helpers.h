@@ -126,8 +126,8 @@ void sortOrdersByPriceAscending( std::vector< OpenAPI::Order > & ops )
                       }
                     );
 }
-//----------------------------------------------------------------------------
 
+//----------------------------------------------------------------------------
 inline
 void sortOrdersByPriceDescending( std::vector< OpenAPI::Order > & ops )
 {
@@ -150,6 +150,25 @@ void sortOrdersByPrice( std::vector< OpenAPI::Order > & ops, SortType sortType )
 }
 
 //----------------------------------------------------------------------------
+
+
+
+
+//----------------------------------------------------------------------------
+inline
+void sortOrdersById( std::vector< OpenAPI::Order > & ops )
+{
+    std::stable_sort( ops.begin(), ops.end()
+                    , []( const OpenAPI::Order &op1, const OpenAPI::Order &op2 )
+                      {
+                          return op1.getOrderId() < op2.getOrderId();
+                      }
+                    );
+
+}
+
+//----------------------------------------------------------------------------
+
 
 
 
