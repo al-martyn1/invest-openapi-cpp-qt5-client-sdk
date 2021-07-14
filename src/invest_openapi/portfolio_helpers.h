@@ -55,6 +55,68 @@ namespace invest_openapi
 
 
 //----------------------------------------------------------------------------
+inline
+OpenAPI::MoneyAmount getPortfolioPositionSpentCost( const OpenAPI::PortfolioPosition &p )
+{
+    OpenAPI::MoneyAmount res = p.getAveragePositionPrice();
+
+    marty::Decimal avgPrice   = res.getValue();
+    marty::Decimal posBalance = p.getBalance();
+
+    marty::Decimal cost = avgPrice * posBalance;
+
+    /*
+    qDebug().nospace().noquote() << "??? " << "getPortfolioPositionSpentCost for " << p.getTicker() << " - "
+                                           << "Price: " << avgPrice.toString().c_str() << ", "
+                                           << "Balance: " << posBalance.toString().c_str() << ", "
+                                           << "Cost: " << cost.toString().c_str() ; // << ", "
+    */
+
+    //res.setValue( res.getValue() * p.getBalance() );
+    res.setValue( cost );
+
+    return res;
+}
+
+//----------------------------------------------------------------------------
+inline
+OpenAPI::MoneyAmount getPortfolioPositionCurrentCost( const OpenAPI::PortfolioPosition &p /* , bool excludeBrockerCredit = true */  )
+{
+    OpenAPI::MoneyAmount spentCost     = getPortfolioPositionSpentCost(p);
+
+    OpenAPI::MoneyAmount expectedYield = p.getExpectedYield();
+
+    OpenAPI::Currency scCurrency = spentCost.getCurrency();
+
+    OpenAPI::Currency eyCurrency = expectedYield.getCurrency();
+
+    if (scCurrency.asJson().toUpper()!=eyCurrency.asJson().toUpper())
+    {
+        qCritical().nospace().noquote() << "!!! Portolio position " << p.getTicker() << " (" << p.getFigi() << ") - "
+                                        << "Balance currency (" << scCurrency.asJson() << ") is different than Eexpected Yield currency (" << eyCurrency.asJson() << ")";
+    }
+
+    marty::Decimal spent    = spentCost.getValue();
+    marty::Decimal expected = expectedYield.getValue();
+
+    // if (spent.sign()<0 && excludeBrockerCredit)
+    //     spent = marty::Decimal(0);  // Эти деньги, условно говоря, взяты у брокера в долг, наша - только прибыль
+
+    marty::Decimal summary  = spent + expected;
+
+    /*
+    qDebug().nospace().noquote() << "    " << "getPortfolioPositionCurrentCost for " << p.getTicker() << " - "
+                                           << "Spent Cost: " << spent.toString().c_str() << ", "
+                                           << "Expected Yield: " << expected.toString().c_str() << ", "
+                                           << "Summary: " << summary.toString().c_str() ; // << ", "
+    */
+
+    spentCost.setValue( summary );
+
+    return spentCost;
+}
+
+//----------------------------------------------------------------------------
 //! 
 inline
 void parsePortfolio( const QList<PortfolioPosition>          &positions

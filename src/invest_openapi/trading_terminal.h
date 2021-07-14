@@ -44,6 +44,7 @@
 
 #include "operation_helpers.h"
 #include "order_helpers.h"
+#include "portfolio_helpers.h"
 
 #include "terminal_helpers.h"
 #include "format_helpers.h"
@@ -842,10 +843,190 @@ public:
 
     //------------------------------
 
-    QString getCurrenciesStr() const
+    QString makeCurrencyPositionsStr( const std::map< QString, OpenAPI::CurrencyPosition > &positions ) const
     {
         QString resStr;
 
+        std::map< QString, CurrencyPosition >::const_iterator it = positions.begin();
+        for(; it != positions.end(); ++it)
+        {
+            marty::Decimal balance = it->second.getBalance();
+            if (balance==marty::Decimal(0))
+                continue;
+
+            std::ostringstream oss;
+
+            oss << it->first << ": " << it->second.getBalance().rounded(2, marty::Decimal::RoundingMethod::roundMath );
+
+            marty::Decimal blocked = it->second.getBlocked();
+            if (blocked!=marty::Decimal(0))
+                oss << " (" << blocked.rounded(2, marty::Decimal::RoundingMethod::roundMath ) << ")";
+
+            oss << ";";
+
+            if (!resStr.isEmpty())
+            {
+                resStr += " ";
+            }
+
+            resStr += QString::fromStdString(oss.str());
+        
+        }
+
+        return resStr;
+    
+    }
+
+
+    QString getPortfolioBalanceStr() const
+    {
+
+        std::map< QString, OpenAPI::CurrencyPosition > portfolioBalanceCurrencyPositions = currencyPositions; // Остатки валют тоже учитываем
+
+        // FIGI -> PortfolioPosition map
+        std::map< QString, OpenAPI::PortfolioPosition >::const_iterator pit = currentPortfolio.begin();
+
+
+        marty::Decimal sumValue = 0;
+
+        for(; pit!=currentPortfolio.end(); ++pit)
+        {
+            // Ignore FIGI
+
+            //OpenAPI::CurrencyPosition pos;
+
+            OpenAPI::MoneyAmount positionCurrentCost = getPortfolioPositionCurrentCost( pit->second );
+                                                    // getPortfolioPositionSpentCost
+
+            marty::Decimal curCostValue = positionCurrentCost.getValue();
+            sumValue += curCostValue;
+
+            /*
+            qDebug().nospace().noquote() << "??? " << "getPortfolioBalanceStr for " << pit->second.getTicker() << " - "
+                                                   << "Cost: " << curCostValue.toString().c_str() << ", "
+                                                   << "Summary: " << sumValue.toString().c_str(); // << ", "
+                                                   //<< "Cost: " << cost.toString().c_str() ; // << ", "
+            */
+
+            QString strCurrency = positionCurrentCost.getCurrency().asJson().toUpper();
+            std::map< QString, OpenAPI::CurrencyPosition >::iterator pbcpIt = portfolioBalanceCurrencyPositions.find(strCurrency);
+
+            if (pbcpIt==portfolioBalanceCurrencyPositions.end())
+            {
+                OpenAPI::CurrencyPosition pos;
+                pos.setBlocked( marty::Decimal(0) ); 
+                pos.setCurrency( positionCurrentCost.getCurrency() );
+                pos.setBalance ( curCostValue );
+                portfolioBalanceCurrencyPositions[strCurrency] = pos;
+            }
+            else
+            {
+                marty::Decimal sum = pbcpIt->second.getBalance() + curCostValue;
+
+                // Каждый раз, ну да ладно, лень вначале обнулить, что пришло из currencyPositions
+                pbcpIt->second.setBalance ( sum );
+                pbcpIt->second.setBlocked( marty::Decimal(0) ); 
+            }
+
+            // pos.setCurrency( positionCurrentCost.getCurrency() );
+            // pos.setBalance ( curCostValue );
+
+            //portfolioBalanceCurrencyPositions[pos.getCurrency()] = pos;
+            //OpenAPI::CurrencyPosition &pos = portfolioBalanceCurrencyPositions[]; // = pos;
+
+            // Каждый раз, ну да ладно
+            //pos.setBlocked( marty::Decimal(0) ); 
+            //pos.setCurrency( positionCurrentCost.getCurrency() );
+
+            //pos.setBalance ( pos.getBalance() + curCostValue );
+
+
+            // pos.getCurrency().asJson().toUpper()
+
+        }
+
+        QString resStr = makeCurrencyPositionsStr( portfolioBalanceCurrencyPositions );
+
+
+
+/*
+
+std::map< QString, CurrencyPosition >::const_iterator it = currencyPositions.begin();
+
+
+CurrencyPosition
+
+    Currency getCurrency() const;
+    void setCurrency(const Currency &currency);
+    bool is_currency_Set() const;
+    bool is_currency_Valid() const;
+
+    marty::Decimal getBalance() const;
+    void setBalance(const marty::Decimal &balance);
+    bool is_balance_Set() const;
+    bool is_balance_Valid() const;
+
+    marty::Decimal getBlocked() const;
+    void setBlocked(const marty::Decimal &blocked);
+    bool is_blocked_Set() const;
+    bool is_blocked_Valid() const;
+
+
+Currency
+
+
+
+PortfolioPosition
+
+
+
+    marty::Decimal getBalance() const;
+    void setBalance(const marty::Decimal &balance);
+    bool is_balance_Set() const;
+    bool is_balance_Valid() const;
+
+    marty::Decimal getBlocked() const;
+    void setBlocked(const marty::Decimal &blocked);
+    bool is_blocked_Set() const;
+    bool is_blocked_Valid() const;
+
+    MoneyAmount getExpectedYield() const;
+    void setExpectedYield(const MoneyAmount &expected_yield);
+    bool is_expected_yield_Set() const;
+    bool is_expected_yield_Valid() const;
+
+    qint32 getLots() const;
+    void setLots(const qint32 &lots);
+    bool is_lots_Set() const;
+    bool is_lots_Valid() const;
+
+    MoneyAmount getAveragePositionPrice() const;
+    void setAveragePositionPrice(const MoneyAmount &average_position_price);
+    bool is_average_position_price_Set() const;
+    bool is_average_position_price_Valid() const;
+
+*/
+
+
+        if (resStr.isEmpty())
+        {
+            if (portfolioBalanceCurrencyPositions.empty())
+                resStr = "Portfolio Not Available";
+            else
+                resStr = "Portfolio Balance is zero";
+        }
+
+        return resStr;
+
+    }
+    
+
+    //------------------------------
+    QString getCurrenciesBalanceStr() const
+    {
+        QString resStr = makeCurrencyPositionsStr( currencyPositions );
+
+        /*
         std::map< QString, CurrencyPosition >::const_iterator it = currencyPositions.begin();
         for(; it != currencyPositions.end(); ++it)
         {
@@ -871,6 +1052,7 @@ public:
             resStr += QString::fromStdString(oss.str());
         
         }
+        */
 
         if (resStr.isEmpty())
         {

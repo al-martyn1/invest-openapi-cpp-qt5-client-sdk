@@ -269,6 +269,7 @@ INVEST_OPENAPI_MAIN()
                                  // Ready to print balance
                                  tout << term::move2down;
                                  tout << term::move2down;
+                                 tout << term::move2down;
 
 
                                  // Ready to print table
@@ -288,7 +289,7 @@ INVEST_OPENAPI_MAIN()
                                  int nFigi  = 0;
                                  for(; nFigi<nFigis; ++nFigi)
                                  {
-                                     if (pTermConfig->hbreakStyleRegular!=0 && nFigi && nFigi!=(nFigis-1) && (nFigi%pTermConfig->hbreakRegular)==0)
+                                     if (pTermConfig->hbreakStyleRegular!=0 && nFigi  /* && nFigi!=(nFigis-1) */  && (nFigi%pTermConfig->hbreakRegular)==0)
                                      {
                                          tout << term::move2down;
                                      }
@@ -376,7 +377,11 @@ INVEST_OPENAPI_MAIN()
 
 
                                  // Ready to print balance
-                                 tout << terminalData.getCurrenciesStr().toStdString();
+
+                                 tout << "Portfolio  Balance : " << terminalData.getPortfolioBalanceStr().toStdString();
+                                 tout << term::clear(1);
+                                 tout << term::move2down;
+                                 tout << "Currencies Balance : " << terminalData.getCurrenciesBalanceStr().toStdString();
                                  tout << term::clear(2);
 
                                  tout << term::move2down;
@@ -439,7 +444,7 @@ INVEST_OPENAPI_MAIN()
                                  int nFigi  = 0;
                                  for(; nFigi<nFigis; ++nFigi)
                                  {
-                                     if (pTermConfig->hbreakStyleRegular!=0 && nFigi && nFigi!=(nFigis-1) && (nFigi%pTermConfig->hbreakRegular)==0)
+                                     if (pTermConfig->hbreakStyleRegular!=0 && nFigi  /* && nFigi!=(nFigis-1) */  && (nFigi%pTermConfig->hbreakRegular)==0)
                                      {
                                          if (terminalData.isCaptionChanged())
                                          {
