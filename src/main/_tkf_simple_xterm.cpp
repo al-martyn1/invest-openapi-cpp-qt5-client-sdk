@@ -258,18 +258,18 @@ INVEST_OPENAPI_MAIN()
 
                                  // Ready to print connection state
                                  tout << term::move2down;
-                                 tout << term::move2down;
+                                 //tout << term::move2down;
 
 
                                  // Ready to print status
                                  tout << term::move2down;
-                                 tout << term::move2down;
+                                 //tout << term::move2down;
 
 
                                  // Ready to print balance
                                  tout << term::move2down;
                                  tout << term::move2down;
-                                 tout << term::move2down;
+                                 //tout << term::move2down;
 
 
                                  // Ready to print table
@@ -361,31 +361,34 @@ INVEST_OPENAPI_MAIN()
                                       << terminalData.getConnectionStateStr().toStdString() // << endl;
                                       << color( pTermConfig->colors.getStateColor(2) )
                                       ;
-                                 tout << term::clear(2);
+                                 tout << term::clear(1);
 
 
                                  tout << term::move2down;
-                                 tout << term::move2down;
+                                 // tout << term::move2down;
 
 
                                  // Ready to print status
-                                 tout << "[" << terminalData.getStatusDateTimeStr().toStdString() << "] " << terminalData.getStatus().toStdString(); // << endl;
-                                 tout << term::clear(2);
+                                 tout << "[" << terminalData.getStatusDateTimeStr().toStdString() << "] " 
+                                      << terminalData.getStatus().toStdString(); // << endl;
+                                 tout << term::clear(1);
 
                                  tout << term::move2down;
-                                 tout << term::move2down;
+                                 //tout << term::move2down;
 
 
                                  // Ready to print balance
 
-                                 tout << "Portfolio  Balance : " << terminalData.getPortfolioBalanceStr().toStdString();
+                                 tout << "[" << terminalData.getStatusDateTimeStr().toStdString() << "] " 
+                                      << "Portfolio  Balance : " << terminalData.getPortfolioBalanceStr().toStdString();
                                  tout << term::clear(1);
                                  tout << term::move2down;
-                                 tout << "Currencies Balance : " << terminalData.getCurrenciesBalanceStr().toStdString();
-                                 tout << term::clear(2);
+                                 tout << "[" << terminalData.getStatusDateTimeStr().toStdString() << "] " 
+                                      << "Currencies Balance : " << terminalData.getCurrenciesBalanceStr().toStdString();
+                                 tout << term::clear(1);
 
                                  tout << term::move2down;
-                                 tout << term::move2down;
+                                 //tout << term::move2down;
 
 
                                  // Ready to print table
@@ -500,7 +503,7 @@ INVEST_OPENAPI_MAIN()
 
                                  // Ready to print connection state
                                  tout << term::move2down;
-                                 tout << term::move2down;
+                                 //tout << term::move2down;
 
 
                                  // Ready to print status
@@ -508,7 +511,7 @@ INVEST_OPENAPI_MAIN()
                                  tout << term::clear(2);
 
                                  tout << term::move2down;
-                                 tout << term::move2down;
+                                 //tout << term::move2down;
 
 
                                  // Ready to print balance

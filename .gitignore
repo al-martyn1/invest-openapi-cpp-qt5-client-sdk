@@ -83,3 +83,15 @@ tmp
 /ivt
 /conf/*.properties
 /_logs/_tkf_simple_xterm/*.log
+/doc/openapi_bugs/0001/_tkf_update_instruments.log
+/doc/planes_decimal.txt
+/doc/rnc6_12_markstein.pdf
+/doc/rnc6_12_markstein.txt
+/doc/test_results/test024_table_f1.log
+/doc/test_results/test024_table_f2.log
+/doc/test_results/test024_table_i1.log
+/doc/test_results/test024_table_i2.log
+/doc/trading.txt
+/src/main/_tkf_simple_xterm_bak.cpp
+/src/main/hazan.txt
+/src/main/test022_bak.cpp
