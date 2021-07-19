@@ -552,6 +552,7 @@ INVEST_OPENAPI_MAIN()
                                   if (text.empty())
                                       return;
 
+                                  /*
                                   if (text[0]=='=')
                                   {
                                       // На клавиатуре минус '-' работает без шифта, с шифтом - даёт '_'
@@ -563,11 +564,13 @@ INVEST_OPENAPI_MAIN()
 
                                       text[0] = '+';
                                   }
+                                  */
 
+                                  QString qtext = QString::fromStdString(text);
 
-                                  auto tmpText = tkf::prepareOrderParamsString( text );
+                                  auto qTmpText = qtext.trimmed(); //tkf::prepareOrderParamsString( text );
 
-                                  if (tmpText.empty())
+                                  if (qTmpText.isEmpty())
                                       return;
 
                                   bool acltSet = false;
@@ -578,11 +581,66 @@ INVEST_OPENAPI_MAIN()
                                       return;
                                   }
 
+
+                                  if (qTmpText[0]=='=')
+                                  {
+                                      qtext.replace( "=", "+" );
+                                      qTmpText = qtext.trimmed();
+                                  }
+
+                                  if (qTmpText[0]=='-' || qTmpText[0]=='+')
+                                  {
+                                      if (qTmpText.size()>1)
+                                      {
+                                          if (qtext.back()=='+' || qtext.back()=='-' || qtext.back()=='=')
+                                          {
+                                              char ch = qtext.back().toLatin1();
+                                              if (ch=='=')
+                                                  ch = '+';
+
+                                              qtext.resize( qtext.size()-1 );
+                                              if (ch=='-')
+                                                  qtext.replace( "+", "-" );
+                                              else
+                                                  qtext.replace( "-", "+" );
+
+                                              text = qtext.toStdString();
+                                              return;
+                                          }
+
+                                          else if (qtext.back()=='!')
+                                          {
+                                              qtext.resize( qtext.size()-1 );
+
+                                              int exMarkPos = qtext.indexOf("!");
+
+                                              if (exMarkPos<0) // No exclamation mark found, add it
+                                              {
+                                                  if (qTmpText[0]=='-')
+                                                      qtext.replace( "-", "-!" );
+                                                  else
+                                                      qtext.replace( "+", "+!" );
+                                              }
+                                              else // remove '!'
+                                              {
+                                                  qtext.replace( "!", "" );
+                                              }
+
+                                              text = qtext.toStdString();
+                                              return;
+                                          }
+                                      }
+
+                                  } // if (tmpText[0]=='-' || tmpText[0]=='+')
+
+
+                                  auto tmpText = qTmpText.toStdString();
+
                                   if (tmpText[0]=='-' || tmpText[0]=='+')
                                   {
                                       // We got an 'place order' command
 
-                                      std::vector<std::string> orderParamsStrVec = tkf::splitOrderParamsString( tmpText );
+                                      std::vector<std::string> orderParamsStrVec = tkf::splitOrderParamsString( tkf::prepareOrderParamsString(tmpText) );
 
                                       if ( orderParamsStrVec.size()>1 ) // at least 2 and last - is id
                                       {
@@ -800,7 +858,7 @@ INVEST_OPENAPI_MAIN()
 
     auto periodicScreenUpdate = [&]()
                                 {
-                                    if (screenUpdateTimer.elapsed() > 1000) // Раз в секунду обновляем картинку, нафига чаще?
+                                    if (screenUpdateTimer.elapsed() > 1500) // Раз в секунду обновляем картинку, нафига чаще?
                                     {
                                         std::map< QString, BandwidthMeterType >::iterator 
                                         mit = glassBandwidthMeters.begin();
@@ -1240,12 +1298,56 @@ INVEST_OPENAPI_MAIN()
 
         if ( (dtNow.toMSecsSinceEpoch() - lastPortfolioCurrenciesResponseLocalDateTime.toMSecsSinceEpoch()) > 10000)
         {
-            // Портфель не обновлялся больше 30 секунд
+            // Валюты портфеля не обновлялся больше 30 секунд
             if (portfolioCurrenciesResponse==0)
             {
                 portfolioCurrenciesResponse = pOpenApi->portfolioCurrencies(); // rerequest
             }
         }
+
+        // Раз в 3 секунды запрашиваем операции по одному из инструментов
+        if (operationsRequestTimer.elapsed() > 3000)
+        {
+            if (instrumentForOperationsIt==terminalData.instrumentListEnd())
+                instrumentForOperationsIt = terminalData.instrumentListBegin();
+
+            QString requestForFigi     = dicts.findFigiByAnyIdString(*instrumentForOperationsIt);
+
+            requestForInstrumentOperations(requestForFigi);
+
+            ++instrumentForOperationsIt;
+        }
+
+        checkAwaitingOperationResponses();
+
+#if 0
+
+
+    QStringList::const_iterator instrumentForOperationsIt = terminalData.instrumentListBegin(); // instrumentList.begin();
+
+    for(; instrumentForOperationsIt!=terminalData.instrumentListEnd(); ++instrumentForOperationsIt, ++requestCounter)
+    {
+        tkf::checkWaitOnRequestsLimit( operationsRequestTimer, requestCounter );
+
+        QString requestForFigi     = dicts.findFigiByAnyIdString(*instrumentForOperationsIt);
+        QString requestForTicker   = dicts.getTickerByFigiChecked(requestForFigi);
+
+        requestForInstrumentOperations(requestForFigi);
+
+        checkAwaitingOperationResponses();
+
+        periodicScreenUpdate();
+
+    }
+
+    while(!awaitingOperationResponses.empty())
+    {
+        checkAwaitingOperationResponses();
+        periodicScreenUpdate();
+    }
+
+
+#endif
 
 
     } // while( !ctrlC.isBreaked() )

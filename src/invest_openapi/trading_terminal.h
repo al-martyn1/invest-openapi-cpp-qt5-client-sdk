@@ -457,21 +457,21 @@ struct InstrumentInfoLineData
 
         else if (id=="BEST_BID")
         {
-            if (bestBidPrice==Decimal(0)) return format_field( ff, "-" );
+            if (!isTraded || bestBidPrice==Decimal(0)) return format_field( ff, "-" );
 
             return format_field( ff, bestBidPrice );
         }
 
         else if (id=="BEST_ASK")
         {
-            if (bestAskPrice==Decimal(0)) return format_field( ff, "-" );
+            if (!isTraded || bestAskPrice==Decimal(0)) return format_field( ff, "-" );
 
             return format_field( ff, bestAskPrice );
         }
 
         else if (id=="SPREAD_POINTS")
         {
-            if (spreadPoints<1) return format_field( ff, "-" );
+            if (!isTraded || spreadPoints<1) return format_field( ff, "-" );
 
             return format_field( ff, spreadPoints );
         }
@@ -538,11 +538,15 @@ struct InstrumentInfoLineData
 
         else if (id=="NUM_LAST_GLASS_EVENTS")
         {
+            if (!isTraded) return format_field( ff, "-" );
+
             return format_field( ff, glassEventsCounter );
         }
 
         else if (id=="NUM_LAST_INSTRUMENT_STATE_EVENTS")
         {
+            if (!isTraded) return format_field( ff, "-" );
+
             return format_field( ff, instrumentStateEventsCounter );
         }
 

@@ -181,6 +181,7 @@ terminal.columns.NUM_LAST_GLASS_EVENTS.caption        = Vlt
 terminal.columns.NUM_LAST_GLASS_EVENTS.width          = 3
 ;terminal.columns.NUM_LAST_GLASS_EVENTS.align
 ;terminal.columns.NUM_LAST_GLASS_EVENTS.align.dot 
+terminal.columns.NUM_LAST_GLASS_EVENTS.color     = magenta
 
 
 terminal.columns.NUM_LAST_INSTRUMENT_STATE_EVENTS.caption        = InstrAct
