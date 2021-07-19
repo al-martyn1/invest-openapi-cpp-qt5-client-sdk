@@ -2,14 +2,23 @@ terminal.columns = \
 TICKER,INSTRUMENT_ACTIVITY_STATE,PRICE_INC,LOT_SIZE,\
 NUM_LAST_GLASS_EVENTS,\
 PORTFOLIO_QUANTITY,PORTFOLIO_EXPECTED_YIELD,PORTFOLIO_EXPECTED_YIELD_PERCENT,\
+\
 VB1,PORTFOLIO_PRICE,CUR_PRICE,\
+\
 VB2,BEST_BID,SP,SP,SP,SPREAD_POINTS,BEST_ASK,\
-VB2,LAST_BUY_QUANTITY,LAST_BUY_PRICE,LAST_SELL_PRICE,LAST_SELL_QUANTITY,SP,\
+\
+VB2,\
+LAST_BUY_QUANTITY,LAST_BUY_PRICE,\
+CUR_PRICE_TO_LAST_BUY_MARKER,CUR_PRICE_TO_LAST_OP_PERCENT,CUR_PRICE_TO_LAST_SELL_MARKER,\
+LAST_SELL_PRICE,LAST_SELL_QUANTITY,SP,\
+\
 VB,MAX_BID_QUANTITY,MAX_BID_PRICE,SP,SP,CUR_PRICE,MIN_ASK_PRICE,MIN_ASK_QUANTITY,\
+\
 VB2,SP,PORTFOLIO_PRICE,SP,INSTRUMENT_ACTIVITY_STATE,TICKER
 
 
 ; NUM_LAST_INSTRUMENT_STATE_EVENTS
+; CUR_PRICE_TO_LAST_BUY_MARKER / CUR_PRICE_TO_LAST_SELL_MARKER
 
 
 ;terminal.read-only              = true
@@ -253,7 +262,7 @@ terminal.columns.BEST_BID.width          = 10
 
 terminal.columns.BEST_ASK.caption        = Best_Ask
 ;terminal.columns.BEST_ASK.align.caption
-;terminal.columns.BEST_ASK.left
+terminal.columns.BEST_ASK.left           = 0
 ;terminal.columns.BEST_ASK.right
 terminal.columns.BEST_ASK.width          = 10
 ;terminal.columns.BEST_ASK.align
@@ -304,6 +313,35 @@ terminal.columns.LAST_SELL_QUANTITY.caption = Q_Sell
 terminal.columns.LAST_SELL_QUANTITY.width   = 6
 ;terminal.columns.LAST_SELL_QUANTITY.align
 ;terminal.columns.LAST_SELL_QUANTITY.align.dot 
+
+
+terminal.columns.CUR_PRICE_TO_LAST_BUY_MARKER.caption         = _
+terminal.columns.CUR_PRICE_TO_LAST_BUY_MARKER.align.caption   = center
+terminal.columns.CUR_PRICE_TO_LAST_BUY_MARKER.left            = 2
+terminal.columns.CUR_PRICE_TO_LAST_BUY_MARKER.right           = 0
+terminal.columns.CUR_PRICE_TO_LAST_BUY_MARKER.width           = 2
+terminal.columns.CUR_PRICE_TO_LAST_BUY_MARKER.align           = center
+;terminal.columns.CUR_PRICE_TO_LAST_BUY_MARKER.align.dot 
+terminal.columns.CUR_PRICE_TO_LAST_BUY_MARKER.swap-direction  = false
+
+
+terminal.columns.CUR_PRICE_TO_LAST_SELL_MARKER.caption        = _
+terminal.columns.CUR_PRICE_TO_LAST_SELL_MARKER.align.caption  = center
+terminal.columns.CUR_PRICE_TO_LAST_SELL_MARKER.left           = 1
+terminal.columns.CUR_PRICE_TO_LAST_SELL_MARKER.right          = 0
+terminal.columns.CUR_PRICE_TO_LAST_SELL_MARKER.width          = 2
+terminal.columns.CUR_PRICE_TO_LAST_SELL_MARKER.align          = center
+;terminal.columns.CUR_PRICE_TO_LAST_SELL_MARKER.align.dot 
+terminal.columns.CUR_PRICE_TO_LAST_SELL_MARKER.swap-direction = false
+
+
+terminal.columns.CUR_PRICE_TO_LAST_OP_PERCENT.caption         = %
+terminal.columns.CUR_PRICE_TO_LAST_OP_PERCENT.align.caption   = center
+terminal.columns.CUR_PRICE_TO_LAST_OP_PERCENT.left            = 1
+terminal.columns.CUR_PRICE_TO_LAST_OP_PERCENT.right           = 1
+terminal.columns.CUR_PRICE_TO_LAST_OP_PERCENT.width           = 4
+terminal.columns.CUR_PRICE_TO_LAST_OP_PERCENT.align           = right
+terminal.columns.CUR_PRICE_TO_LAST_OP_PERCENT.align.dot       = 0
 
 
 terminal.columns.MAX_BID_PRICE.caption      = CurBidPr
