@@ -23,6 +23,9 @@ struct FieldFormat
 
     std::size_t dotAlignment = 0 ; //!< For Decimal's only
 
+    bool        swapDirection = false;
+
+
     QString     id               = QString(); //!< Field ID - to make fields order more dynamic
 
     int         captionAlignment = 0 ;

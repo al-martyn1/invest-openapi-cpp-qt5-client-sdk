@@ -279,6 +279,8 @@ struct TerminalConfig
                                                  , baseName + "align.caption"
                                                  );
 
+        ff.swapDirection    = settings.value(baseName + "swap-direction", false).toBool();
+
         #if defined(INVEST_OPENAPI_TEXT_TERMINAL_ENABLED_COLORS)
 
             ff.color = termColorFromQStringList( settings.value( baseName + "color" , "black" ).toStringList() );

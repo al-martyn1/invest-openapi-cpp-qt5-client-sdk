@@ -112,6 +112,8 @@ struct InstrumentInfoLineData
     std::vector< OpenAPI::Operation >  lastSellOperations;
     std::vector< OpenAPI::Operation >  lastBuyOperations ;
 
+    OpenAPI::Operation                 lastOperation;
+
 
     // Number of streaming events in last period
     std::size_t glassEventsCounter = 0;
@@ -226,6 +228,14 @@ struct InstrumentInfoLineData
         lastSellOperations.clear();
         lastBuyOperations.clear();
         getSomeOfFirstOperations( maxLastOperations, operations, lastSellOperations, lastBuyOperations, false /* bAppend */ ); 
+
+        std::vector< OpenAPI::Operation > lastAllsOperations = lastSellOperations;
+        lastAllsOperations.insert( lastAllsOperations.end(), lastBuyOperations.begin(), lastBuyOperations.end() );
+
+        sortOperationsByDateDescending(lastAllsOperations);
+        lastOperation = OpenAPI::Operation();
+        if (!lastAllsOperations.empty())
+            lastOperation = lastAllsOperations.front();
 
         if (lastSellOperations.empty())
         {
@@ -550,6 +560,79 @@ struct InstrumentInfoLineData
             return format_field( ff, instrumentStateEventsCounter );
         }
 
+        else if (id=="CUR_PRICE_TO_LAST_BUY_MARKER")
+        {
+            if (!isTraded || !lastOperation.isValid() || !lastOperation.isSet())
+                return format_field( ff, "" );
+
+            if (isOperationTypeSell(lastOperation))
+                return format_field( ff, "" );
+
+            if (!ff.swapDirection)
+                return format_field( ff, "<-" );
+            else
+                return format_field( ff, "->" );
+        }
+
+        else if (id=="CUR_PRICE_TO_LAST_SELL_MARKER")
+        {
+            if (!isTraded || !lastOperation.isValid() || !lastOperation.isSet())
+                return format_field( ff, "" );
+
+            if (!isOperationTypeSell(lastOperation))
+                return format_field( ff, "" );
+
+            if (!ff.swapDirection)
+                return format_field( ff, "->" );
+            else
+                return format_field( ff, "<-" );
+        }
+
+        else if (id=="CUR_PRICE_TO_LAST_OP_PERCENT")
+        {
+            if (!isTraded || !lastOperation.isValid() || !lastOperation.isSet() || curPrice==Decimal(0))
+                return format_field( ff, "-" );
+
+
+            Decimal prc = Decimal(0);
+
+            if (isOperationTypeSell(lastOperation))
+            {
+                // Sell op
+
+                // Если текущая цена больше цены последней продажи
+
+                // prc
+            }
+            else
+            {
+                // Buy op
+            }
+
+            // return format_field( ff, lastBuyPrice, pricePrecision );
+            // return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, quantity );
+            if (curPrice==Decimal(0))
+                return format_field( ff, "-" );
+/*
+
+    Decimal   lastSellPrice   ; //!< Цена (средняя) последней продажи. Берём из операций по инструменту
+    unsigned  lastSellQuantity; //!< Количество executed акций (не лотов). Берём из операций по инструменту
+
+    Decimal   lastBuyPrice    ; //!< Цена (средняя) последней покупки. Берём из операций по инструменту
+    unsigned  lastBuyQuantity ; //!< Количество executed акций/бумаг (не лотов). Берём из операций по инструменту
+lastBuyPrice     = lastBuyOperations[0].getPrice();
+
+*/
+
+            // return format_field( ff, lastBuyPrice, pricePrecision );
+
+            return format_field( ff, "XXX" );
+
+            // return format_field( ff, instrumentStateEventsCounter );
+        }
+
+        // CUR_PRICE_TO_LAST_BUY_MARKER,CUR_PRICE_TO_LAST_OP_PERCENT,CUR_PRICE_TO_LAST_SELL_MARKER,\
+
         // else if (id=="")
         // {
         // }
@@ -557,6 +640,13 @@ struct InstrumentInfoLineData
         return format_field( ff, "N/I" );
 
     }
+
+/*
+    OpenAPI::Operation getLastOp
+
+    std::vector< OpenAPI::Operation >  lastSellOperations;
+    std::vector< OpenAPI::Operation >  lastBuyOperations ;
+*/
 
     //------------------------------
     #define DECLARE_IOA_TRADING_TERMINAL_LINE_DATA_UPDATE_FUNCTION( dataType )                \
