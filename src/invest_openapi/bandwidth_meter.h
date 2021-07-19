@@ -123,9 +123,10 @@ public:
 
         auto stampOldest = m_queue.front().timeStamp;
 
-        while(!m_queue.empty() && stampOldest<ageLim)
+        while( /* !m_queue.empty() && */ stampOldest<ageLim )
         {
             m_queue.pop();
+            if (m_queue.empty()) return 0;
             stampOldest = m_queue.front().timeStamp;
         }
 

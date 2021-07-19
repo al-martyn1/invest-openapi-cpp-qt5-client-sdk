@@ -113,6 +113,11 @@ struct InstrumentInfoLineData
     std::vector< OpenAPI::Operation >  lastBuyOperations ;
 
 
+    // Number of streaming events in last period
+    std::size_t glassEventsCounter = 0;
+    std::size_t instrumentStateEventsCounter = 0;
+
+
     void invalidateMarketStateFields()
     {
         isTraded       = false;
@@ -434,6 +439,7 @@ struct InstrumentInfoLineData
             // return format_field( ff, quantity );
             return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, quantity );
         }
+
         else if (id=="CUR_PRICE")
         {
             if (curPrice==Decimal(0))
@@ -448,18 +454,21 @@ struct InstrumentInfoLineData
 
             return format_field( ff, curPrice, pricePrecision );
         }
+
         else if (id=="BEST_BID")
         {
             if (bestBidPrice==Decimal(0)) return format_field( ff, "-" );
 
             return format_field( ff, bestBidPrice );
         }
+
         else if (id=="BEST_ASK")
         {
             if (bestAskPrice==Decimal(0)) return format_field( ff, "-" );
 
             return format_field( ff, bestAskPrice );
         }
+
         else if (id=="SPREAD_POINTS")
         {
             if (spreadPoints<1) return format_field( ff, "-" );
@@ -477,48 +486,66 @@ struct InstrumentInfoLineData
 
             return format_field( ff, lastBuyPrice, pricePrecision );
         }
+
         else if (id=="LAST_BUY_QUANTITY")
         {
             if (lastBuyQuantity==0 || !isTraded) return format_field( ff, "-" );
 
             return format_field( ff, lastBuyQuantity );
         }
+
         else if (id=="LAST_SELL_PRICE")
         {
             if (lastSellPrice==Decimal(0) || !isTraded) return format_field( ff, "-" );
 
             return format_field( ff, lastSellPrice, pricePrecision );
         }
+
         else if (id=="LAST_SELL_QUANTITY")
         {
             if (lastSellQuantity==0 || !isTraded) return format_field( ff, "-" );
 
             return format_field( ff, lastSellQuantity );
         }
+
         else if (id=="MAX_BID_PRICE")
         {
             if (maxBidPrice==Decimal(0)) return format_field( ff, "-" );
 
             return format_field( ff, maxBidPrice, pricePrecision );
         }
+
         else if (id=="MAX_BID_QUANTITY")
         {
             if (maxBidQuantity==0 || lotSize==0) return format_field( ff, "-" );
 
             return format_field( ff, maxBidQuantity*lotSize );
         }
+
         else if (id=="MIN_ASK_PRICE")
         {
             if (minAskPrice==Decimal(0)) return format_field( ff, "-" );
 
             return format_field( ff, minAskPrice, pricePrecision );
         }
+
         else if (id=="MIN_ASK_QUANTITY")
         {
             if (minAskQuantity==0 || lotSize==0) return format_field( ff, "-" );
 
             return format_field( ff, minAskQuantity*lotSize );
         }
+
+        else if (id=="NUM_LAST_GLASS_EVENTS")
+        {
+            return format_field( ff, glassEventsCounter );
+        }
+
+        else if (id=="NUM_LAST_INSTRUMENT_STATE_EVENTS")
+        {
+            return format_field( ff, instrumentStateEventsCounter );
+        }
+
         // else if (id=="")
         // {
         // }
@@ -1435,6 +1462,28 @@ PortfolioPosition
         return false;                                                                         
     }
     */
+
+
+    void updateGlassEventsCounter( QString figi, std::size_t eventsCounter )
+    {
+        figi           = figi.toUpper();
+
+        // std::map< QString, InstrumentInfoLineData >                            terminalLinesData;
+        auto &lineData              = terminalLinesData[figi];
+        lineData.glassEventsCounter = eventsCounter;
+        updatedFigis.insert(figi);
+    }
+
+    void updateInstrumentStateEventsCounter( QString figi, std::size_t eventsCounter )
+    {
+        figi           = figi.toUpper();
+
+        // std::map< QString, InstrumentInfoLineData >                            terminalLinesData;
+        auto &lineData                        = terminalLinesData[figi];
+        lineData.instrumentStateEventsCounter = eventsCounter;
+        updatedFigis.insert(figi);
+    }
+
 
     static QString getTypeNameForLogInUpdateMethod( const MarketInstrumentState             & )    { return QString("Market Instrument State"); }
     static QString getTypeNameForLogInUpdateMethod( const MarketGlass                       & )    { return QString("Market Glass"); }

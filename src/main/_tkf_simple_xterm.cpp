@@ -78,6 +78,14 @@
 #include "invest_openapi/logging.h"
 
 
+#include "invest_openapi/iterable_queue.h"
+#include "invest_openapi/bandwidth_meter.h"
+#include "invest_openapi/default_monotonic_timestamper.h"
+
+
+
+
+
 umba::StdStreamCharWriter      coutWriter(std::cout);
 umba::StdStreamCharWriter      cerrWriter(std::cerr);
 umba::NulCharWriter            nulWriter;
@@ -213,6 +221,23 @@ INVEST_OPENAPI_MAIN()
 
 
     std::map< std::string, tkf::OrderRequestData >     activeOrderRequests;
+
+
+    typedef
+    BandwidthMeter< DefaultMonotonicTimestamper::timestamp_type
+                  , DefaultMonotonicTimestamper
+                  , std::size_t
+                  > BandwidthMeterType;
+
+
+    std::map< QString, BandwidthMeterType > glassBandwidthMeters;
+    std::map< QString, BandwidthMeterType > instrumentInfoBandwidthMeters;
+    std::map< QString, BandwidthMeterType > candleBandwidthMeters;
+
+    const DefaultMonotonicTimestamper::timestamp_type bandwidthMeteringInterval = 60000; // 60 seconds
+
+
+
     
 
     tkf::SimpleTerminalLineEditImplBase  *pTerminalInputEdit = 0;
@@ -777,10 +802,24 @@ INVEST_OPENAPI_MAIN()
                                 {
                                     if (screenUpdateTimer.elapsed() > 1000) // Раз в секунду обновляем картинку, нафига чаще?
                                     {
+                                        std::map< QString, BandwidthMeterType >::iterator 
+                                        mit = glassBandwidthMeters.begin();
+                                        for(; mit!=glassBandwidthMeters.end(); ++mit)
+                                        {
+                                            terminalData.updateGlassEventsCounter( mit->first, mit->second.size() );
+                                        }
+
+                                        mit = instrumentInfoBandwidthMeters.begin();
+                                        for(; mit!=instrumentInfoBandwidthMeters.end(); ++mit)
+                                        {
+                                            terminalData.updateInstrumentStateEventsCounter( mit->first, mit->second.size() );
+                                        }
+
                                         updateScreen();
                                         screenUpdateTimer.restart();
                                     }
                                 };
+
 
 
     auto onConnected = [&]()
@@ -829,7 +868,6 @@ INVEST_OPENAPI_MAIN()
 
 
 
-
     auto onMessage = [&]( QString msg )
             {
 
@@ -856,7 +894,14 @@ INVEST_OPENAPI_MAIN()
 
                     tkf::MarketGlass marketGlass = tkf::MarketGlass::fromStreamingOrderbookResponse(response);
 
+                    auto &bwmData = glassBandwidthMeters[marketGlass.figi.toUpper()];
+                    bwmData.setInterval(bandwidthMeteringInterval);
+                    bwmData.push(msg.size()); // Если захотим посчитать полезный траффик, а не просто количество событий
+
+                    auto numLastGlassEvents = bwmData.size();
+
                     terminalData.update( marketGlass.figi, marketGlass );
+                    terminalData.updateGlassEventsCounter( marketGlass.figi, numLastGlassEvents );
 
                     // Сделаю просто тупой периодический апдейт по таймеру, иначе зело тормозит, когда много данных прилетает
                     // updateFigiScreen(marketGlass.figi);
@@ -869,7 +914,15 @@ INVEST_OPENAPI_MAIN()
 
                     tkf::MarketInstrumentState instrState = tkf::MarketInstrumentState::fromStreamingInstrumentInfoResponse( response );
 
+                    auto &bwmData = instrumentInfoBandwidthMeters[instrState.figi.toUpper()];
+                    bwmData.setInterval(bandwidthMeteringInterval);
+                    bwmData.push(msg.size()); // Если захотим посчитать полезный траффик, а не просто количество событий
+
+                    auto numLastGlassEvents = bwmData.size();
+
+
                     terminalData.update( instrState.figi, instrState );
+                    terminalData.updateInstrumentStateEventsCounter( instrState.figi, numLastGlassEvents );
 
                     // Сделаю просто тупой периодический апдейт по таймеру, иначе зело тормозит, когда много данных прилетает
                     // updateFigiScreen(instrState.figi);
@@ -878,6 +931,12 @@ INVEST_OPENAPI_MAIN()
                 else if (eventName=="candle")
                 {
                     //cout << "# !!! Candle event not handled, data: " << endl << msg << endl << endl;
+
+                    /*
+                    auto &bwmData = candleBandwidthMeters[instrState.figi.figi.toUpper()];
+                    bwmData.setInterval(bandwidthMeteringInterval);
+                    bwmData.push(msg.size()); // Если захотим посчитать полезный траффик, а не просто количество событий
+                    */
                 }
 
                 else
