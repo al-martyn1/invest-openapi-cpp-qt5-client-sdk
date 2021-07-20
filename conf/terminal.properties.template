@@ -1,3 +1,8 @@
+;terminal.read-only              = true
+terminal.read-only              = false
+
+
+
 terminal.columns = \
 TICKER,INSTRUMENT_ACTIVITY_STATE,PRICE_INC,LOT_SIZE,\
 NUM_LAST_GLASS_EVENTS,\
@@ -16,13 +21,6 @@ VB,MAX_BID_QUANTITY,MAX_BID_PRICE,SP,SP,CUR_PRICE,MIN_ASK_PRICE,MIN_ASK_QUANTITY
 \
 VB2,SP,PORTFOLIO_PRICE,SP,INSTRUMENT_ACTIVITY_STATE,TICKER
 
-
-; NUM_LAST_INSTRUMENT_STATE_EVENTS
-; CUR_PRICE_TO_LAST_BUY_MARKER / CUR_PRICE_TO_LAST_SELL_MARKER
-
-
-;terminal.read-only              = true
-terminal.read-only              = false
 
 
 terminal.colors.caption.text          = magenta
@@ -43,19 +41,16 @@ terminal.colors.input.text      = white
 terminal.colors.input.hint      = cyan
 terminal.colors.input.caret     = yellow
 
-;terminal.colors.input.
-;terminal.colors.input.
-;,bright
 
 terminal.colors.normal          = white
 terminal.colors.less            = red
 terminal.colors.greater         = green
 
+
 terminal.colors.generic.bad     = red
 terminal.colors.generic.warning = magenta
 terminal.colors.generic.normal  = white
 terminal.colors.generic.good    = green
-
 
 
 terminal.hbreaks.caption.before = true
@@ -70,7 +65,6 @@ terminal.hbreaks.style.regular        = -
 
 
 
-;terminal.columns.default.caption
 terminal.columns.default.align.caption = center
 terminal.columns.default.left = 1
 terminal.columns.default.right = 0
@@ -133,100 +127,64 @@ terminal.columns.SP3.align            = center
 
 
 
+;--------------------------------------------
+;terminal.columns.ID.align.caption = center
+;terminal.columns.ID.left          = 1
+;terminal.columns.ID.right         = 0
+;terminal.columns.ID.width         = -4
+;terminal.columns.ID.align         = right
+;terminal.columns.ID.align.dot     = 0
 
+;--------------------------------------------
 
 
 terminal.columns.TICKER.caption          = Ticker
 terminal.columns.TICKER.align.caption    = left
-;terminal.columns.TICKER.left
-;terminal.columns.TICKER.right
 terminal.columns.TICKER.width            = -6
 terminal.columns.TICKER.align            = left
-;terminal.columns.TICKER.align.dot 
 
 
 terminal.columns.FIGI.caption          = FIGI
 terminal.columns.FIGI.align.caption    = center
-;terminal.columns.FIGI.left
-;terminal.columns.FIGI.right
 terminal.columns.FIGI.width            = 12
 terminal.columns.FIGI.align            = right
-;terminal.columns.FIGI.align.dot 
 
 
 ; INSTRUMENT_ACTIVITY_STATE - 'A' - Activity; values: 'T' - in trading, '-' - not in trading or error or something else
 terminal.columns.INSTRUMENT_ACTIVITY_STATE.caption           = A
-;terminal.columns.INSTRUMENT_ACTIVITY_STATE.align.caption    = center
-;terminal.columns.INSTRUMENT_ACTIVITY_STATE.left
-;terminal.columns.INSTRUMENT_ACTIVITY_STATE.right
 terminal.columns.INSTRUMENT_ACTIVITY_STATE.width             = 1
-;terminal.columns.INSTRUMENT_ACTIVITY_STATE.align
-;terminal.columns.INSTRUMENT_ACTIVITY_STATE.align.dot 
 
-
-terminal.columns.PRICE_INC.caption       = PrInc
-;terminal.columns.PRICE_INC.align.caption
-;terminal.columns.PRICE_INC.left
-;terminal.columns.PRICE_INC.right
+terminal.columns.PRICE_INC.caption       = Inc$
 terminal.columns.PRICE_INC.width         = 6
-;terminal.columns.PRICE_INC.align
-;terminal.columns.PRICE_INC.align.dot 
 
-
-terminal.columns.LOT_SIZE.caption        = LotSz
-;terminal.columns.LOT_SIZE.align.caption
-;terminal.columns.LOT_SIZE.left
-;terminal.columns.LOT_SIZE.right
-terminal.columns.LOT_SIZE.width          = 5
-;terminal.columns.LOT_SIZE.align
-;terminal.columns.LOT_SIZE.align.dot 
+terminal.columns.LOT_SIZE.caption        = LtSz
+terminal.columns.LOT_SIZE.width          = 4
 
 
 ; Количество обновлений стакана за последнюю минуту - индикатор волатильности
 terminal.columns.NUM_LAST_GLASS_EVENTS.caption        = Vlt
-;terminal.columns.NUM_LAST_GLASS_EVENTS.align.caption
-;terminal.columns.NUM_LAST_GLASS_EVENTS.left
-;terminal.columns.NUM_LAST_GLASS_EVENTS.right
 terminal.columns.NUM_LAST_GLASS_EVENTS.width          = 3
-;terminal.columns.NUM_LAST_GLASS_EVENTS.align
-;terminal.columns.NUM_LAST_GLASS_EVENTS.align.dot 
 terminal.columns.NUM_LAST_GLASS_EVENTS.color     = magenta
 
 
 terminal.columns.NUM_LAST_INSTRUMENT_STATE_EVENTS.caption        = InstrAct
-;terminal.columns.NUM_LAST_INSTRUMENT_STATE_EVENTS.align.caption
-;terminal.columns.NUM_LAST_INSTRUMENT_STATE_EVENTS.left
-;terminal.columns.NUM_LAST_INSTRUMENT_STATE_EVENTS.right
 terminal.columns.NUM_LAST_INSTRUMENT_STATE_EVENTS.width          = 3
-;terminal.columns.NUM_LAST_INSTRUMENT_STATE_EVENTS.align
-;terminal.columns.NUM_LAST_INSTRUMENT_STATE_EVENTS.align.dot 
 
 
-terminal.columns.PORTFOLIO_PRICE.caption      = PricePrtf
-;terminal.columns.PORTFOLIO_PRICE.align.caption
-;terminal.columns.PORTFOLIO_PRICE.left
-;terminal.columns.PORTFOLIO_PRICE.right
-terminal.columns.PORTFOLIO_PRICE.width        = 9
-;terminal.columns.PORTFOLIO_PRICE.align
-;terminal.columns.PORTFOLIO_PRICE.align.dot 
+terminal.columns.PORTFOLIO_PRICE.caption      = Prtf$
+terminal.columns.PORTFOLIO_PRICE.width        = 8
 
 
-terminal.columns.PORTFOLIO_QUANTITY.caption        = Q_Prtf
-;terminal.columns.PORTFOLIO_QUANTITY.align.caption
-;terminal.columns.PORTFOLIO_QUANTITY.left
+terminal.columns.PORTFOLIO_QUANTITY.caption        = PrtfQ
 terminal.columns.PORTFOLIO_QUANTITY.right          = 0
 terminal.columns.PORTFOLIO_QUANTITY.width          = 6
-;terminal.columns.PORTFOLIO_QUANTITY.align
-;terminal.columns.PORTFOLIO_QUANTITY.align.dot 
 
 
-terminal.columns.PORTFOLIO_EXPECTED_YIELD.caption        = ExpYield
-;terminal.columns.PORTFOLIO_EXPECTED_YIELD.align.caption
+terminal.columns.PORTFOLIO_EXPECTED_YIELD.caption        = YieldEx
 terminal.columns.PORTFOLIO_EXPECTED_YIELD.left           = 1
 terminal.columns.PORTFOLIO_EXPECTED_YIELD.right          = 1
 ; Если доведётся ворочать большими суммами, то тут надо увеличить ширину хотя бы до 10ти знаков. У меня и с восьмью знаками слишком много места слева остаётся
-terminal.columns.PORTFOLIO_EXPECTED_YIELD.width          = 9 
-;terminal.columns.PORTFOLIO_EXPECTED_YIELD.align
+terminal.columns.PORTFOLIO_EXPECTED_YIELD.width          = 8
 terminal.columns.PORTFOLIO_EXPECTED_YIELD.align.dot      = 0
 
 
@@ -239,80 +197,57 @@ terminal.columns.PORTFOLIO_EXPECTED_YIELD_PERCENT.align             = right
 terminal.columns.PORTFOLIO_EXPECTED_YIELD_PERCENT.align.dot         = 0
 
 
-terminal.columns.CUR_PRICE.caption       = PriceCur
-;terminal.columns.CUR_PRICE.align.caption
-;terminal.columns.CUR_PRICE.left
-;terminal.columns.CUR_PRICE.right
-terminal.columns.CUR_PRICE.width         = 9
-;terminal.columns.CUR_PRICE.align
-;terminal.columns.CUR_PRICE.align.dot 
+terminal.columns.CUR_PRICE.caption       = Cur$
+terminal.columns.CUR_PRICE.width         = 8
 terminal.columns.CUR_PRICE.color         = yellow
-;terminal.columns.CUR_PRICE.color         = cyan
-;terminal.columns.CUR_PRICE.color         = blue
 
 
-terminal.columns.BEST_BID.caption        = Best_Bid
-;terminal.columns.BEST_BID.align.caption
-;terminal.columns.BEST_BID.left
-;terminal.columns.BEST_BID.right
-terminal.columns.BEST_BID.width          = 10
-;terminal.columns.BEST_BID.align
-;terminal.columns.BEST_BID.align.dot 
+terminal.columns.BEST_BID.caption        = BestBid
+terminal.columns.BEST_BID.right          = 0
+terminal.columns.BEST_BID.width          = 8
 
 
-terminal.columns.BEST_ASK.caption        = Best_Ask
-;terminal.columns.BEST_ASK.align.caption
-terminal.columns.BEST_ASK.left           = 0
-;terminal.columns.BEST_ASK.right
-terminal.columns.BEST_ASK.width          = 10
-;terminal.columns.BEST_ASK.align
-;terminal.columns.BEST_ASK.align.dot 
+terminal.columns.BEST_ASK.caption        = BestAsk
+terminal.columns.BEST_ASK.left           = 1
+terminal.columns.BEST_ASK.width          = 8
 
 
 terminal.columns.SPREAD_POINTS.caption   = Spr
-;terminal.columns.SPREAD_POINTS.align.caption
-;terminal.columns.SPREAD_POINTS.left
-;terminal.columns.SPREAD_POINTS.right
 terminal.columns.SPREAD_POINTS.width     = 3
 terminal.columns.SPREAD_POINTS.align     = center
-;terminal.columns.SPREAD_POINTS.align.dot 
 terminal.columns.SPREAD_POINTS.color     = magenta
 
 
-terminal.columns.LAST_BUY_PRICE.caption  = L_Buy_$
-;terminal.columns.LAST_BUY_PRICE.align.caption
-;terminal.columns.LAST_BUY_PRICE.left
-;terminal.columns.LAST_BUY_PRICE.right
-terminal.columns.LAST_BUY_PRICE.width    = 10
-;terminal.columns.LAST_BUY_PRICE.align
-;terminal.columns.LAST_BUY_PRICE.align.dot 
+terminal.columns.LAST_BUY_PRICE.caption  = Buy$L
+terminal.columns.LAST_BUY_PRICE.width    = 8
 
 
-terminal.columns.LAST_BUY_QUANTITY.caption = Q_Buy
-;terminal.columns.LAST_BUY_QUANTITY.align.caption
-;terminal.columns.LAST_BUY_QUANTITY.left
-;terminal.columns.LAST_BUY_QUANTITY.right
+terminal.columns.LAST_BUY_QUANTITY.caption = BuyQ
 terminal.columns.LAST_BUY_QUANTITY.width   = 6
-;terminal.columns.LAST_BUY_QUANTITY.align
-;terminal.columns.LAST_BUY_QUANTITY.align.dot 
 
 
-terminal.columns.LAST_SELL_PRICE.caption   = L_Sell_$
-;terminal.columns.LAST_SELL_PRICE.align.caption
-;terminal.columns.LAST_SELL_PRICE.left
-;terminal.columns.LAST_SELL_PRICE.right
+terminal.columns.LAST_SELL_PRICE.caption   = Sell$L
 terminal.columns.LAST_SELL_PRICE.width     = 8
-;terminal.columns.LAST_SELL_PRICE.align
-;terminal.columns.LAST_SELL_PRICE.align.dot 
 
 
-terminal.columns.LAST_SELL_QUANTITY.caption = Q_Sell
-;terminal.columns.LAST_SELL_QUANTITY.align.caption
-;terminal.columns.LAST_SELL_QUANTITY.left
-;terminal.columns.LAST_SELL_QUANTITY.right
+terminal.columns.LAST_SELL_QUANTITY.caption = SellQ
 terminal.columns.LAST_SELL_QUANTITY.width   = 6
-;terminal.columns.LAST_SELL_QUANTITY.align
-;terminal.columns.LAST_SELL_QUANTITY.align.dot 
+
+
+terminal.columns.MAX_BID_PRICE.caption      = CurBid$
+terminal.columns.MAX_BID_PRICE.width        = 10
+
+
+terminal.columns.MAX_BID_QUANTITY.caption   = BidQ
+terminal.columns.MAX_BID_QUANTITY.width     = 6
+
+
+terminal.columns.MIN_ASK_PRICE.caption      = CurAsk$
+terminal.columns.MIN_ASK_PRICE.width        = 10
+
+
+terminal.columns.MIN_ASK_QUANTITY.caption   = AskQ
+terminal.columns.MIN_ASK_QUANTITY.width     = 6
 
 
 terminal.columns.CUR_PRICE_TO_LAST_BUY_MARKER.caption         = _
@@ -351,96 +286,6 @@ terminal.columns.CUR_PRICE_TO_LAST_OP_DELTA.right           = 1
 terminal.columns.CUR_PRICE_TO_LAST_OP_DELTA.width           = 6
 terminal.columns.CUR_PRICE_TO_LAST_OP_DELTA.align           = right
 terminal.columns.CUR_PRICE_TO_LAST_OP_DELTA.align.dot       = 0
-
-
-terminal.columns.MAX_BID_PRICE.caption      = CurBidPr
-;terminal.columns.MAX_BID_PRICE.align.caption
-;terminal.columns.MAX_BID_PRICE.left
-;terminal.columns.MAX_BID_PRICE.right
-terminal.columns.MAX_BID_PRICE.width        = 10
-;terminal.columns.MAX_BID_PRICE.align
-;terminal.columns.MAX_BID_PRICE.align.dot 
-
-
-terminal.columns.MAX_BID_QUANTITY.caption   = Q_Bid
-;terminal.columns.MAX_BID_QUANTITY.align.caption
-;terminal.columns.MAX_BID_QUANTITY.left
-;terminal.columns.MAX_BID_QUANTITY.right
-terminal.columns.MAX_BID_QUANTITY.width     = 6
-;terminal.columns.MAX_BID_QUANTITY.align
-;terminal.columns.MAX_BID_QUANTITY.align.dot 
-
-
-terminal.columns.MIN_ASK_PRICE.caption      = CurAskPr
-;terminal.columns.MIN_ASK_PRICE.align.caption
-;terminal.columns.MIN_ASK_PRICE.left
-;terminal.columns.MIN_ASK_PRICE.right
-terminal.columns.MIN_ASK_PRICE.width        = 10
-;terminal.columns.MIN_ASK_PRICE.align
-;terminal.columns.MIN_ASK_PRICE.align.dot 
-
-
-terminal.columns.MIN_ASK_QUANTITY.caption   = Q_Ask
-;terminal.columns.MIN_ASK_QUANTITY.align.caption
-;terminal.columns.MIN_ASK_QUANTITY.left
-;terminal.columns.MIN_ASK_QUANTITY.right
-terminal.columns.MIN_ASK_QUANTITY.width     = 6
-;terminal.columns.MIN_ASK_QUANTITY.align
-;terminal.columns.MIN_ASK_QUANTITY.align.dot 
-
-
-;terminal.columns.ID.caption
-;terminal.columns.ID.align.caption
-;terminal.columns.ID.left
-;terminal.columns.ID.right
-;terminal.columns.ID.width
-;terminal.columns.ID.align
-;terminal.columns.ID.align.dot 
-
-
-;terminal.columns.ID.caption
-;terminal.columns.ID.align.caption
-;terminal.columns.ID.left
-;terminal.columns.ID.right
-;terminal.columns.ID.width
-;terminal.columns.ID.align
-;terminal.columns.ID.align.dot 
-
-
-;terminal.columns.ID.caption
-;terminal.columns.ID.align.caption
-;terminal.columns.ID.left
-;terminal.columns.ID.right
-;terminal.columns.ID.width
-;terminal.columns.ID.align
-;terminal.columns.ID.align.dot 
-
-
-;terminal.columns.ID.caption
-;terminal.columns.ID.align.caption
-;terminal.columns.ID.left
-;terminal.columns.ID.right
-;terminal.columns.ID.width
-;terminal.columns.ID.align
-;terminal.columns.ID.align.dot 
-
-
-;terminal.columns.ID.caption
-;terminal.columns.ID.align.caption
-;terminal.columns.ID.left
-;terminal.columns.ID.right
-;terminal.columns.ID.width
-;terminal.columns.ID.align
-;terminal.columns.ID.align.dot 
-
-
-;terminal.columns.ID.caption
-;terminal.columns.ID.align.caption
-;terminal.columns.ID.left
-;terminal.columns.ID.right
-;terminal.columns.ID.width
-;terminal.columns.ID.align
-;terminal.columns.ID.align.dot 
 
 
 ;terminal.columns.ID.caption
