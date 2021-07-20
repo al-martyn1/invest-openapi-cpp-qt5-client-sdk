@@ -93,11 +93,16 @@ struct InstrumentInfoLineData
     int       spreadPoints; //!< берём из стакана
 
 
+    QString   lastSellId; // getId()
     Decimal   lastSellPrice   ; //!< Цена (средняя) последней продажи. Берём из операций по инструменту
     unsigned  lastSellQuantity; //!< Количество executed акций (не лотов). Берём из операций по инструменту
+    bool      lastSellChanged = false;
 
+
+    QString   lastBuyId; // getId()
     Decimal   lastBuyPrice    ; //!< Цена (средняя) последней покупки. Берём из операций по инструменту
     unsigned  lastBuyQuantity ; //!< Количество executed акций/бумаг (не лотов). Берём из операций по инструменту
+    bool      lastBuyChanged = false;
 
 
     Decimal   minAskPrice; // Цена продажи (в заявке), если заявка установлена, или 0 (выводим прочерк). Берём из orders минимальную по цене заявку на продажу
@@ -113,6 +118,11 @@ struct InstrumentInfoLineData
     std::vector< OpenAPI::Operation >  lastBuyOperations ;
 
     OpenAPI::Operation                 lastOperation;
+
+    Decimal  priceDeltaToLastOpPrice;
+    Decimal  priceDeltaToLastOpPricePercent;
+
+
 
 
     // Number of streaming events in last period
@@ -222,6 +232,35 @@ struct InstrumentInfoLineData
 
     }
 
+    static void updateLastOperationData( const std::vector< OpenAPI::Operation > &lastOps
+                                       , QString   &lastOpId
+                                       , Decimal   &lastOpPrice
+                                       , unsigned  &lastOpQuantity
+                                       , bool      &lastOpChanged
+                                       )
+    {
+        if (lastOps.empty())
+        {
+            lastOpId.clear();
+            lastOpPrice    = Decimal(0);
+            lastOpQuantity = 0;
+            lastOpChanged  = false;
+            return;
+        }
+
+        QString newOpId = lastOps[0].getId();
+
+        if ( !lastOpId.isEmpty() && newOpId.isEmpty() && lastOpId!=newOpId )
+        {
+            lastOpChanged = true;
+        }
+
+        lastOpId       = newOpId;
+        lastOpPrice    = lastOps[0].getPrice();
+        lastOpQuantity = lastOps[0].getQuantityExecuted();
+
+    }
+
     //! \param operations must be sorted by date in descending order
     void update( const std::vector< OpenAPI::Operation > &operations )
     {
@@ -229,37 +268,53 @@ struct InstrumentInfoLineData
         lastBuyOperations.clear();
         getSomeOfFirstOperations( maxLastOperations, operations, lastSellOperations, lastBuyOperations, false /* bAppend */ ); 
 
-        std::vector< OpenAPI::Operation > lastAllsOperations = lastSellOperations;
-        lastAllsOperations.insert( lastAllsOperations.end(), lastBuyOperations.begin(), lastBuyOperations.end() );
+        std::vector< OpenAPI::Operation > lastAllOperations = lastSellOperations;
+        lastAllOperations.insert( lastAllOperations.end(), lastBuyOperations.begin(), lastBuyOperations.end() );
 
-        sortOperationsByDateDescending(lastAllsOperations);
+
+        sortOperationsByDateDescending(lastAllOperations);
+
         lastOperation = OpenAPI::Operation();
-        if (!lastAllsOperations.empty())
-            lastOperation = lastAllsOperations.front();
 
-        if (lastSellOperations.empty())
-        {
-            lastSellPrice    = Decimal(0);
-            lastSellQuantity = 0;
-        }
-        else
-        {
-            lastSellPrice    = lastSellOperations[0].getPrice();
-            lastSellQuantity = lastSellOperations[0].getQuantityExecuted();
-        }
+        if (!lastAllOperations.empty())
+            lastOperation = lastAllOperations.front();
 
-        if (lastBuyOperations.empty())
-        {
-            lastBuyPrice     = Decimal(0);
-            lastBuyQuantity  = 0;
-        }
-        else
-        {
-            lastBuyPrice     = lastBuyOperations[0].getPrice();
-            lastBuyQuantity  = lastBuyOperations[0].getQuantityExecuted();
-        }
+
+        updateLastOperationData( lastSellOperations, lastSellId, lastSellPrice, lastSellQuantity, lastSellChanged );
+        updateLastOperationData( lastBuyOperations , lastBuyId , lastBuyPrice , lastBuyQuantity , lastBuyChanged  );
+
+        updatePriceDeltaToLastOpPrice();
 
     }
+
+    #if 0
+    
+    В графах терминала "Заявка на продажу" / "Заявка на покупку" отображаем:
+
+      а) Заявку
+      б) '*' - если последняя совершённая операция изменилась
+      в) '-' - если заявок нет и не было изменений последней операции
+
+      /*
+        Bid   - предложение на покупку
+        Ask   - предложение на продажу
+       
+        Buy   - покупка (исполненное предложение на покупку)
+        Sell  - продажа (исполненное предложение на продажу)
+       
+        предложение на покупку/покупка - Bid/Buy
+        предложение на продажу/продажа - Ask/Sell
+
+      */
+
+      И всё бы хорошо, но если была совершена операция по покупке/продаже,
+      то в списке заявок (если нет активных заявок) - всегда потом будет отображаться '*'.
+      Надо бы как-то сбрасывать этот статус
+
+      А пока сделаем звёздочку
+
+    #endif
+
 
     void update( const std::vector<OpenAPI::Order> &ordersParam )
     {
@@ -309,6 +364,52 @@ struct InstrumentInfoLineData
     
     }
 
+    void updatePriceDeltaToLastOpPrice()
+    {
+        priceDeltaToLastOpPrice        = Decimal(0);
+        priceDeltaToLastOpPricePercent = Decimal(0); 
+
+        if ( !isTraded || !lastOperation.isValid() || !lastOperation.isSet() || curPrice==Decimal(0)  /* || quantity==0 */  )
+            return ;
+
+
+        Decimal lastOpPrice = lastOperation.getPrice();
+
+        if (isOperationTypeSell(lastOperation))
+        {
+            // Sell op
+
+            // Если текущая цена больше цены последней продажи, то надо показать разницу красным - 
+            // типа рано продали, но зелёным - если торговля в шот - типа всё нормасик идёт, надо ещё продавать
+
+            priceDeltaToLastOpPrice = lastOpPrice - curPrice;
+            // if (quantity<0)
+            //    deltaPrice = -deltaPrice;
+
+        }
+        else
+        {
+            // Buy op
+
+            // Если текущая цена больше цены последней покупки, торговлязелень - выгодно купили,
+            // но если играем в шот - то красным
+
+            priceDeltaToLastOpPrice = curPrice - lastOpPrice;
+            // if (quantity<0)
+            //    deltaPrice = -deltaPrice;
+
+        }
+
+
+        priceDeltaToLastOpPricePercent = Decimal(0); 
+
+        if (!lastOpPrice.zer() && !priceDeltaToLastOpPrice.zer())
+             priceDeltaToLastOpPricePercent = lastOpPrice.getPercent(priceDeltaToLastOpPrice);
+
+
+
+    }
+
 
     static
     int sign( int val )
@@ -349,6 +450,24 @@ struct InstrumentInfoLineData
         *pSignOut = val.sign();
         return invest_openapi::format_field( ff, val.abs(), precision );
     }
+
+    static
+    Decimal roundGenericPercentValue( Decimal perc )
+    {
+        Decimal absPerc = perc.abs();
+
+        if (absPerc>=Decimal(100))
+            perc.round(0, marty::Decimal::RoundingMethod::roundMath );
+
+        else if (absPerc>=Decimal(10))
+            perc.round(1, marty::Decimal::RoundingMethod::roundMath );
+
+        else
+            perc.round(2, marty::Decimal::RoundingMethod::roundMath );
+    
+        return perc;
+    }
+
 
 
     //------------------------------
@@ -431,15 +550,7 @@ struct InstrumentInfoLineData
             auto absPortfolioCost = portfolioCost.abs();
 
             auto profitPercent    = absPortfolioCost.getPercent(expYield);
-
-            if (profitPercent>=Decimal(100))
-                profitPercent.round(0, marty::Decimal::RoundingMethod::roundMath );
-
-            else if (profitPercent>=Decimal(10))
-                profitPercent.round(1, marty::Decimal::RoundingMethod::roundMath );
-
-            else
-                profitPercent.round(2, marty::Decimal::RoundingMethod::roundMath );
+            profitPercent         = roundGenericPercentValue(profitPercent);
 
             return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, profitPercent, -1 );
         }
@@ -518,13 +629,6 @@ struct InstrumentInfoLineData
             return format_field( ff, lastSellQuantity );
         }
 
-        else if (id=="MAX_BID_PRICE")
-        {
-            if (maxBidPrice==Decimal(0)) return format_field( ff, "-" );
-
-            return format_field( ff, maxBidPrice, pricePrecision );
-        }
-
         else if (id=="MAX_BID_QUANTITY")
         {
             if (maxBidQuantity==0 || lotSize==0) return format_field( ff, "-" );
@@ -532,9 +636,28 @@ struct InstrumentInfoLineData
             return format_field( ff, maxBidQuantity*lotSize );
         }
 
+        else if (id=="MAX_BID_PRICE")
+        {
+            if (maxBidPrice==Decimal(0)) 
+            {
+                if (lastBuyChanged)
+                    return format_field( ff, "*" );
+                else
+                    return format_field( ff, "-" );
+            }
+
+            return format_field( ff, maxBidPrice, pricePrecision );
+        }
+
         else if (id=="MIN_ASK_PRICE")
         {
-            if (minAskPrice==Decimal(0)) return format_field( ff, "-" );
+            if (minAskPrice==Decimal(0))
+            {
+                if (lastSellChanged)
+                    return format_field( ff, "*" );
+                else
+                    return format_field( ff, "-" );
+            }
 
             return format_field( ff, minAskPrice, pricePrecision );
         }
@@ -590,45 +713,20 @@ struct InstrumentInfoLineData
 
         else if (id=="CUR_PRICE_TO_LAST_OP_PERCENT")
         {
-            if ( !isTraded || !lastOperation.isValid() || !lastOperation.isSet() || curPrice==Decimal(0) || quantity==0 )
+            if ( !isTraded || !lastOperation.isValid() || !lastOperation.isSet() || curPrice==Decimal(0)  /* || quantity==0 */  )
                 return format_field( ff, "-" );
 
+            // priceDeltaToLastOpPrice
 
-            Decimal deltaPrice  = Decimal(0);
-            Decimal lastOpPrice = lastOperation.getPrice();
+            //Decimal deltaPricePercent = Decimal(0); 
 
-            if (isOperationTypeSell(lastOperation))
-            {
-                // Sell op
+            //if (!lastOpPrice.zer() && !deltaPrice.zer())
+            //    deltaPricePercent = lastOpPrice.getPercent(deltaPrice);
 
-                // Если текущая цена больше цены последней продажи, то надо показать разницу красным - 
-                // типа рано продали, но зелёным - если торговля в шот - типа всё нормасик идёт, надо ещё продавать
+            //Decimal absDeltaPricePercent = priceDeltaToLastOpPricePercent.abs();
+            // absDeltaPricePercent         = roundGenericPercentValue(absDeltaPricePercent);
 
-                deltaPrice = lastOpPrice - curPrice;
-                // if (quantity<0)
-                //    deltaPrice = -deltaPrice;
-
-            }
-            else
-            {
-                // Buy op
-
-                // Если текущая цена больше цены последней покупки, торговлязелень - выгодно купили,
-                // но если играем в шот - то красным
-
-                deltaPrice = curPrice - lastOpPrice;
-                // if (quantity<0)
-                //    deltaPrice = -deltaPrice;
-
-            }
-
-            Decimal deltaPricePercent = Decimal(0); 
-
-            if (!lastOpPrice.zer() && !deltaPrice.zer())
-                deltaPricePercent = lastOpPrice.getPercent(deltaPrice);
-
-            Decimal absDeltaPricePercent = deltaPricePercent.abs();
-
+            /*
             if (absDeltaPricePercent>=Decimal(100))
                 deltaPricePercent.round(0, marty::Decimal::RoundingMethod::roundMath );
 
@@ -637,18 +735,18 @@ struct InstrumentInfoLineData
 
             else
                 deltaPricePercent.round(2, marty::Decimal::RoundingMethod::roundMath );
+            */
 
-
-            return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, deltaPricePercent, -1 );
+            return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, priceDeltaToLastOpPricePercent, -1 );
 
         }
 
         else if (id=="CUR_PRICE_TO_LAST_OP_DELTA")
         {
-            if ( !isTraded || !lastOperation.isValid() || !lastOperation.isSet() || curPrice==Decimal(0) || quantity==0 )
+            if ( !isTraded || !lastOperation.isValid() || !lastOperation.isSet() || curPrice==Decimal(0)  /* || quantity==0 */  )
                 return format_field( ff, "-" );
 
-
+            #if 0
             Decimal deltaPrice  = Decimal(0);
             Decimal lastOpPrice = lastOperation.getPrice();
 
@@ -676,8 +774,8 @@ struct InstrumentInfoLineData
                 //    deltaPrice = -deltaPrice;
 
             }
-
-            return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, deltaPrice, -1 );
+            #endif
+            return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, priceDeltaToLastOpPrice, -1 );
 
         }
 

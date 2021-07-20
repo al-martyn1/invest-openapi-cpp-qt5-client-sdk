@@ -387,6 +387,9 @@ INVEST_OPENAPI_MAIN()
 
                                  // tout << term::caret(0);
 
+                                 // FillConsoleOutputAttribute(hOut, csbi.wAttributes, length, topLeft, &written);
+                                 // https://stackoverflow.com/questions/34842526/update-console-without-flickering-c
+
                                  tout << term::move2abs0 ;
 
                                  auto connectionStateColor = terminalData.getConnectionStateColor();
