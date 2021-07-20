@@ -9,7 +9,7 @@ VB2,BEST_BID,SP,SP,SP,SPREAD_POINTS,BEST_ASK,\
 \
 VB2,\
 LAST_BUY_QUANTITY,LAST_BUY_PRICE,\
-CUR_PRICE_TO_LAST_BUY_MARKER,CUR_PRICE_TO_LAST_OP_PERCENT,CUR_PRICE_TO_LAST_SELL_MARKER,\
+CUR_PRICE_TO_LAST_BUY_MARKER,CUR_PRICE_TO_LAST_OP_PERCENT,CUR_PRICE_TO_LAST_OP_DELTA,CUR_PRICE_TO_LAST_SELL_MARKER,\
 LAST_SELL_PRICE,LAST_SELL_QUANTITY,SP,\
 \
 VB,MAX_BID_QUANTITY,MAX_BID_PRICE,SP,SP,CUR_PRICE,MIN_ASK_PRICE,MIN_ASK_QUANTITY,\
@@ -279,7 +279,7 @@ terminal.columns.SPREAD_POINTS.align     = center
 terminal.columns.SPREAD_POINTS.color     = magenta
 
 
-terminal.columns.LAST_BUY_PRICE.caption  = LastBuyPr
+terminal.columns.LAST_BUY_PRICE.caption  = L_Buy_$
 ;terminal.columns.LAST_BUY_PRICE.align.caption
 ;terminal.columns.LAST_BUY_PRICE.left
 ;terminal.columns.LAST_BUY_PRICE.right
@@ -297,11 +297,11 @@ terminal.columns.LAST_BUY_QUANTITY.width   = 6
 ;terminal.columns.LAST_BUY_QUANTITY.align.dot 
 
 
-terminal.columns.LAST_SELL_PRICE.caption   = LastSellPr
+terminal.columns.LAST_SELL_PRICE.caption   = L_Sell_$
 ;terminal.columns.LAST_SELL_PRICE.align.caption
 ;terminal.columns.LAST_SELL_PRICE.left
 ;terminal.columns.LAST_SELL_PRICE.right
-terminal.columns.LAST_SELL_PRICE.width     = 10
+terminal.columns.LAST_SELL_PRICE.width     = 8
 ;terminal.columns.LAST_SELL_PRICE.align
 ;terminal.columns.LAST_SELL_PRICE.align.dot 
 
@@ -342,6 +342,15 @@ terminal.columns.CUR_PRICE_TO_LAST_OP_PERCENT.right           = 1
 terminal.columns.CUR_PRICE_TO_LAST_OP_PERCENT.width           = 4
 terminal.columns.CUR_PRICE_TO_LAST_OP_PERCENT.align           = right
 terminal.columns.CUR_PRICE_TO_LAST_OP_PERCENT.align.dot       = 0
+
+
+terminal.columns.CUR_PRICE_TO_LAST_OP_DELTA.caption         = d$
+terminal.columns.CUR_PRICE_TO_LAST_OP_DELTA.align.caption   = center
+terminal.columns.CUR_PRICE_TO_LAST_OP_DELTA.left            = 1
+terminal.columns.CUR_PRICE_TO_LAST_OP_DELTA.right           = 1
+terminal.columns.CUR_PRICE_TO_LAST_OP_DELTA.width           = 6
+terminal.columns.CUR_PRICE_TO_LAST_OP_DELTA.align           = right
+terminal.columns.CUR_PRICE_TO_LAST_OP_DELTA.align.dot       = 0
 
 
 terminal.columns.MAX_BID_PRICE.caption      = CurBidPr

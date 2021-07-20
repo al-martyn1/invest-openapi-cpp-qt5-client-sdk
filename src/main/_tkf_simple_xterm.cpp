@@ -274,6 +274,17 @@ INVEST_OPENAPI_MAIN()
 
 
     //------------------------------
+    auto processInput = [&]()
+                        {
+                            std::vector<int> input = simpleInput.readInput();
+                           
+                            if (!input.empty() && pTerminalInputEdit) // to stop only when input is not empty
+                               pTerminalInputEdit->processInput( input );
+                        };
+
+    
+    //------------------------------
+
     
     auto printEditorText = [&]( const std::string &text, const std::string &autocompleteHint )
                              {
@@ -472,6 +483,8 @@ INVEST_OPENAPI_MAIN()
                                  int nFigi  = 0;
                                  for(; nFigi<nFigis; ++nFigi)
                                  {
+                                     // processInput();
+
                                      if (pTermConfig->hbreakStyleRegular!=0 && nFigi  /* && nFigi!=(nFigis-1) */  && (nFigi%pTermConfig->hbreakRegular)==0)
                                      {
                                          if (terminalData.isCaptionChanged())
@@ -846,6 +859,7 @@ INVEST_OPENAPI_MAIN()
 
     
     auto lineEdit = tkf::makeSimpleTerminalLineEdit( onEditTextModified, onEditTextComplete, onEditUpdateView );
+    
 
     lineEdit.setCaseConvert(1); // upper case
 
@@ -858,7 +872,7 @@ INVEST_OPENAPI_MAIN()
 
     auto periodicScreenUpdate = [&]()
                                 {
-                                    if (screenUpdateTimer.elapsed() > 1500) // Раз в секунду обновляем картинку, нафига чаще?
+                                    if (screenUpdateTimer.elapsed() > 3000) // Раз в секунду обновляем картинку, нафига чаще?
                                     {
                                         std::map< QString, BandwidthMeterType >::iterator 
                                         mit = glassBandwidthMeters.begin();
@@ -1184,14 +1198,6 @@ INVEST_OPENAPI_MAIN()
 
     pTerminalInputEdit->updateView();
 
-
-    auto processInput = [&]()
-                        {
-                            std::vector<int> input = simpleInput.readInput();
-                           
-                            if (!input.empty()) // to stop only when input is not empty
-                               lineEdit.processInput( input );
-                        };
 
 
     terminalData.setStatus("Initialized");

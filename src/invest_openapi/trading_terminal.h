@@ -433,13 +433,13 @@ struct InstrumentInfoLineData
             auto profitPercent    = absPortfolioCost.getPercent(expYield);
 
             if (profitPercent>=Decimal(100))
-                profitPercent.rounded(0, marty::Decimal::RoundingMethod::roundMath );
+                profitPercent.round(0, marty::Decimal::RoundingMethod::roundMath );
 
             else if (profitPercent>=Decimal(10))
-                profitPercent.rounded(1, marty::Decimal::RoundingMethod::roundMath );
+                profitPercent.round(1, marty::Decimal::RoundingMethod::roundMath );
 
             else
-                profitPercent.rounded(2, marty::Decimal::RoundingMethod::roundMath );
+                profitPercent.round(2, marty::Decimal::RoundingMethod::roundMath );
 
             return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, profitPercent, -1 );
         }
@@ -590,46 +590,99 @@ struct InstrumentInfoLineData
 
         else if (id=="CUR_PRICE_TO_LAST_OP_PERCENT")
         {
-            if (!isTraded || !lastOperation.isValid() || !lastOperation.isSet() || curPrice==Decimal(0))
+            if ( !isTraded || !lastOperation.isValid() || !lastOperation.isSet() || curPrice==Decimal(0) || quantity==0 )
                 return format_field( ff, "-" );
 
 
-            Decimal prc = Decimal(0);
+            Decimal deltaPrice  = Decimal(0);
+            Decimal lastOpPrice = lastOperation.getPrice();
 
             if (isOperationTypeSell(lastOperation))
             {
                 // Sell op
 
-                // Если текущая цена больше цены последней продажи
+                // Если текущая цена больше цены последней продажи, то надо показать разницу красным - 
+                // типа рано продали, но зелёным - если торговля в шот - типа всё нормасик идёт, надо ещё продавать
 
-                // prc
+                deltaPrice = lastOpPrice - curPrice;
+                // if (quantity<0)
+                //    deltaPrice = -deltaPrice;
+
             }
             else
             {
                 // Buy op
+
+                // Если текущая цена больше цены последней покупки, торговлязелень - выгодно купили,
+                // но если играем в шот - то красным
+
+                deltaPrice = curPrice - lastOpPrice;
+                // if (quantity<0)
+                //    deltaPrice = -deltaPrice;
+
             }
 
-            // return format_field( ff, lastBuyPrice, pricePrecision );
-            // return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, quantity );
-            if (curPrice==Decimal(0))
-                return format_field( ff, "-" );
-/*
+            Decimal deltaPricePercent = Decimal(0); 
 
-    Decimal   lastSellPrice   ; //!< Цена (средняя) последней продажи. Берём из операций по инструменту
-    unsigned  lastSellQuantity; //!< Количество executed акций (не лотов). Берём из операций по инструменту
+            if (!lastOpPrice.zer() && !deltaPrice.zer())
+                deltaPricePercent = lastOpPrice.getPercent(deltaPrice);
 
-    Decimal   lastBuyPrice    ; //!< Цена (средняя) последней покупки. Берём из операций по инструменту
-    unsigned  lastBuyQuantity ; //!< Количество executed акций/бумаг (не лотов). Берём из операций по инструменту
-lastBuyPrice     = lastBuyOperations[0].getPrice();
+            Decimal absDeltaPricePercent = deltaPricePercent.abs();
 
-*/
+            if (absDeltaPricePercent>=Decimal(100))
+                deltaPricePercent.round(0, marty::Decimal::RoundingMethod::roundMath );
 
-            // return format_field( ff, lastBuyPrice, pricePrecision );
+            else if (absDeltaPricePercent>=Decimal(10))
+                deltaPricePercent.round(1, marty::Decimal::RoundingMethod::roundMath );
 
-            return format_field( ff, "XXX" );
+            else
+                deltaPricePercent.round(2, marty::Decimal::RoundingMethod::roundMath );
 
-            // return format_field( ff, instrumentStateEventsCounter );
+
+            return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, deltaPricePercent, -1 );
+
         }
+
+        else if (id=="CUR_PRICE_TO_LAST_OP_DELTA")
+        {
+            if ( !isTraded || !lastOperation.isValid() || !lastOperation.isSet() || curPrice==Decimal(0) || quantity==0 )
+                return format_field( ff, "-" );
+
+
+            Decimal deltaPrice  = Decimal(0);
+            Decimal lastOpPrice = lastOperation.getPrice();
+
+            if (isOperationTypeSell(lastOperation))
+            {
+                // Sell op
+
+                // Если текущая цена больше цены последней продажи, то надо показать разницу красным - 
+                // типа рано продали, но зелёным - если торговля в шот - типа всё нормасик идёт, надо ещё продавать
+
+                deltaPrice = lastOpPrice - curPrice;
+                // if (quantity<0)
+                //    deltaPrice = -deltaPrice;
+
+            }
+            else
+            {
+                // Buy op
+
+                // Если текущая цена больше цены последней покупки, торговлязелень - выгодно купили,
+                // но если играем в шот - то красным
+
+                deltaPrice = curPrice - lastOpPrice;
+                // if (quantity<0)
+                //    deltaPrice = -deltaPrice;
+
+            }
+
+            return formatFieldAbsHelper( ff, allowAbsVals, pSignOut, deltaPrice, -1 );
+
+        }
+
+
+        
 
         // CUR_PRICE_TO_LAST_BUY_MARKER,CUR_PRICE_TO_LAST_OP_PERCENT,CUR_PRICE_TO_LAST_SELL_MARKER,\
 
